@@ -57,6 +57,16 @@ class PolicyVersion(ACPModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class PolicyState(ACPModel):
+    """Persisted bandit state so routing learns across process restarts (R2-J)."""
+
+    id: str = Field(default_factory=lambda: new_id("pstate"))
+    policy_version: str
+    arms: dict[str, Any] = Field(default_factory=dict)  # ctx -> arm_key -> stats
+    metrics: dict[str, Any] = Field(default_factory=dict)
+    updated_at: datetime = Field(default_factory=utcnow)
+
+
 class PostMergeOutcome(ACPModel):
     id: str = Field(default_factory=lambda: new_id("outcome"))
     task_id: str

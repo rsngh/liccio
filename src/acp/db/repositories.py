@@ -41,6 +41,7 @@ from acp.schemas import (
 )
 from acp.schemas.base import ACPModel
 from acp.schemas.eval import EvalCase, EvalMetric, EvalReport, EvalRun
+from acp.schemas.learning import PolicyState
 
 S = TypeVar("S", bound=ACPModel)
 
@@ -73,6 +74,7 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     EvalCase: m.EvalCase,
     EvalMetric: m.EvalMetric,
     EvalReport: m.EvalReport,
+    PolicyState: m.PolicyState,
 }
 
 

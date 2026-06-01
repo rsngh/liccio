@@ -159,6 +159,11 @@ class Span(_Row):
     name: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class PolicyState(_Row):
+    __tablename__ = "policy_states"
+    policy_version: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
@@ -216,6 +221,7 @@ ALL_MODELS = [
     PostMergeOutcome,
     RunState,
     Span,
+    PolicyState,
     EvalRun,
     EvalCase,
     EvalMetric,

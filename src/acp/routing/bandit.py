@@ -95,6 +95,24 @@ class SimulatedBanditPolicy:
             seed=self.seed,
         )
 
+    def export_arms(self) -> dict:
+        """Serialize per-context arm stats (for durable PolicyState)."""
+        return {
+            ctx: {k: {"n": s.n, "mean": s.mean, "alpha": s.alpha, "beta": s.beta}
+                  for k, s in arms.items()}
+            for ctx, arms in self.arms.items()
+        }
+
+    def import_arms(self, data: dict) -> None:
+        """Restore per-context arm stats from a persisted PolicyState."""
+        self.arms = {}
+        for ctx, arms in (data or {}).items():
+            self.arms[ctx] = {
+                k: ArmStats(n=int(v.get("n", 0)), mean=float(v.get("mean", 0.0)),
+                            alpha=float(v.get("alpha", 1.0)), beta=float(v.get("beta", 1.0)))
+                for k, v in arms.items()
+            }
+
     def observe_reward(self, decision: PolicyDecision, reward: RewardEvent) -> None:
         # Use the context recorded on the decision (falls back to reward metadata).
         ctx = decision.context_key or reward.metadata.get("ctx", "global")

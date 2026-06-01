@@ -40,6 +40,25 @@ class AppService:
         self.policy = SimulatedBanditPolicy(seed=self.settings.random_seed, epsilon=0.15)
         self._runs: dict[str, WorkflowState] = {}
         self._runners: dict[str, WorkflowRunner] = {}
+        # Restore learned arm stats from the DB so routing learns across restarts.
+        self._load_policy_state()
+
+    def _load_policy_state(self) -> None:
+        from acp.schemas.learning import PolicyState
+
+        with session_scope(self.sessions) as s:
+            states = EntityStore(s).list_by(PolicyState, policy_version=self.policy.policy_version)
+        if states:
+            latest = max(states, key=lambda x: x.updated_at)
+            self.policy.import_arms(latest.arms)
+
+    def save_policy_state(self):
+        from acp.schemas.learning import PolicyState
+
+        state = PolicyState(policy_version=self.policy.policy_version,
+                            arms=self.policy.export_arms())
+        self._save(state)
+        return state
 
     @staticmethod
     def _default_registry() -> AgentRegistry:
@@ -157,6 +176,8 @@ class AppService:
         self._runs[state.run_id] = state
         self._runners[state.run_id] = runner
         self._save(state_to_task_status(task, state))
+        # Persist learned arm stats so the policy survives restarts (R2-J).
+        self.save_policy_state()
         return state
 
     def get_run(self, run_id: str) -> WorkflowState | None:
@@ -436,6 +457,27 @@ class AppService:
                           kind="bandit", params={"arms": arms}, metadata={"metrics": metrics})
         self._save(p)
         return p
+
+    def drift_report(self, window: int = 10, drop_threshold: float = 0.3) -> dict:
+        """Flag reward drift: compare the recent window mean vs the prior baseline."""
+        from acp.schemas.learning import RewardEvent
+
+        with session_scope(self.sessions) as s:
+            rewards = sorted(EntityStore(s).list_by(RewardEvent),
+                             key=lambda r: r.created_at)
+        vals = [r.reward for r in rewards]
+        report = {"n": len(vals), "drift_detected": False, "baseline_mean": 0.0,
+                  "recent_mean": 0.0, "drop": 0.0}
+        if len(vals) >= 2 * window:
+            baseline = vals[-2 * window:-window]
+            recent = vals[-window:]
+            b = sum(baseline) / len(baseline)
+            r = sum(recent) / len(recent)
+            report.update(baseline_mean=round(b, 4), recent_mean=round(r, 4),
+                          drop=round(b - r, 4),
+                          drift_detected=(b - r) > drop_threshold * abs(b) if b else False)
+        self._persist_eval("drift", report, report, config={"window": window})
+        return report
 
     def agents_health(self) -> list[dict]:
         """Health + harness classification for every registered adapter (D2B6)."""
