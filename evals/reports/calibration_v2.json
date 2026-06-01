@@ -1,0 +1,73 @@
+{
+  "schema_version": 2,
+  "n_cases": 12,
+  "evaluators": {
+    "adversarial_detector": {
+      "n": 12,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "brier": 0.0408,
+      "ece": 0.1875,
+      "correlation": 0.9692,
+      "recommended_threshold": 0.4,
+      "false_auto_approve_risk": 0.0
+    },
+    "combined": {
+      "n": 12,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "brier": 0.1319,
+      "ece": 0.3307,
+      "correlation": 0.9567,
+      "recommended_threshold": 0.5,
+      "false_auto_approve_risk": 0.0
+    },
+    "llm_judge": {
+      "n": 12,
+      "accuracy": 0.6667,
+      "precision": 0.5,
+      "recall": 1.0,
+      "brier": 0.1536,
+      "ece": 0.3458,
+      "correlation": 0.9249,
+      "recommended_threshold": 0.65,
+      "false_auto_approve_risk": 0.5
+    },
+    "naive_optimist": {
+      "n": 12,
+      "accuracy": 0.3333,
+      "precision": 0.3333,
+      "recall": 1.0,
+      "brier": 0.5433,
+      "ece": 0.5667,
+      "correlation": 0.0,
+      "recommended_threshold": 0.95,
+      "false_auto_approve_risk": 0.6667
+    },
+    "objective": {
+      "n": 12,
+      "accuracy": 0.4167,
+      "precision": 0.3636,
+      "recall": 1.0,
+      "brier": 0.3186,
+      "ece": 0.41,
+      "correlation": 0.5904,
+      "recommended_threshold": 0.85,
+      "false_auto_approve_risk": 0.6364
+    },
+    "weak_supervision": {
+      "n": 12,
+      "accuracy": 0.8333,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "brier": 0.1198,
+      "ece": 0.3208,
+      "correlation": 0.9528,
+      "recommended_threshold": 0.55,
+      "false_auto_approve_risk": 0.3333
+    }
+  },
+  "recommended_threshold": 0.5
+}

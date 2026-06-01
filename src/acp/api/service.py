@@ -827,6 +827,19 @@ class AppService:
                            config={"n_human": len(labels), "n_post_merge": len(outcomes)})
         return report
 
+    def calibrate_evaluators_v2(self, cases=None):
+        """Per-evaluator calibration v2 (round-5 WS9): accuracy/precision/recall/
+        Brier/ECE/correlation + recommended threshold + false-auto-approve risk.
+        Persisted as EvalRun(kind=calibration)."""
+        from acp.evaluation.calibration_v2 import calibrate_v2, default_calibration_dataset
+
+        cases = cases if cases is not None else default_calibration_dataset()
+        report = calibrate_v2(cases).to_dict()
+        summary = {"schema_version": 2, "n_cases": report["n_cases"],
+                   "recommended_threshold": report["recommended_threshold"]}
+        return self._persist_eval("calibration", summary, report,
+                                  config={"schema_version": 2})
+
     def run_bandit_mc_eval(self, seeds: int = 20, rounds: int = 400) -> object:
         """Bandit Monte Carlo persisted as an EvalRun (round-3 R3-8)."""
         import statistics
