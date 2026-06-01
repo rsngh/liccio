@@ -459,10 +459,21 @@ class WorkflowRunner:
         ))
         self.artifacts.al_score = al
 
+        # Adversarial detectors: catch attempts to game verification.
+        from acp.verification.adversarial import has_high_severity, scan_diff, severity_score
+
+        findings = scan_diff(diff)
+        if findings:
+            evaluation.review_burden = max(
+                evaluation.review_burden, severity_score(findings)
+            )
+            evaluation.reasons.extend(f"adversarial:{f.code}:{f.detail}" for f in findings)
+        adversarial_review = has_high_severity(findings)
+
         # Fold ladder signals into the human-review decision. "suspicious" only
-        # lowers adequacy (handled by the aggregator); needs_review/failure or a
-        # judge escalation force human review.
-        if weak.label in ("needs_review", "failure") or judge_wants_review:
+        # lowers adequacy (handled by the aggregator); needs_review/failure, a
+        # judge escalation, or a high-severity adversarial finding force review.
+        if weak.label in ("needs_review", "failure") or judge_wants_review or adversarial_review:
             evaluation.requires_human_review = True
             evaluation.reasons.append(
                 f"weak_label={weak.label}; judges_review={judge_wants_review}"
