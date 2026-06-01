@@ -1,5 +1,7 @@
 .PHONY: help sync test test-unit test-integration test-e2e lint type fmt check coverage \
-        soak-6h eval-bakeoff-overnight bandit-monte-carlo retriever-stress chaos security-redteam
+        soak-6h eval-bakeoff-overnight bandit-monte-carlo retriever-stress chaos security-redteam \
+        docker-security multi-harness-bakeoff calibration alpha4-artifacts \
+        live-openai live-second-harness live-docker
 
 UV ?= uv
 
@@ -67,3 +69,25 @@ chaos:
 
 security-redteam:
 	$(UV) run pytest tests/long -q -k redteam
+
+# --- Alpha 4: multi-harness empirical router ---------------------------------
+docker-security:
+	$(UV) run python evals/scripts/run_docker_security_check.py
+
+multi-harness-bakeoff:
+	$(UV) run python evals/scripts/run_multi_harness_bakeoff.py
+
+calibration:
+	$(UV) run python evals/scripts/run_calibration.py
+
+alpha4-artifacts: docker-security multi-harness-bakeoff calibration
+	@echo "Alpha-4 report artifacts written to evals/reports/"
+
+live-openai:
+	$(UV) run pytest -m live_openai tests/live -q
+
+live-second-harness:
+	$(UV) run pytest -m live_second_harness tests/live -q
+
+live-docker:
+	$(UV) run pytest -m live_docker -q

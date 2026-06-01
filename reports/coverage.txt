@@ -1,1 +1,2 @@
-TOTAL                                        5387    686    980    154    85%
+# Coverage (uv run pytest --cov=acp) — 2026-06-01
+TOTAL                                          5952    687   1108    167    86%

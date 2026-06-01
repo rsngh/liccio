@@ -21,7 +21,7 @@ from acp.schemas.task import Task
 from acp.workspaces.local import LocalWorkspaceManager
 from acp.workspaces.policies import default_policy
 
-pytestmark = pytest.mark.live
+pytestmark = [pytest.mark.live, pytest.mark.live_openai]
 LIVE = bool(os.environ.get("OPENAI_API_KEY"))
 
 

@@ -36,6 +36,13 @@ coverage.xml
 .env.*
 !.env.example
 
-# eval outputs
+# eval outputs (committed Alpha-4 evidence artifacts are negated below)
 evals/reports/*
 !evals/reports/.gitkeep
+!evals/reports/bakeoff.json
+!evals/reports/context_benchmark.json
+!evals/reports/soak.json
+!evals/reports/docker_security.json
+!evals/reports/no_patch_bakeoff.json
+!evals/reports/multi_harness_trace_bakeoff.json
+!evals/reports/calibration.json

@@ -1,0 +1,42 @@
+{
+  "docker_available": false,
+  "status": "skipped",
+  "reason": "docker CLI/daemon not available in this environment",
+  "checks": [
+    {
+      "name": "pwd_is_workspace",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    },
+    {
+      "name": "non_root",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    },
+    {
+      "name": "network_blocked",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    },
+    {
+      "name": "memory_hog_fails",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    },
+    {
+      "name": "pid_limit",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    },
+    {
+      "name": "workspace_write_reflected",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    },
+    {
+      "name": "cleanup_removes_worktree",
+      "status": "skipped",
+      "detail": "docker unavailable"
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 # Final Report — agent-control-plane (`acp`)
 
 > **`CURRENT_STATUS.md` is the source of truth** for status, test counts, and
-> coverage. This file is a historical narrative of what was built across rounds;
+> coverage. The round-by-round build narrative is archived in `HISTORY.md`, and
+> the latest gate is `ALPHA4_CHECKLIST.md`. This file is a historical narrative;
 > numbers here may lag. Per-subsystem reality is tabulated below.
 
 ## Subsystem reality (real / service-backed / simple adapter / true harness / fallback / stub)

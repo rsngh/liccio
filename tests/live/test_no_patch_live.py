@@ -13,7 +13,7 @@ from acp.api.service import AppService
 from acp.core.config import ACPSettings, reset_settings
 from acp.evaluation.bakeoff import run_no_patch_bakeoff
 
-pytestmark = pytest.mark.live
+pytestmark = [pytest.mark.live, pytest.mark.live_openai]
 
 
 @pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), reason="no OPENAI_API_KEY")

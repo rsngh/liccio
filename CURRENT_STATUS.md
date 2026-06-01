@@ -5,9 +5,17 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-01. Tests: 305 passing; `ruff` + `mypy` clean; ~85% line
-coverage (unit+integration). Gate: `uv run pytest -q && uv run ruff check . &&
-uv run mypy src`.
+Last updated: 2026-06-01 (Alpha 4). Tests: 329 passing, 5 skipped
+(docker/pgvector unavailable) — see `reports/pytest.txt`; `ruff` + `mypy` clean;
+86% line coverage (unit+integration). Gate: `uv run pytest -q &&
+uv run ruff check . && uv run mypy src`.
+
+**Alpha 4 — multi-harness empirical router.** Two real tool-loop harnesses now
+exist (`openai_harness`, `claude_harness`), the execution-backend policy is
+enforced in orchestration, every attempt carries a normalized `AgentTrace`, a
+multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
+the router learns from those bakeoffs, and the evaluator ladder is calibrated
+with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
 ## Implemented (real, tested)
 
@@ -52,9 +60,12 @@ uv run mypy src`.
 
 ## Stubbed / optional (degrade gracefully)
 
-- **Real agent harnesses**: Claude/OpenAI/Codex/OpenHands adapters are *simple
-  model adapters* (single JSON-edit prompt), not full tool-loop harnesses. They
-  report `unavailable` without SDK/key/binary.
+- **True tool-loop harnesses**: `openai_harness` (OpenAI) and `claude_harness`
+  (Anthropic) are real harnesses (`is_harness=True`) that drive a read/write/run
+  tool loop with full trace capture; live-verified. The Claude/Codex/OpenHands
+  *simple model adapters* (single JSON-edit prompt) remain for cheap routing.
+  All report `unavailable` without SDK/key/binary. Docker is required for a true
+  harness unless `allow_local_harness` overrides (audited).
 - **Container isolation**: Docker/Kubernetes workspace backends (Docker v1 in
   progress, D1B5); local runner is cwd-contained + secret-scrubbed but not an
   OS-level sandbox.
