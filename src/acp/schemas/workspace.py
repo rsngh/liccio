@@ -17,6 +17,10 @@ class WorkspacePolicy(ACPModel):
     cleanup: str = "on_success"  # always | never | on_success
     max_disk_mb: int | None = None
     backend: str = "local"  # local | docker | kubernetes | openhands
+    memory_mb: int = 1024
+    cpus: float = 1.0
+    pids_limit: int = 256
+    run_as_nonroot: bool = True
 
 
 class WorkspaceSpec(ACPModel):

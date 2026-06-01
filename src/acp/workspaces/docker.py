@@ -1,43 +1,103 @@
-"""Docker workspace manager (optional, charter §9).
+"""Docker workspace manager v1 (charter §9; round-1 two-day D1B5).
 
-Stub that reports unavailability unless the docker SDK and daemon are present.
-Real container provisioning is wired in a later phase; kept behind the same
-protocol so the orchestrator is backend-agnostic.
+Uses the ``docker`` CLI (no SDK dependency). Each workspace is a local git
+worktree mounted read-write into a throwaway container; commands run inside the
+container with network disabled, non-root user, and memory/cpu/pids limits.
+When Docker is unavailable the manager raises ``AdapterUnavailable`` and the
+workflow falls back to the local backend.
 """
 
 from __future__ import annotations
 
+import shutil
+import subprocess
+import uuid
 from pathlib import Path
 
-from acp.core.errors import AdapterUnavailable
+from git import Repo
+
+from acp.core.errors import AdapterUnavailable, WorkspaceError
 from acp.schemas.repo import Repository, RepoSnapshot
-from acp.schemas.workspace import WorkspacePolicy
+from acp.schemas.workspace import WorkspacePolicy, WorkspaceSpec
 from acp.workspaces.base import Workspace
+from acp.workspaces.git_ops import add_worktree, remove_worktree
 
 
 def docker_available() -> bool:
+    """True when the docker CLI exists and the daemon responds."""
+    if shutil.which("docker") is None:
+        return False
     try:
-        import docker
-
-        docker.from_env().ping()
-        return True
-    except Exception:  # noqa: BLE001 - missing lib or no daemon
+        r = subprocess.run(  # noqa: S603,S607
+            ["docker", "info"], capture_output=True, timeout=10
+        )
+        return r.returncode == 0
+    except Exception:  # noqa: BLE001
         return False
 
 
 class DockerWorkspaceManager:
     backend = "docker"
 
-    def __init__(self, root: Path | str, image: str = "python:3.11-slim") -> None:
-        self.root = Path(root)
+    def __init__(
+        self,
+        root: Path | str,
+        image: str = "python:3.11-slim",
+        memory_mb: int = 1024,
+        cpus: float = 1.0,
+        pids_limit: int = 256,
+    ) -> None:
+        self.root = Path(root).resolve()
+        self.root.mkdir(parents=True, exist_ok=True)
         self.image = image
+        self.memory_mb = memory_mb
+        self.cpus = cpus
+        self.pids_limit = pids_limit
 
     def create(
         self, repo: Repository, snapshot: RepoSnapshot, policy: WorkspacePolicy
     ) -> Workspace:
         if not docker_available():
-            raise AdapterUnavailable("docker is not available")
-        raise NotImplementedError("DockerWorkspaceManager provisioning lands in a later phase")
+            raise AdapterUnavailable("docker CLI/daemon not available")
+        if not repo.local_path or not (Path(repo.local_path) / ".git").exists():
+            raise WorkspaceError(f"repo {repo.id} is not a local git repository")
+        ws_id = f"dws_{uuid.uuid4().hex[:12]}"
+        ws_path = self.root / ws_id
+        branch = f"acp/{ws_id}"
+        add_worktree(repo.local_path, ws_path, snapshot.base_commit, branch)
+        head = Repo(ws_path).head.commit.hexsha
+        spec = WorkspaceSpec(
+            id=ws_id, repo_id=repo.id, snapshot_id=snapshot.id,
+            base_commit=snapshot.base_commit, path=str(ws_path), branch=branch,
+            backend=self.backend, policy=policy, initial_head=head,
+            metadata={"image": self.image, "network": str(policy.allow_network).lower()},
+        )
+        return Workspace(spec=spec, path=ws_path, backend=self.backend,
+                         metadata={"source_repo": str(repo.local_path)})
 
-    def cleanup(self, workspace: Workspace) -> None:
-        return None
+    def docker_run_argv(self, workspace: Workspace, command: list[str]) -> list[str]:
+        """Build the ``docker run`` argv that executes ``command`` in the sandbox."""
+        policy = workspace.spec.policy
+        argv = [
+            "docker", "run", "--rm",
+            "--network", "bridge" if policy.allow_network else "none",
+            "-m", f"{policy.memory_mb or self.memory_mb}m",
+            "--cpus", str(policy.cpus or self.cpus),
+            "--pids-limit", str(policy.pids_limit or self.pids_limit),
+            "-v", f"{workspace.path}:/workspace",
+            "-w", "/workspace",
+        ]
+        if policy.run_as_nonroot:
+            argv += ["-u", "1000:1000"]
+        argv += [self.image, *command]
+        return argv
+
+    def cleanup(self, workspace: Workspace, *, succeeded: bool = True) -> None:
+        policy = workspace.spec.policy.cleanup
+        if policy == "never" or (policy == "on_success" and not succeeded):
+            return
+        source = workspace.metadata.get("source_repo")
+        if source:
+            remove_worktree(source, workspace.path)
+        else:
+            shutil.rmtree(workspace.path, ignore_errors=True)
