@@ -41,7 +41,7 @@ context = [
     "rank-bm25>=0.2.2",
     "qdrant-client>=1.18.0",
 ]
-agents = ["openai>=1.30"]
+agents = ["openai>=1.30", "anthropic>=0.40"]
 verification = ["coverage>=7.4"]
 learning = ["scikit-learn>=1.4", "joblib>=1.3"]
 observability = [
@@ -103,6 +103,9 @@ addopts = "-ra --ignore=tests/fixtures --ignore=tests/live"
 markers = [
     "slow: long-running tests",
     "live: tests requiring real API keys (skipped by default)",
+    "live_openai: live tests against the OpenAI API",
+    "live_second_harness: live tests against the second harness (Anthropic)",
+    "live_docker: live tests requiring a working Docker daemon",
     "live_pgvector: tests requiring a live pgvector Postgres",
     "live_qdrant: tests requiring qdrant-client (real local engine)",
     "e2e: end-to-end tests",
