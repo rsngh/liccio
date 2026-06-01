@@ -162,11 +162,22 @@ class AppService:
         return self._runs.get(run_id) or self._load_state(run_id)
 
     def _rehydrate_runner(self, state: WorkflowState) -> WorkflowRunner:
-        """Rebuild a runner that can resume from persisted state (cross-process).
+        """Rebuild a runner that can resume from persisted state at ANY node.
 
-        Reloads the artifacts the remaining nodes need (task, evaluation,
-        selected attempt) from the DB so resume works after a restart.
+        Reconstructs all artifacts the remaining nodes might need from the DB
+        (recomputing cheap/pure ones like classification and verdicts), so a
+        crashed run can resume after a restart regardless of where it stopped.
         """
+        from acp.core.classifier import classify
+        from acp.schemas.agent import AgentAttempt
+        from acp.schemas.context import ContextPack
+        from acp.schemas.evaluation import EvaluationResult
+        from acp.schemas.repo import RepoSnapshot
+        from acp.schemas.routing import RoutingDecision
+        from acp.schemas.verification import Evidence, VerificationPlan
+        from acp.schemas.workspace import DiffBundle
+        from acp.verification.aggregate import EvidenceAggregator
+
         repo = self.get_repo(state.repo_id or "")
         if repo is None:
             raise KeyError(state.repo_id)
@@ -179,18 +190,44 @@ class AppService:
         if task is not None:
             runner.submit(task)
             runner.artifacts.task = task
+            runner.artifacts.classification = classify(task)
+
         with session_scope(self.sessions) as session:
             es = EntityStore(session)
+            a = runner.artifacts
+            if state.snapshot_id:
+                a.snapshot = es.get(RepoSnapshot, state.snapshot_id)
+            if state.context_pack_id:
+                a.context_pack = es.get(ContextPack, state.context_pack_id)
+            if state.verification_plan_id:
+                a.plan = es.get(VerificationPlan, state.verification_plan_id)
+            if state.routing_decision_id:
+                a.routing_decision = es.get(RoutingDecision, state.routing_decision_id)
             if state.evaluation_result_id:
-                from acp.schemas.evaluation import EvaluationResult
+                a.evaluation = es.get(EvaluationResult, state.evaluation_result_id)
+            a.attempts = es.list_by(AgentAttempt, task_id=state.task_id)
+            attempt_ids = {att.id for att in a.attempts}
+            for d in es.list_by(DiffBundle):
+                if d.attempt_id in attempt_ids:
+                    a.diffs[d.attempt_id] = d
+            # group evidence by attempt + recompute verdicts (AggregateVerdict
+            # is not persisted, but it is a pure function of evidence + diff).
+            agg = EvidenceAggregator()
+            tt = a.classification.task_type if a.classification else None
+            for att in a.attempts:
+                evs = [e for e in es.list_by(Evidence, task_id=state.task_id)
+                       if e.attempt_id == att.id]
+                a.evidence_by_attempt[att.id] = evs
+                diff = a.diffs.get(att.id)
+                from acp.evaluation.objective import diff_touches_tests
 
-                runner.artifacts.evaluation = es.get(EvaluationResult, state.evaluation_result_id)
-            from acp.schemas.agent import AgentAttempt as _AA
-
-            runner.artifacts.attempts = es.list_by(_AA, task_id=state.task_id)
+                a.verdicts[att.id] = agg.aggregate(
+                    evs, diff=diff, task_type=tt,
+                    diff_touches_tests=diff_touches_tests(diff),
+                )
         return runner
 
-    def resume_run(self, run_id: str, label: HumanLabel) -> WorkflowState:
+    def resume_run(self, run_id: str, label: HumanLabel | None = None) -> WorkflowState:
         runner = self._runners.get(run_id)
         state = self._runs.get(run_id) or self._load_state(run_id)
         if state is None:

@@ -98,10 +98,15 @@ class WorkflowRunner:
         on_persist=None,
         max_node_attempts: int = 2,
         policy=None,
+        stop_after_node: str | None = None,
+        fail_after_node: str | None = None,
     ) -> None:
         self.repo = repo
         self.registry = registry
         self.policy = policy  # optional RoutingPolicy (bandit/supervised); else heuristic
+        # Fault-injection hooks for crash-resume tests (D1B3).
+        self.stop_after_node = stop_after_node
+        self.fail_after_node = fail_after_node
         self.workspace_mgr = LocalWorkspaceManager(workspace_root)
         # Contain all verification commands within the workspace root and scrub
         # secrets from their environment (round-1 §3 sandbox hardening).
@@ -167,6 +172,13 @@ class WorkflowRunner:
                 self._persist(state)
                 if paused:
                     return state
+                # Crash-resume hooks: simulate a process that dies right after a
+                # node's state is persisted (stop) or that crashes pre-persist of
+                # the *next* node (fail).
+                if self.stop_after_node == node:
+                    return state
+                if self.fail_after_node == node:
+                    raise RuntimeError(f"injected crash after {node}")
             except Exception as exc:  # noqa: BLE001 - record and fail the run
                 self._record_spans()
                 state.error = f"{node}: {exc}"
