@@ -58,7 +58,13 @@ def parse_js_symbols(source: str) -> list[Symbol]:
 
 def parse_symbols(path: str, source: str) -> list[Symbol]:
     if path.endswith(".py"):
-        return parse_python_symbols(source)
+        # Prefer Tree-sitter when available; AST fallback otherwise.
+        try:
+            from acp.context.tree_sitter_parser import parse_python_symbols_ts
+
+            return parse_python_symbols_ts(source)
+        except Exception:  # noqa: BLE001
+            return parse_python_symbols(source)
     if path.endswith((".js", ".jsx", ".ts", ".tsx", ".mjs")):
         return parse_js_symbols(source)
     return []

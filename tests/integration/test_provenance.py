@@ -43,3 +43,18 @@ def test_full_persistent_graph(service) -> None:
         assert "VerificationRun" in by_task
         assert "Evidence" in by_task
         assert "RewardEvent" in by_task
+
+
+def test_all_for_task_completeness(service) -> None:
+    """A.2: all_for_task returns the full child-record graph for a run."""
+    result = run_bugfix_demo(service, service.settings.workspace_dir)
+    fresh = AppService(service.settings)
+    with session_scope(fresh.sessions) as session:
+        by_task = EntityStore(session).all_for_task(result["task_id"])
+    # all_for_task returns child records keyed by task_id (Task/RepoSnapshot are
+    # fetched by id, validated in the test above).
+    required = {
+        "ContextPack", "VerificationPlan", "RoutingDecision", "AgentAttempt",
+        "VerificationRun", "Evidence", "EvaluationResult", "RewardEvent", "WeakLabel",
+    }
+    assert required <= set(by_task), f"missing: {required - set(by_task)}"

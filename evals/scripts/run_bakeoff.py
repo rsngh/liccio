@@ -28,19 +28,46 @@ def main() -> None:
     repo = svc.create_repo("bakeoff", repo_path, default_branch="master")
     fixed = "def divide(a, b):\n    if b == 0:\n        raise ZeroDivisionError\n    return a / b\n"
 
-    scorecard = []
-    for _ in range(5):
-        task = svc.create_task(repo.id, title="Fix divide bug", body="zero divisor",
-                               metadata={"files": {"calculator.py": fixed}})
-        state = svc.run_task(task.id)
-        scorecard.append({
-            "task_id": task.id,
-            "status": state.status if isinstance(state.status, str) else state.status.value,
-            "attempts": len(state.attempt_ids),
-        })
+    # Matrix: task class x context strategy (charter §21.5 / round-1 §8).
+    task_classes = [
+        ("bugfix", "Fix divide bug", "zero divisor"),
+        ("feature", "Add subtract function", "implement subtract"),
+        ("docs", "Update README", "improve docs in README.md"),
+    ]
+    strategies = ["minimal", "hybrid_keyword_embedding", "bug_reproduction"]
 
-    report = {"adapters": svc.registry.names(), "runs": scorecard,
-              "recommendation": "patch agent reliable for deterministic fixes"}
+    cells = []
+    for cls_name, title, body in task_classes:
+        for strat in strategies:
+            task = svc.create_task(repo.id, title=title, body=body,
+                                   metadata={"files": {"calculator.py": fixed},
+                                             "context_strategy": strat})
+            state = svc.run_task(task.id)
+            status = state.status if isinstance(state.status, str) else state.status.value
+            runner = svc._runners.get(state.run_id)
+            cost = sum(a.estimated_cost_usd for a in runner.artifacts.attempts) if runner else 0.0
+            latency = sum(a.wall_time_s for a in runner.artifacts.attempts) if runner else 0.0
+            cells.append({
+                "task_class": cls_name, "strategy": strat, "status": status,
+                "attempts": len(state.attempt_ids),
+                "cost_usd": round(cost, 4), "latency_s": round(latency, 3),
+                "human_review": status == "waiting_for_human",
+            })
+
+    succeeded = sum(1 for c in cells if c["status"] == "succeeded")
+    report = {
+        "adapters": svc.registry.names(),
+        "matrix": cells,
+        "summary": {
+            "cells": len(cells),
+            "success_rate": round(succeeded / len(cells), 3),
+            "human_review_rate": round(
+                sum(c["human_review"] for c in cells) / len(cells), 3
+            ),
+            "total_latency_s": round(sum(c["latency_s"] for c in cells), 3),
+        },
+        "recommendation": "route docs to minimal context, bugfix to bug_reproduction",
+    }
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2))

@@ -337,3 +337,41 @@ Addressed the highest-leverage round-1 feedback (GOALS.md):
 Tests: 152 passed; ruff + mypy clean. Remaining round-1 items (durable
 cross-process resume, real agent harnesses, live bandit routing, hard sandboxing,
 full API/CLI surface) tracked in FINAL_REPORT "Recommended next work".
+
+---
+
+## 2026-06-01 — Round 1 (ambitious): R1–R9
+
+Carried out the full round-1 goal set from GOALS.md (production-hardening). Each
+item shipped with tests; suite green throughout (179 tests, ruff + mypy clean).
+
+- **R1 Durable cross-process resume**: persist WorkflowState (run_states table +
+  migration); get_run/resume_run reload + rehydrate from DB so human-review runs
+  survive a restart.
+- **R2 Adaptive routing in the live loop**: route node builds real multi-agent
+  candidates, applies constraints, calls policy.choose_action (persists full
+  RoutingDecision w/ candidates+scores+propensity); update_policy calls
+  observe_reward; AppService holds a persistent bandit that learns across runs.
+- **R3 Eval ladder integrated**: new score_signals node runs 15 weak-supervision
+  LFs + 5 fake judges + active learning; persists WeakLabel; escalates human
+  review on needs_review/failure/judge/high-severity-adversarial.
+- **R4 Sandbox hardening**: Path.is_relative_to containment, secret-scrubbed
+  child env (allow_secrets opt-in), verification contained to workspace root
+  (removed bypass).
+- **R5 Differentiated context strategies**: per-strategy chunk-kind prefs + item
+  budgets (bug_reproduction/architecture/recent_changes/prior_failures/minimal/
+  max_context now retrieve differently).
+- **R6 Adversarial detectors**: verification/adversarial.py flags deleted/weakened
+  tests, added skips, broad except, security-sensitive + unrelated churn; wired
+  into score_signals.
+- **R7 API/CLI surface**: run trace/diff/evidence/evaluation/cancel, review
+  resolve, policy train/promote/rollback; CLI repo/task/run/policy commands.
+- **R8 Observability + post-merge loop**: Tracer wired into every node, spans
+  persisted (spans table + migration); ingest_outcome matures reward down on
+  revert/incident.
+- **R9 Tree-sitter + bakeoff + provenance**: real tree-sitter Python parsing
+  (AST fallback); bakeoff matrix (task class x strategy) with success/cost/
+  latency/review-rate report; provenance A.1/A.2 tests (full graph reconstructed
+  from a fresh process).
+
+Tests: 179 passed; ruff + mypy clean; alembic upgrade head OK (3 migrations).
