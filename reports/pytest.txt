@@ -1,4 +1,4 @@
-# Alpha 4 test run (uv run pytest tests/unit tests/integration tests/e2e --cov=acp)
+# Alpha 5 test run (uv run pytest tests/unit tests/integration tests/e2e --cov=acp)
 # Date: 2026-06-01
-329 passed, 5 skipped, 1 warning in 407.68s (0:06:47)
-# ruff: clean | mypy: clean (125 src files)
+371 passed, 6 skipped, 1 warning in 382.89s (0:06:22)
+# ruff: clean | mypy: clean (134 src files)

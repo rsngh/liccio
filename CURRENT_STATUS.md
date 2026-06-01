@@ -5,9 +5,9 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-01 (Alpha 4). Tests: 329 passing, 5 skipped
+Last updated: 2026-06-01 (Alpha 5). Tests: 371 passing, 6 skipped
 (docker/pgvector unavailable) — see `reports/pytest.txt`; `ruff` + `mypy` clean;
-86% line coverage (unit+integration). Gate: `uv run pytest -q &&
+87% line coverage (unit+integration). Gate: `uv run pytest -q &&
 uv run ruff check . && uv run mypy src`.
 
 **Alpha 4 — multi-harness empirical router.** Two real tool-loop harnesses now
