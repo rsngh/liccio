@@ -279,6 +279,19 @@ def policy_train() -> None:
     console.print(f"trained policy {p.id} ({p.version})")
 
 
+@policy_app.command("replay-eval")
+def policy_replay_eval(eval_run_id: str) -> None:
+    """Replay a bakeoff EvalRun into the routing policy (round-5 WS7)."""
+    from acp.api.service import AppService
+
+    try:
+        result = AppService().replay_bakeoff_into_policy(eval_run_id)
+    except KeyError:
+        console.print(f"eval run {eval_run_id} not found")
+        raise typer.Exit(1) from None
+    console.print_json(data=result)
+
+
 reviews_app = typer.Typer(help="Human review queue.")
 app.add_typer(reviews_app, name="reviews")
 

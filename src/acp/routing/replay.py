@@ -30,7 +30,12 @@ COST_WEIGHT = 2.0
 
 @dataclass
 class PolicyObservation:
-    """One (context, action, reward) tuple distilled from an EvalRun cell."""
+    """One (context, action, reward) tuple distilled from an EvalRun cell.
+
+    Carries the provenance + trace-derived features (round-5 WS7) so a replay is
+    explainable: which eval run / task / attempt produced it, the propensity, the
+    trace features behind the reward, and where the outcome came from.
+    """
 
     context_key: str
     action: RoutingAction
@@ -38,6 +43,12 @@ class PolicyObservation:
     success: float
     cost_usd: float
     source: str
+    eval_run_id: str | None = None
+    task_id: str | None = None
+    attempt_id: str | None = None
+    propensity: float = 1.0
+    trace_features: dict = field(default_factory=dict)
+    outcome_source: str = "bakeoff"
 
 
 def replay_context_key(task_type: str) -> str:
@@ -63,17 +74,26 @@ def _cell_reward(cell: dict) -> tuple[float, float]:
     return reward, (1.0 if cell.get("success") else 0.0)
 
 
-def observations_from_report(report: dict) -> list[PolicyObservation]:
-    """Distil a multi-harness bakeoff report into policy observations."""
+def observations_from_report(report: dict, *, eval_run_id: str | None = None
+                             ) -> list[PolicyObservation]:
+    """Distil a multi-harness bakeoff report (v1 or v2 cells) into observations."""
+    from acp.routing.trace_features import cell_trace_features
+
     obs: list[PolicyObservation] = []
     for cell in report.get("cells", []):
         reward, success = _cell_reward(cell)
+        # v2 cells key context on task_type; v1 cells on task name.
+        ctx_basis = cell.get("task_type") or cell["task"]
         obs.append(PolicyObservation(
-            context_key=replay_context_key(cell["task"]),
+            context_key=replay_context_key(ctx_basis),
             action=action_for_adapter(cell["adapter"]),
             reward=reward, success=success,
             cost_usd=float(cell.get("cost_usd", 0.0)),
-            source=cell["name"],
+            source=cell.get("name", f"{ctx_basis}/{cell['adapter']}"),
+            eval_run_id=eval_run_id,
+            task_id=cell.get("task"),
+            trace_features=cell_trace_features(cell),
+            outcome_source=cell.get("outcome_source", "bakeoff"),
         ))
     return obs
 
@@ -95,16 +115,18 @@ class PolicyReplayer:
             return {"applied": False, "run_id": run_id, "reason": "already_applied",
                     "observations": 0, "preference_changes": []}
         before = _scores_snapshot(self.policy)
-        observations = observations_from_report(report)
+        observations = observations_from_report(report, eval_run_id=run_id)
         for o in observations:
             decision = PolicyDecision(
                 policy_version=getattr(self.policy, "policy_version", "policy"),
                 action=o.action, context_key=o.context_key,
-                action_probability=1.0 / max(1, len(observations)))
+                action_probability=o.propensity)
             reward = RewardEvent(
-                task_id="eval", reward=o.reward, label_source="objective",
+                task_id=o.task_id or "eval", reward=o.reward, label_source="objective",
                 components={"quality": o.success, "cost_penalty": -COST_WEIGHT * o.cost_usd},
-                metadata={"ctx": o.context_key, "source": o.source})
+                metadata={"ctx": o.context_key, "source": o.source,
+                          "eval_run_id": o.eval_run_id, "outcome_source": o.outcome_source,
+                          "trace_features": o.trace_features})
             self.policy.observe_reward(decision, reward)  # type: ignore[attr-defined]
         self.applied_runs.add(run_id)
         after = _scores_snapshot(self.policy)
