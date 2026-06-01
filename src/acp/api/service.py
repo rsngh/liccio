@@ -628,6 +628,45 @@ class AppService:
             markdown=bakeoff_to_markdown(rep),
             config={"adapters": rep["adapters"], "tasks": rep["tasks"]})
 
+    def replay_bakeoff_into_policy(self, eval_run_id: str) -> dict:
+        """Replay a persisted multi-harness bakeoff EvalRun into the routing
+        policy so the router learns from real outcomes (round-4 Block G). The
+        replay is idempotent per EvalRun id (tracked in policy_states metadata).
+        Returns the replay report (observations + preference changes)."""
+        from acp.routing.replay import PolicyReplayer
+
+        report = self.get_eval_report(eval_run_id)
+        if report is None:
+            raise KeyError(eval_run_id)
+        content = report["content"]
+        replayer = PolicyReplayer(self.policy, applied_runs=set(self._applied_eval_runs()))
+        result = replayer.replay(content, run_id=eval_run_id)
+        if result["applied"]:
+            self.save_policy_state()
+            self._record_applied_eval_run(eval_run_id)
+        return result
+
+    def _applied_eval_runs(self) -> list[str]:
+        from acp.db.repositories import EntityStore
+        from acp.db.session import session_scope
+        from acp.schemas.learning import PolicyState
+        with session_scope(self.sessions) as s:
+            states = EntityStore(s).list_by(PolicyState,
+                                            policy_version=self.policy.policy_version)
+        applied: list[str] = []
+        for st in states:
+            applied.extend(st.metrics.get("applied_eval_runs", []))
+        return applied
+
+    def _record_applied_eval_run(self, eval_run_id: str) -> None:
+        # Persist the applied-run id alongside the arms so idempotency survives
+        # a restart. Stored in the latest PolicyState's params.
+        from acp.schemas.learning import PolicyState
+        applied = set(self._applied_eval_runs()) | {eval_run_id}
+        self._save(PolicyState(policy_version=self.policy.policy_version,
+                               arms=self.policy.export_arms(),
+                               metrics={"applied_eval_runs": sorted(applied)}))
+
     def run_soak_eval(self, iterations: int = 15, task_mix: str = "bugfix"):
         import tempfile
 
