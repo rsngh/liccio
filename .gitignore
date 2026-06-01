@@ -46,3 +46,8 @@ evals/reports/*
 !evals/reports/no_patch_bakeoff.json
 !evals/reports/multi_harness_trace_bakeoff.json
 !evals/reports/calibration.json
+!evals/reports/multi_harness_v2.json
+!evals/reports/router_replay.json
+!evals/reports/calibration_v2.json
+!evals/reports/sandbox_redteam.json
+!evals/reports/postmerge_sim.json

@@ -667,6 +667,24 @@ class AppService:
                                arms=self.policy.export_arms(),
                                metrics={"applied_eval_runs": sorted(applied)}))
 
+    def run_bakeoff_v2(self, adapters: list[str], dataset_path: str,
+                       repetitions: int = 1, backend: str = "local"):
+        """Dataset-driven multi-harness bakeoff v2, persisted as an EvalRun
+        (round-5 WS6)."""
+        from acp.evaluation.bakeoff_v2 import (
+            bakeoff_v2_to_markdown,
+            factory_for,
+            run_bakeoff_v2,
+        )
+
+        factories = {a: factory_for(a) for a in adapters}
+        rep = run_bakeoff_v2(factories, dataset_path, repetitions=repetitions,
+                             backend=backend)
+        return self._persist_eval(
+            "multi_harness_v2", rep["summary"], rep, cases=rep["cells"],
+            markdown=bakeoff_v2_to_markdown(rep),
+            config={"adapters": adapters, "repetitions": repetitions, "backend": backend})
+
     def run_soak_eval(self, iterations: int = 15, task_mix: str = "bugfix"):
         import tempfile
 

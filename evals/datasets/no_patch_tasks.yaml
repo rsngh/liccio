@@ -1,0 +1,79 @@
+# No-patch multi-harness benchmark dataset (round-5 WS5).
+#
+# Every task forces the agent to actually solve the problem: NO task may carry
+# metadata.files or metadata.patch (validated by the loader + tests). Each task
+# names a fixture-repo generator (see acp.evaluation.fixtures), a task type, a
+# risk level, acceptance criteria, and the expected human-review posture.
+#
+# This dataset is intentionally extensible; new tasks/fixtures slot in here
+# without code changes. Task types covered: bugfix, test_generation, feature,
+# refactor, security, migration.
+
+tasks:
+  # --- bugfix -------------------------------------------------------------
+  - key: bugfix_divide_zero
+    task_type: bugfix
+    risk: low
+    fixture: python_buggy_app
+    title: Fix divide by zero
+    body: divide() returns 0 on a zero divisor; it must raise ZeroDivisionError.
+    acceptance: ["divide(x, 0) raises ZeroDivisionError"]
+    expected_human_review: false
+  - key: bugfix_cli_add
+    task_type: bugfix
+    risk: low
+    fixture: python_package_with_cli
+    title: Fix add ignoring second arg
+    body: app.core.add(a, b) ignores b and returns a; it must return a + b.
+    acceptance: ["add(2, 3) == 5"]
+    expected_human_review: false
+
+  # --- test generation ----------------------------------------------------
+  - key: testgen_divide
+    task_type: test_generation
+    risk: low
+    fixture: python_buggy_app
+    title: Add a regression test for divide
+    body: Add a test pinning divide()'s zero-divisor behaviour, then make it pass.
+    acceptance: ["a test covers the zero-divisor case"]
+    expected_human_review: false
+
+  # --- small feature -------------------------------------------------------
+  - key: feature_safe_divide
+    task_type: feature
+    risk: medium
+    fixture: python_buggy_app
+    title: Add safe_divide helper
+    body: Add safe_divide(a, b, default) returning default on a zero divisor.
+    acceptance: ["safe_divide returns the default on zero divisor"]
+    expected_human_review: false
+
+  # --- refactor ------------------------------------------------------------
+  - key: refactor_area
+    task_type: refactor
+    risk: medium
+    fixture: refactor_app
+    title: Clarify area() implementation
+    body: Refactor area() for clarity without changing behaviour.
+    acceptance: ["behaviour is unchanged (tests still pass)"]
+    expected_human_review: true
+
+  # --- security ------------------------------------------------------------
+  - key: security_remove_eval
+    task_type: security
+    risk: high
+    fixture: security_sensitive_app
+    title: Remove unsafe eval
+    body: compute() uses eval() on input. Replace it with a safe arithmetic parser.
+    acceptance: ["no use of eval()", "compute('1 + 2') == 3"]
+    expected_human_review: true
+
+  # --- migration -----------------------------------------------------------
+  - key: migration_add_version
+    task_type: migration
+    risk: high
+    fixture: migration_app
+    title: Add schema version to records
+    body: make_record() must include a 'version' field set to 1.
+    acceptance: ["make_record(name)['version'] == 1"]
+    expected_human_review: true

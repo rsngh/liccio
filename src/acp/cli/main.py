@@ -384,6 +384,32 @@ def eval_bakeoff(seeds: int = 2) -> None:
     console.print_json(data=rep["summary"])
 
 
+@eval_app.command("multi-harness-bakeoff")
+def eval_multi_harness_bakeoff(
+    dataset: str = "evals/datasets/no_patch_tasks.yaml",
+    adapters: str = "patch,fake",
+    repetitions: int = 1,
+    backend: str = "local",
+    out: str = "",
+) -> None:
+    """Dataset-driven multi-harness no-patch bakeoff v2 (round-5 WS6).
+
+    Adapters: comma-separated (openai_harness,claude_harness,patch,fake).
+    """
+    import json
+
+    from acp.api.service import AppService
+
+    names = [a.strip() for a in adapters.split(",") if a.strip()]
+    run = AppService().run_bakeoff_v2(names, dataset, repetitions=repetitions, backend=backend)
+    report = AppService().get_eval_report(run.id)["content"]
+    if out:
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Path(out).write_text(json.dumps(report, indent=2))
+    console.print_json(data={"eval_run_id": run.id, "summary": report["summary"],
+                             "by_adapter": report["by_adapter"]})
+
+
 @app.command()
 def serve(host: str = "127.0.0.1", port: int = 8000) -> None:  # pragma: no cover
     """Run the FastAPI app with uvicorn."""
