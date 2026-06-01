@@ -5,7 +5,7 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-01. Tests: 179 passing; `ruff` + `mypy` clean; ~84% line
+Last updated: 2026-06-01. Tests: 222 passing; `ruff` + `mypy` clean; ~85% line
 coverage (unit+integration). Gate: `uv run pytest -q && uv run ruff check . &&
 uv run mypy src`.
 
@@ -48,7 +48,7 @@ uv run mypy src`.
   matrices + operational metrics (D2B4/D2B5).
 - **Vector retrieval**: hashing-embedding default; pluggable VectorStore +
   OpenAI/sentence-transformer embedders in progress (D2B3).
-- **Coverage**: ~84% (target 85%); optional/stub paths pull the total down.
+- **Coverage**: ~85% (target 85%); optional/stub paths pull the total down.
 
 ## Stubbed / optional (degrade gracefully)
 

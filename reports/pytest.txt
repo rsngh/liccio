@@ -1,0 +1,3 @@
+SKIPPED [1] tests/integration/test_docker_workspace.py:79: docker not available
+222 passed, 2 skipped, 1 warning in 201.99s (0:03:21)
+205 passed, 2 skipped, 1 warning in 212.90s (0:03:32)
