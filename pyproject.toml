@@ -108,6 +108,7 @@ markers = [
     "live_docker: live tests requiring a working Docker daemon",
     "live_pgvector: tests requiring a live pgvector Postgres",
     "live_qdrant: tests requiring qdrant-client (real local engine)",
+    "live_otlp: tests requiring a live OpenTelemetry OTLP endpoint",
     "e2e: end-to-end tests",
 ]
 filterwarnings = ["ignore::DeprecationWarning"]

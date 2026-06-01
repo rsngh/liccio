@@ -17,6 +17,17 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 5 — production-grade empirical routing lab.** Dataset-driven bakeoff v2
+(`acp eval multi-harness-bakeoff`) over a no-patch dataset across six task
+types; routing learns from per (adapter, task_type) **trace features**; a
+**delayed-outcome simulator** downgrades day-0 favourites that revert; **budget
+ledger** hard-stops every harness loop (cost/wall/steps/tool_calls); **calibration
+v2** scores every evaluator (accuracy/precision/recall/Brier/ECE + false-auto-
+approve risk); a **sandbox red-team lab** marks the local backend unsafe for true
+harnesses; and a **redacted live OpenAI-vs-Claude bakeoff** artifact is committed.
+See `ALPHA5_CHECKLIST.md` / `ALPHA5_REPORT.md` and the status vocabulary in
+`docs/status_schema.md`.
+
 ## Implemented (real, tested)
 
 - **Core loop** task → context → route → attempt → verify → evaluate → (human) →

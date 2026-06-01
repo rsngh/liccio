@@ -1,0 +1,79 @@
+{
+  "applied": true,
+  "run_id": "evalrun_63b55fa79c1146728a9a54bcce315b28",
+  "observations": 14,
+  "preference_changes": [
+    {
+      "context": "bugfix|medium",
+      "action": "simple_llm|patch|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "bugfix|medium",
+      "action": "simple_llm|fake|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "test_generation|medium",
+      "action": "simple_llm|patch|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "test_generation|medium",
+      "action": "simple_llm|fake|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "feature|medium",
+      "action": "simple_llm|patch|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "feature|medium",
+      "action": "simple_llm|fake|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "refactor|medium",
+      "action": "simple_llm|patch|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.622459
+    },
+    {
+      "context": "refactor|medium",
+      "action": "simple_llm|fake|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.622459
+    },
+    {
+      "context": "security|medium",
+      "action": "simple_llm|patch|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.622459
+    },
+    {
+      "context": "security|medium",
+      "action": "simple_llm|fake|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.622459
+    },
+    {
+      "context": "migration|medium",
+      "action": "simple_llm|patch|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    },
+    {
+      "context": "migration|medium",
+      "action": "simple_llm|fake|-|hybrid_keyword_embedding|standard",
+      "before": null,
+      "after": 0.5
+    }
+  ]
+}

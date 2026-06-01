@@ -56,6 +56,26 @@ def test_history_archive_exists() -> None:
     assert (ROOT / "HISTORY.md").exists()
 
 
+def test_alpha5_checklist_artifacts_exist() -> None:
+    checklist = _read("ALPHA5_CHECKLIST.md")
+    required = [
+        "evals/reports/multi_harness_v2.json",
+        "evals/reports/router_replay.json",
+        "evals/reports/calibration_v2.json",
+        "evals/reports/sandbox_redteam.json",
+        "evals/reports/postmerge_sim.json",
+        "reports/live/live_openai_claude_bakeoff.json",
+    ]
+    for art in required:
+        assert art in checklist, f"{art} not referenced in ALPHA5_CHECKLIST.md"
+        assert (ROOT / art).exists(), f"{art} missing on disk"
+
+
+def test_alpha5_report_present() -> None:
+    assert (ROOT / "ALPHA5_REPORT.md").exists()
+    assert len(_read("ALPHA5_REPORT.md").strip()) > 200
+
+
 @pytest.mark.parametrize("doc", ["CURRENT_STATUS.md", "FINAL_REPORT.md", "ALPHA4_CHECKLIST.md"])
 def test_docs_present_and_nonempty(doc) -> None:
     assert len(_read(doc).strip()) > 200

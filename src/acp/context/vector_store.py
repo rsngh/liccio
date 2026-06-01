@@ -78,8 +78,14 @@ class InMemoryVectorStore:
 class PgVectorStore:
     """pgvector-backed store (real when psycopg + pgvector + DB are present)."""
 
-    def __init__(self, dsn: str | None = None) -> None:
+    def __init__(self, dsn: str | None = None, *, require_real: bool = False) -> None:
         self.dsn = dsn
+        # No silent fallback (round-5 WS11): if the caller explicitly requires a
+        # real service-backed store, refuse to degrade to memory.
+        if require_real and not (dsn and self.available()):
+            raise RuntimeError(
+                "pgvector requested (require_real=True) but unavailable: need a DSN "
+                "+ psycopg + pgvector. Refusing to silently fall back to memory.")
         self._mem = InMemoryVectorStore()  # fallback buffer
         # Explicit + visible: real pgvector wiring requires a DSN + psycopg +
         # the pgvector extension; without them this is a transparent buffer.

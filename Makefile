@@ -1,7 +1,9 @@
 .PHONY: help sync test test-unit test-integration test-e2e lint type fmt check coverage \
         soak-6h eval-bakeoff-overnight bandit-monte-carlo retriever-stress chaos security-redteam \
         docker-security multi-harness-bakeoff calibration alpha4-artifacts \
-        live-openai live-second-harness live-docker
+        live-openai live-second-harness live-docker \
+        multi-harness-bakeoff-v2 calibration-v2 sandbox-redteam postmerge-sim \
+        router-replay alpha5-artifacts live-qdrant live-pgvector
 
 UV ?= uv
 
@@ -91,3 +93,29 @@ live-second-harness:
 
 live-docker:
 	$(UV) run pytest -m live_docker -q
+
+# --- Alpha 5: production-grade empirical routing lab -------------------------
+multi-harness-bakeoff-v2:
+	$(UV) run acp eval multi-harness-bakeoff --adapters patch,fake \
+		--out evals/reports/multi_harness_v2.json
+
+calibration-v2:
+	$(UV) run python evals/scripts/run_calibration_v2.py
+
+sandbox-redteam:
+	$(UV) run python evals/scripts/run_sandbox_redteam.py
+
+postmerge-sim:
+	$(UV) run python evals/scripts/run_postmerge_sim.py
+
+router-replay:
+	$(UV) run python evals/scripts/run_router_replay.py
+
+alpha5-artifacts: multi-harness-bakeoff-v2 calibration-v2 sandbox-redteam postmerge-sim router-replay
+	@echo "Alpha-5 report artifacts written to evals/reports/"
+
+live-qdrant:
+	$(UV) run pytest -m live_qdrant -q
+
+live-pgvector:
+	$(UV) run pytest -m live_pgvector -q

@@ -414,8 +414,11 @@ def eval_multi_harness_bakeoff(
     from acp.api.service import AppService
 
     names = [a.strip() for a in adapters.split(",") if a.strip()]
-    run = AppService().run_bakeoff_v2(names, dataset, repetitions=repetitions, backend=backend)
-    report = AppService().get_eval_report(run.id)["content"]
+    svc = AppService()
+    run = svc.run_bakeoff_v2(names, dataset, repetitions=repetitions, backend=backend)
+    stored = svc.get_eval_report(run.id)
+    assert stored is not None
+    report = stored["content"]
     if out:
         Path(out).parent.mkdir(parents=True, exist_ok=True)
         Path(out).write_text(json.dumps(report, indent=2))

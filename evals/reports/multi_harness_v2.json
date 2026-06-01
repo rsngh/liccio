@@ -29,7 +29,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.009,
+      "latency_s": 0.012,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -54,7 +54,7 @@
       "diff_lines": 0,
       "tokens": 150,
       "cost_usd": 0.0,
-      "latency_s": 0.007,
+      "latency_s": 0.009,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -79,7 +79,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.009,
+      "latency_s": 0.007,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -104,7 +104,7 @@
       "diff_lines": 0,
       "tokens": 150,
       "cost_usd": 0.0,
-      "latency_s": 0.009,
+      "latency_s": 0.01,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -129,7 +129,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.008,
+      "latency_s": 0.007,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -154,7 +154,7 @@
       "diff_lines": 0,
       "tokens": 150,
       "cost_usd": 0.0,
-      "latency_s": 0.011,
+      "latency_s": 0.008,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -179,7 +179,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.008,
+      "latency_s": 0.007,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -204,7 +204,7 @@
       "diff_lines": 0,
       "tokens": 150,
       "cost_usd": 0.0,
-      "latency_s": 0.008,
+      "latency_s": 0.01,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -229,7 +229,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.007,
+      "latency_s": 0.008,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -279,7 +279,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.008,
+      "latency_s": 0.007,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -304,7 +304,7 @@
       "diff_lines": 0,
       "tokens": 150,
       "cost_usd": 0.0,
-      "latency_s": 0.007,
+      "latency_s": 0.009,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -329,7 +329,7 @@
       "diff_lines": 0,
       "tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.007,
+      "latency_s": 0.008,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -354,7 +354,7 @@
       "diff_lines": 0,
       "tokens": 150,
       "cost_usd": 0.0,
-      "latency_s": 0.056,
+      "latency_s": 0.009,
       "is_harness": false,
       "security_risk": 0.0,
       "failure_class": "escalated_human_review"
@@ -368,7 +368,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.015,
+      "mean_latency_s": 0.009,
       "total_tokens": 1050
     },
     "patch": {
@@ -390,7 +390,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.008,
+      "mean_latency_s": 0.009,
       "total_tokens": 300
     },
     "feature": {
@@ -400,7 +400,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.008,
+      "mean_latency_s": 0.009,
       "total_tokens": 150
     },
     "migration": {
@@ -410,7 +410,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.032,
+      "mean_latency_s": 0.009,
       "total_tokens": 150
     },
     "refactor": {
@@ -420,7 +420,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.007,
+      "mean_latency_s": 0.008,
       "total_tokens": 150
     },
     "security": {
@@ -430,7 +430,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.007,
+      "mean_latency_s": 0.008,
       "total_tokens": 150
     },
     "test_generation": {
@@ -440,7 +440,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.009,
+      "mean_latency_s": 0.007,
       "total_tokens": 150
     }
   },
@@ -452,7 +452,7 @@
       "human_review_rate": 1.0,
       "mean_tool_calls": 0.0,
       "mean_cost_usd": 0.0,
-      "mean_latency_s": 0.019,
+      "mean_latency_s": 0.008,
       "total_tokens": 300
     },
     "low": {
