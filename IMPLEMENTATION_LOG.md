@@ -398,3 +398,24 @@ Baseline gates: `uv run pytest -q` -> 179 passed; `ruff` clean; `mypy` clean
   (graceful), OpenAIEmbedder + SentenceTransformerEmbedder + CachingEmbedder,
   wired into ContextCompiler. LIVE experiment: OpenAI embeddings (122 real calls)
   retrieved the gold file in top-10 via the in-memory vector store; cache works.
+
+## 2026-06-01 — Day 2 complete (D2B4-D2B7) + acceptance
+
+- D2B4 bakeoff matrix: task×strategy×verification×seed; per-cell metrics + failure
+  taxonomy + report (json/md). 36-cell run: success 0.556, rest escalated review.
+- D2B5 soak hardening: RSS/fds/worktrees/artifact-bytes/latency-pctiles/arms +
+  thresholds; finalize_run now cleans worktrees (fixed orphan leak); concurrency
+  isolation test (unique runs+workspaces, no DB corruption).
+- D2B6 adapter readiness: GET /agents(+health), CLI agents list/health,
+  is_harness flags; LIVE OpenAI adapter test (real bug fix, token+diff capture,
+  no leak, containment). tests/live excluded from default collection.
+- D2B7 CLI/API polish: repo index, reviews show/label (resumes run), run
+  graph/trace/diff/evidence/evaluation, eval context-benchmark/bakeoff; full
+  CLI-lifecycle + run-graph-after-restart + review-label-resume + agents-health
+  tests.
+
+ACCEPTANCE (round-1 two-day push): 222 tests pass, 2 docker skipped; ruff + mypy
+clean; alembic head OK. Reports: context_benchmark (recall@5/10=1.0, leak=0),
+bakeoff (36 cells + taxonomy), soak (operational metrics). bandit-monte-carlo:
+beats random 20/20 seeds, margin 124.5±21.5 (95% CI). Live OpenAI embedding +
+adapter experiments pass. CURRENT_STATUS.md reflects v0/alpha honestly.

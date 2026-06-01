@@ -7,6 +7,8 @@ with no optional dependencies installed.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import typer
 from rich.console import Console
 
@@ -101,6 +103,24 @@ def repo_list() -> None:
 
     for r in AppService().list_repos():
         console.print(f"{r.id}  {r.name}  {r.local_path}")
+
+
+@repo_app.command("index")
+def repo_index(repo_id: str) -> None:
+    """Index a registered repo and print a summary."""
+    from acp.api.service import AppService
+    from acp.context.indexer import RepoIndexer
+
+    svc = AppService()
+    repo = svc.get_repo(repo_id)
+    if repo is None or not repo.local_path:
+        console.print(f"repo {repo_id} not found")
+        raise typer.Exit(1)
+    idx = RepoIndexer(repo.local_path, repo.id, "snap").index()
+    console.print_json(data={
+        "files": len(idx.files), "chunks": len(idx.chunks),
+        "languages": idx.language_summary, "has_instructions": idx.has_instructions,
+    })
 
 
 task_app = typer.Typer(help="Task management.")
@@ -270,6 +290,77 @@ def reviews_list() -> None:
         console.print(f"{i.id}  task={i.task_id}  reason={i.reason}")
     if not items:
         console.print("no open reviews")
+
+
+@reviews_app.command("show")
+def reviews_show(review_id: str) -> None:
+    """Show a review item."""
+    from acp.api.service import AppService
+
+    item = AppService().get_review(review_id)
+    if item is None:
+        console.print(f"review {review_id} not found")
+        raise typer.Exit(1)
+    console.print_json(data=item.model_dump(mode="json"))
+
+
+@reviews_app.command("label")
+def reviews_label(
+    review_id: str,
+    verdict: str = "pass",
+    score: float = 0.8,
+    reason: str = "",
+) -> None:
+    """Label a review (pass|fail) — resumes the paused run."""
+    from acp.api.service import AppService
+    from acp.schemas.human_review import HumanLabel
+
+    svc = AppService()
+    item = svc.get_review(review_id)
+    if item is None:
+        console.print(f"review {review_id} not found")
+        raise typer.Exit(1)
+    label = HumanLabel(review_item_id=review_id, task_id=item.task_id,
+                       attempt_id=item.attempt_id, verdict=verdict, score=score, reason=reason)
+    svc.label_review(review_id, label)
+    console.print(f"labeled {review_id} verdict={verdict}; run resumed")
+
+
+eval_app = typer.Typer(help="Evaluation harnesses.")
+app.add_typer(eval_app, name="eval")
+
+
+@eval_app.command("context-benchmark")
+def eval_context_benchmark(files: int = 100) -> None:
+    """Run the context retrieval benchmark on a synthetic repo."""
+    import tempfile
+
+    from acp.evaluation.retrieval_benchmark import generate_synthetic_repo, run_benchmark
+
+    repo = Path(tempfile.mkdtemp()) / "syn"
+    gold = generate_synthetic_repo(repo, n_files=files)
+    rep = run_benchmark(repo, gold)
+    console.print_json(data=rep.to_dict())
+
+
+@eval_app.command("bakeoff")
+def eval_bakeoff(seeds: int = 2) -> None:
+    """Run the bakeoff matrix and print the summary."""
+    import tempfile
+
+    from acp.api.service import AppService
+    from acp.cli.demos import make_demo_repo
+    from acp.core.config import ACPSettings
+    from acp.evaluation.bakeoff import BakeoffConfig, run_bakeoff
+
+    tmp = Path(tempfile.mkdtemp())
+    svc = AppService(ACPSettings(
+        database_url=f"sqlite+aiosqlite:///{tmp / 'b.db'}",
+        artifact_dir=tmp / "art", workspace_dir=tmp / "ws",
+    ))
+    repo = svc.create_repo("bakeoff", make_demo_repo(tmp / "repo"), default_branch="master")
+    rep = run_bakeoff(svc, repo.id, BakeoffConfig(seeds=list(range(1, seeds + 1))))
+    console.print_json(data=rep["summary"])
 
 
 @app.command()
