@@ -49,6 +49,7 @@ class InMemoryVectorStore:
     """Brute-force cosine store — always available, ideal for tests/local."""
 
     def __init__(self) -> None:
+        self.backend = "memory"
         self._records: dict[str, VectorRecord] = {}
 
     def upsert(self, records: list[VectorRecord]) -> int:
@@ -80,6 +81,9 @@ class PgVectorStore:
     def __init__(self, dsn: str | None = None) -> None:
         self.dsn = dsn
         self._mem = InMemoryVectorStore()  # fallback buffer
+        # Explicit + visible: real pgvector wiring requires a DSN + psycopg +
+        # the pgvector extension; without them this is a transparent buffer.
+        self.backend = "pgvector" if (dsn and self.available()) else "memory-fallback"
 
     @staticmethod
     def available() -> bool:
@@ -100,11 +104,22 @@ class PgVectorStore:
 
 
 class QdrantStore:
-    """Qdrant-backed store (real when qdrant-client + server are present)."""
+    """Qdrant-backed store — a real Qdrant engine (server URL or local ':memory:'
+    / file path), NOT an in-memory fallback. Requires qdrant-client."""
 
-    def __init__(self, url: str | None = None) -> None:
-        self.url = url
-        self._mem = InMemoryVectorStore()
+    def __init__(self, location: str = ":memory:", collection: str = "acp_chunks",
+                 dim: int = 256) -> None:
+        from qdrant_client import QdrantClient
+        from qdrant_client.models import Distance, VectorParams
+
+        self.backend = "qdrant"
+        self.collection = collection
+        self.dim = dim
+        self.client = QdrantClient(location=location)
+        if not self.client.collection_exists(collection):
+            self.client.create_collection(
+                collection, vectors_config=VectorParams(size=dim, distance=Distance.COSINE)
+            )
 
     @staticmethod
     def available() -> bool:
@@ -113,10 +128,32 @@ class QdrantStore:
         return try_import("qdrant_client") is not None
 
     def upsert(self, records: list[VectorRecord]) -> int:
-        return self._mem.upsert(records)
+        from qdrant_client.models import PointStruct
+
+        points = [
+            PointStruct(id=abs(hash(r.id)) % (10**18), vector=r.vector,
+                        payload={"rid": r.id, "snapshot_id": r.snapshot_id, **r.payload})
+            for r in records
+        ]
+        self.client.upsert(self.collection, points=points)
+        return len(records)
 
     def query(self, vector, top_k, snapshot_id=None):
-        return self._mem.query(vector, top_k, snapshot_id)
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+        flt = None
+        if snapshot_id is not None:
+            flt = Filter(must=[FieldCondition(key="snapshot_id",
+                                              match=MatchValue(value=snapshot_id))])
+        hits = self.client.query_points(
+            self.collection, query=vector, limit=top_k, query_filter=flt
+        ).points
+        return [VectorHit(h.payload["rid"], float(h.score), h.payload) for h in hits]
 
     def delete_snapshot(self, snapshot_id: str) -> int:
-        return self._mem.delete_snapshot(snapshot_id)
+        from qdrant_client.models import FieldCondition, Filter, FilterSelector, MatchValue
+
+        flt = Filter(must=[FieldCondition(key="snapshot_id",
+                                          match=MatchValue(value=snapshot_id))])
+        self.client.delete(self.collection, points_selector=FilterSelector(filter=flt))
+        return 1

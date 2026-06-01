@@ -39,6 +39,7 @@ context = [
     "tree-sitter-python>=0.21",
     "tiktoken>=0.6",
     "rank-bm25>=0.2.2",
+    "qdrant-client>=1.18.0",
 ]
 agents = ["openai>=1.30"]
 verification = ["coverage>=7.4"]
@@ -102,6 +103,8 @@ addopts = "-ra --ignore=tests/fixtures --ignore=tests/live"
 markers = [
     "slow: long-running tests",
     "live: tests requiring real API keys (skipped by default)",
+    "live_pgvector: tests requiring a live pgvector Postgres",
+    "live_qdrant: tests requiring qdrant-client (real local engine)",
     "e2e: end-to-end tests",
 ]
 filterwarnings = ["ignore::DeprecationWarning"]
