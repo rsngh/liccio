@@ -127,6 +127,7 @@ class AppService:
         if artifacts.reward:
             to_save.append(artifacts.reward)
         to_save.extend(artifacts.spans)
+        to_save.extend(getattr(artifacts, "agent_traces", []))
         if to_save:
             self._save(*to_save)
 
@@ -334,7 +335,7 @@ class AppService:
         from acp.schemas.learning import PostMergeOutcome, RewardEvent
         from acp.schemas.repo import RepoSnapshot
         from acp.schemas.routing import RoutingDecision
-        from acp.schemas.trace import AuditEvent, SpanRecord
+        from acp.schemas.trace import AgentTrace, AuditEvent, SpanRecord
         from acp.schemas.verification import Evidence, VerificationPlan, VerificationRun
         from acp.schemas.workspace import CommandRunRecord, DiffBundle
 
@@ -377,6 +378,7 @@ class AppService:
                 "post_merge_outcomes": dump(es.list_by(PostMergeOutcome, task_id=tid)),
                 "spans": dump(es.list_by(SpanRecord, trace_id=state.trace_id)),
                 "audit_events": dump(es.list_by(AuditEvent, trace_id=state.trace_id)),
+                "agent_traces": dump(es.list_by(AgentTrace, task_id=tid)),
             }
         # Validate through the RunGraph schema so the shape is guaranteed.
         from acp.schemas.graph import RunGraph

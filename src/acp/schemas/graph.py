@@ -31,6 +31,7 @@ class RunGraph(ACPModel):
     post_merge_outcomes: list[dict[str, Any]] = []
     spans: list[dict[str, Any]] = []
     audit_events: list[dict[str, Any]] = []
+    agent_traces: list[dict[str, Any]] = []
 
     def referenced_ids(self) -> set[str]:
         """All entity ids present in the graph (for id-resolution checks)."""

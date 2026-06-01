@@ -84,6 +84,7 @@ class RunArtifacts:
     reward: RewardEvent | None = None
     policy_decision: object | None = None
     spans: list[SpanRecord] = field(default_factory=list)
+    agent_traces: list = field(default_factory=list)
 
 
 class WorkflowRunner:
@@ -332,6 +333,13 @@ class WorkflowRunner:
             self.artifacts.attempts.append(attempt)
             state.attempt_ids.append(attempt.id)
             state.scratch.setdefault("workspaces", {})[attempt.id] = str(ws.path)
+            # Normalized, comparable trace for every adapter (round-3 R3-2).
+            from acp.agents.trace import build_agent_trace
+
+            self.artifacts.agent_traces.append(build_agent_trace(
+                attempt, result, is_harness=getattr(adapter, "is_harness", False),
+                task_id=state.task_id,
+            ))
         return False
 
     def _agents_for(self, decision: RoutingDecision) -> list[AgentAdapter]:

@@ -164,6 +164,13 @@ class PolicyState(_Row):
     policy_version: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class AgentTraceRow(_Row):
+    __tablename__ = "agent_traces"
+    attempt_id: Mapped[str] = mapped_column(String, index=True)
+    task_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    adapter_name: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
@@ -222,6 +229,7 @@ ALL_MODELS = [
     RunState,
     Span,
     PolicyState,
+    AgentTraceRow,
     EvalRun,
     EvalCase,
     EvalMetric,
