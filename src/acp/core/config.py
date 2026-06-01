@@ -46,7 +46,9 @@ class ACPSettings(BaseSettings):
     allow_network_by_default: bool = False
     enable_external_agents: bool = False
     enable_docker: bool = False
+    workspace_backend: Literal["local", "docker"] = "local"
     docker_image: str = "python:3.11-slim"
+    docker_network: str = "none"
     docker_memory_mb: int = 1024
     docker_cpus: float = 1.0
     docker_pids_limit: int = 256
