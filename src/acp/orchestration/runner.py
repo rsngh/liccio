@@ -76,6 +76,7 @@ class RunArtifacts:
     evaluation: EvaluationResult | None = None
     review_item: HumanReviewItem | None = None
     reward: RewardEvent | None = None
+    policy_decision: object | None = None
 
 
 class WorkflowRunner:
@@ -87,9 +88,11 @@ class WorkflowRunner:
         artifact_store=None,
         on_persist=None,
         max_node_attempts: int = 2,
+        policy=None,
     ) -> None:
         self.repo = repo
         self.registry = registry
+        self.policy = policy  # optional RoutingPolicy (bandit/supervised); else heuristic
         self.workspace_mgr = LocalWorkspaceManager(workspace_root)
         self.command_runner = CommandRunner(artifact_store=artifact_store)
         self.evaluator = ObjectiveEvaluator()
@@ -204,8 +207,49 @@ class WorkflowRunner:
 
     async def _node_route_task(self, state: WorkflowState) -> bool:
         available = await self.registry.available()
-        router = HeuristicRouter(available_agents=available)
-        decision = router.decide(self._task(state), self.artifacts.classification)
+        cls = self.artifacts.classification
+        # Heuristic gives the action shape (strategy/verification/human flags).
+        base = HeuristicRouter(available_agents=available).decide(self._task(state), cls)
+
+        if self.policy is None:
+            decision = base
+        else:
+            from acp.core.enums import RiskLevel
+            from acp.routing.constraints import apply_constraints
+            from acp.routing.features import RoutingFeatureExtractor
+
+            risk = cls.risk_level if cls else self._task(state).risk_level
+            risk = RiskLevel(risk) if isinstance(risk, str) else risk
+            # One candidate per available agent, sharing the heuristic action shape.
+            candidates = []
+            seen = set()
+            for name in available:
+                adapter = self.registry.get(name)
+                cand = base.action.model_copy(
+                    update={"agent_kind": adapter.kind, "agent_name": name}
+                )
+                if cand.key() not in seen:
+                    seen.add(cand.key())
+                    candidates.append(cand)
+            candidates, applied = apply_constraints(
+                candidates, risk, set(available),
+                max_cost_usd=base.action.max_cost_usd,
+            )
+            features = RoutingFeatureExtractor().extract(self._task(state), cls)
+            pdec = self.policy.choose_action(dict(features), candidates)
+            self.artifacts.policy_decision = pdec
+            decision = RoutingDecision(
+                task_id=state.task_id,
+                snapshot_id=state.snapshot_id,
+                policy_version=getattr(self.policy, "policy_version", "policy"),
+                action=pdec.action,
+                action_probability=pdec.action_probability,
+                candidate_actions=candidates,
+                model_scores=pdec.candidate_scores,
+                exploration_mode=pdec.exploration_mode,
+                exploration_reason=pdec.exploration_reason,
+                constraints_applied=applied,
+            )
         self.artifacts.routing_decision = decision
         state.routing_decision_id = decision.id
         return False
@@ -337,6 +381,12 @@ class WorkflowRunner:
         )
         self.artifacts.evaluation = evaluation
         state.evaluation_result_id = evaluation.id
+        # Persist facts the reward/finalize nodes need so a cross-process resume
+        # (rehydrated runner) does not depend on the in-memory verdicts dict.
+        state.scratch["selected_passed"] = verdict.passed
+        state.scratch["selected_status"] = (
+            best.status.value if hasattr(best.status, "value") else best.status
+        )
         return False
 
     async def _node_maybe_human_review(self, state: WorkflowState) -> bool:
@@ -370,10 +420,20 @@ class WorkflowRunner:
     async def _node_compute_reward(self, state: WorkflowState) -> bool:
         evaluation = self.artifacts.evaluation
         assert evaluation is not None
-        attempt = next(a for a in self.artifacts.attempts if a.id == state.selected_attempt_id)
-        verdict = self.artifacts.verdicts[attempt.id]
+        attempt = next(
+            (a for a in self.artifacts.attempts if a.id == state.selected_attempt_id), None
+        )
+        assert attempt is not None
+        # Prefer the live verdict; fall back to scratch (cross-process resume).
+        verdict = self.artifacts.verdicts.get(attempt.id)
+        if verdict is not None:
+            passed = verdict.passed and attempt.status == RunStatus.SUCCEEDED
+        else:
+            passed = bool(state.scratch.get("selected_passed")) and (
+                state.scratch.get("selected_status") == RunStatus.SUCCEEDED.value
+            )
         human = state.scratch.get("human_label")
-        task_success = verdict.passed and attempt.status == RunStatus.SUCCEEDED
+        task_success = passed
         if human is not None:
             task_success = human.get("verdict") == "pass"
         reward = compute_reward(
@@ -385,9 +445,16 @@ class WorkflowRunner:
         return False
 
     async def _node_update_policy(self, state: WorkflowState) -> bool:
-        # Heuristic policy has no learnable params; bandit policy (Phase 8) hooks
-        # observe_reward here. Recorded for the learning loop.
-        state.scratch["policy_updated"] = True
+        # Feed the reward back to a learnable policy (bandit/supervised).
+        pdec = self.artifacts.policy_decision
+        reward = self.artifacts.reward
+        if self.policy is not None and pdec is not None and reward is not None:
+            observe = getattr(self.policy, "observe_reward", None)
+            if callable(observe):
+                observe(pdec, reward)
+                state.scratch["policy_updated"] = True
+                return False
+        state.scratch["policy_updated"] = bool(self.policy is not None)
         return False
 
     async def _node_finalize_run(self, state: WorkflowState) -> bool:

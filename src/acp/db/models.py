@@ -146,6 +146,13 @@ class PostMergeOutcome(_Row):
     attempt_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class RunState(_Row):
+    __tablename__ = "run_states"
+    task_id: Mapped[str] = mapped_column(String, index=True)
+    status: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    trace_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
 class Artifact(_Row):
     __tablename__ = "artifacts"
 
@@ -180,6 +187,7 @@ ALL_MODELS = [
     RewardEvent,
     PolicyVersion,
     PostMergeOutcome,
+    RunState,
     Artifact,
     AuditLog,
 ]

@@ -34,6 +34,10 @@ class AppService:
         self.sessions = make_session_factory(self.engine)
         self.artifact_store = LocalArtifactStore(self.settings.artifact_dir)
         self.registry = registry or self._default_registry()
+        from acp.routing.bandit import SimulatedBanditPolicy
+
+        # One persistent policy so routing learns across runs in this process.
+        self.policy = SimulatedBanditPolicy(seed=self.settings.random_seed, epsilon=0.15)
         self._runs: dict[str, WorkflowState] = {}
         self._runners: dict[str, WorkflowRunner] = {}
 
@@ -52,7 +56,33 @@ class AppService:
             for e in entities:
                 es.save(e)
 
+    def _save_state(self, state: WorkflowState) -> None:
+        from acp.db import models as m
+
+        payload = state.model_dump(mode="json")
+        with session_scope(self.sessions) as session:
+            row = session.get(m.RunState, state.run_id)
+            kwargs = {
+                "id": state.run_id, "data": payload, "task_id": state.task_id,
+                "status": payload["status"], "trace_id": state.trace_id,
+            }
+            if row is None:
+                session.add(m.RunState(**kwargs))
+            else:
+                for k, v in kwargs.items():
+                    setattr(row, k, v)
+
+    def _load_state(self, run_id: str) -> WorkflowState | None:
+        from acp.db import models as m
+
+        with session_scope(self.sessions) as session:
+            row = session.get(m.RunState, run_id)
+            if row is None:
+                return None
+            return WorkflowState.model_validate(row.data)
+
     def _persist_run(self, state: WorkflowState, artifacts: RunArtifacts) -> None:
+        self._save_state(state)
         to_save: list[Any] = []
         if artifacts.task:
             to_save.append(artifacts.task)
@@ -117,6 +147,7 @@ class AppService:
         runner = WorkflowRunner(
             repo, self.registry, Path(self.settings.workspace_dir),
             artifact_store=self.artifact_store, on_persist=self._persist_run,
+            policy=self.policy,
         )
         state = asyncio.run(runner.run(task))
         self._runs[state.run_id] = state
@@ -125,13 +156,47 @@ class AppService:
         return state
 
     def get_run(self, run_id: str) -> WorkflowState | None:
-        return self._runs.get(run_id)
+        return self._runs.get(run_id) or self._load_state(run_id)
+
+    def _rehydrate_runner(self, state: WorkflowState) -> WorkflowRunner:
+        """Rebuild a runner that can resume from persisted state (cross-process).
+
+        Reloads the artifacts the remaining nodes need (task, evaluation,
+        selected attempt) from the DB so resume works after a restart.
+        """
+        repo = self.get_repo(state.repo_id or "")
+        if repo is None:
+            raise KeyError(state.repo_id)
+        runner = WorkflowRunner(
+            repo, self.registry, Path(self.settings.workspace_dir),
+            artifact_store=self.artifact_store, on_persist=self._persist_run,
+            policy=self.policy,
+        )
+        task = self.get_task(state.task_id)
+        if task is not None:
+            runner.submit(task)
+            runner.artifacts.task = task
+        with session_scope(self.sessions) as session:
+            es = EntityStore(session)
+            if state.evaluation_result_id:
+                from acp.schemas.evaluation import EvaluationResult
+
+                runner.artifacts.evaluation = es.get(EvaluationResult, state.evaluation_result_id)
+            from acp.schemas.agent import AgentAttempt as _AA
+
+            runner.artifacts.attempts = es.list_by(_AA, task_id=state.task_id)
+        return runner
 
     def resume_run(self, run_id: str, label: HumanLabel) -> WorkflowState:
-        runner = self._runners[run_id]
-        state = self._runs[run_id]
+        runner = self._runners.get(run_id)
+        state = self._runs.get(run_id) or self._load_state(run_id)
+        if state is None:
+            raise KeyError(run_id)
+        if runner is None:
+            runner = self._rehydrate_runner(state)
         new_state = asyncio.run(runner.resume(state, label))
         self._runs[run_id] = new_state
+        self._save_state(new_state)
         return new_state
 
     # ---- reviews ----------------------------------------------------------
