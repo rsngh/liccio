@@ -101,6 +101,13 @@ def create_app(service: AppService | None = None) -> FastAPI:
             raise HTTPException(404, "run not found")
         return {"run_id": run_id, "status": state.status, "current_node": state.current_node}
 
+    @app.get("/runs/{run_id}/graph")
+    def run_graph(run_id: str) -> dict:
+        try:
+            return svc.full_run_graph(run_id)
+        except KeyError as exc:
+            raise HTTPException(404, "run not found") from exc
+
     @app.get("/runs/{run_id}/trace")
     def run_trace(run_id: str) -> dict:
         try:

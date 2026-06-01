@@ -142,6 +142,72 @@ def run_status(run_id: str) -> None:
                              "current_node": state.current_node})
 
 
+@run_app.command("graph")
+def run_graph_cmd(run_id: str) -> None:
+    """Reconstruct the full run graph from storage (counts per entity)."""
+    from acp.api.service import AppService
+
+    try:
+        graph = AppService().full_run_graph(run_id)
+    except KeyError:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1) from None
+    counts = {k: (len(v) if isinstance(v, list) else (1 if v else 0)) for k, v in graph.items()}
+    console.print_json(data=counts)
+
+
+@run_app.command("trace")
+def run_trace_cmd(run_id: str) -> None:
+    """Show a run's trace/node summary."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().run_trace(run_id))
+    except KeyError:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1) from None
+
+
+@run_app.command("diff")
+def run_diff_cmd(run_id: str) -> None:
+    """Show changed files per attempt for a run."""
+    from acp.api.service import AppService
+
+    try:
+        diffs = AppService().run_diff(run_id)
+    except KeyError:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1) from None
+    for d in diffs:
+        console.print(f"{d['attempt_id']}: {d['changed_files']}")
+
+
+@run_app.command("evidence")
+def run_evidence_cmd(run_id: str) -> None:
+    """Show verification evidence for a run."""
+    from acp.api.service import AppService
+
+    try:
+        for e in AppService().run_evidence(run_id):
+            console.print(f"{e['kind']}:{e['name']} -> {e['status']} ({e['summary']})")
+    except KeyError:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1) from None
+
+
+@run_app.command("evaluation")
+def run_evaluation_cmd(run_id: str) -> None:
+    """Show the evaluation scorecard for a run."""
+    from acp.api.service import AppService
+
+    try:
+        ev = AppService().run_evaluation(run_id)
+    except KeyError:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1) from None
+    console.print_json(data=ev or {})
+
+
 policy_app = typer.Typer(help="Policy management.")
 app.add_typer(policy_app, name="policy")
 

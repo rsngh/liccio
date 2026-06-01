@@ -263,6 +263,64 @@ class AppService:
         evals = self._children(run_id).get(EvaluationResult.__name__, [])
         return evals[-1].model_dump(mode="json") if evals else None
 
+    def full_run_graph(self, run_id: str) -> dict:
+        """Reconstruct the entire run graph from storage (round-1 §A.1, D1B2).
+
+        Relies only on the DB + artifact store — not the in-memory _runs/_runners.
+        """
+        from acp.schemas.agent import AgentAttempt
+        from acp.schemas.context import ContextPack
+        from acp.schemas.evaluation import EvaluationResult, WeakLabel
+        from acp.schemas.human_review import HumanLabel, HumanReviewItem
+        from acp.schemas.learning import PostMergeOutcome, RewardEvent
+        from acp.schemas.repo import RepoSnapshot
+        from acp.schemas.routing import RoutingDecision
+        from acp.schemas.trace import AuditEvent, SpanRecord
+        from acp.schemas.verification import Evidence, VerificationPlan, VerificationRun
+        from acp.schemas.workspace import CommandRunRecord, DiffBundle
+
+        state = self.get_run(run_id)
+        if state is None:
+            raise KeyError(run_id)
+        tid = state.task_id
+
+        def dump(objs):
+            return [o.model_dump(mode="json") for o in objs]
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+
+            def one(cls, entity_id):
+                obj = es.get(cls, entity_id) if entity_id else None
+                return obj.model_dump(mode="json") if obj else None
+
+            task = es.get(Task, tid)
+            attempt_ids = set(state.attempt_ids)
+            diffs = [d for d in es.list_by(DiffBundle) if d.attempt_id in attempt_ids]
+            cmds = [c for c in es.list_by(CommandRunRecord) if c.trace_id == state.trace_id]
+            graph = {
+                "state": state.model_dump(mode="json"),
+                "task": task.model_dump(mode="json") if task else None,
+                "snapshot": one(RepoSnapshot, state.snapshot_id),
+                "context_pack": one(ContextPack, state.context_pack_id),
+                "verification_plan": one(VerificationPlan, state.verification_plan_id),
+                "routing_decision": one(RoutingDecision, state.routing_decision_id),
+                "attempts": dump(es.list_by(AgentAttempt, task_id=tid)),
+                "diffs": dump(diffs),
+                "command_runs": dump(cmds),
+                "verification_runs": dump(es.list_by(VerificationRun, task_id=tid)),
+                "evidence": dump(es.list_by(Evidence, task_id=tid)),
+                "evaluation": one(EvaluationResult, state.evaluation_result_id),
+                "weak_labels": dump(es.list_by(WeakLabel, task_id=tid)),
+                "review_items": dump(es.list_by(HumanReviewItem, task_id=tid)),
+                "human_labels": dump(es.list_by(HumanLabel, task_id=tid)),
+                "reward_events": dump(es.list_by(RewardEvent, task_id=tid)),
+                "post_merge_outcomes": dump(es.list_by(PostMergeOutcome, task_id=tid)),
+                "spans": dump(es.list_by(SpanRecord, trace_id=state.trace_id)),
+                "audit_events": dump(es.list_by(AuditEvent, trace_id=state.trace_id)),
+            }
+        return graph
+
     def run_trace(self, run_id: str) -> dict:
         state = self.get_run(run_id)
         if state is None:
