@@ -619,6 +619,61 @@ class AppService:
                                   markdown=soak_to_markdown(rep),
                                   config={"iterations": iterations, "task_mix": task_mix})
 
+    def replay_post_merge_outcomes(self) -> dict:
+        """Replay persisted post-merge outcomes into the policy: recompute matured
+        rewards and feed them to the bandit so real-world results update routing
+        (round-3 §post-merge replay). Persists policy state + a drift report."""
+        from acp.core.classifier import classify
+        from acp.routing.policy import PolicyDecision
+        from acp.routing.reward import compute_reward
+        from acp.schemas.agent import AgentAttempt
+        from acp.schemas.evaluation import EvaluationResult
+        from acp.schemas.learning import PostMergeOutcome
+        from acp.schemas.routing import RoutingDecision
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            outcomes = es.list_by(PostMergeOutcome)
+            attempts = {a.id: a for a in es.list_by(AgentAttempt)}
+            decisions = {d.id: d for d in es.list_by(RoutingDecision)}
+            evals = {e.attempt_id: e for e in es.list_by(EvaluationResult) if e.attempt_id}
+
+        replayed = reverted = arms_updated = 0
+        matured: list = []
+        for out in outcomes:
+            att = attempts.get(out.attempt_id or "")
+            ev = evals.get(out.attempt_id or "")
+            if att is None or ev is None:
+                continue
+            bad = bool(out.reverted or out.incident_link)
+            reward = compute_reward(ev, att, task_success=not bad,
+                                    reverted_or_incident=bad, label_source="post_merge")
+            from acp.core.time import utcnow
+
+            reward.matured_at = utcnow()
+            matured.append(reward)
+            replayed += 1
+            reverted += int(bad)
+            # feed the bandit: reconstruct the decision's context from the task
+            dec = decisions.get(att.routing_decision_id or "")
+            task = self.get_task(att.task_id)
+            if dec is not None and task is not None:
+                cls = classify(task)
+                tt = cls.task_type if isinstance(cls.task_type, str) else cls.task_type.value
+                rl = cls.risk_level if isinstance(cls.risk_level, str) else cls.risk_level.value
+                ctx = f"{tt}|{rl}"
+                pdec = PolicyDecision(policy_version=self.policy.policy_version,
+                                      action=dec.action, action_probability=dec.action_probability,
+                                      context_key=ctx)
+                self.policy.observe_reward(pdec, reward)
+                arms_updated += 1
+        if matured:
+            self._save(*matured)
+        self.save_policy_state()
+        drift = self.drift_report()
+        return {"replayed": replayed, "reverted": reverted, "arms_updated": arms_updated,
+                "drift": drift}
+
     def calibrate_evaluators(self) -> dict:
         """Calibrate automated evaluators against human labels + post-merge
         outcomes from the DB; persist as EvalRun(kind=calibration) (R3-6)."""
