@@ -1,0 +1,71 @@
+{
+  "local": {
+    "backend": "local",
+    "unsafe_for_true_harness": true,
+    "reason": "no network isolation or CPU/memory/PID limits on the local backend",
+    "enforced_checks": [
+      {
+        "attack": "env_exfiltration",
+        "enforced": true,
+        "detail": "secret scrubbed from child env"
+      },
+      {
+        "attack": "write_outside_workspace",
+        "enforced": true,
+        "detail": "HarnessTools._safe blocks path escape"
+      },
+      {
+        "attack": "parent_directory_read",
+        "enforced": true,
+        "detail": "read path escape blocked"
+      },
+      {
+        "attack": "symlink_escape",
+        "enforced": true,
+        "detail": "resolved path escapes workspace -> rejected"
+      },
+      {
+        "attack": "mutate_git",
+        "enforced": false,
+        "detail": "local backend does not protect .git from commands"
+      }
+    ],
+    "not_enforceable": [
+      "network_exfiltration",
+      "fork_bomb",
+      "memory_bomb",
+      "massive_stdout",
+      "pid_exhaustion"
+    ],
+    "enforced": 4,
+    "total_enforceable": 5
+  },
+  "docker": {
+    "backend": "docker",
+    "status": "skipped",
+    "reason": "docker CLI/daemon not available in this environment",
+    "checks": [
+      {
+        "attack": "network_exfiltration",
+        "status": "skipped"
+      },
+      {
+        "attack": "memory_bomb",
+        "status": "skipped"
+      },
+      {
+        "attack": "pid_exhaustion",
+        "status": "skipped"
+      },
+      {
+        "attack": "write_outside_workspace",
+        "status": "skipped"
+      },
+      {
+        "attack": "env_exfiltration",
+        "status": "skipped"
+      }
+    ]
+  },
+  "conclusion": "local backend is UNSAFE for true harnesses; use the docker backend (enforced by the execution-backend policy)"
+}
