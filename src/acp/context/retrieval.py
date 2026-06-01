@@ -69,17 +69,29 @@ class HybridRetriever:
         embedder: Embedder | None = None,
         weights: dict[str, float] | None = None,
         prior_paths: set[str] | None = None,
+        vector_store=None,
+        snapshot_id: str = "snap",
     ) -> None:
         self.items = items
         self.embedder = embedder or HashingEmbedder()
         self.weights = {**DEFAULT_WEIGHTS, **(weights or {})}
         self.prior_paths = prior_paths or set()
+        self.vector_store = vector_store
+        self.snapshot_id = snapshot_id
         self._doc_vecs: list[list[float]] = []
         self._bm25 = None
         self._prepare()
 
     def _prepare(self) -> None:
         self._doc_vecs = [self.embedder.embed(it.content) for it in self.items]
+        if self.vector_store is not None:
+            from acp.context.vector_store import VectorRecord
+
+            self.vector_store.upsert([
+                VectorRecord(id=it.id, vector=self._doc_vecs[i],
+                             snapshot_id=self.snapshot_id, payload={"path": it.path})
+                for i, it in enumerate(self.items)
+            ])
         try:
             from rank_bm25 import BM25Okapi
 
@@ -105,6 +117,11 @@ class HybridRetriever:
 
     def _vector_scores(self, query: str) -> list[float]:
         qv = self.embedder.embed(query)
+        if self.vector_store is not None:
+            hits = self.vector_store.query(qv, top_k=len(self.items),
+                                           snapshot_id=self.snapshot_id)
+            by_id = {h.id: max(0.0, h.score) for h in hits}
+            return [by_id.get(it.id, 0.0) for it in self.items]
         return [max(0.0, cosine(qv, dv)) for dv in self._doc_vecs]
 
     def retrieve(

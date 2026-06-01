@@ -40,3 +40,98 @@ def _tokenize(text: str) -> list[str]:
 
 def cosine(a: list[float], b: list[float]) -> float:
     return sum(x * y for x, y in zip(a, b, strict=False))
+
+
+class OpenAIEmbedder:
+    """Optional OpenAI embeddings (round-1 two-day D2B3).
+
+    Lazy-imports ``openai`` and requires a key. ``available`` is False otherwise,
+    letting callers fall back to the hashing embedder.
+    """
+
+    def __init__(self, model: str = "text-embedding-3-small", dim: int = 1536) -> None:
+        self.model = model
+        self.dim = dim
+
+    def _client(self):
+        from acp.core.config import get_settings
+        from acp.core.optional import try_import
+
+        openai = try_import("openai")
+        if openai is None:
+            return None
+        key = get_settings().openai_api_key
+        if key is None:
+            return None
+        return openai.OpenAI(api_key=key.get_secret_value())
+
+    @property
+    def available(self) -> bool:
+        return self._client() is not None
+
+    def embed(self, text: str) -> list[float]:
+        client = self._client()
+        if client is None:
+            raise RuntimeError("OpenAI embedder unavailable (SDK or key missing)")
+        resp = client.embeddings.create(model=self.model, input=text[:8000])
+        vec = list(resp.data[0].embedding)
+        self.dim = len(vec)
+        return vec
+
+
+class SentenceTransformerEmbedder:
+    """Optional local sentence-transformers embedder."""
+
+    def __init__(self, model: str = "all-MiniLM-L6-v2") -> None:
+        self.model_name = model
+        self._model = None
+        self.dim = 384
+
+    def _ensure(self):
+        if self._model is None:
+            from acp.core.optional import try_import
+
+            st = try_import("sentence_transformers")
+            if st is None:
+                return None
+            self._model = st.SentenceTransformer(self.model_name)
+        return self._model
+
+    @property
+    def available(self) -> bool:
+        return self._ensure() is not None
+
+    def embed(self, text: str) -> list[float]:
+        model = self._ensure()
+        if model is None:
+            raise RuntimeError("sentence-transformers unavailable")
+        vec = model.encode(text).tolist()
+        self.dim = len(vec)
+        return vec
+
+
+class CachingEmbedder:
+    """Wraps an embedder with a cache keyed by (model, content_hash, dim)."""
+
+    def __init__(self, inner: Embedder, model_name: str = "") -> None:
+        self.inner = inner
+        self.dim = inner.dim
+        self.model_name = model_name or type(inner).__name__
+        self._cache: dict[str, list[float]] = {}
+        self.hits = 0
+        self.misses = 0
+
+    def _key(self, text: str) -> str:
+        h = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        return f"{self.model_name}:{self.dim}:{h}"
+
+    def embed(self, text: str) -> list[float]:
+        key = self._key(text)
+        if key in self._cache:
+            self.hits += 1
+            return self._cache[key]
+        self.misses += 1
+        vec = self.inner.embed(text)
+        self.dim = self.inner.dim
+        self._cache[key] = vec
+        return vec

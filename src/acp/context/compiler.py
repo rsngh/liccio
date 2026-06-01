@@ -24,12 +24,16 @@ class ContextCompiler:
         snapshot_id: str,
         weights: dict[str, float] | None = None,
         prior_paths: set[str] | None = None,
+        embedder=None,
+        vector_store=None,
     ) -> None:
         self.repo_path = repo_path
         self.repo_id = repo_id
         self.snapshot_id = snapshot_id
         self.weights = weights
         self.prior_paths = prior_paths
+        self.embedder = embedder
+        self.vector_store = vector_store
 
     def compile(
         self,
@@ -42,7 +46,9 @@ class ContextCompiler:
         query = self._build_query(task)
 
         retriever = HybridRetriever(
-            index.chunks, weights=self.weights, prior_paths=self.prior_paths
+            index.chunks, embedder=self.embedder, weights=self.weights,
+            prior_paths=self.prior_paths, vector_store=self.vector_store,
+            snapshot_id=self.snapshot_id,
         )
         scored, trace = retriever.retrieve(query, strategy=strategy, top_k=top_k)
         candidates = [s.item for s in scored]

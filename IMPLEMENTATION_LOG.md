@@ -386,3 +386,15 @@ Baseline gates: `uv run pytest -q` -> 179 passed; `ruff` clean; `mypy` clean
   "local v0/alpha, not production-grade").
 - Added .github/workflows/ci.yml (ruff, mypy, unit+integration, e2e, coverage).
 - De-overclaimed FINAL_REPORT.md ("production-grade" -> v0/alpha pointer).
+
+## 2026-06-01 — Day 2 progress (D2B1-D2B3)
+
+- D2B1 routing first-class: CandidateGenerator (agent×strategy×verification),
+  feature_hash + candidate scores persisted, train_policy metrics, off_policy_report
+  (IPS/SNIPS/per-action/propensity coverage) + endpoint.
+- D2B2 retrieval benchmark: synthetic-repo generator + recall@k/MRR/latency/
+  dup-ratio/secret-leakage; 200-file run -> recall@5/10=1.0, leak=0.
+- D2B3 vector store + embedders: VectorStore protocol + InMemory/PgVector/Qdrant
+  (graceful), OpenAIEmbedder + SentenceTransformerEmbedder + CachingEmbedder,
+  wired into ContextCompiler. LIVE experiment: OpenAI embeddings (122 real calls)
+  retrieved the gold file in top-10 via the in-memory vector store; cache works.
