@@ -42,6 +42,45 @@ def test_test_focused_boosts_tests() -> None:
     assert test_item.components["test"] > 0.0
 
 
+def _mixed_items() -> list:
+    return [
+        make_chunk(kind="doc_chunk", path="README.md", content="architecture overview module"),
+        make_chunk(kind="manifest_chunk", path="pyproject.toml", content="deps module"),
+        make_chunk(kind="test_chunk", path="tests/test_m.py", content="def test_m(): module"),
+        make_chunk(kind="symbol_chunk", path="m.py", content="def m(): pass", symbol_name="m"),
+        make_chunk(kind="file_chunk", path="m.py", content="module body here"),
+    ]
+
+
+def test_architecture_strategy_prefers_docs() -> None:
+    r = HybridRetriever(_mixed_items())
+    scored, _ = r.retrieve("module", strategy="architecture", top_k=5)
+    top_kinds = [s.item.kind for s in scored[:2]]
+    assert "doc_chunk" in top_kinds or "manifest_chunk" in top_kinds
+
+
+def test_bug_reproduction_prefers_tests_symbols() -> None:
+    r = HybridRetriever(_mixed_items())
+    scored, _ = r.retrieve("module", strategy="bug_reproduction", top_k=5)
+    top_kinds = [s.item.kind for s in scored[:2]]
+    assert "test_chunk" in top_kinds or "symbol_chunk" in top_kinds
+
+
+def test_minimal_strategy_caps_items() -> None:
+    items = [make_chunk(kind="file_chunk", path=f"f{i}.py", content=f"x{i} module")
+             for i in range(30)]
+    r = HybridRetriever(items)
+    scored, _ = r.retrieve("module", strategy="minimal", top_k=60)
+    assert len(scored) <= 8
+
+
+def test_strategies_yield_different_orderings() -> None:
+    items = _mixed_items()
+    arch, _ = HybridRetriever(items).retrieve("module", strategy="architecture")
+    bug, _ = HybridRetriever(items).retrieve("module", strategy="bug_reproduction")
+    assert [s.item.path for s in arch] != [s.item.path for s in bug]
+
+
 def test_scores_are_deterministic() -> None:
     a, _ = HybridRetriever(_items()).retrieve("divide calculator")
     b, _ = HybridRetriever(_items()).retrieve("divide calculator")
