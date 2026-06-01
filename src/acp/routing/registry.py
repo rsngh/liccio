@@ -19,7 +19,7 @@ class PolicyRegistry:
 
     def champion(self) -> PolicyVersion | None:
         for p in self._policies.values():
-            if p.status == PolicyStatus.CHAMPION or p.status == PolicyStatus.CHAMPION:
+            if p.status in (PolicyStatus.CHAMPION.value, PolicyStatus.CHAMPION):
                 return p
         return None
 

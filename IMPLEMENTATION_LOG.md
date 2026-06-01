@@ -317,3 +317,23 @@ written. Coverage ~83% (core loop modules >85%; optional/stub paths lower total)
 **Final acceptance (§26): all 15 criteria met** — see FINAL_REPORT.md.
 **Risks**: documented in FINAL_REPORT (OS-level sandbox, cross-process resume,
 optional-path coverage).
+
+---
+
+## 2026-05-31 — Round 1: provenance + fixes (effort: low)
+
+Addressed the highest-leverage round-1 feedback (GOALS.md):
+- **Complete provenance persistence (§2, "highest-leverage")**: `_persist_run`
+  now also saves Task, RepoSnapshot, VerificationPlan, and VerificationRun(s);
+  added `verification_runs` to `RunArtifacts` and captured them in the runner's
+  verify node. A completed run is now reconstructable from storage.
+- **Fixed `PolicyRegistry.champion` bug (§7)**: replaced the duplicated
+  `== CHAMPION` check with a value-or-enum membership test (matches `challenger`).
+- **Added provenance test (§A.1/A.2)** `tests/integration/test_provenance.py`:
+  runs the bugfix demo, then a fresh AppService/EntityStore reconstructs Task,
+  Snapshot, ContextPack, RoutingDecision, VerificationPlan/Run, Evidence,
+  EvaluationResult, RewardEvent from the DB.
+
+Tests: 152 passed; ruff + mypy clean. Remaining round-1 items (durable
+cross-process resume, real agent harnesses, live bandit routing, hard sandboxing,
+full API/CLI surface) tracked in FINAL_REPORT "Recommended next work".

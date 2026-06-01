@@ -54,12 +54,19 @@ class AppService:
 
     def _persist_run(self, state: WorkflowState, artifacts: RunArtifacts) -> None:
         to_save: list[Any] = []
+        if artifacts.task:
+            to_save.append(artifacts.task)
+        if artifacts.snapshot:
+            to_save.append(artifacts.snapshot)
         if artifacts.context_pack:
             to_save.append(artifacts.context_pack)
+        if artifacts.plan:
+            to_save.append(artifacts.plan)
         if artifacts.routing_decision:
             to_save.append(artifacts.routing_decision)
         to_save.extend(artifacts.attempts)
         to_save.extend(artifacts.diffs.values())
+        to_save.extend(artifacts.verification_runs)
         to_save.extend(artifacts.evidence)
         if artifacts.evaluation:
             to_save.append(artifacts.evaluation)

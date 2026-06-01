@@ -30,7 +30,7 @@ from acp.schemas.learning import RewardEvent
 from acp.schemas.repo import Repository, RepoSnapshot
 from acp.schemas.routing import RoutingDecision
 from acp.schemas.task import Task, TaskClassification
-from acp.schemas.verification import Evidence, VerificationPlan
+from acp.schemas.verification import Evidence, VerificationPlan, VerificationRun
 from acp.schemas.workspace import DiffBundle, WorkspacePolicy
 from acp.verification.aggregate import AggregateVerdict, EvidenceAggregator
 from acp.verification.plan import build_plan
@@ -70,6 +70,7 @@ class RunArtifacts:
     attempts: list[AgentAttempt] = field(default_factory=list)
     diffs: dict[str, DiffBundle] = field(default_factory=dict)
     evidence: list[Evidence] = field(default_factory=list)
+    verification_runs: list[VerificationRun] = field(default_factory=list)
     evidence_by_attempt: dict[str, list[Evidence]] = field(default_factory=dict)
     verdicts: dict[str, AggregateVerdict] = field(default_factory=dict)
     evaluation: EvaluationResult | None = None
@@ -282,8 +283,9 @@ class WorkflowRunner:
             if not ws_path or attempt.status not in (RunStatus.SUCCEEDED,):
                 per_attempt[attempt.id] = []
                 continue
-            _run, evidence = svc.run_plan(plan, ws_path, attempt_id=attempt.id)
+            vrun, evidence = svc.run_plan(plan, ws_path, attempt_id=attempt.id)
             per_attempt[attempt.id] = evidence
+            self.artifacts.verification_runs.append(vrun)
             self.artifacts.evidence.extend(evidence)
             state.evidence_ids.extend(e.id for e in evidence)
         state.scratch["evidence_by_attempt"] = {
