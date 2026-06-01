@@ -31,6 +31,7 @@ from acp.workspaces.diff import DiffCapturer
 
 class SimpleLLMReviewAdapter:
     kind = AgentKind.SIMPLE_LLM
+    is_harness = False  # simple model adapter, not a full tool-loop harness
 
     def __init__(self, name: str = "simple_llm", model: str = "gpt-4o-mini") -> None:
         self.name = name

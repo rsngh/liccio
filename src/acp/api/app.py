@@ -173,6 +173,17 @@ def create_app(service: AppService | None = None) -> FastAPI:
             raise HTTPException(404, "review not found")
         return item.model_dump(mode="json")
 
+    @app.get("/agents")
+    def list_agents() -> list[dict]:
+        return svc.agents_health()
+
+    @app.get("/agents/{name}/health")
+    def agent_health(name: str) -> dict:
+        h = svc.agent_health(name)
+        if h is None:
+            raise HTTPException(404, "agent not found")
+        return h
+
     @app.get("/policies")
     def list_policies() -> list[dict]:
         return [p.model_dump(mode="json") for p in svc.list_policies()]

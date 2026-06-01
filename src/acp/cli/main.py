@@ -208,6 +208,33 @@ def run_evaluation_cmd(run_id: str) -> None:
     console.print_json(data=ev or {})
 
 
+agents_app = typer.Typer(help="Agent adapters.")
+app.add_typer(agents_app, name="agents")
+
+
+@agents_app.command("list")
+def agents_list() -> None:
+    """List agent adapters with availability + harness classification."""
+    from acp.api.service import AppService
+
+    for a in AppService().agents_health():
+        flag = "harness" if a["is_harness"] else "model"
+        avail = "up" if a["available"] else "down"
+        console.print(f"{a['name']:12} {avail:5} {flag:8} {a['detail']}")
+
+
+@agents_app.command("health")
+def agents_health(name: str) -> None:
+    """Show one adapter's health."""
+    from acp.api.service import AppService
+
+    h = AppService().agent_health(name)
+    if h is None:
+        console.print(f"agent {name} not found")
+        raise typer.Exit(1)
+    console.print_json(data=h)
+
+
 policy_app = typer.Typer(help="Policy management.")
 app.add_typer(policy_app, name="policy")
 

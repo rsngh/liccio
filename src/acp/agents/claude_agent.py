@@ -31,6 +31,7 @@ from acp.workspaces.diff import DiffCapturer
 
 class ClaudeAgentAdapter:
     kind = AgentKind.CLAUDE
+    is_harness = False  # simple model adapter, not a full tool-loop harness
 
     def __init__(self, name: str = "claude", model: str = "claude-sonnet-4-6") -> None:
         self.name = name

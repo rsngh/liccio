@@ -26,6 +26,7 @@ from acp.workspaces.base import Workspace
 
 class CodexAgentAdapter:
     kind = AgentKind.CODEX
+    is_harness = False  # simple model adapter, not a full tool-loop harness
 
     def __init__(self, name: str = "codex", binary: str = "codex") -> None:
         self.name = name

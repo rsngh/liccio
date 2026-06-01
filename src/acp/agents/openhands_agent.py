@@ -23,6 +23,7 @@ from acp.workspaces.base import Workspace
 
 class OpenHandsAgentAdapter:
     kind = AgentKind.OPENHANDS
+    is_harness = False  # simple model adapter, not a full tool-loop harness
 
     def __init__(self, name: str = "openhands", server_url: str | None = None) -> None:
         self.name = name

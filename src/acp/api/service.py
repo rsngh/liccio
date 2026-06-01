@@ -434,6 +434,27 @@ class AppService:
         self._save(p)
         return p
 
+    def agents_health(self) -> list[dict]:
+        """Health + harness classification for every registered adapter (D2B6)."""
+        import asyncio
+
+        healths = asyncio.run(self.registry.healthcheck_all())
+        out = []
+        for name in self.registry.names():
+            adapter = self.registry.get(name)
+            h = healths.get(name)
+            kind = adapter.kind if isinstance(adapter.kind, str) else adapter.kind.value
+            out.append({
+                "name": name, "kind": kind,
+                "available": h.available if h else False,
+                "detail": h.detail if h else "",
+                "is_harness": getattr(adapter, "is_harness", False),
+            })
+        return out
+
+    def agent_health(self, name: str) -> dict | None:
+        return next((a for a in self.agents_health() if a["name"] == name), None)
+
     def off_policy_report(self) -> dict:
         """IPS/SNIPS + per-action stats over persisted decisions+rewards (D2B1)."""
         from acp.schemas.learning import RewardEvent

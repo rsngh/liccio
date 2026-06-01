@@ -97,8 +97,8 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-norecursedirs = ["tests/fixtures", "evals", ".git", ".venv"]
-addopts = "-ra --ignore=tests/fixtures"
+norecursedirs = ["tests/fixtures", "tests/live", "evals", ".git", ".venv"]
+addopts = "-ra --ignore=tests/fixtures --ignore=tests/live"
 markers = [
     "slow: long-running tests",
     "live: tests requiring real API keys (skipped by default)",
