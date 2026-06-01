@@ -32,3 +32,12 @@ evals/reports/soak.json
 1. Full CI green on the PR.
 2. CURRENT_STATUS.md reconciled with actual numbers.
 3. Reviewer spot-checks a persisted run graph + an eval report.
+
+## Round 3 additions (Alpha 3)
+- [x] normalized AgentTrace captured + persisted across adapters
+- [x] Docker-required-for-harness governance policy + tests
+- [x] real no-patch agent bakeoff (offline + live OpenAI harness)
+- [x] multi-adapter trace bakeoff (comparable normalized traces)
+- [x] evaluator calibration vs human + post-merge labels (persisted)
+- [x] post-merge outcome replay -> matured rewards -> policy update
+- [x] local-vs-Docker record parity + persisted bandit Monte Carlo

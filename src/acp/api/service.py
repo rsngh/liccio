@@ -710,6 +710,28 @@ class AppService:
                            config={"n_human": len(labels), "n_post_merge": len(outcomes)})
         return report
 
+    def run_bandit_mc_eval(self, seeds: int = 20, rounds: int = 400) -> object:
+        """Bandit Monte Carlo persisted as an EvalRun (round-3 R3-8)."""
+        import statistics
+
+        from acp.routing.simulation import run_simulation
+
+        margins, wins = [], 0
+        for seed in range(seeds):
+            r = run_simulation(rounds=rounds, seed=seed)
+            margins.append(r.policy_reward - r.random_reward)
+            wins += int(r.beats_random)
+        mean = statistics.mean(margins)
+        stdev = statistics.pstdev(margins) or 1e-9
+        ci = 1.96 * stdev / (len(margins) ** 0.5)
+        summary = {
+            "seeds": seeds, "rounds": rounds, "wins_vs_random": wins,
+            "mean_margin": round(mean, 3), "ci95": round(ci, 3),
+            "beats_random": mean > 0,
+        }
+        return self._persist_eval("bandit_monte_carlo", summary, summary,
+                                  config={"seeds": seeds, "rounds": rounds})
+
     def list_eval_runs(self) -> list[dict]:
         from acp.schemas.eval import EvalRun
 

@@ -444,3 +444,26 @@ shipped with tests; suite green throughout (286 passed, 4 skipped: docker+pgvect
 Gates: 286 tests pass; ruff + mypy clean (117 files); alembic head OK (4 new
 migrations: run_states, spans, eval tables, policy_states). Live OpenAI harness +
 embedding experiments verified. Coverage ~85%.
+
+## 2026-06-01 — Round 3 (Alpha 3: real-agent experimentation platform)
+
+Round-3 GOALS.md re-specified the Round-2 blocks (already done). Per directive
+("do more along these lines"), built the reviewer's named next moat — real agent
+traces + trustworthy experimentation — beyond the literal blocks:
+
+- R3-1: FINAL_REPORT points to CURRENT_STATUS (source of truth) + per-subsystem
+  real/service-backed/simple-adapter/true-harness/fallback/stub table.
+- R3-2: normalized AgentTrace entity + capture across ALL adapters (harness tool
+  calls OR simple-adapter diff), persisted + in the run graph.
+- R3-3: Docker-required-for-harness governance (PolicyEngine; override audited).
+- R3-4: real NO-PATCH agent bakeoff — offline ScriptedHarness + LIVE OpenAI
+  harness both solve the bug with zero supplied patch.
+- R3-5: multi-adapter trace bakeoff — same task through patch/fake/harness, traces
+  compared (only the true harness solves it).
+- R3-6: evaluator calibration vs human + post-merge labels (accuracy/Brier/
+  correlation), persisted EvalRun(kind=calibration).
+- R3-7: post-merge outcome replay -> matured rewards -> bandit update + drift.
+- R3-8: local-vs-Docker record parity + persisted bandit Monte Carlo EvalRun.
+
+Live OpenAI experiments: harness no-patch bugfix + embeddings verified. New
+migration: agent_traces. CURRENT_STATUS reconciled.

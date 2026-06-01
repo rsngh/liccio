@@ -5,7 +5,7 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-01. Tests: 286 passing; `ruff` + `mypy` clean; ~85% line
+Last updated: 2026-06-01. Tests: 305 passing; `ruff` + `mypy` clean; ~85% line
 coverage (unit+integration). Gate: `uv run pytest -q && uv run ruff check . &&
 uv run mypy src`.
 

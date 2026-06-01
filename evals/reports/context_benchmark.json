@@ -4,7 +4,7 @@
   "recall_at_10": 1.0,
   "mrr": 0.5,
   "avg_tokens": 1490.1,
-  "avg_latency_s": 0.1003,
+  "avg_latency_s": 0.0536,
   "duplicate_chunk_ratio": 0.0,
   "secret_leakage_count": 0,
   "false_positive_decoy_rate": 0.0,
