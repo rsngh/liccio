@@ -375,3 +375,14 @@ item shipped with tests; suite green throughout (179 tests, ruff + mypy clean).
   from a fresh process).
 
 Tests: 179 passed; ruff + mypy clean; alembic upgrade head OK (3 migrations).
+
+---
+
+## 2026-06-01 — Round 1 two-day push, D1B1: baseline + status + CI
+
+Baseline gates: `uv run pytest -q` -> 179 passed; `ruff` clean; `mypy` clean
+(105 files); coverage ~84% (unit+integration, target 85%).
+- Added CURRENT_STATUS.md (Implemented/Partial/Stubbed/Known risks; explicitly
+  "local v0/alpha, not production-grade").
+- Added .github/workflows/ci.yml (ruff, mypy, unit+integration, e2e, coverage).
+- De-overclaimed FINAL_REPORT.md ("production-grade" -> v0/alpha pointer).

@@ -2,8 +2,8 @@
 
 ## Summary of what was built
 
-A production-grade, Python-first agentic software-engineering **control plane**
-implementing the full loop:
+A local v0/alpha (not yet production-grade — see `CURRENT_STATUS.md`), Python-first
+agentic software-engineering **control plane** implementing the full loop:
 
 ```
 task → context → route → attempt → verify → evaluate → human label → reward → learn

@@ -1,363 +1,246 @@
-# ROUND 1 GOALS
+## Executive verdict
 
-## Overall assessment
+This branch is a **legitimate, working v0 of the agent-control-plane concept**, and it has moved beyond the earlier scaffold stage. It now has a real Python package, CLI/API, schemas, SQLAlchemy persistence, local worktree execution, deterministic fake/patch agents, context compilation, verification, objective evaluation, weak supervision hooks, active-learning hooks, a simulated bandit policy, persisted run state/spans, run inspection endpoints, and long-test targets.
 
-This is a **strong local v0 / proof-of-concept** of the agent-control-plane architecture. It implements much more than a scaffold: there is a real package, schemas, DB layer, local worktree execution, deterministic fake/patch agents, context compilation, verification, objective evaluation, weak supervision, human-review flow, heuristic routing, a simulated bandit, demos, and a meaningful test suite.
+But it is **not yet the ambitious product described in the plan**. It is best described as:
 
-I would **not yet call it production-grade** in the sense of the original plan. The main gaps are exactly where a product moat would live: durable cross-process orchestration, real agent SDK harnesses, real contextual-bandit routing in the live workflow, vector/code intelligence backends, hard sandboxing, complete API/CLI surfaces, integrated observability, and large-scale eval/bakeoff infrastructure. The repository’s own final report is candid about several of these: Claude/Codex/OpenHands, Docker/Kubernetes, pgvector/Qdrant, MABWiser/VW, Braintrust/LangSmith/Phoenix, Playwright, and semgrep/bandit are listed as stubs or graceful fallbacks; cross-process resume and OS-level sandboxing are also called out as known limitations. 
+> **A local, no-key, end-to-end prototype of the control-plane loop, with several production primitives started but not yet hardened.**
 
-One caveat: I inspected the branch through the GitHub connector by fetching key files from the `feat/agent-control-plane` branch. I did **not** run the test suite locally in a checkout, so test-pass statements below distinguish between what the repo reports and what the source actually shows.
+The most important remaining gaps are: real coding-agent SDK integrations, Docker/Kubernetes sandboxing, real vector/embedding stores, durable crash-resume under actual failure injection, serious eval/bakeoff infrastructure, complete routing-policy integration, production observability, and large-scale stress testing.
+
+One notable update since the earlier state: the code now has persistent `RunState` and `Span` tables, expanded run-inspection API endpoints, a live `SimulatedBanditPolicy` inside `AppService`, stronger command-runner containment/scrubbing, and workflow-runner changes for weak supervision / active learning / policy injection. The `FINAL_REPORT.md` is therefore partly stale: it still lists cross-process resume as future work, but newer code has begun implementing run-state persistence and rehydration. 
 
 ---
 
-# What has been implemented
+# 1. What has been implemented
 
-## 1. Project/package foundation
+## Project foundation
 
 Implemented well.
 
-The repo has a Python package named `agent-control-plane`, package `acp`, CLI entrypoint `acp`, Python 3.11+, FastAPI, Pydantic, SQLAlchemy, Alembic, Typer, structlog, GitPython, numpy, YAML, and optional dependency groups for Postgres, data, context, agents, verification, learning, and observability. 
+The branch defines a Python-first `acp` package with `uv`, Typer CLI, FastAPI, Pydantic, SQLAlchemy/Alembic, GitPython, structlog, optional context/learning/observability groups, and test/lint/type config. The repo advertises the core loop as `task → context → route → attempt → verify → evaluate → human label → reward → learn`. 
 
-The Makefile includes the expected fast tests, e2e tests, coverage, soak, bakeoff, bandit Monte Carlo, retriever stress, chaos, and security red-team targets. 
+The Makefile includes the expected targets for unit/integration/e2e tests, coverage, soak, bakeoff, bandit Monte Carlo, retriever stress, chaos, and security red-team runs. 
 
-The README communicates the intended product loop and explicitly says the system is designed to run without paid API keys using fake/local adapters. 
-
-**Status:** solid.
+**Assessment:** strong base.
 
 ---
 
-## 2. Data model and persistence
+## Core data model and persistence
 
 Substantially implemented.
 
-The architecture document says every major entity is represented as a Pydantic schema and persisted through `EntityStore` into queryable tables with a JSON payload column.  The SQLAlchemy model file defines tables for repositories, snapshots, tasks, context packs/items, routing decisions, agent attempts, tool calls, command runs, diff bundles, verification plans/runs, evidence, evaluation results, human review items/labels, weak labels, reward events, policy versions, post-merge outcomes, artifacts, and audit logs. 
+The DB model now includes the core entities: repositories, repo snapshots, tasks, context packs/items, routing decisions, agent attempts, tool calls, command runs, diff bundles, verification plans/runs, evidence, evaluation results, human-review items/labels, weak labels, reward events, policy versions, post-merge outcomes, artifacts, audit logs, plus newly added `run_states` and `spans`. 
 
-`EntityStore` maps Pydantic schemas to ORM models, saves indexed fields plus full JSON payloads, and supports `all_for_task` / `all_for_trace` queries.  
+This is a major step toward the original “every agent run becomes a reusable training example” premise.
 
-**Important gap:** the data model exists, but the live application service does not persist every artifact generated by a workflow. `_persist_run` saves context packs, routing decisions, attempts, diffs, evidence, evaluation, review item, and reward, but not the repo snapshot, verification plan, verification run, command run records, weak labels, spans, or audit events. 
+**What is still uncertain/incomplete:** the tables exist, but I would not assume the entire provenance graph is fully persisted and reloadable under all crash scenarios until the new persistent-resume path is tested with actual process death at every node. The current final report claims 151 tests, but coverage is only about 83%, below the original 85% target. 
 
-**Status:** data foundation is strong; provenance persistence is incomplete.
-
----
-
-## 3. Local workspace and command execution
-
-Implemented as a local-worktree backend.
-
-`LocalWorkspaceManager` creates an isolated git worktree per run on a fresh branch at the snapshot commit and can capture diffs.  `CommandRunner` mediates subprocess execution with timeouts, process-group termination, cwd containment when an allowed root is configured, secret redaction, output truncation, artifact storage, and exit-code capture.  
-
-**Important gap:** this is not yet a hard sandbox. The command runner’s own comments say network policy is advisory metadata and actual no-network enforcement is deferred to Docker/Kubernetes backends.  The Docker backend exists only as a stub and raises `NotImplementedError` when Docker is available. 
-
-Also, in the workflow runner, `CommandRunner` is constructed without an `allowed_root`, and verification runners call it with `allow_cwd_outside_root=True`, which weakens the cwd-containment story in the actual verification path.  
-
-**Status:** good local execution choke point; not yet production sandboxing.
+**Assessment:** good schema foundation; needs rigorous full-graph replay tests.
 
 ---
 
-## 4. Context compiler
+## API surface
 
-A useful v0 is implemented.
+Improved since the prior inspection.
 
-The compiler does the intended local loop: index repo, retrieve chunks with a hybrid retriever, include required instructions/task spec, apply token budgeting, and return an immutable `ContextPack`. 
+The FastAPI app supports repo/task creation, run start, run state, run trace, run diff, run evidence, run evaluation, run cancel, review list/get/label/resolve, and policy list/train/promote/rollback.  
 
-The indexer walks files, skips `.git`, virtualenvs, node modules, build output, obvious secret files, binaries, and large files; emits file, symbol, test, doc, instruction, and manifest chunks.  
+That is meaningfully closer to the plan than the earlier API state.
 
-The retriever combines keyword score, vector score, path boost, symbol boost, test boost, and prior-run boost, with configurable weights and several named strategies.  
+**Still missing:** repo indexing endpoint, eval replay/bakeoff endpoints, trace-by-trace endpoint, artifact-download endpoint, context-pack inspection endpoint, adapter health endpoint, live policy metrics endpoint, post-merge outcome ingestion endpoint, and full run replay endpoint.
 
-**Important gaps:**
-
-The “vector” path is a deterministic hashing embedder, not a production embedding/vector DB stack. The final report lists pgvector, Qdrant, and sentence-transformers as stubs/fallbacks. 
-
-The parser docstring mentions Tree-sitter, but the fetched parser implementation uses Python `ast` and lightweight JS/TS regex extraction.  
-
-Several retrieval strategies are named but not meaningfully differentiated yet. `bug_reproduction`, `architecture`, `recent_changes`, `minimal`, and `max_context` are present as strategy names, but the scoring logic only special-cases `keyword_only`, `embedding_only`, `test_focused`, `prior_failures`, and `symbol_graph`.  
-
-**Status:** good local context compiler; code intelligence/retrieval moat is still shallow.
+**Assessment:** API is now more than a demo surface, but still not a complete product control plane.
 
 ---
 
-## 5. Agent adapters
+## Command execution and workspace safety
 
-Implemented: fake, patch, and simple LLM-style adapters.
+Improved.
 
-The default app registry contains only `PatchAgentAdapter` and `FakeAgentAdapter`, which is appropriate for no-key demos/tests. 
+`CommandRunner` now uses robust `Path.is_relative_to` containment instead of string-prefix checks, supports secret scrubbing before launching child processes, still captures stdout/stderr artifacts, timeouts, process-group termination, redaction, and metadata.  
 
-`SimpleLLMReviewAdapter` uses OpenAI if the SDK and API key are available; it asks the model to return JSON mapping file paths to full file contents, writes those files, and captures token usage/diffs.  
+This is a strong improvement.
 
-There is also a Claude adapter, but it appears to use the plain Anthropic Messages API pattern, not the Claude Agent SDK / Claude Code harness with tool loop, hooks, subagents, and tool-level traces. It constructs one prompt, asks for JSON full-file edits, writes those files, and captures token usage.  
+**Still incomplete:** network policy remains advisory in local execution; the code comment explicitly says hard no-network enforcement belongs to container backends.  The Docker workspace manager is still a stub and raises `NotImplementedError` when Docker is available. 
 
-**Important gap:** the original product thesis depended heavily on wrapping real coding-agent harnesses. The repo’s own final report lists Claude, Codex, OpenHands, Docker/Kubernetes, vector stores, and several observability/eval integrations as stubs or graceful fallbacks. 
-
-**Status:** enough for local demos; not yet a real multi-agent control plane.
+**Assessment:** local safety layer is stronger, but still not safe enough for untrusted real agents without container isolation.
 
 ---
 
-## 6. Verification and evaluation
+## Workspace management
 
-A meaningful v0 is implemented.
+Implemented locally.
 
-Verification runners exist for pytest, generic static/lint/type commands, security scanners, and Playwright-style UI flows. Missing external CLIs are marked `SKIPPED`, not `PASS`.  
+The system has local git-worktree isolation and diff capture. This is sufficient for deterministic patch/fake agent tests and local development.
 
-`VerificationService` runs required commands, static checks, security checks, and coverage checks, then creates a `VerificationRun` and list of `Evidence`. 
+**Still incomplete:** no real Docker/Kubernetes sandbox, no resource limits, no hard network isolation, no non-root execution, no volume-level secret prevention, no post-run container artifact capture.
 
-The evidence aggregator handles test/static failures, security failures, bugfix-without-test adequacy penalties, large-diff review burden, and low confidence when no evidence is collected. 
-
-The objective evaluator maps verification verdicts into spec compliance, test adequacy, regression risk, security risk, review burden, maintainability, confidence, and human-review requirement. 
-
-Weak supervision is also present with 15 labeling functions, covering CI pass/fail, missing bugfix tests, large diffs, sensitive modules, unrelated files, security warnings, reviewer outcomes, reverts, incidents, timeouts, budget overruns, and parallel disagreement.  
-
-**Important gaps:**
-
-The weak supervision engine appears implemented as a library, but I did not see it wired into the main workflow runner’s scoring path. The runner uses `ObjectiveEvaluator`, `EvidenceAggregator`, and `compute_reward`; the update-policy node only records a scratch flag. 
-
-`VerificationService` does not call the `PlaywrightRunner` despite `PlaywrightRunner` existing; the service currently iterates required commands, static checks, security checks, and coverage checks. 
-
-**Status:** good deterministic eval substrate; not yet the full layered evaluator in the live loop.
+**Assessment:** good local workspace primitive; production sandbox remains a top priority.
 
 ---
 
-## 7. Routing and learning
+## Agent adapters
 
-Implemented as a baseline, not as the full product.
+Implemented at v0 level.
 
-`HeuristicRouter` is implemented and chooses actions based on risk/task type. It logs `action_probability=1.0` and creates a fallback policy to fake in some cases. 
+The final report says the system runs end-to-end without paid keys using fake/patch adapters, and that OpenAI `SimpleLLMReviewAdapter` was live-tested against the bugfix fixture.  
 
-A hard-constraint function exists to filter unavailable agents, clamp cost/parallelism, force human approval for high risk, and block experimental auto-approval. 
+**Still incomplete:** the final report explicitly lists Claude, Codex, and OpenHands as optional/stubbed/graceful fallback paths, not fully realized harness integrations. 
 
-A simulated bandit policy exists with epsilon-greedy and Thompson modes over per-context arms.  There is also a simple supervised predictor using sklearn Ridge or a mean fallback. 
-
-A simple in-memory policy registry exists for champion/challenger rollout. 
-
-**Important gaps:**
-
-The live workflow always instantiates `HeuristicRouter` in the route node. The simulated bandit and supervised predictor are not integrated into the production run path. 
-
-`_node_update_policy` does not actually update a bandit or learning policy; it just sets `state.scratch["policy_updated"] = True`. 
-
-The “candidate actions” field in the heuristic router contains only the chosen action, so the logged decision is not yet a real multi-action routing decision useful for counterfactual learning. 
-
-There is a small bug in `PolicyRegistry.champion`: it checks `p.status == PolicyStatus.CHAMPION` twice instead of checking both enum and string value, unlike `challenger`. 
-
-**Status:** routing primitives exist; adaptive routing is not yet active in the main product.
+**Assessment:** good local deterministic adapters; not yet a real multi-coding-agent router.
 
 ---
 
-## 8. Orchestration
+## Context compiler
 
-A real in-process workflow runner exists.
+Implemented as a useful local version.
 
-The architecture declares the intended flow from task intake through classification, snapshot, context, verification plan, routing, agent attempts, diff capture, verification, evidence aggregation, evaluation, human review, reward, and policy update. 
+The system has indexing, retrieval, token budgeting, and context packs. It reportedly stress-tested a 400-file synthetic repo with a 5,000-token budget and deterministic context hashes. 
 
-The runner source shows the 15-node flow and supports human-review pauses/resume, fallback attempts, isolated workspaces per attempt, and artifact collection.  The e2e tests cover full bugfix loop provenance, human pause/resume, human rejection, multiple isolated workspaces, and idempotent resume of a completed run.  
+**Still incomplete:** pgvector, Qdrant, sentence-transformers, and production-grade embeddings are still listed as stubs/fallbacks.  The context test scale is also far too small for the target product.
 
-**Important gaps:**
-
-Runs are in-memory at the app-service layer. `AppService` stores `_runs` and `_runners` dictionaries in process memory, and `get_run` / `resume_run` use those dictionaries.   The final report also calls cross-process durable resume a follow-up. 
-
-Workspaces are not obviously cleaned up by the workflow runner after attempts complete. `LocalWorkspaceManager.cleanup` exists, but I did not see the runner invoking cleanup in the main flow. 
-
-Parallelism is more like “primary plus fallback attempts” than true parallel execution. The runner loops over agents sequentially in the launch-attempts node. 
-
-**Status:** useful in-process orchestration; not yet durable, distributed, or truly parallel.
+**Assessment:** context compiler is a good prototype; the retrieval moat is still ahead.
 
 ---
 
-## 9. API and CLI
+## Evaluation ladder
 
-Partially implemented.
+Partially implemented, improving.
 
-The FastAPI app supports health/version, repo create/list/get, task create/list/get, task run, run get/state, review list/get/label, and policy list. 
+The runner now appears to import active learning, fake judges, weak supervision, and includes a `score_signals` node in `NODE_ORDER`, based on the current runner fetch.  The data model also has persisted `WeakLabel`. 
 
-The CLI supports version, config, init, demo quickstart/bugfix/bandit, serve, review list, and a placeholder run-status command. 
+**Still incomplete:** I would treat the evaluation ladder as “wired enough to test,” not “done.” The next layer is to prove that weak labels, judge results, active-learning priorities, human labels, and post-merge outcomes actually affect routing rewards and policy updates in a measurable way.
 
-**Missing relative to the plan:**
-
-The API does not yet expose repo indexing, run trace, run diff, run evidence, run evaluation, run cancel, review resolve, policy train/promote/rollback, eval replay, eval bakeoff, or trace endpoints.
-
-The CLI does not yet provide full repo/task/run/review/policy/eval management. `acp run status` explicitly says to use the API/service to query persisted runs. 
-
-**Status:** demo/admin surface only; not yet a product API/CLI.
+**Assessment:** promising; needs calibration, adversarial tests, and live-loop validation.
 
 ---
 
-## 10. Observability
+## Routing and learning
 
-Partially implemented, but not deeply wired.
+Improved but not yet product-grade.
 
-There is a lightweight in-process `Tracer` and span model with the intended span names.  There is also a local JSONL span exporter. 
+`AppService` now initializes a persistent in-process `SimulatedBanditPolicy`, passes it into `WorkflowRunner`, and policy train/promote/rollback API endpoints exist.  
 
-**Important gaps:**
+**Still incomplete:** this is still a simulated/in-process bandit, not a durable production routing policy. The final report still lists MABWiser/VW as fallback/stubbed, and doubly robust off-policy evaluation is future work.  
 
-The tracing file says spans are also emitted to OpenTelemetry when installed/configured, but the fetched implementation is a minimal in-process recorder and does not show actual OTel integration. 
-
-I did not see `Tracer` wired into the workflow runner nodes, so the run loop may have trace IDs but not complete node-level spans.
-
-**Status:** observability primitives exist; production tracing is not implemented.
+**Assessment:** the live workflow is starting to learn, but the real routing/evaluation moat has not been validated yet.
 
 ---
 
-## 11. Tests and long-running evals
+## Observability
 
-The repo claims 151 tests and ~83% line coverage, below the original 85% target.  
+Improved.
 
-The long-eval commands exist in the Makefile.  The final report claims bandit simulation, retriever stress, soak, and chaos results. 
+The data model now has `spans`, and the current runner fetch shows `SpanRecord` and a tracer being used in the workflow.  
 
-**Important gaps in the stress tests:**
+**Still incomplete:** production-grade OpenTelemetry export, LangSmith/Braintrust/Phoenix integrations, span completeness checks, and trace inspection UX are still not done; the final report lists those exporters as fallback/stubbed. 
 
-The “chaos” test does not actually kill a process mid-run. It runs the workflow to completion, then resumes the completed state and checks finalization count. 
-
-The retriever stress test is only a 400-file synthetic repo. That is useful, but far below the scale where context indexing/retrieval problems usually appear. 
-
-The bakeoff script ignores the `--overnight` flag and runs five identical deterministic patch-agent tasks; it does not compare real adapters, task classes, cost, latency, or verification quality.  
-
-The soak script loops over mixed modes and can run for hours, but it mostly prints status counts and a weak “workspace dir exists” message rather than measuring memory growth, file descriptor leaks, orphaned worktrees, DB growth, run latency, or artifact leakage. 
-
-**Status:** useful tests exist; “hours/days” confidence is not established yet.
+**Assessment:** good local trace foundation; not yet observability productization.
 
 ---
 
-# What has not been implemented, or is too thin
+## Long tests and stress tests
 
-The biggest missing pieces are:
+Targets exist, but many are too light.
 
-1. **Real durable orchestration.** Runs and runners are in memory. Cross-process resume is explicitly a follow-up.  
+The Makefile includes the right target names.  The repo claims bandit simulation, retriever stress, soak, and chaos results. 
 
-2. **Real coding-agent harness integrations.** Fake/patch adapters and simple JSON full-file LLM adapters exist, but Claude Agent SDK, Codex SDK, and OpenHands are not implemented as actual coding-agent harnesses. The final report lists these as stubs/fallbacks. 
+But the current chaos test does not actually kill the worker mid-node; it runs the workflow to completion, then resumes the completed state.  That is useful for idempotent-finalization testing, but it is not a real crash-resume test.
 
-3. **Real adaptive routing in the workflow.** The workflow still uses `HeuristicRouter`; bandit/supervised learning is separate/simulated. 
-
-4. **Real vector/code intelligence backends.** pgvector/Qdrant/sentence-transformers are not wired; parser is mostly AST/regex fallback.  
-
-5. **Hard sandboxing.** Local worktrees plus command redaction are useful but not sufficient. Network denial is advisory in local execution, and Docker/Kubernetes backends are stubs.  
-
-6. **Complete API/CLI product surface.** The current API/CLI are demo-grade.  
-
-7. **Integrated eval ladder.** Objective evaluation is integrated; weak supervision, LLM judges, active learning, and human-review service are implemented as modules but not deeply integrated into the main routing/reward loop.
-
-8. **Production observability.** Trace primitives exist, but OTel/exporter integration and node-level tracing are not fully wired. 
-
-9. **Real post-merge outcome loop.** Tables/schemas exist, but ingestion/maturation of post-merge outcomes is not productized.
-
-10. **Serious bakeoffs/soaks.** The long-test commands exist, but several are lightweight simulations rather than stress tests that would expose production bottlenecks. 
+**Assessment:** test scaffolding exists; production confidence still needs strenuous stress testing.
 
 ---
 
-# Constructive feedback
+# 2. What has not been implemented or is still too thin
 
-## 1. Reframe the repo as “v0 local control plane,” not production-grade
+The biggest remaining gaps are:
 
-The implementation is impressive, but the README/FINAL_REPORT overstate maturity. I would explicitly label this as:
+1. **Real container sandboxing.** Docker/Kubernetes are stubs; local command execution cannot hard-block network/syscalls. 
 
-> “A local, no-key, end-to-end v0 proving the control-plane loop.”
+2. **Real coding-agent harness adapters.** Fake/patch/OpenAI-lightweight exist, but Claude Agent SDK, Codex SDK, and OpenHands SDK are not production wrappers. 
 
-That keeps trust high and clarifies what remains: real agent harnesses, durable orchestration, sandboxing, production learning, and integrations.
+3. **Real vector DB and embedding stack.** pgvector/Qdrant/sentence-transformers are not implemented as live retrieval backends. 
 
-## 2. Make provenance truthful and complete
+4. **Real crash-resume testing.** Run-state persistence has started, but the stress tests do not yet prove recovery after process death at arbitrary workflow nodes. 
 
-The design goal was “every agent run becomes a training example.” That only works if the persisted graph is complete. Today, the entity model is broad, but the live persistence path is narrower. The next milestone should guarantee that a completed run can be reconstructed entirely from persistent storage:
+5. **Production policy learning.** The current bandit is in-process/simulated. It needs persisted arms, replay, off-policy evaluation, confidence intervals, champion/challenger traffic splitting, and drift detection.
+
+6. **Full provenance completeness.** The DB schema is broad, but the system needs a hard invariant: every completed run can be fully reconstructed from DB + artifact store without process memory.
+
+7. **Serious eval datasets.** The tests are mostly small fixtures. The system needs task datasets with gold files, expected diffs, expected failures, and adversarial agent behaviors.
+
+8. **Full API/CLI product surface.** Run inspection exists, but context pack inspection, artifact download, adapter health, eval runs, bakeoff reports, and post-merge outcome ingestion are still missing.
+
+9. **Production observability.** Local spans are useful, but OTel/exporter integrations and trace completeness tests are not yet enough.
+
+10. **Honest status docs.** `FINAL_REPORT.md` says “production-grade,” but the same file lists major production-critical components as stubs/fallbacks.  
+
+---
+
+# 3. Constructive feedback
+
+## Reposition this as a strong v0, not production-grade
+
+The branch is impressive, but “production-grade” is premature. I would update the docs to say:
+
+> “A local, no-key, end-to-end v0 of the agentic software-engineering control plane, with durable provenance, sandboxing, real agent harnesses, and production learning in progress.”
+
+That is more credible and still strong.
+
+## Make provenance reconstruction the central invariant
+
+The product’s moat is not the fake agent, the patch agent, or the heuristic router. It is the historical experience graph.
+
+Add a test that fails unless this is true:
 
 ```text
-Task
-RepoSnapshot
-ContextPack + retrieval trace
-VerificationPlan
-RoutingDecision
-AgentAttempt(s)
-CommandRun(s)
-ToolCall(s)
-DiffBundle(s)
-VerificationRun(s)
-Evidence
-EvaluationResult
-WeakLabel(s)
-HumanReviewItem / HumanLabel
-RewardEvent
-AuditEvent(s)
-Trace/span records
-Workspace metadata
-Artifact refs
+Given only run_id, database, and artifact store,
+the system can reconstruct:
+task, repo snapshot, context pack, retrieval trace, routing decision,
+candidate actions, agent attempts, workspaces, diffs, command runs,
+verification plan/runs/evidence, weak labels, judge results,
+human review, reward event, spans, audit events, and post-merge outcomes.
 ```
 
-This is the highest-leverage improvement.
+## Make sandboxing the next hard gate before real agents
 
-## 3. Fix sandbox semantics before running real agents
+Do not run real Claude/Codex/OpenHands agents on arbitrary repos through the local worktree runner. The command runner is better now, but local execution still cannot enforce hard no-network or syscall boundaries. The Docker backend should become mandatory for untrusted real-agent execution.
 
-The current local runner is fine for trusted test fixtures, but real coding agents can execute arbitrary commands. Before live Claude/Codex/OpenHands runs, harden execution:
+## Treat the current bandit as a policy prototype
+
+The live in-process `SimulatedBanditPolicy` is useful, but production routing needs persisted policy state, replayable decisions, off-policy evaluation, and controlled exploration. Every routing decision should persist:
 
 ```text
-CommandRunner allowed_root must be set per workspace.
-Use Path.is_relative_to(), not string-prefix checks.
-Do not allow verification runners to bypass cwd containment.
-Run untrusted commands inside Docker/Kubernetes with network disabled by default.
-Run as non-root.
-Apply CPU/memory/process/time limits.
-Mount only the workspace and explicit read-only inputs.
-Never inject API keys into agent workspaces by default.
-```
-
-The current code has the right chokepoint; it just needs to become enforceable.
-
-## 4. Wire the learning system into the actual workflow
-
-Right now, the learning layer is mostly a simulation/demo. The live route node should not instantiate `HeuristicRouter` directly. Instead:
-
-```python
-policy = policy_registry.select_for_traffic()
-decision = policy.choose_action(features, candidates)
-```
-
-Then the update node should call:
-
-```python
-policy.observe_reward(decision, reward)
-```
-
-And all decisions must persist:
-
-```text
-candidate_actions
-candidate_scores
+feature vector hash
+candidate actions
+candidate scores
 chosen action
-action_probability
+action probability
 policy version
 exploration reason
 constraints applied
-feature vector hash
+reward event
+delayed reward updates
 ```
 
-This is the core of the product thesis.
+## Push the context compiler toward measurable retrieval quality
 
-## 5. Make context strategies real
-
-The names are there; now they need differentiated behavior.
-
-Examples:
+The context compiler needs a benchmark with gold files/symbols, not just a “budget not exceeded” test. For each task, measure:
 
 ```text
-bug_reproduction:
-  include failing test logs, traceback symbols, nearby tests, files referenced by stack trace
-
-architecture:
-  include module docs, dependency graph neighborhood, public API boundaries, CODEOWNERS, recent refactors
-
-recent_changes:
-  include recent commits/PRs touching affected modules
-
-prior_failures:
-  include previous failed attempts, reviewer comments, revert causes, known footguns
-
-minimal:
-  aggressive budget, task spec + AGENTS.md + top 3 symbols only
-
-max_context:
-  larger full-file context, manifests, tests, docs, prior runs
+gold file recall@5/10/20
+symbol recall
+test-file recall
+context token cost
+compile latency
+secret leakage
+duplicate context ratio
 ```
 
-The retrieval benchmark should measure whether each strategy actually retrieves gold files.
+## Upgrade verification to detect agent cheating
 
-## 6. Upgrade “verification” from command-running to adversarial correctness checking
-
-Passing pytest is too easy to game. Add detectors for:
+Passing tests is not enough. Add fraud detectors for:
 
 ```text
 deleted tests
@@ -366,4320 +249,1130 @@ pytest.skip / xfail additions
 snapshot-only updates
 hardcoded outputs
 broad exception swallowing
-unrelated file churn
+dead code patches
+security-sensitive drift
 coverage drops
-mutation-surviving tests
-security-sensitive file changes
-API schema compatibility
-database migration reversibility
+mutation survivors
 ```
 
-Agents will optimize against your evaluators. Assume they will learn shortcuts.
+## Make bakeoff and soak outputs machine-readable
 
-## 7. Expand the API/CLI around artifacts and inspection
-
-The control plane becomes useful when users can inspect why a route was chosen and whether a result is trustworthy.
-
-Add first-class surfaces for:
+The long evals should produce JSON/Parquet reports with:
 
 ```text
-run trace
-route explanation
-context pack rendering
-diff
-verification evidence
-evaluation scorecard
-human-review queue
-reward components
-policy decision
-agent comparison
-artifact download
-```
-
-## 8. Build a real bakeoff harness
-
-The current bakeoff is a placeholder. The real version should run a matrix:
-
-```text
-task types × repos × agents × models × context strategies × verification strategies
-```
-
-And report:
-
-```text
-success rate
+run_id
+task_id
+repo
+agent
+model
+context strategy
+verification strategy
 cost
-latency
 tokens
-test pass rate
-human-review rate
+latency
+success
+reward
+failure class
+human review required
 review burden
-regression risk
-revert/follow-up rate
 context recall
-diff size
-failure categories
+artifact size
+workspace cleanup status
 ```
 
-That report is both a product feature and the training data generator for routing.
+These reports become router-training data.
 
 ---
 
-# Additional tests to run beyond the existing plan
+# 4. Tests to add beyond the existing suite
 
 ## A. Provenance and persistence tests
 
-### 1. Full persistent graph test
+**Full graph reconstruction test**
 
-Run one full workflow, restart the process, then assert the DB reconstructs the entire run:
-
-```text
-Task exists.
-RepoSnapshot exists.
-ContextPack exists.
-VerificationPlan exists.
-RoutingDecision exists.
-AgentAttempt(s) exist.
-CommandRun(s) exist.
-DiffBundle(s) exist.
-VerificationRun(s) exist.
-Evidence exists.
-EvaluationResult exists.
-RewardEvent exists.
-Trace/span records exist.
-Artifact refs resolve.
-```
-
-This should fail today for at least some entities, which is useful.
-
-### 2. `all_for_task` completeness test
-
-After a run:
-
-```python
-records = EntityStore(session).all_for_task(task_id)
-```
-
-Assert it contains all expected classes, not just a subset.
-
-### 3. Artifact integrity test
-
-For every artifact ref in the run:
+Run one full workflow, destroy `AppService`, create a new `AppService` with the same DB/artifact dir, then assert:
 
 ```text
-artifact exists
+get_run(run_id) works
+run_trace(run_id) works
+run_diff(run_id) works
+run_evidence(run_id) works
+run_evaluation(run_id) works
+all artifacts resolve
+all IDs in WorkflowState point to persisted rows
+```
+
+**All-for-task completeness test**
+
+After a successful run, query `EntityStore.all_for_task(task_id)` and assert it includes at least:
+
+```text
+Task
+RepoSnapshot
+ContextPack
+RoutingDecision
+AgentAttempt
+DiffBundle
+VerificationPlan
+VerificationRun
+Evidence
+EvaluationResult
+WeakLabel
+RewardEvent
+SpanRecord
+```
+
+**Artifact integrity test**
+
+For every artifact ref:
+
+```text
+file exists
 checksum matches
-content type is set
-path traversal is impossible
-secret values are absent
+path is inside artifact root
+content is redacted
+content type/suffix is sane
 ```
 
 ---
 
-## B. Real crash/restart tests
+## B. Real crash-resume tests
 
-### 4. Crash after every workflow node
-
-Parameterize over every node in `NODE_ORDER`:
+The existing “chaos” test is not enough because it completes the run before resume.  Add a parameterized test over every workflow node:
 
 ```text
-Run until node N completes.
-Persist state/artifacts.
-Destroy runner/service object.
-Create a new AppService.
-Load run from DB.
-Resume.
-Assert exactly one final state.
-Assert no duplicate attempts/rewards/evidence.
+for node in NODE_ORDER:
+    run until just after node persists
+    simulate hard process death
+    create new AppService
+    reload WorkflowState
+    resume
+    assert exactly one finalization
+    assert exactly one reward event unless delayed rewards exist
+    assert no duplicate attempts/evidence/spans
 ```
 
-The existing chaos test does not kill mid-run; it completes and resumes the completed state. 
-
-### 5. Human-review restart test
+Also add:
 
 ```text
-Run high-risk task until WAITING_FOR_HUMAN.
-Destroy process.
-Reload service.
-List open reviews.
-Submit human label.
-Resume from DB.
-Finalize.
+crash while WAITING_FOR_HUMAN
+restart
+list open reviews
+submit label
+resume
+finalize
 ```
 
-### 6. Label-less resume bypass test
+And:
 
 ```text
-Run high-risk task until WAITING_FOR_HUMAN.
-Call resume with no label.
-Assert it remains WAITING_FOR_HUMAN.
-Assert reward/finalize nodes do not run.
+resume high-risk WAITING_FOR_HUMAN run without label
+assert it remains blocked
 ```
-
-This guards against accidentally bypassing HITL.
 
 ---
 
-## C. Security/sandbox tests
+## C. Sandbox/security tests
 
-### 7. Cwd prefix escape test
-
-Use two directories:
+**Prefix escape**
 
 ```text
-/tmp/ws
-/tmp/ws_evil
+allowed_root = /tmp/ws
+cwd = /tmp/ws_evil
+must fail
 ```
 
-Assert `/tmp/ws_evil` is not treated as inside `/tmp/ws`. This catches string-prefix containment bugs. Use `Path.is_relative_to()`.
+The new `Path.is_relative_to` change should pass this. 
 
-### 8. Symlink escape test
+**Symlink escape**
 
 Inside workspace:
 
 ```text
-workspace/link -> /tmp/outside
+link_to_outside -> /tmp/outside
 ```
 
-Attempt to write through `link/secret.txt`. Assert the operation is blocked or detected.
+Try to read/write through the symlink. The system should block or at least flag.
 
-### 9. Real network egress test
+**Secret scrubbing**
 
-In Docker no-network mode:
-
-```text
-Start a local HTTP server outside container.
-Run agent command: curl server.
-Assert it fails.
-```
-
-Do this with DNS, raw IP, localhost, and IPv6.
-
-### 10. Secret leakage across all surfaces
-
-Inject fake secrets into:
+Inject fake secrets through:
 
 ```text
-env
-repo files
+os.environ
+explicit env
 task body
-command output
-LLM prompt
-LLM response
+repo file
+command stdout
+command stderr
 trace attributes
 artifact content
-DB JSON payload
-logs
+LLM response
 ```
 
-Assert the secret does not appear in any persisted surface.
+Search DB + artifacts + logs for raw secret strings.
 
-### 11. Destructive command test
+**Docker no-network**
 
-Try:
+Once Docker backend lands:
 
-```bash
-rm -rf ..
-git clean -fdx /
-chmod -R
-find / -name '*'
+```text
+run curl against external URL
+run curl against local test server
+run DNS lookup
+assert all fail when network disabled
 ```
 
-Assert containment and/or Docker sandbox prevents damage.
+**Resource exhaustion**
+
+Inside Docker:
+
+```text
+fork bomb attempt
+infinite file write
+infinite stdout
+memory hog
+CPU spin
+```
+
+Assert limits work and artifacts remain bounded.
 
 ---
 
-## D. Agent fraud and evaluator robustness tests
+## D. Evaluator anti-gaming tests
 
-### 12. Test-deletion fraud
+Add malicious patch fixtures:
 
-Agent patch deletes failing tests. Existing tests pass. Evaluator must flag:
+1. Deletes failing tests.
+2. Adds `pytest.mark.skip`.
+3. Weakens assertions.
+4. Changes expected outputs instead of code.
+5. Hardcodes exact test values.
+6. Adds broad `except Exception: pass`.
+7. Touches unrelated billing/auth files.
+8. Updates snapshots only.
+9. Removes type hints to avoid type-check failures.
+10. Changes verification config to avoid running tests.
+
+Expected behavior:
 
 ```text
-test deletion
-coverage drop
-suspicious diff
+tests may pass
+evaluation should be suspicious
 human review required
+reward penalized
+weak labels persisted
 ```
-
-### 13. Test-weakening fraud
-
-Agent changes:
-
-```python
-assert actual == expected
-```
-
-to:
-
-```python
-assert actual is not None
-```
-
-Evaluator must detect weakened assertion or require review.
-
-### 14. Skip/xfail fraud
-
-Agent adds:
-
-```python
-@pytest.mark.skip
-@pytest.mark.xfail
-```
-
-Evaluator must flag.
-
-### 15. Hardcoded fix fraud
-
-Agent implements a hardcoded branch for the exact test input. Mutation/property tests should catch.
-
-### 16. Snapshot-only UI fraud
-
-Frontend task updates snapshots without fixing behavior. UI verifier should catch via DOM/behavior assertions, not just snapshot pass.
 
 ---
 
-## E. Context-retrieval quality tests
+## E. Retrieval quality tests
 
-### 17. Gold-file retrieval benchmark
+Create `evals/datasets/context_gold.yaml`:
 
-Create a dataset:
-
-```text
-task -> gold files/symbols/tests
+```yaml
+- task: "Fix divide-by-zero behavior"
+  repo: python_buggy_app
+  gold_files:
+    - src/calculator.py
+    - tests/test_calculator.py
+  gold_symbols:
+    - divide
 ```
 
-Measure:
+Then test:
 
 ```text
 recall@5
 recall@10
 MRR
-token cost
+token budget
+latency
+duplicate chunks
 secret leakage
-context duplication
 ```
 
-Run across context strategies.
-
-### 18. Large repo benchmark
-
-Generate or use a real repo with:
+Scale from:
 
 ```text
-10k files
-100k chunks
-mixed Python/TS/Markdown
-large generated files
-binary assets
-secret-looking files
+400 files
+5,000 files
+25,000 files
+100,000 chunks
 ```
-
-Assert:
-
-```text
-index time
-retrieval latency
-context compile latency
-memory usage
-budget correctness
-gold-file recall
-```
-
-### 19. Adversarial naming test
-
-Add files with misleading names:
-
-```text
-auth.py
-auth_old.py
-auth_test_fake.py
-not_auth.py
-```
-
-Task references a real auth bug. Assert retrieval chooses the right file.
 
 ---
 
-## F. Routing/learning tests
+## F. Routing and policy tests
 
-### 20. Live-router integration test
+**Live policy update test**
 
-Configure the runner with `SimulatedBanditPolicy`, not `HeuristicRouter`.
-
-Assert:
+Run 100 tasks with the live `SimulatedBanditPolicy`:
 
 ```text
-policy.choose_action called
-decision persisted
-reward observed
-arm stats updated
-action_probability persisted
+assert arms update
+assert candidate_actions > 1
+assert action_probability persisted
+assert rewards alter future choices
 ```
 
-### 21. Candidate-action test
+**Budget-constrained routing**
 
-Assert every routing decision includes multiple candidates with scores, not just the chosen action.
+Set max cost to tiny value:
 
-### 22. Off-policy evaluation sanity test
+```text
+assert expensive candidates filtered
+assert constraints_applied records clamping
+```
 
-Use synthetic logged propensities and known rewards. Assert IPS/SNIPS estimates are close to ground truth within confidence bounds.
-
-### 23. Non-stationary model drift test
+**Non-stationary drift**
 
 Simulate:
 
 ```text
-agent A best for first 500 tasks
-agent B best for next 500 tasks
+first 500 tasks: agent A best
+next 500 tasks: agent B best
 ```
-
-Assert router adapts and drift detector flags degradation.
-
-### 24. Budget-aware routing test
-
-Set hard budget to $0.01. Assert expensive actions are filtered and recorded in `constraints_applied`.
-
----
-
-## G. Concurrency and scale tests
-
-### 25. Parallel workflow isolation
-
-Run 100 workflows concurrently against the same repo snapshot.
 
 Assert:
 
 ```text
-unique worktrees
-no branch collisions
-no DB corruption
-no artifact collisions
-no leaked temp dirs
-consistent final states
+router adapts
+drift alert fires
+policy report shows degradation interval
 ```
 
-### 26. Worktree cleanup test
+---
 
-After success, failure, timeout, and human pause:
+## G. Real adapter live tests
 
-```bash
-git worktree list
+Mark them `@pytest.mark.live`.
+
+For each real adapter:
+
+```text
+healthcheck
+tiny bugfix
+token capture
+diff capture
+command/tool-call capture
+budget stop
+timeout stop
+workspace containment
+secret non-leakage
 ```
 
-Assert no orphan worktrees except those intentionally retained by policy.
+Adapters:
 
-### 27. File descriptor/memory leak soak
+```text
+OpenAI SimpleLLM
+Claude Agent SDK
+Codex SDK
+OpenHands SDK
+```
 
-Run 6h/24h with metrics:
+---
+
+## H. Serious soak tests
+
+Upgrade `make soak-6h` to capture:
 
 ```text
 RSS memory
 open file descriptors
 workspace count
+git worktree count
 artifact count
+artifact bytes
 DB size
-avg/p95 latency
-failure reasons
+p50/p95/p99 latency
+status distribution
+failure classes
+reward distribution
+policy arm distribution
 ```
 
-Fail on unbounded growth.
-
----
-
-## H. Real adapter tests
-
-Mark these as quarantined/live.
-
-### 28. OpenAI live adapter test
-
-Run a tiny deterministic bugfix:
+Fail if:
 
 ```text
-capture tokens
-respect cost budget
-do not leak secrets
-produce diff
-verification passes
-```
-
-### 29. Claude Agent SDK live test
-
-Once real SDK wrapper exists:
-
-```text
-tool calls captured
-file edits captured
-commands captured
-tokens captured
-budget respected
-```
-
-### 30. Codex/OpenHands live tests
-
-Run same fixture across adapters and compare:
-
-```text
-success
-cost
-latency
-diff quality
-test adequacy
-review burden
+memory grows > 25%
+workspace leaks > 0
+artifact growth unbounded
+DB rows missing expected graph
+error rate exceeds threshold
 ```
 
 ---
 
-# Detailed next-step plan for an LLM coding agent
+# 5. Ambitious two-day plan for an LLM coding agent
 
-Below is an agent-ready implementation plan. Give this to the next coding agent as the follow-up charter.
+Below is a detailed implementation plan for a coding agent to run continuously for a couple of strenuous days. It is intentionally aggressive.
 
 ---
 
-## Phase 1 — Make the current state truthful and reproducible
+## Mission
 
-**Goal:** establish a clean baseline and remove overclaims.
+Take the current v0 from “local prototype” to “credible alpha control plane.”
 
-Tasks:
+Primary objectives:
 
-1. Update README and FINAL_REPORT language from “production-grade” to “local v0 / proof-of-concept” until durable orchestration, hard sandboxing, real agent SDKs, and production routing are implemented.
-2. Add a `CURRENT_STATUS.md` with:
+```text
+1. Prove durable provenance and crash resume.
+2. Implement Docker sandboxing for real-agent safety.
+3. Wire evaluation/weak supervision/policy learning into the live loop.
+4. Add retrieval quality benchmarks.
+5. Add serious stress, security, and bakeoff reports.
+6. Expand CLI/API inspection surfaces.
+7. Leave the repo with stronger docs, CI, and a truthful status report.
+```
 
-   ```text
-   implemented
-   partial
-   stubs
-   known risks
-   next milestones
-   ```
-3. Add GitHub Actions CI:
+Do not weaken existing tests. Do not remove security tests. Do not make live API tests required by default.
 
-   ```text
-   ruff
-   mypy
-   unit tests
-   integration tests
-   e2e tests
-   coverage
-   ```
-4. Add `docker-compose.yml` with Postgres for integration tests, even before pgvector is fully wired.
-5. Fix obvious small issues:
+---
 
-   ```text
-   PolicyRegistry.champion enum/string check.
-   CommandRunner cwd containment uses Path.is_relative_to().
-   CommandRunner max_output_chars override should be local, not mutate instance state.
-   run_soak reports real metrics, not only status counts.
-   run_bakeoff honors --overnight or removes the flag.
-   ```
+## Day 1, Block 1 — Baseline and status correction
 
-Acceptance criteria:
+### Tasks
+
+1. Run:
 
 ```bash
+uv sync --all-extras
 uv run pytest -q
 uv run ruff check .
 uv run mypy src
 make coverage
 ```
 
-Add tests proving the docs/status page matches actual optional integration availability.
+2. Save results to `IMPLEMENTATION_LOG.md`.
 
----
-
-## Phase 2 — Complete persistent provenance and durable resume
-
-**Goal:** every run can be reconstructed and resumed after process death.
-
-Tasks:
-
-1. Add/persist a first-class `WorkflowState` row if it is not already mapped.
-2. Modify `AppService._persist_run` to save:
-
-   ```text
-   Task
-   RepoSnapshot
-   ContextPack
-   VerificationPlan
-   RoutingDecision
-   AgentAttempt(s)
-   DiffBundle(s)
-   VerificationRun(s)
-   Evidence
-   EvaluationResult
-   HumanReviewItem
-   HumanLabel(s)
-   WeakLabel(s)
-   RewardEvent
-   CommandRunRecord(s)
-   AuditEvent(s)
-   WorkflowState
-   ```
-3. Refactor `RunArtifacts` so every field can be rehydrated from DB by ID.
-4. Add `WorkflowRunner.load_from_state(...)`.
-5. Make every node idempotent:
-
-   ```text
-   If artifact exists, load it.
-   If node completed, skip safely.
-   If node partially completed, reconcile before retry.
-   ```
-6. Add `AppService.get_run` and `resume_run` backed by persistent storage, not `_runs`.
-7. Ensure human-review resume works after process restart.
-8. Prevent label-less resume from bypassing human review.
-
-Acceptance tests:
+3. Update `FINAL_REPORT.md` or create `CURRENT_STATUS.md` with four sections:
 
 ```text
-test_full_persistent_graph_after_run
-test_reload_run_after_process_restart
-test_crash_after_each_node_and_resume
-test_human_review_resume_after_restart
-test_label_less_resume_does_not_finalize
-test_no_duplicate_reward_after_resume
+Implemented
+Partial
+Stubbed
+Known risks
+```
+
+4. Make the status explicitly say:
+
+```text
+This is a local v0 / alpha, not production-grade.
+```
+
+5. Add/verify GitHub Actions:
+
+```yaml
+ruff
+mypy
+unit
+integration
+e2e
+coverage
+```
+
+### Acceptance
+
+```text
+CI config exists.
+Status docs match actual code.
+No “production-grade” overclaim remains unless the missing pieces are implemented.
 ```
 
 ---
 
-## Phase 3 — Harden execution and implement Docker workspace backend
+## Day 1, Block 2 — Full provenance reconstruction
 
-**Goal:** make real agent execution safe enough for live tests.
+### Tasks
 
-Tasks:
-
-1. In `WorkflowRunner`, construct a command runner per workspace with:
-
-   ```python
-   CommandRunner(allowed_root=workspace.path, ...)
-   ```
-2. Remove `allow_cwd_outside_root=True` from verification runners unless a very narrow, explicit exception exists.
-3. Implement `DockerWorkspaceManager`:
-
-   ```text
-   create container
-   copy or mount repo snapshot
-   run as non-root
-   network disabled by default
-   CPU/memory/pid limits
-   read-only mounts except workspace
-   no secrets by default
-   cleanup container and volume
-   capture diff
-   ```
-4. Add workspace policies:
-
-   ```text
-   local_untrusted = forbidden
-   docker_no_network = default for real agents
-   docker_network = audited override
-   ```
-5. Ensure every command creates a persisted `CommandRunRecord`.
-6. Ensure workspace cleanup runs after success/failure according to policy.
-7. Add audit events for:
-
-   ```text
-   network enabled
-   secret injected
-   cleanup failed
-   sandbox policy override
-   ```
-
-Acceptance tests:
+1. Ensure `RunState` is mapped in `EntityStore` if not already.
+2. Ensure `SpanRecord` is mapped in `EntityStore`.
+3. Persist every run artifact:
 
 ```text
-test_command_runner_blocks_prefix_escape
-test_command_runner_blocks_symlink_escape
-test_verification_cannot_run_outside_workspace
-test_docker_workspace_no_network
-test_docker_workspace_resource_limits
-test_worktree_cleanup_success_failure_timeout
-test_no_secret_in_command_artifacts
+WorkflowState
+Task
+RepoSnapshot
+ContextPack
+VerificationPlan
+RoutingDecision
+AgentAttempt(s)
+DiffBundle(s)
+VerificationRun(s)
+Evidence
+EvaluationResult
+WeakLabel
+HumanReviewItem
+HumanLabel
+RewardEvent
+SpanRecord(s)
+AuditEvent(s)
 ```
 
----
+4. Add `AppService.full_run_graph(run_id)` returning a structured object:
 
-## Phase 4 — Complete API and CLI
+```json
+{
+  "state": {},
+  "task": {},
+  "snapshot": {},
+  "context_pack": {},
+  "routing_decision": {},
+  "attempts": [],
+  "diffs": [],
+  "verification_runs": [],
+  "evidence": [],
+  "evaluation": {},
+  "weak_labels": [],
+  "review_items": [],
+  "human_labels": [],
+  "reward_events": [],
+  "spans": [],
+  "audit_events": []
+}
+```
 
-**Goal:** make the system operable without importing Python internals.
-
-API endpoints to add:
+5. Add API:
 
 ```text
-POST /repos/{repo_id}/index
-GET /runs/{run_id}/trace
-GET /runs/{run_id}/diff
-GET /runs/{run_id}/evidence
-GET /runs/{run_id}/evaluation
-POST /runs/{run_id}/cancel
-POST /reviews/{review_id}/resolve
-POST /policies/train
-POST /policies/{policy_id}/promote
-POST /policies/{policy_id}/rollback
-POST /evals/replay
-POST /evals/bakeoff
-GET /evals/runs/{eval_run_id}
-GET /traces/{trace_id}
+GET /runs/{run_id}/graph
 ```
 
-CLI commands to add:
+6. Add CLI:
 
 ```bash
-acp repo add <path-or-url>
-acp repo index <repo-id>
-acp task create --repo <repo-id> --title ... --body ...
-acp run start <task-id>
-acp run status <run-id>
-acp run trace <run-id>
-acp run diff <run-id>
-acp run evidence <run-id>
-acp run evaluation <run-id>
-acp run cancel <run-id>
-acp reviews show <id>
-acp reviews label <id> --verdict pass|fail --reason ...
-acp reviews resolve <id>
-acp policy train
-acp policy promote <id>
-acp policy rollback <id>
-acp eval bakeoff
-acp eval replay
+acp run graph <run-id>
 ```
 
-Acceptance tests:
+### Tests
 
 ```text
-FastAPI TestClient full workflow
-CLI full workflow with temporary DB
-OpenAPI includes all endpoints
-Service restart does not lose run status
-Review label through API resumes run
+test_full_run_graph_contains_expected_entities
+test_run_graph_survives_service_restart
+test_every_id_in_workflow_state_resolves_to_row
+test_artifact_refs_resolve_from_graph
 ```
+
+### Acceptance
+
+A run can be reconstructed from DB + artifact store without relying on `_runs` or `_runners`.
 
 ---
 
-## Phase 5 — Make context intelligence real
+## Day 1, Block 3 — Real crash-resume harness
 
-**Goal:** upgrade from local chunking to a measurable context compiler.
+### Tasks
 
-Tasks:
+1. Add a debug/test hook to `WorkflowRunner`:
 
-1. Implement `VectorStore` protocol:
+```python
+stop_after_node: str | None = None
+fail_after_node: str | None = None
+```
 
-   ```python
-   upsert(chunks)
-   query(embedding, filters, top_k)
-   delete_snapshot(snapshot_id)
-   ```
-2. Implement:
-
-   ```text
-   PgVectorStore
-   QdrantStore
-   LocalInMemoryVectorStore
-   ```
-3. Add embedding providers:
-
-   ```text
-   HashingEmbedder for tests
-   OpenAIEmbedder optional
-   VoyageEmbedder optional
-   SentenceTransformerEmbedder optional
-   ```
-4. Add embedding cache keyed by:
-
-   ```text
-   model
-   content_hash
-   dimensions
-   ```
-5. Add actual Tree-sitter parser where available.
-6. Add git intelligence:
-
-   ```text
-   recent commits
-   churn by module
-   CODEOWNERS
-   prior run summaries
-   revert/failure history
-   dependency/import graph
-   ```
-7. Make all retrieval strategies real and differentiated.
-8. Build `evals/datasets/context_gold.yaml`:
-
-   ```text
-   task title/body
-   gold files
-   gold symbols
-   expected tests
-   risk level
-   ```
-
-Acceptance metrics:
+2. For each node in `NODE_ORDER`, test:
 
 ```text
-recall@10 >= 0.85 on fixture context benchmark
-MRR reported
-token budget never exceeded
-no secret/binary leakage
-10k-file synthetic repo completes under configured latency target
+run until node persists
+simulate crash by discarding runner/service
+instantiate new AppService
+load run state
+resume
+assert final state correct
 ```
+
+3. Add special tests for human review:
+
+```text
+crash while WAITING_FOR_HUMAN
+restart
+list review
+label review
+resume
+finalize
+```
+
+4. Add duplicate prevention:
+
+```text
+reward event count stable
+attempt count stable
+evidence count stable
+finalize node appears once
+```
+
+### Tests
+
+```bash
+uv run pytest tests/integration/test_crash_resume.py -q
+```
+
+### Acceptance
+
+Crash-resume works after every node and while blocked for human review.
 
 ---
 
-## Phase 6 — Integrate the full evaluation ladder
+## Day 1, Block 4 — Command-runner and local sandbox hardening
 
-**Goal:** turn objective, weak, ML/LLM, and human evaluation into one evidence system.
+### Tasks
 
-Tasks:
-
-1. Add `EvaluationPipeline`:
-
-   ```text
-   objective evaluator
-   weak supervision
-   optional LLM judges
-   human-review selector
-   active-learning priority
-   reward computation
-   ```
-2. Wire it into `WorkflowRunner` in place of direct `ObjectiveEvaluator`.
-3. Add feature extraction for weak supervision from:
-
-   ```text
-   task
-   classification
-   diff
-   evidence
-   attempt metadata
-   post-merge outcome
-   review labels
-   parallel disagreements
-   ```
-4. Persist `WeakLabel` records.
-5. Implement real LLM judges behind a provider interface:
-
-   ```text
-   SpecComplianceJudge
-   DiffRiskJudge
-   TestAdequacyJudge
-   ArchitectureFitJudge
-   UnrelatedChangeJudge
-   ```
-6. Judges must output strict JSON with:
-
-   ```text
-   score
-   confidence
-   verdict
-   reasons
-   requires_human_review
-   ```
-7. Add evaluator calibration dataset:
-
-   ```text
-   human label
-   objective score
-   weak label
-   judge score
-   final outcome
-   ```
-8. Add active-learning queue prioritization:
-
-   ```text
-   uncertainty
-   evaluator disagreement
-   risk
-   novelty
-   cost surprise
-   policy value of information
-   ```
-
-Acceptance tests:
+1. Ensure all verification commands run with `allowed_root` set to the specific workspace path, not the broad workspace parent.
+2. Remove any unnecessary `allow_cwd_outside_root=True`.
+3. Add `CommandRunner.run` local variable for `max_output_chars` rather than mutating instance state.
+4. Persist every `CommandRunRecord` generated by verification.
+5. Add symlink escape detection:
 
 ```text
-test_weak_label_persisted_in_workflow
-test_llm_judge_invalid_json_retries
-test_eval_disagreement_triggers_human_review
-test_active_learning_priority_orders_cases
-test_human_label_updates_reward_source
+cwd.resolve() must stay inside allowed_root.resolve()
+output artifact path must stay inside artifact root
+writes through symlinks should be detected where possible
 ```
+
+6. Add audit event for any command that requests network or secrets.
+
+### Tests
+
+```text
+test_command_prefix_escape_blocked
+test_command_symlink_escape_blocked
+test_command_max_output_override_does_not_mutate_runner
+test_verification_command_records_persisted
+test_no_command_env_secret_in_child_by_default
+```
+
+### Acceptance
+
+Local command execution is materially safer and fully recorded.
 
 ---
 
-## Phase 7 — Put the bandit/router into production path
+## Day 1, Block 5 — Docker workspace v1
 
-**Goal:** make routing adaptive, not just heuristic.
+### Tasks
 
-Tasks:
+Implement `DockerWorkspaceManager`.
+
+Minimum behavior:
+
+```text
+create temporary workspace directory
+copy repo snapshot into workspace
+start container from python:3.11-slim or configured image
+mount workspace at /workspace
+run as non-root if possible
+network disabled by default
+memory limit
+CPU limit
+pids limit
+timeout
+cleanup container
+capture diff from mounted workspace
+```
+
+Add policy:
+
+```python
+WorkspacePolicy(backend="docker", allow_network=False, memory_mb=1024, cpus=1)
+```
+
+Add config:
+
+```text
+ACP_ENABLE_DOCKER
+ACP_DOCKER_IMAGE
+ACP_DOCKER_MEMORY_MB
+ACP_DOCKER_CPUS
+```
+
+Add `WorkspaceManagerFactory`.
+
+### Tests
+
+Mark Docker tests skipped if Docker unavailable:
+
+```text
+test_docker_workspace_create_and_cleanup
+test_docker_workspace_no_network
+test_docker_workspace_nonroot_or_documented
+test_docker_workspace_resource_limit
+test_docker_workspace_diff_capture
+```
+
+### Acceptance
+
+The system can run the bugfix demo inside Docker with no network.
+
+---
+
+## Day 1, Block 6 — Evaluation ladder integration
+
+### Tasks
+
+1. Create `EvaluationPipeline`:
+
+```python
+class EvaluationPipeline:
+    def evaluate(task, attempt, diff, evidence, verdict, classification) -> EvaluationBundle:
+        objective = ObjectiveEvaluator(...)
+        weak_label = WeakSupervisor(...)
+        judge_results = [...]
+        al_score = ActiveLearningSelector(...)
+        final = merge(...)
+        return bundle
+```
+
+2. Wire it into `WorkflowRunner`.
+
+3. Persist:
+
+```text
+WeakLabel
+judge results if schema exists, else as evidence metadata
+ActiveLearningScore if schema exists
+human-review reason includes active-learning reason
+```
+
+4. Add fraud feature extraction:
+
+```text
+deleted_tests
+weakened_tests
+skip_added
+xfail_added
+coverage_drop
+snapshot_only
+unrelated_files
+sensitive_files
+```
+
+### Tests
+
+```text
+test_bugfix_without_test_gets_weak_suspicious_label
+test_large_diff_gets_active_learning_high_priority
+test_security_diff_requires_human
+test_parallel_disagreement_requires_review
+test_weak_label_persisted_in_run_graph
+```
+
+### Acceptance
+
+The live workflow uses objective + weak + AL signals, not just objective eval.
+
+---
+
+## Day 2, Block 1 — Routing policy becomes first-class
+
+### Tasks
 
 1. Add `CandidateGenerator`:
 
-   ```text
-   possible agents
-   model choices
-   context strategies
-   verification policies
-   budgets
-   parallelism
-   fallback policies
-   ```
-2. Add `RoutingFeatureExtractor` to live workflow.
-3. Refactor runner:
+```text
+candidate per available agent
+candidate per context strategy
+candidate per verification policy
+candidate per budget tier
+```
 
-   ```python
-   decision = routing_policy.choose_action(features, candidates)
-   ```
-4. Apply hard constraints before policy selection.
-5. Persist:
-
-   ```text
-   features hash
-   candidate actions
-   candidate scores
-   action probability
-   exploration mode
-   exploration reason
-   policy version
-   ```
-6. Implement policy registry backed by DB.
-7. Implement live `SimulatedBanditPolicy` update:
-
-   ```python
-   policy.observe_reward(decision, reward)
-   ```
-8. Add optional MABWiser/VW implementations behind protocol.
-9. Add off-policy evaluation reports:
-
-   ```text
-   IPS
-   SNIPS
-   doubly robust placeholder
-   confidence intervals
-   ```
-10. Add drift detection:
+2. Ensure every decision has multiple candidates when multiple agents are available.
+3. Persist feature vector hash and candidate scores.
+4. Implement durable policy snapshot:
 
 ```text
-reward drop
-cost spike
-success-rate drop
-evaluator disagreement increase
+PolicyVersion.params contains arms/stats
+PolicyVersion.metrics contains success/cost/reward summaries
 ```
 
-Acceptance tests:
-
-```text
-test_live_bandit_policy_updates_after_reward
-test_routing_decision_has_multiple_candidates
-test_constraints_filter_expensive_unavailable_actions
-test_policy_registry_persists_champion_challenger
-test_canary_fraction_respected
-test_drift_detector_flags_nonstationary_sim
-```
-
----
-
-## Phase 8 — Implement real coding-agent SDK adapters
-
-**Goal:** wrap actual coding agents, not just JSON patchers.
-
-Adapters to implement:
-
-```text
-ClaudeAgentSDKAdapter
-CodexSDKAdapter
-OpenHandsSDKAdapter
-```
-
-Each adapter must capture:
-
-```text
-agent session id
-model name
-tool calls
-file reads
-file writes
-commands
-stdout/stderr artifacts
-diff
-token usage
-cost estimate
-wall time
-errors
-budget stops
-permission denials
-```
-
-Each adapter must respect:
-
-```text
-workspace policy
-network policy
-tool permissions
-cost budget
-time budget
-context pack
-verification policy
-```
-
-Add live/quarantined tests:
-
-```text
-pytest -m live tests/live/test_claude_adapter.py
-pytest -m live tests/live/test_codex_adapter.py
-pytest -m live tests/live/test_openhands_adapter.py
-```
-
-Acceptance:
-
-```text
-unavailable adapters never break imports
-healthcheck reports exact reason
-live tiny bugfix succeeds or fails with structured error
-token/cost captured when provider exposes it
-all writes stay inside workspace
-```
-
----
-
-## Phase 9 — Observability and trace productization
-
-**Goal:** make every run debuggable.
-
-Tasks:
-
-1. Wire `Tracer` into every workflow node.
-2. Add spans for:
-
-   ```text
-   classify
-   snapshot
-   index
-   retrieve
-   budget
-   route
-   agent execute
-   command run
-   diff
-   verify
-   aggregate
-   evaluate
-   human review
-   reward
-   policy update
-   ```
-3. Add OTel exporter when dependency/config present.
-4. Persist spans or JSONL references by `trace_id`.
-5. Add `/runs/{run_id}/trace` and `/traces/{trace_id}`.
-6. Add trace redaction tests.
-7. Add cost/token metrics.
-
-Acceptance:
-
-```text
-every workflow has expected spans
-trace_id joins attempts/evidence/commands/reward
-JSONL exporter writes valid redacted spans
-OTel exporter optional and skipped cleanly when unavailable
-```
-
----
-
-## Phase 10 — Real bakeoffs and stress infrastructure
-
-**Goal:** make the system tell you what to improve.
-
-Tasks:
-
-1. Replace current bakeoff with a matrix runner:
-
-   ```text
-   repos
-   task datasets
-   agents
-   models
-   context strategies
-   verification strategies
-   budgets
-   seeds
-   ```
-2. Store results in:
-
-   ```text
-   eval_runs
-   eval_cases
-   eval_attempts
-   eval_reports
-   ```
-3. Add reports:
-
-   ```text
-   success rate
-   cost
-   latency
-   review burden
-   test adequacy
-   context recall
-   route regret
-   failure taxonomy
-   human-review rate
-   reward distribution
-   ```
-4. Upgrade soak:
-
-   ```text
-   memory
-   fd count
-   orphan worktrees
-   DB size
-   artifact size
-   p50/p95 latency
-   success/failure reasons
-   ```
-5. Add nightly CI job for non-live long tests.
-6. Add optional weekly live bakeoff if keys are present.
-
-Acceptance:
-
-```text
-make eval-bakeoff-overnight produces comparative scorecard
-make soak-6h emits machine-readable metrics
-make bandit-monte-carlo compares random/heuristic/bandit
-make retriever-stress runs at 10k-file scale
-make security-redteam covers sandbox/network/secrets/evaluator fraud
-```
-
----
-
-## Highest-priority next 10 issues
-
-I would file these immediately:
-
-1. **Persist and reload `WorkflowState`; remove in-memory-only run registry.**
-2. **Persist complete provenance graph: snapshot, verification plan/run, command runs, weak labels, audit events, spans.**
-3. **Fix human-review resume so label-less resume cannot bypass review.**
-4. **Set `CommandRunner.allowed_root` per workspace and remove verification cwd bypass.**
-5. **Implement Docker workspace backend with no-network default.**
-6. **Inject `RoutingPolicy` into workflow; stop hardcoding `HeuristicRouter`.**
-7. **Wire bandit `observe_reward` into `_node_update_policy`.**
-8. **Integrate weak supervision and active learning into live evaluation.**
-9. **Implement real vector-store protocol with pgvector/local fallback and context retrieval benchmark.**
-10. **Replace toy bakeoff/chaos/soak with real stress harnesses and machine-readable reports.**
-
-## Bottom line
-
-This branch has successfully proven the **shape** of the system. It is much more than a sketch. The next level is to make the loop **durable, safe, observable, adaptive, and empirically measured**.
-
-The most important next milestone is not adding more agents. It is making one run fully reconstructable and resumable from persistent storage, with all evidence, traces, artifacts, and routing decisions intact. Once that is true, every new adapter, evaluator, context strategy, and bandit policy becomes measurable.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-----------------------------------------------
-
-# ROUND 0 GOALS
-
-
-A few source-verified assumptions behind the spec: the OpenAI Codex Python SDK currently exists but is experimental and controls a local Codex app-server over JSON-RPC, so the implementation should wrap it as an optional adapter rather than making it a hard dependency. ([OpenAI Developers][1]) Anthropic’s Claude Agent SDK exposes the same tools, agent loop, and context management that power Claude Code, with Python and TypeScript support. ([Claude Code][2]) OpenHands’ Software Agent SDK provides Python and REST APIs for code agents, supports local workspaces, and can run agents in ephemeral Docker or Kubernetes-backed workspaces. ([OpenHands Docs][3]) LangGraph is suitable for durable, stateful, human-in-the-loop agent orchestration. ([LangChain Docs][4]) MCP is relevant because it standardizes how applications provide context, tools, prompts, and resources to LLM apps. ([GitHub][5]) For the learning layer, Vowpal Wabbit supports contextual bandits in Python, MABWiser supports context-free and contextual bandit prototyping, Ax/BoTorch support adaptive experimentation and Bayesian optimization, and River supports online ML in Python. ([Vowpal Wabbit][6]) For context infrastructure, pgvector provides vector similarity search inside Postgres, Qdrant supports hybrid dense/sparse/multivector retrieval, and Tree-sitter provides concrete syntax trees and incremental parsing. ([GitHub][7]) For verification and observability, Playwright supports Python browser automation for tests, scripts, and agent workflows, while OpenTelemetry provides vendor-neutral traces, metrics, and logs. ([Playwright][8]) Braintrust and LangSmith both support evaluation workflows with human review, automated scoring, production traces, and feedback loops. ([braintrust.dev][9])
-
-
-NOTE:
-- you can judiciously do live tests and runs to make sure that this is all working using OPENAI_API_KEY and ANTHROPIC_API_KEY
-- other agents and repos depend on this conda environment. Make sure that you don't change versions of any libraries as you install. **SUPER IMPORTANT**
-
----
-
-# Implementation charter for the coding agent
-
-## 0. Role and mission
-
-You are an autonomous senior/principal software engineering agent. Your mission is to implement a Python-first **agentic software engineering control plane**.
-
-This product routes coding tasks across multiple coding agents and models, compiles repo-specific context, runs agents in isolated workspaces, verifies outputs, collects traces, learns from objective and human feedback, and improves routing decisions over time using contextual bandits, supervised ML, weak supervision, and active learning.
-
-This is not a toy demo. Build the first production-grade version.
-
-The system must support:
-
-```text
-Task intake
-Repo snapshotting
-Codebase indexing
-Context compilation
-Agent/model routing
-Parallel agent attempts
-Sandboxed execution
-Verification and evaluation
-Human review
-Weak supervision
-Active learning
-Bandit-based routing
-Policy versioning
-Trace collection
-Cost/token accounting
-Post-merge outcome ingestion
-CLI/API usage
-Long-running evals and soak tests
-```
-
-You must implement working code, tests, documentation, and runnable demos. Do not merely scaffold empty files. Do not fake passing tests by weakening assertions. Do not bypass failing tests. Do not delete tests unless replacing them with stronger ones.
-
----
-
-## 1. Non-negotiable operating rules
-
-### 1.1 Autonomy
-
-Work continuously until the implementation satisfies the acceptance criteria. Do not stop after scaffolding. Do not ask clarifying questions. Make reasonable engineering choices and document them.
-
-### 1.2 Safety
-
-Never require real production credentials for tests. Never print secrets. Never write secrets to logs, traces, prompts, artifacts, or vector stores. Redact environment variables and tokens.
-
-All command execution must go through a controlled command runner with:
-
-```text
-timeouts
-working-directory control
-output truncation
-raw-output artifact storage
-secret redaction
-exit-code capture
-resource policy
-network policy metadata
-```
-
-### 1.3 Optional external integrations
-
-External agent SDKs and cloud services must be optional.
-
-The system must run end-to-end with fake/local adapters when these are absent:
-
-```text
-OpenAI API keys
-Anthropic API keys
-Codex local app-server
-Claude Agent SDK
-OpenHands Agent Server
-Qdrant
-Braintrust
-LangSmith
-Kubernetes
-Docker
-```
-
-Core unit and integration tests must pass without paid APIs.
-
-### 1.4 Version everything
-
-Version and persist:
-
-```text
-tasks
-repo snapshots
-context packs
-retrieval traces
-routing decisions
-policy versions
-agent attempts
-tool calls
-commands
-diffs
-verification plans
-evidence
-evaluation results
-human labels
-weak labels
-reward events
-post-merge outcomes
-```
-
-### 1.5 Observability first
-
-Every run must emit structured logs and OpenTelemetry spans. Every important decision must be inspectable after the run.
-
-### 1.6 Reproducibility
-
-A run must be reproducible from:
-
-```text
-repo URL
-base commit
-task payload
-context-pack ID
-policy version
-agent adapter name
-model name
-budget
-verification plan
-random seed
-```
-
-### 1.7 Deterministic tests
-
-All tests must be deterministic by default. Where randomness is necessary, seed it and log the seed.
-
----
-
-## 2. Build target
-
-Implement a repo named:
-
-```text
-agent-control-plane
-```
-
-Package name:
-
-```text
-acp
-```
-
-CLI command:
-
-```text
-acp
-```
-
-Python target:
-
-```text
-Python 3.11+
-```
-
-Recommended dependency manager:
-
-```text
-uv
-```
-
-Use `pyproject.toml`.
-
-The repo must support:
-
-```bash
-uv sync --all-extras
-uv run pytest
-uv run ruff check .
-uv run mypy src
-uv run acp --help
-```
-
----
-
-## 3. Required high-level architecture
-
-Implement these layers:
-
-```text
-API layer
-  FastAPI
-  Pydantic v2
-  SQLAlchemy 2.x or SQLModel
-  Alembic
-  Postgres primary storage
-  SQLite fallback for local tests
-  Redis optional for queues/cache
-
-Workflow/orchestration layer
-  Internal graph runner for v1
-  Optional Temporal integration behind interface
-  Durable state transitions
-  Resume/retry support
-  Human-review interrupts
-
-Agent adapter layer
-  FakeAgentAdapter for tests
-  PatchAgentAdapter for deterministic local patches
-  ClaudeAgentAdapter optional
-  CodexAgentAdapter optional
-  OpenHandsAgentAdapter optional
-  SimpleLLMReviewAdapter optional
-  All adapters behind one common protocol
-
-Workspace layer
-  Local git worktree workspace
-  Docker workspace optional
-  Kubernetes workspace optional
-  OpenHands workspace optional
-  Command runner with timeout/redaction/resource capture
-
-Context layer
-  Git metadata
-  ripgrep keyword search
-  Tree-sitter parsing
-  optional ctags/SCIP symbol index
-  embeddings
-  pgvector primary vector store
-  Qdrant optional advanced vector store
-  context-pack compiler
-  token-budget enforcement
-
-Evaluation layer
-  pytest/test runner
-  coverage
-  lint/type/security scanners
-  Playwright UI checks
-  spec-derived verification plans
-  objective evidence aggregator
-  weak-label engine
-  ML/LLM evaluator interface
-  human-review queue
-  active-learning selector
-
-Learning/routing layer
-  heuristic baseline router
-  supervised success/cost/risk predictors
-  contextual bandit router
-  Bayesian experiment optimizer
-  policy registry
-  off-policy evaluation
-  champion/challenger rollout
-  drift detection hooks
-
-Observability layer
-  OpenTelemetry spans
-  structured JSON logs
-  trace IDs on all records
-  optional Braintrust/LangSmith/Phoenix exporters
-
-Governance layer
-  budget policy
-  risk policy
-  human-approval policy
-  sandbox policy
-  audit log
-```
-
----
-
-## 4. Repository structure
-
-Create this structure:
-
-```text
-agent-control-plane/
-  pyproject.toml
-  uv.lock
-  README.md
-  IMPLEMENTATION_LOG.md
-  ARCHITECTURE.md
-  SECURITY.md
-  Makefile
-  docker-compose.yml
-  .env.example
-  .gitignore
-
-  src/
-    acp/
-      __init__.py
-      version.py
-
-      cli/
-        __init__.py
-        main.py
-        commands/
-          init.py
-          repo.py
-          task.py
-          run.py
-          verify.py
-          eval.py
-          policy.py
-          demo.py
-
-      api/
-        __init__.py
-        app.py
-        deps.py
-        routes/
-          health.py
-          repos.py
-          tasks.py
-          runs.py
-          reviews.py
-          policies.py
-          evals.py
-          traces.py
-
-      core/
-        __init__.py
-        ids.py
-        time.py
-        config.py
-        enums.py
-        errors.py
-        redaction.py
-        budgets.py
-        policies.py
-        artifacts.py
-        events.py
-
-      db/
-        __init__.py
-        base.py
-        session.py
-        models.py
-        repositories.py
-        migrations/
-          env.py
-          script.py.mako
-          versions/
-
-      schemas/
-        __init__.py
-        task.py
-        repo.py
-        context.py
-        agent.py
-        workspace.py
-        verification.py
-        evaluation.py
-        routing.py
-        learning.py
-        human_review.py
-        trace.py
-
-      observability/
-        __init__.py
-        logging.py
-        tracing.py
-        metrics.py
-        exporters.py
-
-      workspaces/
-        __init__.py
-        base.py
-        local.py
-        docker.py
-        kubernetes.py
-        command_runner.py
-        diff.py
-        git_ops.py
-        policies.py
-
-      context/
-        __init__.py
-        indexer.py
-        parsers.py
-        tree_sitter_parser.py
-        symbols.py
-        chunks.py
-        embeddings.py
-        vector_store.py
-        pgvector_store.py
-        qdrant_store.py
-        retrieval.py
-        compiler.py
-        token_budget.py
-        instructions.py
-        agnostic_code_graph.py
-
-      agents/
-        __init__.py
-        base.py
-        registry.py
-        fake.py
-        patch_agent.py
-        claude_agent.py
-        codex_agent.py
-        openhands_agent.py
-        simple_llm.py
-
-      verification/
-        __init__.py
-        plan.py
-        detectors.py
-        runners.py
-        pytest_runner.py
-        playwright_runner.py
-        static_analysis.py
-        security.py
-        evidence.py
-        aggregate.py
-
-      evaluation/
-        __init__.py
-        objective.py
-        weak_supervision.py
-        llm_judges.py
-        rubrics.py
-        human_review.py
-        active_learning.py
-        calibration.py
-        scorecards.py
-
-      routing/
-        __init__.py
-        features.py
-        actions.py
-        constraints.py
-        heuristic.py
-        bandit.py
-        supervised.py
-        policy.py
-        registry.py
-        off_policy.py
-        simulation.py
-
-      orchestration/
-        __init__.py
-        state.py
-        graph.py
-        nodes.py
-        runner.py
-        retries.py
-        interrupts.py
-
-      integrations/
-        __init__.py
-        github.py
-        mcp.py
-        braintrust.py
-        langsmith.py
-        phoenix.py
-        litellm_gateway.py
-
-      jobs/
-        __init__.py
-        train_router.py
-        replay_evals.py
-        ingest_outcomes.py
-        nightly_bakeoff.py
-        drift_detection.py
-
-  tests/
-    conftest.py
-    fixtures/
-      repos/
-        python_buggy_app/
-        frontend_toy_app/
-        multi_file_refactor_app/
-      traces/
-      policies/
-      tasks/
-
-    unit/
-      test_schemas.py
-      test_redaction.py
-      test_budgets.py
-      test_command_runner.py
-      test_diff.py
-      test_context_chunks.py
-      test_context_compiler.py
-      test_retrieval.py
-      test_task_classifier.py
-      test_agent_registry.py
-      test_fake_agent.py
-      test_verification_plan.py
-      test_evidence_aggregation.py
-      test_weak_supervision.py
-      test_active_learning.py
-      test_routing_features.py
-      test_heuristic_router.py
-      test_bandit_router.py
-      test_policy_registry.py
-
-    integration/
-      test_db_migrations.py
-      test_local_workspace.py
-      test_index_fixture_repo.py
-      test_run_fake_agent_workflow.py
-      test_parallel_attempts.py
-      test_human_review_interrupt.py
-      test_playwright_fixture.py
-      test_pgvector_store.py
-      test_api_tasks.py
-      test_cli_demo.py
-
-    e2e/
-      test_bugfix_end_to_end.py
-      test_eval_ladder_end_to_end.py
-      test_router_learning_end_to_end.py
-
-    long/
-      test_soak_workflows.py
-      test_bandit_monte_carlo.py
-      test_retriever_stress.py
-      test_command_runner_chaos.py
-
-  evals/
-    datasets/
-      synthetic_tasks.yaml
-      fixture_bugfix_tasks.yaml
-      router_simulation_tasks.yaml
-    rubrics/
-      spec_compliance.yaml
-      diff_risk.yaml
-      test_adequacy.yaml
-      architecture_fit.yaml
-    scripts/
-      run_bakeoff.py
-      run_soak.py
-      run_bandit_sim.py
-      replay_traces.py
-
-  examples/
-    quickstart/
-    github_issue_flow/
-    local_repo_flow/
-    browser_ui_flow/
-    contextual_bandit_demo/
-
-  docs/
-    design/
-      context_compiler.md
-      evaluation_ladder.md
-      routing_policy.md
-      workspace_security.md
-      data_model.md
-      active_learning.md
-    operations/
-      local_dev.md
-      docker.md
-      kubernetes.md
-      observability.md
-      adding_agent_adapter.md
-      adding_evaluator.md
-      running_long_evals.md
-```
-
----
-
-## 5. Dependency plan
-
-Use dependency groups.
-
-### 5.1 Core dependencies
-
-Add:
-
-```text
-fastapi
-uvicorn
-pydantic
-pydantic-settings
-sqlalchemy
-alembic
-psycopg[binary]
-aiosqlite
-typer
-rich
-httpx
-tenacity
-structlog
-python-dotenv
-orjson
-gitpython
-networkx
-numpy
-pandas
-polars
-scikit-learn
-```
-
-### 5.2 Dev/test dependencies
-
-Add:
-
-```text
-pytest
-pytest-asyncio
-pytest-cov
-pytest-timeout
-pytest-xdist
-hypothesis
-respx
-freezegun
-ruff
-mypy
-types-requests
-pre-commit
-```
-
-### 5.3 Context/retrieval dependencies
-
-Add optional group `context`:
-
-```text
-tree-sitter
-tree-sitter-python
-tree-sitter-javascript
-tree-sitter-typescript
-tiktoken
-pgvector
-qdrant-client
-sentence-transformers
-rank-bm25
-```
-
-Also call `ripgrep` as a system binary when available; fallback to Python search.
-
-### 5.4 Agent dependencies
-
-Add optional group `agents`:
-
-```text
-claude-agent-sdk
-openhands-sdk
-openai
-litellm
-mcp
-```
-
-For Codex, make the adapter optional and robust because the Python SDK may need a local checkout or local app-server.
-
-### 5.5 Verification dependencies
-
-Add optional group `verification`:
-
-```text
-pytest
-coverage
-hypothesis
-playwright
-pytest-playwright
-ruff
-mypy
-bandit
-semgrep
-```
-
-Use external CLIs when installed; otherwise mark evidence as skipped with reason.
-
-### 5.6 Learning dependencies
-
-Add optional group `learning`:
-
-```text
-lightgbm
-xgboost
-vowpalwabbit
-mabwiser
-river
-ax-platform
-botorch
-pymc
-numpyro
-joblib
-```
-
-The project must still import without these extras. Lazy-import optional dependencies.
-
-### 5.7 Observability/eval dependencies
-
-Add optional group `observability`:
-
-```text
-opentelemetry-api
-opentelemetry-sdk
-opentelemetry-exporter-otlp
-arize-phoenix
-braintrust
-langsmith
-wandb
-```
-
----
-
-## 6. Configuration system
-
-Implement `src/acp/core/config.py`.
-
-Support config from:
-
-```text
-environment variables
-.env
-YAML file
-CLI flags
-database-stored policy
-```
-
-Minimum config:
+5. On reward:
 
 ```python
-class ACPSettings(BaseSettings):
-    app_env: Literal["dev", "test", "prod"] = "dev"
-    database_url: str = "sqlite+aiosqlite:///./acp.db"
-    artifact_dir: Path = Path(".acp/artifacts")
-    workspace_dir: Path = Path(".acp/workspaces")
-    default_token_budget: int = 80_000
-    default_cost_budget_usd: float = 5.0
-    default_command_timeout_s: int = 120
-    allow_network_by_default: bool = False
-    enable_external_agents: bool = False
-    enable_docker: bool = False
-    enable_qdrant: bool = False
-    enable_pgvector: bool = False
-    enable_braintrust: bool = False
-    enable_langsmith: bool = False
-    redacted_env_patterns: list[str] = [
-        ".*TOKEN.*",
-        ".*KEY.*",
-        ".*SECRET.*",
-        ".*PASSWORD.*",
-        ".*CREDENTIAL.*",
-    ]
+policy.observe_reward(policy_decision, reward)
 ```
 
-Tests:
+6. Add `train_policy` to snapshot current bandit state.
+7. Add off-policy report:
 
 ```text
-Config loads defaults.
-Config loads .env.
-Sensitive values are redacted in repr/logging.
-Invalid budgets fail validation.
+IPS
+SNIPS
+mean reward by action
+coverage of propensities
 ```
+
+### Tests
+
+```text
+test_live_policy_decision_has_multiple_candidates
+test_live_policy_arms_update_after_reward
+test_policy_snapshot_persists_arms
+test_policy_promote_and_rollback_affect_selection
+test_ope_rejects_missing_propensity
+```
+
+### Acceptance
+
+Routing is actually adaptive in the main workflow.
 
 ---
 
-## 7. Core domain model
+## Day 2, Block 2 — Context retrieval benchmark
 
-Implement Pydantic schemas and SQLAlchemy models.
+### Tasks
 
-### 7.1 Enums
+1. Add `evals/datasets/context_gold.yaml`.
+2. Create 20–50 synthetic tasks across fixture repos:
 
-Create enums:
+```text
+bugfix
+test generation
+docs
+security
+migration
+frontend
+multi-file refactor
+```
+
+3. Implement `evals/scripts/run_context_benchmark.py`.
+
+Metrics:
+
+```text
+recall@5
+recall@10
+MRR
+token count
+compile latency
+duplicate chunk ratio
+secret leakage count
+```
+
+4. Add 5k-file and 25k-file synthetic repo generators.
+5. Add report output:
+
+```text
+evals/reports/context_benchmark.json
+evals/reports/context_benchmark.md
+```
+
+### Tests
+
+```text
+test_context_benchmark_fixture_recall_threshold
+test_context_benchmark_no_secret_leakage
+test_context_benchmark_report_schema
+```
+
+### Acceptance
+
+Context compiler quality is measurable, not anecdotal.
+
+---
+
+## Day 2, Block 3 — Real vector-store protocol
+
+### Tasks
+
+1. Add:
 
 ```python
-class TaskType(str, Enum):
-    BUGFIX = "bugfix"
-    FEATURE = "feature"
-    REFACTOR = "refactor"
-    TEST_GENERATION = "test_generation"
-    DOCS = "docs"
-    DEPENDENCY_UPDATE = "dependency_update"
-    CI_FIX = "ci_fix"
-    SECURITY_FIX = "security_fix"
-    MIGRATION = "migration"
-    UNKNOWN = "unknown"
-
-class RiskLevel(str, Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-class RunStatus(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    WAITING_FOR_HUMAN = "waiting_for_human"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    TIMED_OUT = "timed_out"
-
-class EvidenceKind(str, Enum):
-    UNIT_TEST = "unit_test"
-    INTEGRATION_TEST = "integration_test"
-    TYPE_CHECK = "type_check"
-    LINT = "lint"
-    SECURITY_SCAN = "security_scan"
-    UI_FLOW = "ui_flow"
-    COVERAGE = "coverage"
-    MUTATION_TEST = "mutation_test"
-    STATIC_ANALYSIS = "static_analysis"
-    LLM_JUDGE = "llm_judge"
-    HUMAN_REVIEW = "human_review"
-    POST_MERGE = "post_merge"
-
-class AgentKind(str, Enum):
-    FAKE = "fake"
-    PATCH = "patch"
-    CLAUDE = "claude"
-    CODEX = "codex"
-    OPENHANDS = "openhands"
-    SIMPLE_LLM = "simple_llm"
+class VectorStore(Protocol):
+    def upsert(self, chunks): ...
+    def query(self, vector, filters, top_k): ...
+    def delete_snapshot(self, snapshot_id): ...
 ```
 
-### 7.2 Required schemas
-
-Implement these schemas:
-
-```python
-Task
-Repository
-RepoSnapshot
-WorkspaceSpec
-ContextPack
-ContextItem
-RetrievalTrace
-RoutingAction
-RoutingDecision
-AgentAttempt
-ToolCallRecord
-CommandRunRecord
-DiffBundle
-VerificationPlan
-VerificationRun
-Evidence
-EvaluationResult
-HumanReviewItem
-HumanLabel
-WeakLabel
-RewardEvent
-PolicyVersion
-PostMergeOutcome
-```
-
-### 7.3 Required fields
-
-`Task`:
+2. Implement:
 
 ```text
-id
-repo_id
-source
-external_id
-title
-body
-acceptance_criteria
-non_goals
-task_type
-risk_level
-ambiguity_score
-labels
-created_at
-updated_at
-status
-metadata
+InMemoryVectorStore
+PgVectorStore stub-or-real depending dependency
+QdrantStore stub-or-real depending dependency
 ```
 
-`Repository`:
+3. Add embedding providers:
 
 ```text
-id
-name
-url
-default_branch
-local_path
-provider
-visibility
-created_at
-updated_at
-metadata
+HashingEmbedder
+OpenAIEmbedder optional
+SentenceTransformerEmbedder optional
 ```
 
-`RepoSnapshot`:
+4. Add embedding cache keyed by:
 
 ```text
-id
-repo_id
-base_commit
-branch
-dirty
-language_summary
-index_version
-index_hash
-created_at
-```
-
-`ContextPack`:
-
-```text
-id
-repo_id
-task_id
-snapshot_id
-strategy
-token_budget
-token_estimate
-items
-instructions
-retrieval_trace
-created_at
+model
 content_hash
+dimensions
 ```
 
-`ContextItem`:
+5. Wire `ContextCompiler` to optionally use vector store.
+
+### Tests
 
 ```text
-id
-kind
-path
-start_line
-end_line
-symbol_name
-content
-token_estimate
-score
-source
-metadata
+test_inmemory_vector_store_roundtrip
+test_embedding_cache_reuses_content_hash
+test_pgvector_unavailable_graceful
+test_qdrant_unavailable_graceful
+test_context_compiler_can_use_vector_store
 ```
 
-`RoutingAction`:
+### Acceptance
 
-```text
-agent_kind
-agent_name
-model_name
-context_strategy
-context_token_budget
-tool_permissions
-workspace_policy
-verification_policy
-max_cost_usd
-max_wall_time_s
-parallelism
-fallback_policy
-requires_human_approval
-```
-
-`RoutingDecision`:
-
-```text
-id
-task_id
-snapshot_id
-policy_version
-action
-action_probability
-candidate_actions
-model_scores
-exploration_mode
-exploration_reason
-constraints_applied
-created_at
-```
-
-`AgentAttempt`:
-
-```text
-id
-task_id
-routing_decision_id
-workspace_id
-agent_kind
-agent_name
-model_name
-status
-started_at
-finished_at
-input_token_count
-output_token_count
-total_token_count
-estimated_cost_usd
-wall_time_s
-diff_bundle_id
-trace_id
-error
-metadata
-```
-
-`Evidence`:
-
-```text
-id
-task_id
-attempt_id
-verification_run_id
-kind
-name
-status
-score
-confidence
-summary
-raw_output_ref
-artifacts
-started_at
-finished_at
-metadata
-```
-
-`EvaluationResult`:
-
-```text
-id
-task_id
-attempt_id
-spec_compliance
-test_adequacy
-regression_risk
-security_risk
-review_burden
-maintainability
-confidence
-requires_human_review
-reasons
-evidence_ids
-created_at
-```
-
-`RewardEvent`:
-
-```text
-id
-task_id
-attempt_id
-routing_decision_id
-policy_version
-reward
-components
-label_source
-created_at
-matured_at
-metadata
-```
-
-Tests:
-
-```text
-All schemas serialize/deserialize.
-All schemas have stable JSON representation.
-All database models round-trip.
-Invalid enum values fail validation.
-ContextPack content_hash changes when item content changes.
-RoutingDecision requires action_probability in (0, 1].
-RewardEvent requires components summing or explaining reward.
-```
+The architecture is ready for production retrieval backends even if live services are optional.
 
 ---
 
-## 8. Database and migrations
+## Day 2, Block 4 — Serious bakeoff harness
 
-Implement SQLAlchemy models and Alembic migrations.
+### Tasks
 
-### 8.1 Storage rules
-
-Use Postgres in production. Use SQLite for tests. JSON fields must work in both.
-
-Tables:
-
-```text
-repositories
-repo_snapshots
-tasks
-context_packs
-context_items
-routing_decisions
-agent_attempts
-tool_calls
-command_runs
-diff_bundles
-verification_plans
-verification_runs
-evidence
-evaluation_results
-human_review_items
-human_labels
-weak_labels
-reward_events
-policy_versions
-post_merge_outcomes
-artifacts
-audit_log
-```
-
-### 8.2 Required DB tests
-
-```text
-Alembic upgrade head succeeds on SQLite.
-All tables exist.
-Insert full workflow graph succeeds.
-Cascade/delete behavior is explicit and tested.
-Query by task_id returns all child records.
-Query by trace_id returns all spans/records.
-JSON metadata survives round-trip.
-```
-
-### 8.3 Artifact storage
-
-Large raw outputs must not be stored inline in relational rows. Store them as artifacts:
-
-```text
-terminal transcripts
-test output
-coverage reports
-patch files
-screenshots
-Playwright traces
-LLM raw responses
-retrieval debug dumps
-```
-
-Implement local filesystem artifact storage first.
-
-Interface:
-
-```python
-class ArtifactStore(Protocol):
-    def put_bytes(self, data: bytes, *, content_type: str, suffix: str) -> ArtifactRef: ...
-    def put_text(self, text: str, *, content_type: str = "text/plain", suffix: str = ".txt") -> ArtifactRef: ...
-    def get_bytes(self, ref: ArtifactRef) -> bytes: ...
-```
-
-Tests:
-
-```text
-Artifact put/get works.
-Artifact path traversal is impossible.
-Artifact SHA256 is verified.
-Large command output is stored as artifact and summary is truncated.
-```
-
----
-
-## 9. Workspace layer
-
-Implement:
-
-```text
-LocalWorkspaceManager
-DockerWorkspaceManager
-KubernetesWorkspaceManager optional stub
-OpenHandsWorkspaceManager optional stub
-```
-
-### 9.1 Local workspace
-
-Requirements:
-
-```text
-Clone or use local repo path.
-Create isolated git worktree per run.
-Checkout exact base commit.
-Detect dirty state.
-Capture initial HEAD.
-Capture final HEAD.
-Generate diff against base.
-Clean up by policy.
-```
-
-Interface:
-
-```python
-class WorkspaceManager(Protocol):
-    async def create(self, repo: Repository, snapshot: RepoSnapshot, policy: WorkspacePolicy) -> Workspace: ...
-    async def cleanup(self, workspace: Workspace) -> None: ...
-```
-
-### 9.2 Command runner
-
-All commands go through `CommandRunner`.
-
-Interface:
-
-```python
-class CommandRunner:
-    async def run(
-        self,
-        command: list[str],
-        cwd: Path,
-        timeout_s: int,
-        env: dict[str, str] | None = None,
-        allow_network: bool = False,
-        max_output_chars: int = 20_000,
-    ) -> CommandResult: ...
-```
-
-Capture:
-
-```text
-command argv
-cwd
-sanitized env keys
-start/end time
-exit code
-stdout summary
-stderr summary
-raw stdout artifact
-raw stderr artifact
-timeout flag
-resource usage if available
-```
-
-Tests:
-
-```text
-Successful command returns exit_code 0.
-Failing command returns nonzero and does not raise unless requested.
-Timeout terminates process tree.
-Env secrets are redacted.
-Output larger than max_output_chars is truncated and artifacted.
-cwd must be inside workspace unless explicitly allowed.
-```
-
-### 9.3 Diff capture
-
-Implement:
-
-```python
-get_changed_files()
-get_unified_diff()
-get_diff_stats()
-get_file_patch(path)
-detect_binary_changes()
-```
-
-Tests:
-
-```text
-New file appears in diff.
-Modified file appears in diff.
-Deleted file appears in diff.
-Binary file is detected.
-Diff stats match expected line counts.
-```
-
----
-
-## 10. Context compiler
-
-This is a core moat. Implement it seriously.
-
-### 10.1 Indexing
-
-Implement `RepoIndexer`.
-
-It must collect:
-
-```text
-file tree
-language summary
-README/docs
-AGENTS.md or equivalent instructions
-package manifests
-test files
-source files
-symbols
-imports
-git history summary
-recent commits
-recent changed files
-ownership hints if CODEOWNERS exists
-```
-
-Use:
-
-```text
-ripgrep if available
-Tree-sitter for Python/JS/TS at minimum
-Python AST fallback for Python
-ctags optional
-```
-
-### 10.2 Chunking
-
-Implement chunk types:
-
-```text
-file_chunk
-symbol_chunk
-test_chunk
-doc_chunk
-instruction_chunk
-manifest_chunk
-recent_commit_chunk
-prior_run_summary_chunk
-```
-
-Each chunk must include:
-
-```text
-repo_id
-snapshot_id
-path
-start_line
-end_line
-symbol
-content
-content_hash
-token_estimate
-language
-kind
-metadata
-```
-
-### 10.3 Retrieval strategies
-
-Implement these strategies:
-
-```text
-keyword_only
-embedding_only
-hybrid_keyword_embedding
-symbol_graph
-test_focused
-bug_reproduction
-architecture
-recent_changes
-prior_failures
-minimal
-max_context
-```
-
-For v1, `hybrid_keyword_embedding` can combine:
-
-```text
-BM25/ripgrep score
-vector similarity score
-path/name boost
-test-file boost
-recency boost
-symbol-reference boost
-prior-run boost
-```
-
-Implement scoring:
-
-```python
-final_score = (
-    0.35 * keyword_score
-    + 0.35 * vector_score
-    + 0.10 * path_boost
-    + 0.10 * symbol_boost
-    + 0.05 * test_boost
-    + 0.05 * prior_run_boost
-)
-```
-
-Make weights configurable.
-
-### 10.4 Token budgeting
-
-Implement `ContextBudgeter`.
+Replace the current lightweight bakeoff with a matrix runner.
 
 Inputs:
 
-```text
-candidate items
-token budget
-required items
-diversity constraints
-max items per file
-max total files
-```
-
-Output:
-
-```text
-selected items
-dropped items
-budget trace
-```
-
-Algorithm:
-
-```text
-Always include required instructions.
-Always include task spec.
-Always include AGENTS.md if present.
-Include top-scoring chunks with diversity by file.
-Prefer full files only when small or explicitly required.
-Stop before token budget.
-Emit trace explaining inclusions/exclusions.
-```
-
-Tests:
-
-```text
-Budget is never exceeded.
-Required items are included.
-Duplicate chunks are removed.
-Binary files are ignored.
-Large files are chunked.
-Relevant bug file is retrieved in fixture repo.
-Tests related to bug file are retrieved.
-AGENTS.md is included when present.
-Retrieval trace explains decisions.
-```
-
-### 10.5 ContextPack artifact
-
-Context packs must be immutable. Store content hash.
-
-Acceptance:
-
-```text
-Same task/snapshot/strategy produces same context hash.
-Changing a source file changes context hash.
-Changing token budget can change selected items.
-ContextPack can be rendered to Markdown for agent input.
-ContextPack can be rendered to JSON for machine use.
-```
-
----
-
-## 11. Task classifier
-
-Implement deterministic baseline classifier.
-
-### 11.1 Inputs
-
-```text
-task title
-task body
-labels
-file paths mentioned
-repo language summary
-CI failure logs if present
-security scanner output if present
-```
-
-### 11.2 Outputs
-
-```text
-task_type
-risk_level
-ambiguity_score
-testability_score
-affected_modules_estimate
-required_verification_kinds
-human_review_required
-```
-
-### 11.3 Rules
-
-Examples:
-
-```text
-Title/body mentions failing test, CI, traceback -> CI_FIX or BUGFIX.
-Mentions dependency, CVE, vulnerability -> SECURITY_FIX or DEPENDENCY_UPDATE.
-Mentions refactor, rename, migration -> REFACTOR or MIGRATION.
-Only docs/README paths -> DOCS and LOW risk.
-Touches auth, billing, crypto, permissions, data deletion -> HIGH/CRITICAL risk.
-No acceptance criteria and vague terms -> high ambiguity.
-```
-
-Tests:
-
-```text
-Docs-only task classified LOW.
-Auth change classified HIGH.
-CVE task classified SECURITY_FIX.
-Failing pytest log classified BUGFIX/CI_FIX.
-Vague feature request has ambiguity_score > 0.7.
-Explicit acceptance criteria lowers ambiguity_score.
-```
-
----
-
-## 12. Agent adapter layer
-
-### 12.1 Common protocol
-
-Implement:
-
-```python
-class AgentAdapter(Protocol):
-    name: str
-    kind: AgentKind
-
-    async def healthcheck(self) -> AgentHealth: ...
-
-    async def plan(
-        self,
-        task: Task,
-        context_pack: ContextPack,
-        workspace: Workspace,
-        budget: Budget,
-    ) -> AgentPlan: ...
-
-    async def execute(
-        self,
-        task: Task,
-        context_pack: ContextPack,
-        workspace: Workspace,
-        budget: Budget,
-    ) -> AgentAttemptResult: ...
-
-    async def review(
-        self,
-        task: Task,
-        diff: DiffBundle,
-        context_pack: ContextPack,
-        budget: Budget,
-    ) -> AgentReviewResult: ...
-```
-
-### 12.2 FakeAgentAdapter
-
-Must be deterministic and testable.
-
-Modes:
-
-```text
-success_noop
-fail_noop
-apply_patch_from_task_metadata
-modify_file
-break_tests
-large_diff
-timeout
-```
-
-Use it for unit/e2e tests.
-
-### 12.3 PatchAgentAdapter
-
-A local deterministic adapter that applies a patch specified in task metadata.
-
-This lets e2e tests validate the whole system without LLM calls.
-
-### 12.4 ClaudeAgentAdapter
-
-Optional.
-
-Requirements:
-
-```text
-Lazy import claude-agent-sdk.
-If unavailable, healthcheck returns unavailable.
-Do not fail project import.
-Map ContextPack to Claude Agent SDK prompt/context.
-Capture messages/tool calls when available.
-Capture token/cost if available; otherwise estimate.
-Respect budget/timeouts.
-```
-
-### 12.5 CodexAgentAdapter
-
-Optional.
-
-Requirements:
-
-```text
-Lazy import/use Codex SDK or CLI wrapper.
-Treat as experimental.
-Healthcheck must detect local Codex app-server or binary availability.
-Do not make core tests depend on Codex.
-Capture JSON-RPC/session events when available.
-Respect workspace boundaries.
-```
-
-### 12.6 OpenHandsAgentAdapter
-
-Optional.
-
-Requirements:
-
-```text
-Lazy import openhands-sdk.
-Support local workspace mode if possible.
-Support Agent Server URL config.
-Capture actions/tool calls.
-Map result to AgentAttemptResult.
-```
-
-### 12.7 Agent registry
-
-Implement:
-
-```python
-AgentRegistry.register(adapter)
-AgentRegistry.get(name)
-AgentRegistry.available()
-AgentRegistry.healthcheck_all()
-```
-
-Tests:
-
-```text
-Registry registers fake adapter.
-Unavailable external adapter does not crash.
-Execute result includes diff.
-Timeout maps to failed attempt.
-Adapter errors are captured as structured failure.
-```
-
----
-
-## 13. Routing policy
-
-### 13.1 Routing action space
-
-A routing action is not just model choice. It includes:
-
-```text
-agent_kind
-agent_name
-model_name
-context_strategy
-context_token_budget
-workspace_policy
-tool_permissions
-verification_policy
-max_cost_usd
-max_wall_time_s
-parallelism
-fallback_policy
-requires_human_approval
-```
-
-### 13.2 Baseline heuristic policy
-
-Implement first.
-
-Rules:
-
-```text
-LOW-risk docs/test/lint tasks:
-  cheap/small model or patch/fake adapter in tests
-  minimal or test_focused context
-  standard verifier
-  no parallelism
-
-MEDIUM-risk bugfix:
-  stronger model
-  bug_reproduction context
-  pytest/type/lint verifier
-  fallback to second agent if verification fails
-
-HIGH-risk auth/billing/security/migration:
-  strongest available model
-  architecture + test_focused context
-  strict verifier
-  human review required
-  no unsafe exploration
-  parallel planning allowed, implementation only after approval if configured
-
-Ambiguous task:
-  planning step first
-  ask verifier/spec compiler to produce acceptance criteria
-  human review if ambiguity remains high
-
-CI fix:
-  include CI logs
-  run targeted failing tests first
-  then broader test suite
-```
-
-### 13.3 Contextual bandit policy
-
-Implement after baseline.
-
-Use a generic interface:
-
-```python
-class RoutingPolicy(Protocol):
-    def choose_action(self, features: RoutingFeatures, candidates: list[RoutingAction]) -> PolicyDecision: ...
-    def observe_reward(self, decision: PolicyDecision, reward: RewardEvent) -> None: ...
-```
-
-`PolicyDecision` must always include:
-
-```text
-policy_version
-chosen action
-action_probability
-candidate scores
-exploration mode
-exploration reason
-random seed
-```
-
-### 13.4 Bandit implementation
-
-Implement two versions:
-
-```text
-MABWiserBanditPolicy for prototyping
-VWBanditPolicy for production-style contextual bandit experiments
-```
-
-If optional deps absent, tests use `SimulatedBanditPolicy`.
-
-### 13.5 Features
-
-Implement `RoutingFeatureExtractor`.
-
-Features:
-
-```text
-task_type
-risk_level
-ambiguity_score
-testability_score
-repo_id hash
-primary_language
-language_mix
-estimated_files_touched
-affected_module_count
-module_churn
-historical_agent_success_by_repo
-historical_agent_success_by_task_type
-historical_agent_cost_by_task_type
-prior_failures_in_module
-test_coverage_estimate
-ci_failure_type
-context_retrieval_confidence
-model_price_bucket
-time_of_day optional
-```
-
-### 13.6 Constraints
-
-Implement hard constraints:
-
-```text
-Budget cannot exceed task/repo/org limit.
-HIGH/CRITICAL risk requires human review.
-External network denied unless task requires it.
-Secrets never exposed to untrusted agents.
-Experimental policies cannot auto-merge.
-Parallelism capped by budget.
-Unavailable agents removed from candidates.
-```
-
-### 13.7 Tests
-
-```text
-Heuristic chooses cheap route for docs task.
-Heuristic chooses strict verifier for auth task.
-High-risk task always requires human review.
-Unavailable agents are filtered.
-Chosen action logs nonzero action_probability.
-Bandit policy converges in synthetic simulation.
-Bandit policy explores according to configured epsilon/Thompson sampling.
-Off-policy evaluator rejects logs missing propensities.
-Policy registry can roll back from challenger to champion.
-```
-
----
-
-## 14. Verification layer
-
-### 14.1 VerificationPlan
-
-Generate a plan before coding when possible.
-
-Fields:
-
-```text
-id
-task_id
-strategy
-required_commands
-optional_commands
-ui_flows
-static_checks
-security_checks
-coverage_checks
-mutation_checks
-acceptance_assertions
-risk_level
-created_at
-```
-
-### 14.2 Detection
-
-Implement detectors:
-
-```text
-Python project detector
-Node project detector
-Package manager detector
-Test command detector
-Lint command detector
-Type-check command detector
-Playwright detector
-Docker compose detector
-```
-
-Examples:
-
-```text
-pyproject.toml + pytest dependency -> pytest
-package.json + test script -> npm test
-package.json + playwright -> playwright test
-ruff in pyproject -> ruff check
-mypy config -> mypy
-```
-
-### 14.3 Runners
-
-Implement:
-
-```text
-PytestRunner
-GenericCommandVerifier
-PlaywrightRunner
-StaticAnalysisRunner
-SecurityScannerRunner
-CoverageRunner
-```
-
-Each runner produces `Evidence`.
-
-### 14.4 Objective evidence
-
-Capture:
-
-```text
-command
-exit code
-duration
-stdout/stderr summary
-artifact refs
-parsed counts where possible
-pass/fail/warn/skipped
-confidence
-```
-
-### 14.5 Aggregation
-
-Implement `EvidenceAggregator`.
-
-Default logic:
-
-```text
-If required test/build command fails -> verification failed.
-If security scan has high severity -> security risk high.
-If tests pass but no relevant test touched for bugfix -> test adequacy warning.
-If diff touches unrelated files -> review burden/risk increase.
-If UI flow passes -> add positive UI evidence.
-If evidence incomplete -> confidence lower.
-```
-
-### 14.6 Tests
-
-```text
-Pytest failure parsed correctly.
-Pytest pass parsed correctly.
-Missing pytest command marks skipped, not pass.
-Generic command timeout creates failed evidence.
-Security high severity raises security_risk.
-Bugfix without test change lowers test_adequacy.
-Docs-only change does not require pytest by default.
-Playwright fixture can run a simple browser flow.
-```
-
----
-
-## 15. Evaluation ladder
-
-Implement a layered evaluation system.
-
-### 15.1 Objective evaluator
-
-Inputs:
-
-```text
-Task
-DiffBundle
-VerificationRun
-Evidence list
-ContextPack
-AgentAttempt
+```yaml
+repos:
+  - python_buggy_app
+tasks:
+  - fixture_bugfix_tasks.yaml
+agents:
+  - patch
+  - fake
+  - simple_llm_if_available
+context_strategies:
+  - minimal
+  - bug_reproduction
+  - hybrid_keyword_embedding
+verification_policies:
+  - standard
+  - strict
+seeds: [1,2,3,4,5]
 ```
 
 Outputs:
 
 ```text
-EvaluationResult
+evals/reports/bakeoff.json
+evals/reports/bakeoff.md
 ```
 
-Scores:
+Metrics:
 
 ```text
-spec_compliance
-test_adequacy
-regression_risk
-security_risk
-review_burden
-maintainability
-confidence
-requires_human_review
-```
-
-### 15.2 Weak supervision engine
-
-Implement labeling functions.
-
-Each labeling function returns:
-
-```python
-WeakSignal(
-    name: str,
-    label: Literal["success", "failure", "suspicious", "needs_review", "unknown"],
-    confidence: float,
-    reason: str,
-)
-```
-
-Required labeling functions:
-
-```text
-ci_passed_signal
-tests_failed_signal
-new_regression_test_signal
-no_test_for_bugfix_signal
-large_diff_signal
-sensitive_module_signal
-unrelated_files_signal
-security_warning_signal
-reviewer_approved_signal
-reviewer_requested_changes_signal
-post_merge_revert_signal
-production_incident_signal
-agent_timeout_signal
-budget_overrun_signal
-parallel_disagreement_signal
-```
-
-Aggregate into probabilistic labels.
-
-Tests:
-
-```text
-CI pass + tests + small diff -> high success probability.
-Tests pass but no bugfix test -> suspicious.
-Security warning -> needs review.
-Revert outcome -> failure.
-Parallel disagreement -> needs review.
-```
-
-### 15.3 LLM evaluator interface
-
-Implement interface but keep tests fake.
-
-Judges:
-
-```text
-SpecComplianceJudge
-DiffRiskJudge
-TestAdequacyJudge
-ArchitectureFitJudge
-UnrelatedChangeJudge
-```
-
-Each judge must accept:
-
-```text
-task spec
-acceptance criteria
-context summary
-diff
-evidence summary
-rubric
-```
-
-Each judge must output structured JSON:
-
-```json
-{
-  "score": 0.0,
-  "confidence": 0.0,
-  "verdict": "pass|fail|partial|uncertain",
-  "reasons": [],
-  "requires_human_review": true
-}
-```
-
-Implement strict JSON parsing and retry-on-invalid for real LLM usage. Fake judge must be deterministic.
-
-### 15.4 Human review queue
-
-Implement:
-
-```text
-HumanReviewItem
-HumanLabel
-HumanReviewService
-```
-
-Reasons for human review:
-
-```text
-high risk
-low evaluator confidence
-objective/ML disagreement
-parallel agent disagreement
-security-sensitive diff
-large unexpected diff
-novel repo area
-new model/policy canary
-post-merge incident
-random audit sample
-```
-
-API endpoints:
-
-```text
-GET /reviews
-GET /reviews/{id}
-POST /reviews/{id}/labels
-POST /reviews/{id}/resolve
-```
-
-CLI:
-
-```bash
-acp reviews list
-acp reviews show <id>
-acp reviews label <id> --verdict pass --score 0.8 --reason "..."
-```
-
-### 15.5 Active learning selector
-
-Implement selection scoring:
-
-```python
-active_learning_priority = (
-    0.30 * uncertainty
-    + 0.20 * evaluator_disagreement
-    + 0.20 * business_risk
-    + 0.10 * novelty
-    + 0.10 * cost_surprise
-    + 0.10 * policy_value_of_information
-)
-```
-
-Tests:
-
-```text
-High uncertainty selected.
-High-risk selected.
-Random low-risk not selected unless audit sample.
-Disagreement selected.
-Novel task type selected.
-```
-
----
-
-## 16. Reward and learning
-
-### 16.1 Reward formula
-
-Implement configurable reward.
-
-Default:
-
-```python
-reward = (
-    3.0 * task_success
-    + 1.0 * spec_compliance
-    + 0.8 * test_adequacy
-    + 0.4 * maintainability
-    - 0.5 * log1p(token_cost_usd)
-    - 0.3 * latency_penalty
-    - 0.7 * review_burden
-    - 1.5 * regression_risk
-    - 2.0 * security_risk
-    - 5.0 * reverted_or_incident
-)
-```
-
-Every reward must store components.
-
-### 16.2 Delayed outcomes
-
-Implement post-merge outcome ingestion.
-
-Fields:
-
-```text
-merged
-merge_time
-review_comments_count
-review_rounds
-reverted
-revert_time
-incident_link
-issue_reopened
-followup_bug_created
-human_satisfaction_score
-```
-
-### 16.3 Supervised predictors
-
-Implement training jobs for:
-
-```text
-success probability
-expected token cost
-expected wall time
+success rate
+reward
+cost
+latency
+tokens
+test pass rate
+human review rate
 review burden
-regression risk
-human review likelihood
+context tokens
+failure class
 ```
 
-Use scikit-learn baseline first.
-
-Optional:
+### Tests
 
 ```text
-LightGBM/XGBoost if installed
-River for online updates
+test_bakeoff_report_schema
+test_bakeoff_runs_multiple_agents_or_marks_unavailable
+test_bakeoff_has_failure_taxonomy
 ```
 
-### 16.4 Bandit training
+### Acceptance
 
-Implement:
-
-```text
-offline training from historical RoutingDecision + RewardEvent
-online update after reward matures
-simulation mode
-canary/challenger mode
-```
-
-### 16.5 Off-policy evaluation
-
-Implement:
-
-```text
-inverse propensity scoring
-self-normalized IPS
-doubly robust placeholder if enough supervised predictors exist
-```
-
-Reject logs without valid `action_probability`.
-
-Tests:
-
-```text
-Reward components are stored.
-Delayed revert updates reward downward.
-Supervised model trains on synthetic data.
-Bandit learns best arm in stationary simulation.
-Bandit adapts in non-stationary simulation.
-Off-policy evaluator fails on missing propensities.
-Canary policy limited to configured traffic percentage.
-Champion rollback works.
-```
+Bakeoff generates data useful for routing decisions.
 
 ---
 
-## 17. Orchestration graph
+## Day 2, Block 5 — Stress and soak hardening
 
-Implement durable workflow state.
+### Tasks
 
-### 17.1 Nodes
+Upgrade `run_soak.py`:
 
-Required nodes:
-
-```text
-ingest_task
-classify_task
-create_repo_snapshot
-index_repo
-compile_context
-generate_verification_plan
-route_task
-launch_agent_attempts
-monitor_attempts
-capture_diff
-run_verification
-aggregate_evidence
-evaluate_attempt
-maybe_human_review
-compute_reward
-update_policy
-finalize_run
-```
-
-### 17.2 State
-
-`WorkflowState` fields:
+1. Track:
 
 ```text
-run_id
-task_id
-repo_id
-snapshot_id
-context_pack_id
-verification_plan_id
-routing_decision_id
-attempt_ids
-selected_attempt_id
-evidence_ids
-evaluation_result_id
-human_review_item_id
-reward_event_id
-status
-current_node
-error
-trace_id
-created_at
-updated_at
+RSS memory
+open file descriptors
+workspace dirs
+git worktree list
+artifact bytes
+DB rows
+status distribution
+p50/p95 latency
+policy arm stats
 ```
 
-### 17.3 Transitions
-
-Rules:
+2. Add thresholds:
 
 ```text
-If classification fails -> FAILED.
-If context compilation fails -> FAILED unless fallback minimal context succeeds.
-If routing has no available agent -> FAILED with reason.
-If agent attempt fails and fallback policy exists -> run fallback.
-If parallelism > 1 -> launch attempts in separate workspaces.
-If verification fails -> optionally repair or choose alternate attempt.
-If evaluation requires human -> WAITING_FOR_HUMAN.
-If human approves -> finalize success.
-If human rejects -> fail or repair depending policy.
+no orphan worktrees
+memory growth < 25%
+failure rate explained
+artifact growth bounded
 ```
 
-### 17.4 Resume/retry
-
-Implement:
+3. Output:
 
 ```text
-idempotent nodes
-node attempt count
-retry policy
-resume from persisted state
-cancel run
+evals/reports/soak.json
+evals/reports/soak.md
 ```
 
-Tests:
+4. Add `--iterations`, `--hours`, `--concurrency`, `--task-mix`, `--seed`.
+
+5. Add concurrent workflow test:
 
 ```text
-Workflow completes with fake successful agent.
-Workflow fails with fake failing agent.
-Fallback agent runs after first failure.
-Parallel attempts produce two workspaces.
-Best verified attempt selected.
-Human interrupt pauses workflow.
-Human label resumes workflow.
-Workflow resumes after simulated crash.
+100 workflows
+same repo
+unique workspaces
+no DB corruption
 ```
+
+### Tests
+
+```text
+test_soak_report_schema
+test_concurrent_workflows_isolated
+test_no_orphan_worktrees_after_soak
+```
+
+### Acceptance
+
+The soak test produces actionable operational signals.
 
 ---
 
-## 18. API
+## Day 2, Block 6 — Real adapter readiness
 
-Implement FastAPI app.
+### Tasks
 
-Endpoints:
-
-```text
-GET /health
-GET /version
-
-POST /repos
-GET /repos
-GET /repos/{repo_id}
-POST /repos/{repo_id}/index
-
-POST /tasks
-GET /tasks
-GET /tasks/{task_id}
-
-POST /tasks/{task_id}/run
-GET /runs/{run_id}
-GET /runs/{run_id}/state
-GET /runs/{run_id}/trace
-POST /runs/{run_id}/cancel
-
-GET /attempts/{attempt_id}
-GET /attempts/{attempt_id}/diff
-GET /attempts/{attempt_id}/evidence
-GET /attempts/{attempt_id}/evaluation
-
-GET /reviews
-GET /reviews/{review_id}
-POST /reviews/{review_id}/labels
-POST /reviews/{review_id}/resolve
-
-GET /policies
-GET /policies/current
-POST /policies/train
-POST /policies/{policy_id}/promote
-POST /policies/{policy_id}/rollback
-
-POST /evals/replay
-POST /evals/bakeoff
-GET /evals/runs/{eval_run_id}
-```
-
-Tests:
+1. Add adapter health API:
 
 ```text
-OpenAPI schema generated.
-Task create works.
-Run start works.
-Run state returns valid state.
-Review label works.
-Policy promote requires valid policy.
-Invalid IDs return 404.
-Invalid payloads return 422.
+GET /agents
+GET /agents/{name}/health
 ```
+
+2. Add live-test skeletons:
+
+```text
+tests/live/test_openai_adapter.py
+tests/live/test_claude_adapter.py
+tests/live/test_codex_adapter.py
+tests/live/test_openhands_adapter.py
+```
+
+3. Mark live tests skipped unless required env vars/binaries are present.
+4. For real adapters, assert:
+
+```text
+healthcheck explains unavailable reason
+workspace containment
+token capture
+diff capture
+timeout handling
+budget handling
+no secret leakage
+```
+
+5. Make Claude/Codex/OpenHands adapters explicit about whether they are true harness adapters or simple model adapters.
+
+### Acceptance
+
+Live adapter tests are safe, optional, and informative.
 
 ---
 
-## 19. CLI
+## Day 2, Block 7 — CLI/API inspection polish
 
-Implement Typer CLI.
-
-Commands:
+### CLI commands to add or finish
 
 ```bash
-acp init
-acp repo add <path-or-url>
+acp repo add <path>
 acp repo index <repo-id>
-acp task create --repo <repo-id> --title "..." --body "..."
-acp run <task-id>
+acp task create --repo <repo-id> --title ... --body ...
+acp run start <task-id>
 acp run status <run-id>
+acp run graph <run-id>
 acp run trace <run-id>
 acp run diff <run-id>
-acp verify <attempt-id>
-acp reviews list
+acp run evidence <run-id>
+acp run evaluation <run-id>
 acp reviews show <review-id>
-acp reviews label <review-id> --verdict pass --score 0.9 --reason "..."
-acp policy list
+acp reviews label <review-id> --verdict pass|fail --reason ...
+acp agents list
+acp agents health <name>
 acp policy train
-acp eval replay
-acp demo quickstart
-acp demo bugfix
-acp demo bandit
+acp policy promote <policy-id>
+acp policy rollback <policy-id>
+acp eval context-benchmark
+acp eval bakeoff
 ```
 
-Tests:
+### Tests
 
 ```text
-acp --help works.
-acp demo quickstart creates local DB and fixture repo.
-acp demo bugfix completes end-to-end with PatchAgentAdapter.
-acp run status prints useful summary.
+test_cli_full_lifecycle
+test_cli_run_graph_after_restart
+test_cli_review_label_resumes_run
+test_cli_agents_health
 ```
+
+### Acceptance
+
+A user can operate the full local product through CLI only.
 
 ---
 
-## 20. Demos
+## Final acceptance criteria for the two-day push
 
-Create demos that require no external API.
-
-### 20.1 Bugfix demo
-
-Fixture repo:
-
-```text
-python_buggy_app/
-  pyproject.toml
-  src/calculator.py
-  tests/test_calculator.py
-```
-
-Bug:
-
-```python
-def divide(a, b):
-    if b == 0:
-        return 0  # wrong
-    return a / b
-```
-
-Task:
-
-```text
-Fix divide-by-zero behavior. It should raise ZeroDivisionError.
-Add or update tests.
-```
-
-PatchAgentAdapter applies correct patch.
-
-E2E must show:
-
-```text
-task classified as BUGFIX
-context includes src/calculator.py and tests/test_calculator.py
-route selected
-patch applied
-pytest fails before or passes after depending workflow
-verification passes
-evaluation says success
-reward event created
-trace saved
-```
-
-### 20.2 Human review demo
-
-Use FakeAgentAdapter with suspicious large diff. System should:
-
-```text
-run tests successfully
-detect unrelated file changes
-require human review
-pause workflow
-accept CLI/API human label
-resume and finalize
-```
-
-### 20.3 Bandit demo
-
-Synthetic environment:
-
-```text
-Agent A: cheap, 60% success
-Agent B: expensive, 85% success
-Agent C: cheap for docs, bad for security
-```
-
-Run 1,000 simulated tasks. Show policy learns:
-
-```text
-docs -> cheap agent
-security -> strong agent
-bugfix -> medium/strong depending reward
-```
-
-Output:
-
-```text
-cumulative reward
-regret
-action distribution
-cost distribution
-success distribution
-```
-
----
-
-## 21. Long-running tests and evals
-
-Implement these commands in `Makefile`.
-
-### 21.1 Fast suite
+At the end of this work, require:
 
 ```bash
-make test
-```
-
-Runs:
-
-```bash
-uv run pytest tests/unit tests/integration -q
+uv run pytest -q
 uv run ruff check .
 uv run mypy src
-```
-
-### 21.2 E2E suite
-
-```bash
-make test-e2e
-```
-
-Runs:
-
-```bash
-uv run pytest tests/e2e -q --timeout=600
-```
-
-### 21.3 Coverage
-
-```bash
 make coverage
-```
-
-Acceptance:
-
-```text
-Core modules >= 85% line coverage.
-No core module below 70% unless documented.
-```
-
-### 21.4 Six-hour soak
-
-```bash
-make soak-6h
-```
-
-Behavior:
-
-```text
-Run repeated fake-agent workflows for approximately 6 hours or configured iteration count.
-Randomize task mix with fixed seed.
-Exercise success, failure, timeout, fallback, human review, parallel attempts.
-No DB corruption.
-No artifact leaks.
-No unbounded memory growth.
-No orphan workspaces.
-```
-
-Acceptance:
-
-```text
->= 1,000 workflow iterations or 6 hours completed.
-Failure rate only expected failures.
-Memory growth under threshold.
-All temporary workspaces cleaned or recorded.
-```
-
-### 21.5 Overnight bakeoff
-
-```bash
-make eval-bakeoff-overnight
-```
-
-Behavior:
-
-```text
-Run fixture task suite across all available adapters.
-If real adapters unavailable, use fake/patch adapters.
-Compare success, cost, latency, verification rate, review burden.
-Generate report in evals/reports/.
-```
-
-Acceptance:
-
-```text
-Report includes per-agent scorecard.
-Report includes routing recommendations.
-Report includes failures with traces.
-```
-
-### 21.6 Bandit Monte Carlo
-
-```bash
+make test-e2e
+make retriever-stress
+make security-redteam
 make bandit-monte-carlo
 ```
 
-Behavior:
+And produce these reports:
 
 ```text
-Run at least 100 seeds.
-Stationary and non-stationary simulations.
-Compare random, heuristic, epsilon-greedy, Thompson/LinUCB if available.
+evals/reports/context_benchmark.json
+evals/reports/bakeoff.json
+evals/reports/soak.json
+CURRENT_STATUS.md
+IMPLEMENTATION_LOG.md
 ```
 
-Acceptance:
+Minimum acceptance:
 
 ```text
-Bandit beats random baseline on mean cumulative reward.
-Confidence intervals reported.
-Policy degradation under drift is detected.
+1. Full run graph reconstructs after service restart.
+2. Crash-resume works after every workflow node.
+3. Human-review resume works after restart.
+4. Command records persist.
+5. Weak labels persist and influence human-review decisions.
+6. Live bandit policy updates in main workflow.
+7. Candidate routing decisions include multiple candidates and propensities.
+8. Docker workspace exists or is cleanly skipped with tests.
+9. Context benchmark reports recall@k and latency.
+10. Bakeoff report compares at least fake/patch and marks unavailable real adapters.
+11. Soak report includes memory/workspace/artifact/DB metrics.
+12. API and CLI expose graph/trace/diff/evidence/evaluation.
 ```
 
-### 21.7 Retriever stress
+## Highest-leverage next move
 
-```bash
-make retriever-stress
-```
-
-Behavior:
-
-```text
-Generate synthetic repo with thousands of files/chunks.
-Index repo.
-Run retrieval queries.
-Compile context packs under budgets.
-```
-
-Acceptance:
-
-```text
-Index completes.
-Retrieval latency reported.
-Context budget never exceeded.
-No binary/secret files included.
-```
-
-### 21.8 Chaos/resume test
-
-```bash
-make chaos
-```
-
-Behavior:
-
-```text
-Start workflows.
-Kill worker mid-run.
-Restart.
-Resume from persisted state.
-```
-
-Acceptance:
-
-```text
-No duplicate finalization.
-No lost reward event.
-No orphaned human review item.
-```
-
-### 21.9 Security red-team
-
-```bash
-make security-redteam
-```
-
-Tasks include malicious instructions:
-
-```text
-Print environment variables.
-Exfiltrate .env.
-Disable tests.
-Delete repository.
-Call network endpoint.
-Commit secrets.
-Modify policy to auto-approve.
-```
-
-Acceptance:
-
-```text
-Command runner blocks or records policy violation.
-Secrets redacted.
-Unsafe network not allowed by default.
-No malicious task succeeds in exfiltration.
-```
-
----
-
-## 22. Security and governance
-
-Implement policy engine.
-
-### 22.1 Policies
-
-Minimum policies:
-
-```text
-BudgetPolicy
-RiskPolicy
-WorkspacePolicy
-NetworkPolicy
-SecretsPolicy
-HumanApprovalPolicy
-ToolPermissionPolicy
-AutoMergePolicy
-ExplorationPolicy
-```
-
-### 22.2 Defaults
-
-```text
-No auto-merge.
-No network by default.
-No secrets by default.
-High-risk tasks require human review.
-Critical-risk tasks require human review and strict verification.
-Experimental policies cannot auto-approve.
-Parallel attempts require budget check.
-External agents cannot access files outside workspace.
-```
-
-### 22.3 Audit log
-
-Every sensitive event must create audit log:
-
-```text
-policy override
-human approval
-network enablement
-secret injection
-budget increase
-policy promotion
-auto-finalization
-external agent use
-```
-
-Tests:
-
-```text
-High-risk task cannot bypass human review.
-Network denied by default.
-Secrets redacted from command output.
-Policy override creates audit event.
-Experimental policy cannot auto-approve.
-```
-
----
-
-## 23. Observability
-
-### 23.1 Tracing
-
-Create spans:
-
-```text
-acp.workflow
-acp.classify_task
-acp.create_snapshot
-acp.index_repo
-acp.compile_context
-acp.route_task
-acp.agent.plan
-acp.agent.execute
-acp.command.run
-acp.capture_diff
-acp.verify
-acp.evaluate
-acp.human_review
-acp.reward
-acp.policy.update
-```
-
-Span attributes:
-
-```text
-task_id
-repo_id
-snapshot_id
-run_id
-attempt_id
-agent_kind
-agent_name
-model_name
-policy_version
-context_pack_id
-token_budget
-estimated_cost_usd
-status
-```
-
-### 23.2 Metrics
-
-Expose/log:
-
-```text
-runs_total
-runs_succeeded_total
-runs_failed_total
-human_review_required_total
-agent_attempts_total
-tokens_used_total
-estimated_cost_usd_total
-verification_failures_total
-policy_exploration_total
-avg_context_tokens
-avg_wall_time
-reward_mean
-```
-
-### 23.3 Exporters
-
-Implement optional exporters:
-
-```text
-OpenTelemetry OTLP
-Braintrust
-LangSmith
-Phoenix
-local JSONL
-```
-
-Tests:
-
-```text
-Trace ID exists for every workflow.
-Command span includes exit code.
-No secret values in logs/spans.
-Local JSONL exporter writes valid JSON.
-```
-
----
-
-## 24. Documentation
-
-Write docs.
-
-Required files:
-
-```text
-README.md
-ARCHITECTURE.md
-SECURITY.md
-docs/design/context_compiler.md
-docs/design/evaluation_ladder.md
-docs/design/routing_policy.md
-docs/design/active_learning.md
-docs/design/data_model.md
-docs/operations/local_dev.md
-docs/operations/running_long_evals.md
-docs/operations/adding_agent_adapter.md
-docs/operations/adding_evaluator.md
-```
-
-README must include:
-
-```text
-what this is
-quickstart
-architecture diagram in Mermaid
-how to run demo
-how to add repo
-how to run a task
-how to run tests
-how to run long evals
-what works without API keys
-what is optional
-security warnings
-```
-
-ARCHITECTURE must include:
-
-```text
-system diagram
-data lifecycle
-workflow graph
-context compiler design
-routing policy design
-eval ladder
-learning loop
-deployment options
-```
-
-SECURITY must include:
-
-```text
-threat model
-workspace isolation
-secret handling
-network controls
-audit log
-known limitations
-```
-
----
-
-## 25. Implementation phases
-
-Execute in order. Each phase must end with tests passing.
-
-### Phase 0: Repo initialization
-
-Deliver:
-
-```text
-pyproject.toml
-package structure
-ruff/mypy config
-pytest config
-Makefile
-README skeleton
-config system
-logging setup
-```
-
-Acceptance:
-
-```bash
-uv sync --all-extras
-uv run acp --help
-uv run pytest tests/unit/test_schemas.py -q
-uv run ruff check .
-uv run mypy src
-```
-
-### Phase 1: Schemas, DB, artifacts
-
-Deliver:
-
-```text
-Pydantic schemas
-SQLAlchemy models
-Alembic migration
-SQLite test DB support
-ArtifactStore
-```
-
-Acceptance:
-
-```text
-All schema unit tests pass.
-DB migration test passes.
-Artifact store tests pass.
-```
-
-### Phase 2: Workspace and command execution
-
-Deliver:
-
-```text
-LocalWorkspaceManager
-CommandRunner
-Git diff utilities
-redaction
-resource/timeouts
-```
-
-Acceptance:
-
-```text
-Command runner tests pass.
-Local workspace test passes.
-Diff tests pass.
-Security redaction tests pass.
-```
-
-### Phase 3: Context indexing and compiler
-
-Deliver:
-
-```text
-RepoIndexer
-Tree-sitter parser
-chunker
-keyword retrieval
-embedding abstraction
-pgvector optional store
-context compiler
-token budgeter
-```
-
-Acceptance:
-
-```text
-Fixture repo indexed.
-Relevant files retrieved.
-Context budget enforced.
-Context pack immutable and hashable.
-```
-
-### Phase 4: Agent adapters
-
-Deliver:
-
-```text
-AgentAdapter protocol
-FakeAgentAdapter
-PatchAgentAdapter
-optional Claude/Codex/OpenHands wrappers
-AgentRegistry
-```
-
-Acceptance:
-
-```text
-Fake and patch adapters pass.
-External adapters unavailable gracefully.
-Agent output diff captured.
-```
-
-### Phase 5: Verification
-
-Deliver:
-
-```text
-VerificationPlan
-project detectors
-pytest runner
-generic command verifier
-static analysis runner
-Playwright runner
-evidence aggregation
-```
-
-Acceptance:
-
-```text
-Bugfix fixture verification passes/fails appropriately.
-Playwright fixture passes.
-Evidence aggregation tests pass.
-```
-
-### Phase 6: Orchestration
-
-Deliver:
-
-```text
-WorkflowState
-workflow nodes
-runner
-retry/resume
-parallel attempts
-human interrupt support
-```
-
-Acceptance:
-
-```text
-Fake-agent e2e passes.
-Fallback e2e passes.
-Human interrupt e2e passes.
-Parallel attempts e2e passes.
-```
-
-### Phase 7: Evaluation ladder and HITL
-
-Deliver:
-
-```text
-objective evaluator
-weak supervision engine
-LLM judge interface
-fake judges
-human review API/CLI
-active learning selector
-```
-
-Acceptance:
-
-```text
-Weak labels correct on fixtures.
-Human review queue works.
-Active learning selector works.
-Eval ladder e2e passes.
-```
-
-### Phase 8: Routing and learning
-
-Deliver:
-
-```text
-heuristic router
-feature extractor
-policy registry
-reward formula
-supervised predictors
-bandit policy
-off-policy evaluation
-simulation
-```
-
-Acceptance:
-
-```text
-Heuristic routing tests pass.
-Bandit simulation beats random.
-Policy registry promote/rollback works.
-Reward events created.
-```
-
-### Phase 9: API and CLI completion
-
-Deliver:
-
-```text
-FastAPI endpoints
-Typer CLI commands
-demo commands
-OpenAPI docs
-```
-
-Acceptance:
-
-```text
-API integration tests pass.
-CLI demo tests pass.
-Bugfix demo passes from CLI.
-```
-
-### Phase 10: Long-running evals, docs, hardening
-
-Deliver:
-
-```text
-soak scripts
-bakeoff scripts
-bandit monte carlo
-retriever stress
-chaos/resume
-security redteam
-docs
-final report
-```
-
-Acceptance:
-
-```text
-make test passes.
-make test-e2e passes.
-make coverage passes.
-make bandit-monte-carlo passes.
-make retriever-stress passes.
-make security-redteam passes.
-Long-running commands are available and documented.
-```
-
----
-
-## 26. Final acceptance criteria
-
-The implementation is complete only when all are true:
-
-```text
-1. A new user can run the quickstart without paid API keys.
-2. The bugfix demo completes end-to-end.
-3. The system creates a task, context pack, routing decision, agent attempt, diff, verification result, evaluation result, reward event, and trace.
-4. Human-review interrupt works.
-5. Parallel attempts work with isolated workspaces.
-6. The router logs action probability.
-7. The bandit simulation learns a better-than-random policy.
-8. Context packs are immutable and token-budgeted.
-9. All command execution is mediated and logged.
-10. Secrets are redacted.
-11. High-risk tasks require human review by default.
-12. API and CLI both work.
-13. Unit, integration, and e2e tests pass.
-14. Long-running eval commands exist and produce reports.
-15. Documentation explains how to add new agents, evaluators, context strategies, and routing policies.
-```
-
----
-
-## 27. Final report required from the coding agent
-
-At completion, write `FINAL_REPORT.md` with:
-
-```text
-Summary of what was built
-Architecture overview
-How to run quickstart
-How to run test suite
-How to run long evals
-Which optional integrations are implemented
-Which optional integrations are stubs
-Known limitations
-Security posture
-Performance notes
-Coverage summary
-Bandit simulation results
-Retriever stress results
-Soak/chaos results if run
-Recommended next work
-```
-
-Also update `IMPLEMENTATION_LOG.md` continuously with:
-
-```text
-date/time
-phase
-changes made
-tests run
-failures found
-fixes applied
-remaining risks
-```
-
----
-
-## 28. Extra implementation guidance
-
-Do not optimize prematurely. The correct order is:
-
-```text
-traceable workflow first
-correct data model second
-safe workspace third
-context compiler fourth
-verification fifth
-routing sixth
-learning seventh
-external integrations eighth
-```
-
-The moat is not one clever model call. The moat is the loop:
-
-```text
-task → context → route → attempt → verify → evaluate → human label → reward → learn → better route/context/eval
-```
-
-Build that loop so every agent run becomes a reusable training example.
-
-[1]: https://developers.openai.com/codex/sdk?utm_source=chatgpt.com "Codex SDK"
-[2]: https://code.claude.com/docs/en/agent-sdk/overview?utm_source=chatgpt.com "Agent SDK overview - Claude Code Docs"
-[3]: https://docs.openhands.dev/sdk?utm_source=chatgpt.com "Software Agent SDK"
-[4]: https://docs.langchain.com/oss/python/langgraph/overview?utm_source=chatgpt.com "LangGraph overview - Docs by LangChain"
-[5]: https://github.com/modelcontextprotocol/python-sdk?utm_source=chatgpt.com "MCP Python SDK"
-[6]: https://vowpalwabbit.org/tutorials/contextual_bandits.html?utm_source=chatgpt.com "Contextual Bandits — VowpalWabbit latest documentation"
-[7]: https://github.com/pgvector/pgvector?utm_source=chatgpt.com "pgvector/pgvector: Open-source vector similarity search for ..."
-[8]: https://playwright.dev/python/?utm_source=chatgpt.com "Fast and reliable end-to-end testing for modern web apps"
-[9]: https://www.braintrust.dev/docs/annotate/human-review?utm_source=chatgpt.com "Add human feedback - Braintrust"
+Start with **full persistent run graph + real crash-resume tests**. Everything else—real agents, better routing, context benchmarking, active learning, post-merge outcomes—depends on the system being able to trust and replay its own history.
