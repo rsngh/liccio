@@ -59,3 +59,31 @@ def test_history_archive_exists() -> None:
 @pytest.mark.parametrize("doc", ["CURRENT_STATUS.md", "FINAL_REPORT.md", "ALPHA4_CHECKLIST.md"])
 def test_docs_present_and_nonempty(doc) -> None:
     assert len(_read(doc).strip()) > 200
+
+
+def test_status_schema_defines_all_categories() -> None:
+    schema = _read("docs/status_schema.md").lower()
+    for cat in ("real local", "real service-backed", "acp true harness",
+                "vendor harness", "simple model adapter", "fallback", "stub"):
+        assert cat in schema, f"status_schema.md missing category {cat!r}"
+
+
+def test_current_status_matches_committed_test_count() -> None:
+    # the headline test count in CURRENT_STATUS must match reports/pytest.txt
+    pytest_txt = _read("reports/pytest.txt")
+    import re
+    m = re.search(r"(\d+) passed", pytest_txt)
+    assert m, "reports/pytest.txt has no 'N passed' line"
+    passed = m.group(1)
+    status = _read("CURRENT_STATUS.md")
+    assert passed in status, (
+        f"CURRENT_STATUS.md does not cite the committed pass count {passed}")
+
+
+def test_no_stale_single_harness_or_future_claims() -> None:
+    # completed features must not be described as future work / not-implemented
+    status = _read("CURRENT_STATUS.md").lower()
+    for stale in ("only one true harness",
+                  "not full tool-loop harnesses",
+                  "are simple model adapters* (single json-edit prompt), not full"):
+        assert stale not in status, f"stale claim in CURRENT_STATUS.md: {stale!r}"
