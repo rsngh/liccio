@@ -33,6 +33,7 @@ from acp.schemas.learning import RewardEvent
 from acp.schemas.repo import Repository, RepoSnapshot
 from acp.schemas.routing import RoutingDecision
 from acp.schemas.task import Task, TaskClassification
+from acp.schemas.trace import SpanRecord
 from acp.schemas.verification import Evidence, VerificationPlan, VerificationRun
 from acp.schemas.workspace import DiffBundle, WorkspacePolicy
 from acp.verification.aggregate import AggregateVerdict, EvidenceAggregator
@@ -84,6 +85,7 @@ class RunArtifacts:
     review_item: HumanReviewItem | None = None
     reward: RewardEvent | None = None
     policy_decision: object | None = None
+    spans: list[SpanRecord] = field(default_factory=list)
 
 
 class WorkflowRunner:
@@ -110,6 +112,9 @@ class WorkflowRunner:
         )
         self.evaluator = ObjectiveEvaluator()
         self.aggregator = EvidenceAggregator()
+        from acp.observability.tracing import Tracer
+
+        self.tracer = Tracer()
         self.on_persist = on_persist
         self.max_node_attempts = max_node_attempts
         self.artifacts = RunArtifacts()
@@ -153,12 +158,17 @@ class WorkflowRunner:
             state.node_attempts[node] = state.node_attempts.get(node, 0) + 1
             try:
                 handler = getattr(self, f"_node_{node}")
-                paused = await handler(state)
+                with self.tracer.span(
+                    f"acp.{node}", state.trace_id, run_id=state.run_id, task_id=state.task_id
+                ):
+                    paused = await handler(state)
+                self._record_spans()
                 state.completed_nodes.append(node)
                 self._persist(state)
                 if paused:
                     return state
             except Exception as exc:  # noqa: BLE001 - record and fail the run
+                self._record_spans()
                 state.error = f"{node}: {exc}"
                 state.status = RunStatus.FAILED
                 self._persist(state)
@@ -167,6 +177,17 @@ class WorkflowRunner:
             state.status = RunStatus.SUCCEEDED
         self._persist(state)
         return state
+
+    def _record_spans(self) -> None:
+        """Convert tracer spans to persistable SpanRecords (dedup by span_id)."""
+        seen = {s.id for s in self.artifacts.spans}
+        for sp in self.tracer.spans:
+            if sp.span_id in seen:
+                continue
+            self.artifacts.spans.append(SpanRecord(
+                id=sp.span_id, trace_id=sp.trace_id, name=sp.name,
+                attributes=sp.attributes, status=sp.status, duration_ms=sp.duration_ms,
+            ))
 
     def _persist(self, state: WorkflowState) -> None:
         from acp.core.time import utcnow

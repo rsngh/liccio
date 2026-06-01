@@ -153,6 +153,12 @@ class RunState(_Row):
     trace_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class Span(_Row):
+    __tablename__ = "spans"
+    trace_id: Mapped[str] = mapped_column(String, index=True)
+    name: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
 class Artifact(_Row):
     __tablename__ = "artifacts"
 
@@ -188,6 +194,7 @@ ALL_MODELS = [
     PolicyVersion,
     PostMergeOutcome,
     RunState,
+    Span,
     Artifact,
     AuditLog,
 ]

@@ -32,6 +32,7 @@ from acp.schemas import (
     RepoSnapshot,
     RewardEvent,
     RoutingDecision,
+    SpanRecord,
     Task,
     ToolCallRecord,
     VerificationPlan,
@@ -66,6 +67,7 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     PostMergeOutcome: m.PostMergeOutcome,
     ArtifactRef: m.Artifact,
     AuditEvent: m.AuditLog,
+    SpanRecord: m.Span,
 }
 
 

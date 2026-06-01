@@ -106,6 +106,7 @@ class AppService:
             to_save.append(artifacts.review_item)
         if artifacts.reward:
             to_save.append(artifacts.reward)
+        to_save.extend(artifacts.spans)
         if to_save:
             self._save(*to_save)
 
@@ -331,6 +332,59 @@ class AppService:
         from acp.schemas.trace import AuditEvent
 
         self._save(AuditEvent(event_type=event_type, target=target, detail=detail or {}))
+
+    # ---- post-merge outcome loop (round-1 §9) ----------------------------
+
+    def ingest_outcome(
+        self,
+        task_id: str,
+        attempt_id: str | None,
+        *,
+        merged: bool = False,
+        reverted: bool = False,
+        incident_link: str | None = None,
+        review_rounds: int = 0,
+    ):
+        """Record a post-merge outcome and mature the reward accordingly.
+
+        A revert/incident emits a downward (matured) RewardEvent so the learning
+        loop reflects real-world results, not just pre-merge verification.
+        """
+        from acp.core.time import utcnow
+        from acp.schemas.evaluation import EvaluationResult
+        from acp.schemas.learning import PostMergeOutcome
+
+        outcome = PostMergeOutcome(
+            task_id=task_id, attempt_id=attempt_id, merged=merged, reverted=reverted,
+            incident_link=incident_link, review_rounds=review_rounds,
+            merge_time=utcnow() if merged else None,
+            revert_time=utcnow() if reverted else None,
+        )
+        self._save(outcome)
+
+        if reverted or incident_link:
+            from acp.routing.reward import compute_reward
+            from acp.schemas.agent import AgentAttempt
+
+            with session_scope(self.sessions) as s:
+                es = EntityStore(s)
+                attempts = es.list_by(AgentAttempt, task_id=task_id)
+                evals = es.list_by(EvaluationResult, task_id=task_id)
+            attempt = next(
+                (a for a in attempts if a.id == attempt_id),
+                attempts[0] if attempts else None,
+            )
+            evaluation = evals[-1] if evals else None
+            if attempt is not None and evaluation is not None:
+                matured = compute_reward(
+                    evaluation, attempt, task_success=False,
+                    reverted_or_incident=True, label_source="post_merge",
+                )
+                matured.matured_at = utcnow()
+                self._save(matured)
+                self._audit("post_merge_incident", target=task_id,
+                            detail={"reverted": reverted, "incident": bool(incident_link)})
+        return outcome
 
 
 def state_to_task_status(task: Task, state: WorkflowState) -> Task:
