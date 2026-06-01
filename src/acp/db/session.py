@@ -22,8 +22,22 @@ def to_sync_url(url: str) -> str:
 
 def make_engine(database_url: str, *, echo: bool = False) -> Engine:
     sync_url = to_sync_url(database_url)
-    connect_args = {"check_same_thread": False} if sync_url.startswith("sqlite") else {}
-    return create_engine(sync_url, echo=echo, future=True, connect_args=connect_args)
+    is_sqlite = sync_url.startswith("sqlite")
+    connect_args = {"check_same_thread": False, "timeout": 30} if is_sqlite else {}
+    engine = create_engine(sync_url, echo=echo, future=True, connect_args=connect_args)
+    if is_sqlite:
+        # WAL + busy_timeout greatly reduce 'database is locked' under concurrency.
+        from sqlalchemy import event
+
+        @event.listens_for(engine, "connect")
+        def _sqlite_pragmas(dbapi_conn, _rec):  # noqa: ANN001
+            cur = dbapi_conn.cursor()
+            cur.execute("PRAGMA journal_mode=WAL")
+            cur.execute("PRAGMA busy_timeout=30000")
+            cur.execute("PRAGMA synchronous=NORMAL")
+            cur.close()
+
+    return engine
 
 
 def make_session_factory(engine: Engine) -> sessionmaker[Session]:

@@ -7,7 +7,7 @@ from git import Repo
 
 from acp.api.service import AppService
 from acp.core.config import ACPSettings
-from acp.evaluation.soak import run_soak, soak_to_markdown
+from acp.evaluation.soak import run_concurrent_soak, run_soak, soak_to_markdown
 
 FIXED = "def divide(a, b):\n    if b == 0:\n        raise ZeroDivisionError\n    return a / b\n"
 
@@ -62,3 +62,16 @@ def test_no_orphan_worktrees_after_soak(service, tmp_path) -> None:
     rep = run_soak(service, repo.id, iterations=10, task_mix=["bugfix"])
     assert rep["thresholds"]["no_unbounded_worktrees"]
     assert rep["thresholds"]["memory_growth_ok"]
+
+
+def test_true_concurrent_soak_no_corruption(service, tmp_path) -> None:
+    repo = _repo(service, tmp_path)
+    rep = run_concurrent_soak(service.settings, repo.id, iterations=12, concurrency=4,
+                              task_mix=["bugfix"])
+    assert rep["concurrency"] == 4
+    assert rep["duplicate_run_ids"] == 0
+    assert rep["db_lock_errors"] == 0
+    assert rep["thresholds"]["no_db_corruption"]
+    assert rep["thresholds"]["all_runs_unique"]
+    assert rep["unique_run_ids"] == 12
+    assert rep["latency_p95"] >= rep["latency_p50"]

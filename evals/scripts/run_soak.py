@@ -11,7 +11,7 @@ from pathlib import Path
 from acp.api.service import AppService
 from acp.cli.demos import make_demo_repo
 from acp.core.config import ACPSettings
-from acp.evaluation.soak import run_soak, soak_to_markdown
+from acp.evaluation.soak import run_concurrent_soak, run_soak, soak_to_markdown
 
 
 def main() -> None:
@@ -34,7 +34,10 @@ def main() -> None:
     repo = svc.create_repo("soak", make_demo_repo(tmp / "repo"), default_branch="master")
     mix = args.task_mix.split(",")
 
-    if args.hours:
+    if args.concurrency > 1:
+        report = run_concurrent_soak(settings, repo.id, iterations=args.iterations,
+                                     concurrency=args.concurrency, seed=args.seed, task_mix=mix)
+    elif args.hours:
         deadline = time.monotonic() + args.hours * 3600
         total = 0
         report: dict = {}
