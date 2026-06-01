@@ -31,6 +31,40 @@ def _correlation(xs: list[float], ys: list[float]) -> float:
     return cov / (vx * vy) if vx and vy else 0.0
 
 
+def _brier(samples: list[CalibrationSample]) -> float:
+    if not samples:
+        return 0.0
+    return sum((s.predicted - (1.0 if s.truth else 0.0)) ** 2 for s in samples) / len(samples)
+
+
+def _accuracy(samples: list[CalibrationSample], threshold: float) -> float:
+    if not samples:
+        return 0.0
+    return sum(1 for s in samples if (s.predicted >= threshold) == s.truth) / len(samples)
+
+
+def recommend_human_review_threshold(samples: list[CalibrationSample]) -> dict:
+    """Recommend a confidence threshold below which an attempt should be sent to
+    human review. We pick the prediction level that maximizes overall accuracy,
+    and report the residual false-confident-pass rate above it (predicted pass
+    but truth fail) — the risk a reviewer would catch.
+    """
+    if not samples:
+        return {"threshold": 0.5, "auto_accuracy_above": 0.0, "false_confident_pass": 0.0}
+    grid = [i / 20 for i in range(1, 20)]
+    best_t, best_acc = 0.5, -1.0
+    for t in grid:
+        acc = _accuracy(samples, t)
+        if acc > best_acc:
+            best_acc, best_t = acc, t
+    above = [s for s in samples if s.predicted >= best_t]
+    fcp = sum(1 for s in above if not s.truth) / len(above) if above else 0.0
+    return {"threshold": round(best_t, 4),
+            "auto_accuracy_above": round(best_acc, 4),
+            "false_confident_pass": round(fcp, 4),
+            "auto_approvable_fraction": round(len(above) / len(samples), 4)}
+
+
 @dataclass
 class CalibrationReport:
     n: int = 0
@@ -38,6 +72,7 @@ class CalibrationReport:
     brier: float = 0.0
     correlation: float = 0.0
     by_source: dict = field(default_factory=dict)
+    threshold_recommendation: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -46,6 +81,7 @@ class CalibrationReport:
             "brier": round(self.brier, 4),
             "correlation": round(self.correlation, 4),
             "by_source": self.by_source,
+            "threshold_recommendation": self.threshold_recommendation,
         }
 
 
@@ -55,17 +91,22 @@ def calibrate(samples: list[CalibrationSample], threshold: float = 0.5) -> Calib
     preds = [s.predicted for s in samples]
     truths = [1.0 if s.truth else 0.0 for s in samples]
     correct = sum(1 for s in samples if (s.predicted >= threshold) == s.truth)
-    brier = sum((p - t) ** 2 for p, t in zip(preds, truths, strict=False)) / len(samples)
     by_source: dict[str, dict] = {}
-    sources = {s.source for s in samples}
-    for src in sources:
+    for src in {s.source for s in samples}:
         sub = [s for s in samples if s.source == src]
         c = sum(1 for s in sub if (s.predicted >= threshold) == s.truth)
-        by_source[src] = {"n": len(sub), "accuracy": round(c / len(sub), 4)}
+        by_source[src] = {
+            "n": len(sub),
+            "accuracy": round(c / len(sub), 4),
+            "brier": round(_brier(sub), 4),
+            "correlation": round(_correlation([s.predicted for s in sub],
+                                              [1.0 if s.truth else 0.0 for s in sub]), 4),
+        }
     return CalibrationReport(
         n=len(samples),
         accuracy=correct / len(samples),
-        brier=brier,
+        brier=_brier(samples),
         correlation=_correlation(preds, truths),
         by_source=by_source,
+        threshold_recommendation=recommend_human_review_threshold(samples),
     )

@@ -744,7 +744,7 @@ class AppService:
         """Calibrate automated evaluators against human labels + post-merge
         outcomes from the DB; persist as EvalRun(kind=calibration) (R3-6)."""
         from acp.evaluation.calibration import CalibrationSample, calibrate
-        from acp.schemas.evaluation import EvaluationResult
+        from acp.schemas.evaluation import EvaluationResult, WeakLabel
         from acp.schemas.human_review import HumanLabel
         from acp.schemas.learning import PostMergeOutcome
 
@@ -753,15 +753,24 @@ class AppService:
             evals = {e.attempt_id: e for e in es.list_by(EvaluationResult) if e.attempt_id}
             labels = es.list_by(HumanLabel)
             outcomes = es.list_by(PostMergeOutcome)
+            weak = {w.attempt_id: w for w in es.list_by(WeakLabel) if w.attempt_id}
 
         samples: list[CalibrationSample] = []
         for lab in labels:
-            ev = evals.get(lab.attempt_id) if lab.attempt_id else None
+            if not lab.attempt_id:
+                continue
+            truth = (lab.verdict == "pass")  # human label is ground truth (overrides objective)
+            ev = evals.get(lab.attempt_id)
             if ev is not None:
                 samples.append(CalibrationSample(
-                    predicted=ev.spec_compliance,
-                    truth=(lab.verdict == "pass"),
+                    predicted=ev.spec_compliance, truth=truth,
                     source="objective", truth_source="human",
+                ))
+            w = weak.get(lab.attempt_id)
+            if w is not None:
+                samples.append(CalibrationSample(
+                    predicted=w.probabilities.get("success", w.confidence), truth=truth,
+                    source="weak", truth_source="human",
                 ))
         for out in outcomes:
             ev = evals.get(out.attempt_id) if out.attempt_id else None
