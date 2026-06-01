@@ -423,6 +423,19 @@ def eval_multi_harness_bakeoff(
                              "by_adapter": report["by_adapter"]})
 
 
+@eval_app.command("simulate-postmerge")
+def eval_simulate_postmerge(eval_run: str, seed: int = 1234) -> None:
+    """Simulate delayed post-merge outcomes for a bakeoff and update the policy."""
+    from acp.api.service import AppService
+
+    try:
+        result = AppService().simulate_postmerge(eval_run, seed=seed)
+    except KeyError:
+        console.print(f"eval run {eval_run} not found")
+        raise typer.Exit(1) from None
+    console.print_json(data=result)
+
+
 @app.command()
 def serve(host: str = "127.0.0.1", port: int = 8000) -> None:  # pragma: no cover
     """Run the FastAPI app with uvicorn."""

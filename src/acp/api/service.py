@@ -685,6 +685,30 @@ class AppService:
             markdown=bakeoff_v2_to_markdown(rep),
             config={"adapters": adapters, "repetitions": repetitions, "backend": backend})
 
+    def simulate_postmerge(self, eval_run_id: str, revert_profile: dict | None = None,
+                           seed: int = 1234) -> dict:
+        """Simulate delayed post-merge outcomes for a bakeoff EvalRun and feed
+        them back into the routing policy (round-5 WS8). Persists the outcomes
+        as EvalRun(kind=postmerge_sim) and returns the summary."""
+        from acp.evaluation.postmerge_sim import (
+            apply_outcomes_to_policy,
+            outcomes_summary,
+            simulate_outcomes,
+        )
+
+        report = self.get_eval_report(eval_run_id)
+        if report is None:
+            raise KeyError(eval_run_id)
+        content = report["content"]
+        outcomes = simulate_outcomes(content, revert_profile=revert_profile, seed=seed)
+        applied = apply_outcomes_to_policy(self.policy, outcomes)
+        self.save_policy_state()
+        summary = {**applied, **outcomes_summary(outcomes), "source_eval_run": eval_run_id}
+        run = self._persist_eval("postmerge_sim", applied, summary,
+                                 config={"source_eval_run": eval_run_id, "seed": seed})
+        return {"eval_run_id": run.id, **applied,
+                "negative_rate": summary["negative_rate"]}
+
     def run_soak_eval(self, iterations: int = 15, task_mix: str = "bugfix"):
         import tempfile
 
