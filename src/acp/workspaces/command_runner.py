@@ -34,23 +34,34 @@ class CommandRunner:
         allowed_root: Path | str | None = None,
         default_timeout_s: int = 120,
         max_output_chars: int = 20_000,
+        scrub_secrets: bool = True,
     ) -> None:
         self.artifact_store = artifact_store
         self.redactor = redactor or Redactor()
         self.allowed_root = Path(allowed_root).resolve() if allowed_root else None
         self.default_timeout_s = default_timeout_s
         self.max_output_chars = max_output_chars
+        # When True, sensitive env vars (keys/tokens/secrets) are removed from the
+        # child process environment so secrets are never injected into agent or
+        # verification subprocesses (charter §22 defaults; round-1 §3).
+        self.scrub_secrets = scrub_secrets
 
     def _check_cwd(self, cwd: Path, allow_outside: bool) -> None:
         cwd = cwd.resolve()
         if not cwd.exists():
             raise CommandSecurityError(f"cwd does not exist: {cwd}")
+        # Robust containment check (not string-prefix based).
         if (
             self.allowed_root is not None
             and not allow_outside
-            and not str(cwd).startswith(str(self.allowed_root))
+            and not cwd.is_relative_to(self.allowed_root)
         ):
             raise CommandSecurityError(f"cwd {cwd} escapes allowed root {self.allowed_root}")
+
+    def _scrub(self, env: dict[str, str], allow_secrets: bool) -> dict[str, str]:
+        if allow_secrets or not self.scrub_secrets:
+            return env
+        return {k: v for k, v in env.items() if not self.redactor.key_is_sensitive(k)}
 
     def _store_output(self, text: str, suffix: str) -> tuple[str, str | None]:
         if self.artifact_store is None:
@@ -72,6 +83,7 @@ class CommandRunner:
         allow_network: bool = False,
         max_output_chars: int | None = None,
         allow_cwd_outside_root: bool = False,
+        allow_secrets: bool = False,
         attempt_id: str | None = None,
         trace_id: str | None = None,
         check: bool = False,
@@ -82,10 +94,11 @@ class CommandRunner:
         if max_output_chars is not None:
             self.max_output_chars = max_output_chars
 
-        # Build environment. Network policy is advisory metadata here; actual
-        # sandboxing (no-network) is enforced by Docker/K8s backends in later
-        # phases. We never leak secret values into logs.
-        full_env = dict(os.environ if env is None else env)
+        # Build environment. Secrets are scrubbed from the child env by default so
+        # untrusted agent/verification commands never receive API keys. Network
+        # policy is advisory here; hard no-network is enforced by container
+        # backends. We never leak secret values into logs.
+        full_env = self._scrub(dict(os.environ if env is None else env), allow_secrets)
         sanitized_keys = self.redactor.sanitized_env_keys(full_env)
 
         started = utcnow()

@@ -49,11 +49,22 @@ def test_env_secrets_redacted(tmp_path) -> None:
         cwd=tmp_path,
         env={"PATH": "/usr/bin", "OPENAI_API_KEY": "sk-secret-value-123456"},
     )
-    # secret env key is recorded by name only; value never stored
-    assert "OPENAI_API_KEY" in rec.sanitized_env_keys
+    # secret env var is scrubbed entirely from the child env (not just redacted)
+    assert "OPENAI_API_KEY" not in rec.sanitized_env_keys
     assert "sk-secret-value-123456" not in rec.stdout_summary
     # secret-shaped stdout is redacted
     assert "sk-ant-aaaaaaaaaaaaaaaaaaaaaaaa" not in rec.stdout_summary
+
+
+def test_secrets_kept_when_allow_secrets(tmp_path) -> None:
+    r = CommandRunner(allowed_root=tmp_path)
+    rec = r.run(
+        [sys.executable, "-c", "print('ok')"],
+        cwd=tmp_path,
+        env={"PATH": "/usr/bin", "OPENAI_API_KEY": "sk-x"},
+        allow_secrets=True,
+    )
+    assert "OPENAI_API_KEY" in rec.sanitized_env_keys
 
 
 def test_large_output_truncated_and_artifacted(tmp_path) -> None:

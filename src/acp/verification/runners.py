@@ -43,7 +43,7 @@ class PytestRunner(BaseRunner):
     ) -> Evidence:
         if not _cli_available(command):
             return self._skip(task_id, attempt_id, f"{command[0]} not installed")
-        rec = self.runner.run(command, cwd=cwd, allow_cwd_outside_root=True, attempt_id=attempt_id)
+        rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
         out = f"{rec.stdout_summary}\n{rec.stderr_summary}"
         passed, failed, skipped, errors = self._parse(out)
         if rec.timed_out:
@@ -93,7 +93,7 @@ class GenericCommandRunner(BaseRunner):
     ) -> Evidence:
         if not _cli_available(command):
             return self._skip(task_id, attempt_id, f"{command[0]} not installed")
-        rec = self.runner.run(command, cwd=cwd, allow_cwd_outside_root=True, attempt_id=attempt_id)
+        rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
         if rec.timed_out:
             status = EvidenceStatus.FAIL
             summary = "timed out"
@@ -120,7 +120,7 @@ class SecurityScannerRunner(BaseRunner):
     ) -> Evidence:
         if not _cli_available(command):
             return self._skip(task_id, attempt_id, f"{command[0]} not installed")
-        rec = self.runner.run(command, cwd=cwd, allow_cwd_outside_root=True, attempt_id=attempt_id)
+        rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
         out = f"{rec.stdout_summary}\n{rec.stderr_summary}".lower()
         high = "high" in out and "severity" in out
         if rec.exit_code == 0 and not high:
@@ -146,7 +146,7 @@ class PlaywrightRunner(BaseRunner):
     ) -> Evidence:
         if not _cli_available(command[:1]):
             return self._skip(task_id, attempt_id, "playwright/npx not installed")
-        rec = self.runner.run(command, cwd=cwd, allow_cwd_outside_root=True, attempt_id=attempt_id)
+        rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
         status = EvidenceStatus.PASS if rec.exit_code == 0 else EvidenceStatus.FAIL
         return Evidence(
             task_id=task_id, attempt_id=attempt_id, kind=self.kind, name=self.name,

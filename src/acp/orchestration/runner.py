@@ -94,7 +94,13 @@ class WorkflowRunner:
         self.registry = registry
         self.policy = policy  # optional RoutingPolicy (bandit/supervised); else heuristic
         self.workspace_mgr = LocalWorkspaceManager(workspace_root)
-        self.command_runner = CommandRunner(artifact_store=artifact_store)
+        # Contain all verification commands within the workspace root and scrub
+        # secrets from their environment (round-1 §3 sandbox hardening).
+        self.command_runner = CommandRunner(
+            artifact_store=artifact_store,
+            allowed_root=self.workspace_mgr.root,
+            scrub_secrets=True,
+        )
         self.evaluator = ObjectiveEvaluator()
         self.aggregator = EvidenceAggregator()
         self.on_persist = on_persist
