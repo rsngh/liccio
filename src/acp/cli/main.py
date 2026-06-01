@@ -163,8 +163,8 @@ def run_status(run_id: str) -> None:
 
 
 @run_app.command("graph")
-def run_graph_cmd(run_id: str) -> None:
-    """Reconstruct the full run graph from storage (counts per entity)."""
+def run_graph_cmd(run_id: str, counts: bool = False) -> None:
+    """Reconstruct the full run graph from storage (--counts for a summary)."""
     from acp.api.service import AppService
 
     try:
@@ -172,8 +172,12 @@ def run_graph_cmd(run_id: str) -> None:
     except KeyError:
         console.print(f"run {run_id} not found")
         raise typer.Exit(1) from None
-    counts = {k: (len(v) if isinstance(v, list) else (1 if v else 0)) for k, v in graph.items()}
-    console.print_json(data=counts)
+    if counts:
+        summary = {k: (len(v) if isinstance(v, list) else (1 if v else 0))
+                   for k, v in graph.items()}
+        console.print_json(data=summary)
+    else:
+        console.print_json(data=graph)
 
 
 @run_app.command("trace")

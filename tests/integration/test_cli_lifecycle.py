@@ -71,11 +71,14 @@ def test_cli_full_lifecycle_and_run_graph(env, monkeypatch) -> None:
     assert rs.exit_code == 0, rs.output
     run_id = json.loads(rs.output)["run_id"]
     # run graph after a fresh process (new AppService inside the command)
-    g = runner.invoke(app, ["run", "graph", run_id])
+    g = runner.invoke(app, ["run", "graph", run_id, "--counts"])
     assert g.exit_code == 0
     counts = json.loads(g.output)
     assert counts["attempts"] >= 1
     assert counts["reward_events"] >= 1
+    # full graph (default) carries the actual entities
+    full = json.loads(runner.invoke(app, ["run", "graph", run_id]).output)
+    assert isinstance(full["attempts"], list) and full["attempts"]
     # evidence + evaluation surfaces
     assert runner.invoke(app, ["run", "evidence", run_id]).exit_code == 0
     assert runner.invoke(app, ["run", "evaluation", run_id]).exit_code == 0

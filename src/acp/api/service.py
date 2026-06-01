@@ -357,7 +357,10 @@ class AppService:
                 "spans": dump(es.list_by(SpanRecord, trace_id=state.trace_id)),
                 "audit_events": dump(es.list_by(AuditEvent, trace_id=state.trace_id)),
             }
-        return graph
+        # Validate through the RunGraph schema so the shape is guaranteed.
+        from acp.schemas.graph import RunGraph
+
+        return RunGraph.model_validate(graph).model_dump(mode="json")
 
     def run_trace(self, run_id: str) -> dict:
         state = self.get_run(run_id)
