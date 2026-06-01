@@ -606,6 +606,28 @@ class AppService:
         return self._persist_eval("bakeoff", rep["summary"], rep, cases=cases,
                                   markdown=bakeoff_to_markdown(rep), config=rep["config"])
 
+    def run_multi_harness_bakeoff(self, adapter_factories: dict | None = None,
+                                  tasks=None):
+        """Run the multi-harness no-patch bakeoff and persist it as an EvalRun
+        (round-4 Block F). Defaults to the deterministic fake+patch baselines so
+        the method is runnable with no API keys; pass real harness factories
+        (openai_harness / claude_harness) for a live comparison."""
+        from acp.agents.fake import FakeAgentAdapter
+        from acp.agents.patch_agent import PatchAgentAdapter
+        from acp.evaluation.multi_harness_bakeoff import (
+            bakeoff_to_markdown,
+            run_multi_harness_bakeoff,
+        )
+
+        factories = adapter_factories or {
+            "patch": PatchAgentAdapter, "fake": FakeAgentAdapter,
+        }
+        rep = run_multi_harness_bakeoff(factories, tasks=tasks)
+        return self._persist_eval(
+            "multi_harness_bakeoff", rep["summary"], rep, cases=rep["cells"],
+            markdown=bakeoff_to_markdown(rep),
+            config={"adapters": rep["adapters"], "tasks": rep["tasks"]})
+
     def run_soak_eval(self, iterations: int = 15, task_mix: str = "bugfix"):
         import tempfile
 
