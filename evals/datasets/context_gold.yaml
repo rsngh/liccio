@@ -1,0 +1,17 @@
+# Context retrieval gold dataset (round-1 two-day D2B2).
+# Synthetic gold tasks are generated programmatically by
+# acp.evaluation.retrieval_benchmark.generate_synthetic_repo (one gold task per
+# ~10 files, each pointing at the file defining feature_<i> / Widget<i>).
+#
+# This file documents the task taxonomy the generator covers and lets a curated
+# set be layered on top of the synthetic ones.
+taxonomy:
+  - bugfix
+  - test_generation
+  - docs
+  - security
+  - migration
+  - frontend
+  - multi_file_refactor
+
+curated: []   # add {title, query, gold_paths, task_type} entries to extend
