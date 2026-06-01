@@ -1,0 +1,125 @@
+{
+  "mode": "multi_harness_v2",
+  "backend": "local",
+  "repetitions": 1,
+  "adapters": [
+    "claude_harness",
+    "openai_harness"
+  ],
+  "dataset": "/tmp/claude-1000/tmpas85shk6/one_task.yaml",
+  "n_tasks": 1,
+  "cells": [
+    {
+      "name": "bugfix_divide_zero/openai_harness/r0",
+      "task": "bugfix_divide_zero",
+      "task_type": "bugfix",
+      "risk": "low",
+      "adapter": "openai_harness",
+      "rep": 0,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "reward": 5.1974,
+      "human_review_required": false,
+      "tool_calls": 2,
+      "commands": 1,
+      "file_reads": 0,
+      "file_writes": [
+        "calculator.py"
+      ],
+      "changed_files": [
+        "calculator.cpython-312.pyc",
+        "test_calculator.cpython-312-pytest-9.0.3.pyc",
+        "calculator.py"
+      ],
+      "diff_lines": 109,
+      "tokens": 1897,
+      "cost_usd": 0.001138,
+      "latency_s": 4.091,
+      "is_harness": true,
+      "security_risk": 0.0,
+      "failure_class": "none"
+    },
+    {
+      "name": "bugfix_divide_zero/claude_harness/r0",
+      "task": "bugfix_divide_zero",
+      "task_type": "bugfix",
+      "risk": "low",
+      "adapter": "claude_harness",
+      "rep": 0,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "reward": 5.1898,
+      "human_review_required": false,
+      "tool_calls": 3,
+      "commands": 1,
+      "file_reads": 1,
+      "file_writes": [
+        "calculator.py"
+      ],
+      "changed_files": [
+        "calculator.cpython-312.pyc",
+        "test_calculator.cpython-312-pytest-9.0.3.pyc",
+        "calculator.py"
+      ],
+      "diff_lines": 109,
+      "tokens": 6406,
+      "cost_usd": 0.012812,
+      "latency_s": 7.747,
+      "is_harness": true,
+      "security_risk": 0.0,
+      "failure_class": "none"
+    }
+  ],
+  "by_adapter": {
+    "claude_harness": {
+      "cells": 1,
+      "solve_rate": 1.0,
+      "verification_pass_rate": 1.0,
+      "human_review_rate": 0.0,
+      "mean_tool_calls": 3.0,
+      "mean_cost_usd": 0.012812,
+      "mean_latency_s": 7.747,
+      "total_tokens": 6406
+    },
+    "openai_harness": {
+      "cells": 1,
+      "solve_rate": 1.0,
+      "verification_pass_rate": 1.0,
+      "human_review_rate": 0.0,
+      "mean_tool_calls": 2.0,
+      "mean_cost_usd": 0.001138,
+      "mean_latency_s": 4.091,
+      "total_tokens": 1897
+    }
+  },
+  "by_task_type": {
+    "bugfix": {
+      "cells": 2,
+      "solve_rate": 1.0,
+      "verification_pass_rate": 1.0,
+      "human_review_rate": 0.0,
+      "mean_tool_calls": 2.5,
+      "mean_cost_usd": 0.006975,
+      "mean_latency_s": 5.919,
+      "total_tokens": 8303
+    }
+  },
+  "by_risk": {
+    "low": {
+      "cells": 2,
+      "solve_rate": 1.0,
+      "verification_pass_rate": 1.0,
+      "human_review_rate": 0.0,
+      "mean_tool_calls": 2.5,
+      "mean_cost_usd": 0.006975,
+      "mean_latency_s": 5.919,
+      "total_tokens": 8303
+    }
+  },
+  "summary": {
+    "n_cells": 2,
+    "solve_rate": 1.0
+  }
+}
