@@ -47,6 +47,7 @@ class ACPSettings(BaseSettings):
     enable_external_agents: bool = False
     enable_docker: bool = False
     workspace_backend: Literal["local", "docker"] = "local"
+    allow_local_harness: bool = False  # override Docker-required for true harnesses
     docker_image: str = "python:3.11-slim"
     docker_network: str = "none"
     docker_memory_mb: int = 1024

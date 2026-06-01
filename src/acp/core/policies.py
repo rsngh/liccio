@@ -57,6 +57,44 @@ class PolicyEngine:
     def can_auto_merge(self) -> bool:
         return self.defaults.auto_merge
 
+    # --- ExecutionBackendPolicy (round-3 R3-3) ---
+    @staticmethod
+    def required_backend(*, is_harness: bool, is_model_adapter: bool) -> str:
+        """Backend requirement by adapter class.
+
+        fake/patch -> local allowed; simple model adapter -> docker preferred;
+        true harness -> docker required (untrusted multi-step tool execution).
+        """
+        if is_harness:
+            return "docker_required"
+        if is_model_adapter:
+            return "docker_preferred"
+        return "local_allowed"
+
+    def check_execution_backend(
+        self, *, is_harness: bool, is_model_adapter: bool, backend: str,
+        allow_local_harness: bool = False, actor: str = "system", trace_id=None,
+    ) -> str:
+        """Enforce the execution-backend policy. Returns the effective decision.
+
+        Raises PolicyViolation if a true harness would run on the local backend
+        without an explicit override; audits the override when granted.
+        """
+        req = self.required_backend(is_harness=is_harness, is_model_adapter=is_model_adapter)
+        if req == "docker_required" and backend != "docker":
+            if not allow_local_harness:
+                raise PolicyViolation(
+                    "true harness adapter requires the Docker backend "
+                    "(set allow_local_harness to override)"
+                )
+            self.audit.record("local_harness_override", actor=actor,
+                              detail={"backend": backend}, trace_id=trace_id)
+            return "local_override"
+        if req == "docker_preferred" and backend != "docker":
+            self.audit.record("model_adapter_local", detail={"backend": backend},
+                              trace_id=trace_id)
+        return req
+
     # --- NetworkPolicy ---
     def network_allowed(self, task_requires_network: bool = False, *, trace_id=None) -> bool:
         allowed = self.defaults.allow_network or task_requires_network
