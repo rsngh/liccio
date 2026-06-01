@@ -17,7 +17,9 @@ from git import Repo
 from acp.agents.base import AgentAdapter
 from acp.agents.registry import AgentRegistry
 from acp.core.classifier import classify
-from acp.core.enums import RiskLevel, RunStatus
+from acp.core.enums import AgentKind, RiskLevel, RunStatus
+from acp.core.errors import PolicyViolation
+from acp.core.policies import PolicyEngine
 from acp.evaluation.objective import ObjectiveEvaluator, diff_touches_tests
 from acp.orchestration.state import WorkflowState
 from acp.routing.heuristic import HeuristicRouter
@@ -59,6 +61,24 @@ NODE_ORDER = [
 ]
 
 
+_MODEL_ADAPTER_KINDS = {
+    AgentKind.CLAUDE, AgentKind.CODEX, AgentKind.OPENHANDS, AgentKind.SIMPLE_LLM,
+}
+
+
+def _classify_adapter(adapter) -> tuple[bool, bool]:
+    """(is_harness, is_model_adapter) for the execution-backend policy.
+
+    A true harness sets ``is_harness=True``. A *simple* model adapter is a
+    non-harness adapter whose kind is one of the external LLM kinds. fake/patch
+    are neither (local always allowed).
+    """
+    is_harness = bool(getattr(adapter, "is_harness", False))
+    kind = getattr(adapter, "kind", None)
+    is_model = (not is_harness) and kind in _MODEL_ADAPTER_KINDS
+    return is_harness, is_model
+
+
 @dataclass
 class RunArtifacts:
     """Side outputs of a run, kept for inspection/persistence."""
@@ -85,6 +105,7 @@ class RunArtifacts:
     policy_decision: object | None = None
     spans: list[SpanRecord] = field(default_factory=list)
     agent_traces: list = field(default_factory=list)
+    audit_events: list = field(default_factory=list)
 
 
 class WorkflowRunner:
@@ -99,10 +120,23 @@ class WorkflowRunner:
         policy=None,
         stop_after_node: str | None = None,
         fail_after_node: str | None = None,
+        backend: str | None = None,
+        allow_local_harness: bool | None = None,
     ) -> None:
         self.repo = repo
         self.registry = registry
         self.policy = policy  # optional RoutingPolicy (bandit/supervised); else heuristic
+        # Execution-backend governance (round-4 Block B). Defaults from settings;
+        # a true harness must run on Docker unless allow_local_harness overrides.
+        from acp.core.config import get_settings
+
+        _settings = get_settings()
+        self.policy_engine = PolicyEngine()
+        self.backend = backend if backend is not None else _settings.workspace_backend
+        self.allow_local_harness = (
+            allow_local_harness if allow_local_harness is not None
+            else _settings.allow_local_harness
+        )
         # Fault-injection hooks for crash-resume tests (D1B3).
         self.stop_after_node = stop_after_node
         self.fail_after_node = fail_after_node
@@ -313,6 +347,27 @@ class WorkflowRunner:
             token_budget=decision.action.context_token_budget,
         )
         for adapter in agents:
+            # Governance: enforce the execution-backend policy before launch.
+            is_harness, is_model = _classify_adapter(adapter)
+            blocked = None
+            _audit_before = len(self.policy_engine.audit.events)
+            try:
+                self.policy_engine.check_execution_backend(
+                    is_harness=is_harness, is_model_adapter=is_model,
+                    backend=self.backend, allow_local_harness=self.allow_local_harness,
+                    actor=adapter.name, trace_id=state.trace_id,
+                )
+            except PolicyViolation as exc:
+                blocked = str(exc)
+                self.policy_engine.audit.record(
+                    "harness_execution_blocked", actor=adapter.name,
+                    target=adapter.name, detail={"backend": self.backend, "reason": blocked},
+                    trace_id=state.trace_id,
+                )
+            # Capture any audit events emitted by the policy check (override,
+            # model-adapter-on-local warning, or the block above) for provenance.
+            self.artifacts.audit_events.extend(
+                self.policy_engine.audit.events[_audit_before:])
             ws = self.workspace_mgr.create(self.repo, snap, WorkspacePolicy())
             attempt = AgentAttempt(
                 task_id=state.task_id,
@@ -322,7 +377,15 @@ class WorkflowRunner:
                 agent_name=adapter.name,
                 trace_id=state.trace_id,
             )
-            result = await adapter.execute(self._task(state), pack, ws, budget)
+            if blocked is not None:
+                # A true harness on a non-Docker backend without override is not
+                # executed; we record a failed attempt + trace for provenance.
+                from acp.schemas.agent import AgentAttemptResult
+
+                result = AgentAttemptResult(status=RunStatus.FAILED,
+                                            error=f"blocked_by_execution_policy: {blocked}")
+            else:
+                result = await adapter.execute(self._task(state), pack, ws, budget)
             attempt.status = result.status
             attempt.estimated_cost_usd = result.estimated_cost_usd
             attempt.input_token_count = result.input_token_count
@@ -340,6 +403,12 @@ class WorkflowRunner:
                 attempt, result, is_harness=getattr(adapter, "is_harness", False),
                 task_id=state.task_id,
             ))
+        # Invariant (round-4 Block C): every attempt must carry exactly one trace.
+        assert len(self.artifacts.agent_traces) == len(self.artifacts.attempts), (
+            "AgentTrace invariant violated: "
+            f"{len(self.artifacts.agent_traces)} traces for "
+            f"{len(self.artifacts.attempts)} attempts"
+        )
         return False
 
     def _agents_for(self, decision: RoutingDecision) -> list[AgentAdapter]:

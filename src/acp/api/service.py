@@ -128,6 +128,7 @@ class AppService:
             to_save.append(artifacts.reward)
         to_save.extend(artifacts.spans)
         to_save.extend(getattr(artifacts, "agent_traces", []))
+        to_save.extend(getattr(artifacts, "audit_events", []))
         if to_save:
             self._save(*to_save)
 
@@ -172,6 +173,8 @@ class AppService:
             repo, self.registry, Path(self.settings.workspace_dir),
             artifact_store=self.artifact_store, on_persist=self._persist_run,
             policy=self.policy,
+            backend=self.settings.workspace_backend,
+            allow_local_harness=self.settings.allow_local_harness,
         )
         state = asyncio.run(runner.run(task))
         self._runs[state.run_id] = state
@@ -208,6 +211,8 @@ class AppService:
             repo, self.registry, Path(self.settings.workspace_dir),
             artifact_store=self.artifact_store, on_persist=self._persist_run,
             policy=self.policy,
+            backend=self.settings.workspace_backend,
+            allow_local_harness=self.settings.allow_local_harness,
         )
         task = self.get_task(state.task_id)
         if task is not None:

@@ -49,6 +49,9 @@ def run_trace_bakeoff(adapter_factories: dict[str, Callable[[], object]]) -> dic
         svc = AppService(ACPSettings(
             database_url=f"sqlite+aiosqlite:///{tmp / 'tb.db'}",
             artifact_dir=tmp / "art", workspace_dir=tmp / "ws",
+            # Bakeoff harnesses run locally on purpose; opt in to the override so
+            # the execution-backend policy permits them (audited per attempt).
+            allow_local_harness=True,
         ), registry=reg)
         make_bug_repo(tmp / "repo")
         repo = svc.create_repo("tb", str(tmp / "repo"), default_branch="master")

@@ -63,7 +63,8 @@ def service(tmp_path) -> AppService:
     reg.register(ScriptedHarness())  # only agent -> routing must select it
     return AppService(
         ACPSettings(database_url=f"sqlite+aiosqlite:///{tmp_path / 'np.db'}",
-                    artifact_dir=tmp_path / "art", workspace_dir=tmp_path / "ws"),
+                    artifact_dir=tmp_path / "art", workspace_dir=tmp_path / "ws",
+                    allow_local_harness=True),  # true harness on local backend (test)
         registry=reg,
     )
 

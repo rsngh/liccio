@@ -24,7 +24,8 @@ def test_openai_harness_solves_no_patch_bugfix(tmp_path) -> None:
     reg.register(OpenAIHarnessAdapter(max_steps=6))
     svc = AppService(
         ACPSettings(database_url=f"sqlite+aiosqlite:///{tmp_path / 'l.db'}",
-                    artifact_dir=tmp_path / "art", workspace_dir=tmp_path / "ws"),
+                    artifact_dir=tmp_path / "art", workspace_dir=tmp_path / "ws",
+                    allow_local_harness=True),
         registry=reg,
     )
     src = tmp_path / "repo"
