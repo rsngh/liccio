@@ -619,6 +619,42 @@ class AppService:
                                   markdown=soak_to_markdown(rep),
                                   config={"iterations": iterations, "task_mix": task_mix})
 
+    def calibrate_evaluators(self) -> dict:
+        """Calibrate automated evaluators against human labels + post-merge
+        outcomes from the DB; persist as EvalRun(kind=calibration) (R3-6)."""
+        from acp.evaluation.calibration import CalibrationSample, calibrate
+        from acp.schemas.evaluation import EvaluationResult
+        from acp.schemas.human_review import HumanLabel
+        from acp.schemas.learning import PostMergeOutcome
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            evals = {e.attempt_id: e for e in es.list_by(EvaluationResult) if e.attempt_id}
+            labels = es.list_by(HumanLabel)
+            outcomes = es.list_by(PostMergeOutcome)
+
+        samples: list[CalibrationSample] = []
+        for lab in labels:
+            ev = evals.get(lab.attempt_id) if lab.attempt_id else None
+            if ev is not None:
+                samples.append(CalibrationSample(
+                    predicted=ev.spec_compliance,
+                    truth=(lab.verdict == "pass"),
+                    source="objective", truth_source="human",
+                ))
+        for out in outcomes:
+            ev = evals.get(out.attempt_id) if out.attempt_id else None
+            if ev is not None:
+                samples.append(CalibrationSample(
+                    predicted=ev.spec_compliance,
+                    truth=not (out.reverted or out.incident_link),
+                    source="objective", truth_source="post_merge",
+                ))
+        report = calibrate(samples).to_dict()
+        self._persist_eval("calibration", report, report,
+                           config={"n_human": len(labels), "n_post_merge": len(outcomes)})
+        return report
+
     def list_eval_runs(self) -> list[dict]:
         from acp.schemas.eval import EvalRun
 
