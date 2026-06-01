@@ -4,6 +4,7 @@ from acp.agents.base import AgentAdapter
 from acp.agents.claude_agent import ClaudeAgentAdapter
 from acp.agents.codex_agent import CodexAgentAdapter
 from acp.agents.fake import FakeAgentAdapter
+from acp.agents.openai_harness import OpenAIHarnessAdapter
 from acp.agents.openhands_agent import OpenHandsAgentAdapter
 from acp.agents.patch_agent import PatchAgentAdapter
 from acp.agents.registry import AgentRegistry
@@ -15,6 +16,7 @@ __all__ = [
     "ClaudeAgentAdapter",
     "CodexAgentAdapter",
     "FakeAgentAdapter",
+    "OpenAIHarnessAdapter",
     "OpenHandsAgentAdapter",
     "PatchAgentAdapter",
     "SimpleLLMReviewAdapter",
@@ -33,4 +35,5 @@ def build_default_registry(include_external: bool = True) -> AgentRegistry:
         reg.register(CodexAgentAdapter())
         reg.register(OpenHandsAgentAdapter())
         reg.register(SimpleLLMReviewAdapter())
+        reg.register(OpenAIHarnessAdapter())
     return reg
