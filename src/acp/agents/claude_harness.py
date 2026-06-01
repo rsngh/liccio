@@ -22,6 +22,7 @@ from acp.agents.harness_base import (
     cost_per_1k,
     dispatch_tool,
     finalize_result,
+    make_budget_ledger,
     make_tools,
     user_prompt,
 )
@@ -61,10 +62,12 @@ class ClaudeHarnessAdapter:
     is_harness = True  # second real tool-loop harness with trace capture
 
     def __init__(self, name: str = "claude_harness",
-                 model: str = "claude-haiku-4-5", max_steps: int = 8) -> None:
+                 model: str = "claude-haiku-4-5", max_steps: int = 8,
+                 max_tool_calls: int = 50) -> None:
         self.name = name
         self.model_name = model
         self.max_steps = max_steps
+        self.max_tool_calls = max_tool_calls
 
     def _client(self):
         from acp.core.config import get_settings
@@ -104,14 +107,13 @@ class ClaudeHarnessAdapter:
         ]
         in_tok = out_tok = 0
         error = None
+        ledger = make_budget_ledger(budget, max_steps=self.max_steps,
+                                    max_tool_calls=self.max_tool_calls, now=t0)
         try:
-            for _ in range(self.max_steps):
-                if time.monotonic() - t0 > budget.max_wall_time_s:
-                    error = "timeout"
-                    break
-                cost = (in_tok + out_tok) / 1000 * cost_per_1k(self.model_name)
-                if cost > budget.max_cost_usd:
-                    error = "budget_exceeded"
+            while True:
+                ledger.begin_step()
+                error = ledger.violation(time.monotonic())
+                if error:
                     break
                 resp = client.messages.create(
                     model=self.model_name, max_tokens=2048, system=SYSTEM_PROMPT,
@@ -119,8 +121,11 @@ class ClaudeHarnessAdapter:
                 )
                 usage = getattr(resp, "usage", None)
                 if usage:
-                    in_tok += getattr(usage, "input_tokens", 0)
-                    out_tok += getattr(usage, "output_tokens", 0)
+                    p = getattr(usage, "input_tokens", 0)
+                    c = getattr(usage, "output_tokens", 0)
+                    in_tok += p
+                    out_tok += c
+                    ledger.charge_cost((p + c) / 1000 * cost_per_1k(self.model_name))
                 blocks = list(resp.content)
                 tool_uses = [b for b in blocks if getattr(b, "type", None) == "tool_use"]
                 # Echo the assistant turn back so tool_result blocks can reference it.
@@ -130,6 +135,7 @@ class ClaudeHarnessAdapter:
                 })
                 if not tool_uses:
                     break
+                ledger.add_tool_calls(len(tool_uses))
                 results = []
                 finished = False
                 for tu in tool_uses:
@@ -138,7 +144,8 @@ class ClaudeHarnessAdapter:
                     results.append({"type": "tool_result", "tool_use_id": tu.id,
                                     "content": result})
                 messages.append({"role": "user", "content": results})
-                if finished:
+                error = ledger.violation(time.monotonic())
+                if finished or error:
                     break
         except Exception as exc:  # noqa: BLE001 - structured failure
             error = str(exc)
@@ -146,6 +153,7 @@ class ClaudeHarnessAdapter:
         return finalize_result(
             tools=tools, workspace=workspace, t0=t0, model=self.model_name,
             in_tok=in_tok, out_tok=out_tok, error=error, session_id=session_id,
+            ledger=ledger,
         )
 
     async def review(

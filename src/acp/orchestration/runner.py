@@ -393,6 +393,13 @@ class WorkflowRunner:
             attempt.total_token_count = result.input_token_count + result.output_token_count
             attempt.wall_time_s = result.wall_time_s
             attempt.error = result.error
+            # Budget hard-stops (round-5 WS12) are recorded for provenance.
+            budget_info = (result.metadata or {}).get("budget", {})
+            for resource in budget_info.get("violations", []):
+                self.artifacts.audit_events.append(self.policy_engine.audit.record(
+                    "budget_violation", actor=adapter.name, target=attempt.id,
+                    detail={"resource": resource, "budget": budget_info},
+                    trace_id=state.trace_id))
             self.artifacts.attempts.append(attempt)
             state.attempt_ids.append(attempt.id)
             state.scratch.setdefault("workspaces", {})[attempt.id] = str(ws.path)

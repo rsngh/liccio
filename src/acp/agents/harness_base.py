@@ -22,6 +22,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from acp.core.budget import BudgetLedger, BudgetPolicy
 from acp.core.enums import RunStatus
 from acp.schemas.agent import AgentAttemptResult, DiffBundleRef, ToolCallRecord
 from acp.schemas.workspace import CommandRunRecord
@@ -134,13 +135,26 @@ def make_tools(workspace: Workspace) -> HarnessTools:
     return HarnessTools(workspace=workspace, runner=runner)
 
 
+def make_budget_ledger(budget, *, max_steps: int, max_tool_calls: int,
+                       now: float) -> BudgetLedger:
+    """Construct a per-run ledger from the routing Budget + adapter limits."""
+    policy = BudgetPolicy(
+        max_cost_usd=budget.max_cost_usd, max_wall_time_s=budget.max_wall_time_s,
+        max_steps=max_steps, max_tool_calls=max_tool_calls)
+    ledger = BudgetLedger(policy=policy)
+    ledger.start(now)
+    return ledger
+
+
 def finalize_result(
     *, tools: HarnessTools, workspace: Workspace, t0: float, model: str,
     in_tok: int, out_tok: int, error: str | None, session_id: str,
+    ledger: BudgetLedger | None = None,
 ) -> AgentAttemptResult:
     """Normalized result so every harness produces an identical trace shape."""
     cap = DiffCapturer(str(workspace.path), workspace.spec.base_commit)
-    if error == "timeout":
+    timed_out = error in ("timeout", "budget_exceeded:wall")
+    if timed_out:
         status = RunStatus.TIMED_OUT
     elif tools.files_written:
         # A file write means the agent produced a candidate change; a non-fatal
@@ -148,6 +162,11 @@ def finalize_result(
         status = RunStatus.SUCCEEDED
     else:
         status = RunStatus.FAILED
+    metadata: dict = {"session_id": session_id, "steps_tool_calls": len(tools.tool_calls),
+                      "commands": len(tools.command_runs), "files_written": tools.files_written}
+    if ledger is not None:
+        metadata["budget"] = ledger.summary()
+        metadata["budget_events"] = [e.model_dump(mode="json") for e in ledger.events]
     return AgentAttemptResult(
         status=status,
         diff=DiffBundleRef(unified_diff=cap.get_unified_diff(),
@@ -157,6 +176,5 @@ def finalize_result(
         wall_time_s=time.monotonic() - t0,
         tool_calls=tools.tool_calls,
         error=error,
-        metadata={"session_id": session_id, "steps_tool_calls": len(tools.tool_calls),
-                  "commands": len(tools.command_runs), "files_written": tools.files_written},
+        metadata=metadata,
     )

@@ -23,6 +23,7 @@ from acp.agents.harness_base import (  # re-exported for back-compat
     cost_per_1k,
     dispatch_tool,
     finalize_result,
+    make_budget_ledger,
     make_tools,
     user_prompt,
 )
@@ -67,10 +68,11 @@ class OpenAIHarnessAdapter:
     is_harness = True  # real tool-loop harness with trace capture
 
     def __init__(self, name: str = "openai_harness", model: str = "gpt-4o-mini",
-                 max_steps: int = 8) -> None:
+                 max_steps: int = 8, max_tool_calls: int = 50) -> None:
         self.name = name
         self.model_name = model
         self.max_steps = max_steps
+        self.max_tool_calls = max_tool_calls
 
     def _client(self):
         from acp.core.config import get_settings
@@ -110,34 +112,38 @@ class OpenAIHarnessAdapter:
         ]
         in_tok = out_tok = 0
         error = None
+        ledger = make_budget_ledger(budget, max_steps=self.max_steps,
+                                    max_tool_calls=self.max_tool_calls, now=t0)
         try:
-            for _ in range(self.max_steps):
-                if time.monotonic() - t0 > budget.max_wall_time_s:
-                    error = "timeout"
-                    break
-                cost = (in_tok + out_tok) / 1000 * cost_per_1k(self.model_name)
-                if cost > budget.max_cost_usd:
-                    error = "budget_exceeded"
+            while True:
+                ledger.begin_step()
+                error = ledger.violation(time.monotonic())
+                if error:
                     break
                 resp = client.chat.completions.create(
                     model=self.model_name, messages=messages, tools=_TOOLS_SPEC,
                 )
                 usage = getattr(resp, "usage", None)
                 if usage:
-                    in_tok += getattr(usage, "prompt_tokens", 0)
-                    out_tok += getattr(usage, "completion_tokens", 0)
+                    p = getattr(usage, "prompt_tokens", 0)
+                    c = getattr(usage, "completion_tokens", 0)
+                    in_tok += p
+                    out_tok += c
+                    ledger.charge_cost((p + c) / 1000 * cost_per_1k(self.model_name))
                 msg = resp.choices[0].message
                 if not msg.tool_calls:
                     break
                 messages.append({"role": "assistant", "content": msg.content or "",
                                  "tool_calls": [tc.model_dump() for tc in msg.tool_calls]})
+                ledger.add_tool_calls(len(msg.tool_calls))
                 finished = False
                 for tc in msg.tool_calls:
                     fargs = json.loads(tc.function.arguments or "{}")
                     result, done = dispatch_tool(tools, tc.function.name, fargs)
                     finished = finished or done
                     messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-                if finished:
+                error = ledger.violation(time.monotonic())
+                if finished or error:
                     break
         except Exception as exc:  # noqa: BLE001 - structured failure
             error = str(exc)
@@ -145,6 +151,7 @@ class OpenAIHarnessAdapter:
         return finalize_result(
             tools=tools, workspace=workspace, t0=t0, model=self.model_name,
             in_tok=in_tok, out_tok=out_tok, error=error, session_id=session_id,
+            ledger=ledger,
         )
 
     async def review(
