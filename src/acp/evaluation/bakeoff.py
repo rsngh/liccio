@@ -119,6 +119,40 @@ def run_bakeoff(service, repo_id: str, config: BakeoffConfig | None = None) -> d
     }
 
 
+def run_no_patch_bakeoff(service, repo_id: str, n: int = 3) -> dict:
+    """Bakeoff where tasks carry NO pre-supplied patch — the agent must actually
+    solve them (round-3 gap §7). The service's registry/policy decides the agent;
+    plug in a true harness (or the OpenAI harness for a live run)."""
+    cells = []
+    for i in range(n):
+        task = service.create_task(
+            repo_id,
+            title="Fix divide by zero",
+            body="divide() returns 0 when the divisor is 0; it must raise "
+                 "ZeroDivisionError. Edit calculator.py. (No patch is supplied.)",
+            acceptance_criteria=["divide(x, 0) raises ZeroDivisionError"],
+            metadata={},  # intentionally no 'files' patch
+        )
+        state = service.run_task(task.id)
+        status = state.status if isinstance(state.status, str) else state.status.value
+        runner = service._runners.get(state.run_id)
+        traces = getattr(runner.artifacts, "agent_traces", []) if runner else []
+        sel = next((t for t in traces if t.attempt_id == state.selected_attempt_id), None)
+        cells.append({
+            "name": f"no_patch_{i}", "status": status,
+            "agent": (runner.artifacts.routing_decision.action.agent_name
+                      if runner and runner.artifacts.routing_decision else "?"),
+            "tool_calls": sel.tool_calls if sel else 0,
+            "file_writes": sel.file_writes if sel else [],
+            "solved_without_patch": status == "succeeded",
+        })
+    solved = sum(1 for c in cells if c["solved_without_patch"])
+    return {
+        "mode": "no_patch", "cells": cells,
+        "summary": {"n": n, "solved": solved, "solve_rate": round(solved / max(1, n), 3)},
+    }
+
+
 def bakeoff_to_markdown(report: dict) -> str:
     s = report["summary"]
     lines = [
