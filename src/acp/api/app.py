@@ -181,6 +181,10 @@ def create_app(service: AppService | None = None) -> FastAPI:
     def train_policy() -> dict:
         return svc.train_policy().model_dump(mode="json")
 
+    @app.get("/policies/off-policy-report")
+    def off_policy_report() -> dict:
+        return svc.off_policy_report()
+
     @app.post("/policies/{policy_id}/promote")
     def promote_policy(policy_id: str) -> dict:
         try:

@@ -261,27 +261,24 @@ class WorkflowRunner:
             decision = base
         else:
             from acp.core.enums import RiskLevel
+            from acp.routing.actions import CandidateGenerator
             from acp.routing.constraints import apply_constraints
             from acp.routing.features import RoutingFeatureExtractor
+            from acp.schemas.base import hash_payload
 
             risk = cls.risk_level if cls else self._task(state).risk_level
             risk = RiskLevel(risk) if isinstance(risk, str) else risk
-            # One candidate per available agent, sharing the heuristic action shape.
-            candidates = []
-            seen = set()
-            for name in available:
-                adapter = self.registry.get(name)
-                cand = base.action.model_copy(
-                    update={"agent_kind": adapter.kind, "agent_name": name}
-                )
-                if cand.key() not in seen:
-                    seen.add(cand.key())
-                    candidates.append(cand)
+            # Multi-candidate action space: agent × strategy × verification policy.
+            candidates = CandidateGenerator(
+                strategies=[base.action.context_strategy, "minimal"],
+                verification_policies=[base.action.verification_policy],
+            ).generate(base.action, available)
             candidates, applied = apply_constraints(
                 candidates, risk, set(available),
                 max_cost_usd=base.action.max_cost_usd,
             )
             features = RoutingFeatureExtractor().extract(self._task(state), cls)
+            feature_hash = hash_payload(dict(features))
             pdec = self.policy.choose_action(dict(features), candidates)
             self.artifacts.policy_decision = pdec
             decision = RoutingDecision(
@@ -295,6 +292,7 @@ class WorkflowRunner:
                 exploration_mode=pdec.exploration_mode,
                 exploration_reason=pdec.exploration_reason,
                 constraints_applied=applied,
+                feature_hash=feature_hash,
             )
         self.artifacts.routing_decision = decision
         state.routing_decision_id = decision.id

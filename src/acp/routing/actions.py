@@ -26,3 +26,35 @@ def candidate_actions(
         for strat in strategies:
             out.append(RoutingAction(agent_kind=kind, agent_name=name, context_strategy=strat))
     return out
+
+
+class CandidateGenerator:
+    """Generates the routing action space (charter §13.1; round-1 D2B1).
+
+    One candidate per (agent × context strategy × verification policy), seeded
+    from a base action shape so risk/budget flags carry through.
+    """
+
+    def __init__(
+        self,
+        strategies: list[str] | None = None,
+        verification_policies: list[str] | None = None,
+    ) -> None:
+        self.strategies = strategies or ["hybrid_keyword_embedding"]
+        self.verification_policies = verification_policies or ["standard"]
+
+    def generate(self, base: RoutingAction, available_agents: list[str]) -> list[RoutingAction]:
+        out: list[RoutingAction] = []
+        seen: set[str] = set()
+        for name in available_agents:
+            kind = _KINDS.get(name, AgentKind.FAKE)
+            for strat in self.strategies:
+                for vpol in self.verification_policies:
+                    cand = base.model_copy(update={
+                        "agent_kind": kind, "agent_name": name,
+                        "context_strategy": strat, "verification_policy": vpol,
+                    })
+                    if cand.key() not in seen:
+                        seen.add(cand.key())
+                        out.append(cand)
+        return out

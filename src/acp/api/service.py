@@ -416,13 +416,64 @@ class AppService:
         return champ
 
     def train_policy(self, name: str = "bandit") -> PolicyVersion:
-        """Snapshot the live bandit policy as a versioned PolicyVersion."""
+        """Snapshot the live bandit policy as a versioned PolicyVersion + metrics."""
+        from acp.schemas.learning import RewardEvent
+
         arms = {ctx: {k: {"n": s.n, "mean": round(s.mean, 4)} for k, s in a.items()}
                 for ctx, a in getattr(self.policy, "arms", {}).items()}
+        with session_scope(self.sessions) as s:
+            rewards = EntityStore(s).list_by(RewardEvent)
+        n = len(rewards)
+        metrics = {
+            "reward_events": n,
+            "reward_mean": round(sum(r.reward for r in rewards) / n, 4) if n else 0.0,
+            "success_rate": round(sum(1 for r in rewards if r.reward > 0) / n, 4) if n else 0.0,
+        }
         p = PolicyVersion(name=name, version=f"t{len(self.list_policies()) + 1}",
-                          kind="bandit", params={"arms": arms})
+                          kind="bandit", params={"arms": arms}, metadata={"metrics": metrics})
         self._save(p)
         return p
+
+    def off_policy_report(self) -> dict:
+        """IPS/SNIPS + per-action stats over persisted decisions+rewards (D2B1)."""
+        from acp.schemas.learning import RewardEvent
+        from acp.schemas.routing import RoutingDecision
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            decisions = es.list_by(RoutingDecision)
+            rewards = es.list_by(RewardEvent)
+        reward_by_dec = {r.routing_decision_id: r.reward
+                         for r in rewards if r.routing_decision_id}
+        per_action: dict[str, list[float]] = {}
+        ips_num = weight_sum = 0.0
+        n = missing = 0
+        covered = 0
+        for d in decisions:
+            if d.id not in reward_by_dec:
+                continue
+            reward = reward_by_dec[d.id]
+            per_action.setdefault(d.action.key(), []).append(reward)
+            p = d.action_probability
+            if p is None or p <= 0:
+                missing += 1
+                continue
+            covered += 1
+            target_p = 1.0 / max(1, len(d.candidate_actions))
+            w = target_p / p
+            ips_num += w * reward
+            weight_sum += w
+            n += 1
+        return {
+            "n_decisions_with_reward": n,
+            "missing_propensity": missing,
+            "ips": round(ips_num / n, 6) if n else 0.0,
+            "snips": round(ips_num / weight_sum, 6) if weight_sum else 0.0,
+            "mean_reward_by_action": {
+                k: round(sum(v) / len(v), 4) for k, v in per_action.items()
+            },
+            "propensity_coverage": round(covered / max(1, len(decisions)), 4),
+        }
 
     def _audit(self, event_type: str, target: str | None = None, detail: dict | None = None):
         from acp.schemas.trace import AuditEvent

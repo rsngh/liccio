@@ -52,5 +52,6 @@ class RoutingDecision(ACPModel):
     exploration_mode: ExplorationMode = ExplorationMode.EXPLOIT
     exploration_reason: str = ""
     constraints_applied: list[str] = Field(default_factory=list)
+    feature_hash: str = ""
     seed: int = 1234
     created_at: datetime = Field(default_factory=utcnow)
