@@ -80,14 +80,14 @@ def run_local_redteam(root: Path) -> dict:
     checks.append({"attack": "mutate_git", "enforced": False,
                    "detail": "local backend does not protect .git from commands"})
 
-    enforced = sum(1 for c in checks if c["enforced"])
+    enforced_count = sum(1 for c in checks if c["enforced"])
     return {
         "backend": "local",
         "unsafe_for_true_harness": True,
         "reason": "no network isolation or CPU/memory/PID limits on the local backend",
         "enforced_checks": checks,
         "not_enforceable": _LOCAL_NOT_ENFORCEABLE,
-        "enforced": enforced,
+        "enforced": enforced_count,
         "total_enforceable": len(checks),
     }
 
