@@ -40,6 +40,7 @@ from acp.schemas import (
     WeakLabel,
 )
 from acp.schemas.base import ACPModel
+from acp.schemas.eval import EvalCase, EvalMetric, EvalReport, EvalRun
 
 S = TypeVar("S", bound=ACPModel)
 
@@ -68,6 +69,10 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     ArtifactRef: m.Artifact,
     AuditEvent: m.AuditLog,
     SpanRecord: m.Span,
+    EvalRun: m.EvalRun,
+    EvalCase: m.EvalCase,
+    EvalMetric: m.EvalMetric,
+    EvalReport: m.EvalReport,
 }
 
 

@@ -336,15 +336,32 @@ app.add_typer(eval_app, name="eval")
 
 @eval_app.command("context-benchmark")
 def eval_context_benchmark(files: int = 100) -> None:
-    """Run the context retrieval benchmark on a synthetic repo."""
-    import tempfile
+    """Run + persist the context retrieval benchmark."""
+    from acp.api.service import AppService
 
-    from acp.evaluation.retrieval_benchmark import generate_synthetic_repo, run_benchmark
+    run = AppService().run_context_benchmark(files)
+    console.print_json(data={"eval_run_id": run.id, **run.summary})
 
-    repo = Path(tempfile.mkdtemp()) / "syn"
-    gold = generate_synthetic_repo(repo, n_files=files)
-    rep = run_benchmark(repo, gold)
-    console.print_json(data=rep.to_dict())
+
+@eval_app.command("list")
+def eval_list() -> None:
+    """List persisted eval runs."""
+    from acp.api.service import AppService
+
+    for r in AppService().list_eval_runs():
+        console.print(f"{r['id']}  {r['kind']:18} {r['status']}")
+
+
+@eval_app.command("show")
+def eval_show(eval_run_id: str) -> None:
+    """Show a persisted eval run + summary."""
+    from acp.api.service import AppService
+
+    r = AppService().get_eval_run(eval_run_id)
+    if r is None:
+        console.print(f"eval run {eval_run_id} not found")
+        raise typer.Exit(1)
+    console.print_json(data={"id": r["id"], "kind": r["kind"], "summary": r["summary"]})
 
 
 @eval_app.command("bakeoff")

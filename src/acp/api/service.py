@@ -504,6 +504,97 @@ class AppService:
 
         self._save(AuditEvent(event_type=event_type, target=target, detail=detail or {}))
 
+    # ---- persisted eval reports (round-2 Block F) ------------------------
+
+    def _persist_eval(self, kind: str, summary: dict, report: dict,
+                      cases: list[dict] | None = None, markdown: str = "",
+                      config: dict | None = None):
+        from acp.core.time import utcnow
+        from acp.schemas.eval import EvalCase, EvalReport, EvalRun
+
+        run = EvalRun(kind=kind, summary=summary, config=config or {}, finished_at=utcnow())
+        to_save: list = [run, EvalReport(eval_run_id=run.id, content=report, markdown=markdown)]
+        for c in cases or []:
+            to_save.append(EvalCase(eval_run_id=run.id, name=str(c.get("name", "case")),
+                                    metrics=c))
+        self._save(*to_save)
+        return run
+
+    def run_context_benchmark(self, files: int = 100):
+        import tempfile
+
+        from acp.evaluation.retrieval_benchmark import (
+            generate_synthetic_repo,
+            report_to_markdown,
+            run_benchmark,
+        )
+
+        repo = Path(tempfile.mkdtemp()) / "syn"
+        gold = generate_synthetic_repo(repo, n_files=files)
+        rep = run_benchmark(repo, gold)
+        d = rep.to_dict()
+        summary = {k: v for k, v in d.items() if k != "per_task"}
+        return self._persist_eval("context_benchmark", summary, d,
+                                  cases=d["per_task"], markdown=report_to_markdown(rep),
+                                  config={"files": files})
+
+    def run_bakeoff_eval(self, seeds: int = 2):
+        import tempfile
+
+        from acp.cli.demos import make_demo_repo
+        from acp.core.config import ACPSettings
+        from acp.evaluation.bakeoff import BakeoffConfig, bakeoff_to_markdown, run_bakeoff
+
+        tmp = Path(tempfile.mkdtemp())
+        sub = AppService(ACPSettings(
+            database_url=f"sqlite+aiosqlite:///{tmp / 'b.db'}",
+            artifact_dir=tmp / "art", workspace_dir=tmp / "ws",
+        ))
+        repo = sub.create_repo("bakeoff", make_demo_repo(tmp / "repo"), default_branch="master")
+        rep = run_bakeoff(sub, repo.id, BakeoffConfig(seeds=list(range(1, seeds + 1))))
+        cases = [{**c, "name": f"{c['task_class']}/{c['strategy']}/s{c['seed']}"}
+                 for c in rep["cells"]]
+        return self._persist_eval("bakeoff", rep["summary"], rep, cases=cases,
+                                  markdown=bakeoff_to_markdown(rep), config=rep["config"])
+
+    def run_soak_eval(self, iterations: int = 15, task_mix: str = "bugfix"):
+        import tempfile
+
+        from acp.cli.demos import make_demo_repo
+        from acp.core.config import ACPSettings
+        from acp.evaluation.soak import run_soak, soak_to_markdown
+
+        tmp = Path(tempfile.mkdtemp())
+        sub = AppService(ACPSettings(
+            database_url=f"sqlite+aiosqlite:///{tmp / 's.db'}",
+            artifact_dir=tmp / "art", workspace_dir=tmp / "ws",
+        ))
+        repo = sub.create_repo("soak", make_demo_repo(tmp / "repo"), default_branch="master")
+        rep = run_soak(sub, repo.id, iterations=iterations, task_mix=task_mix.split(","))
+        return self._persist_eval("soak", rep.get("thresholds", {}), rep,
+                                  markdown=soak_to_markdown(rep),
+                                  config={"iterations": iterations, "task_mix": task_mix})
+
+    def list_eval_runs(self) -> list[dict]:
+        from acp.schemas.eval import EvalRun
+
+        with session_scope(self.sessions) as s:
+            return [r.model_dump(mode="json") for r in EntityStore(s).list_by(EvalRun)]
+
+    def get_eval_run(self, eval_run_id: str) -> dict | None:
+        from acp.schemas.eval import EvalRun
+
+        with session_scope(self.sessions) as s:
+            r = EntityStore(s).get(EvalRun, eval_run_id)
+            return r.model_dump(mode="json") if r else None
+
+    def get_eval_report(self, eval_run_id: str) -> dict | None:
+        from acp.schemas.eval import EvalReport
+
+        with session_scope(self.sessions) as s:
+            reports = EntityStore(s).list_by(EvalReport, eval_run_id=eval_run_id)
+        return reports[0].model_dump(mode="json") if reports else None
+
     # ---- post-merge outcome loop (round-1 §9) ----------------------------
 
     def ingest_outcome(

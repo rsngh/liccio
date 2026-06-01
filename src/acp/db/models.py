@@ -159,6 +159,27 @@ class Span(_Row):
     name: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class EvalRun(_Row):
+    __tablename__ = "eval_runs"
+    kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    status: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
+class EvalCase(_Row):
+    __tablename__ = "eval_cases"
+    eval_run_id: Mapped[str] = mapped_column(String, index=True)
+
+
+class EvalMetric(_Row):
+    __tablename__ = "eval_metrics"
+    eval_run_id: Mapped[str] = mapped_column(String, index=True)
+
+
+class EvalReport(_Row):
+    __tablename__ = "eval_reports"
+    eval_run_id: Mapped[str] = mapped_column(String, index=True)
+
+
 class Artifact(_Row):
     __tablename__ = "artifacts"
 
@@ -195,6 +216,10 @@ ALL_MODELS = [
     PostMergeOutcome,
     RunState,
     Span,
+    EvalRun,
+    EvalCase,
+    EvalMetric,
+    EvalReport,
     Artifact,
     AuditLog,
 ]

@@ -173,6 +173,36 @@ def create_app(service: AppService | None = None) -> FastAPI:
             raise HTTPException(404, "review not found")
         return item.model_dump(mode="json")
 
+    @app.post("/evals/context-benchmark")
+    def eval_context(files: int = 80) -> dict:
+        return svc.run_context_benchmark(files).model_dump(mode="json")
+
+    @app.post("/evals/bakeoff")
+    def eval_bakeoff_ep(seeds: int = 2) -> dict:
+        return svc.run_bakeoff_eval(seeds).model_dump(mode="json")
+
+    @app.post("/evals/soak")
+    def eval_soak_ep(iterations: int = 10) -> dict:
+        return svc.run_soak_eval(iterations).model_dump(mode="json")
+
+    @app.get("/evals/runs")
+    def list_eval_runs() -> list[dict]:
+        return svc.list_eval_runs()
+
+    @app.get("/evals/runs/{eval_run_id}")
+    def get_eval_run(eval_run_id: str) -> dict:
+        r = svc.get_eval_run(eval_run_id)
+        if r is None:
+            raise HTTPException(404, "eval run not found")
+        return r
+
+    @app.get("/evals/runs/{eval_run_id}/report")
+    def get_eval_report(eval_run_id: str) -> dict:
+        r = svc.get_eval_report(eval_run_id)
+        if r is None:
+            raise HTTPException(404, "eval report not found")
+        return r
+
     @app.get("/agents")
     def list_agents() -> list[dict]:
         return svc.agents_health()
