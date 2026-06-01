@@ -1,0 +1,22 @@
+{
+  "iterations": 12,
+  "concurrency": 4,
+  "status_distribution": {
+    "succeeded": 12
+  },
+  "unique_run_ids": 12,
+  "duplicate_run_ids": 0,
+  "unique_workspaces": 24,
+  "db_lock_errors": 0,
+  "errors": 0,
+  "latency_p50": 5.376,
+  "latency_p95": 5.723,
+  "latency_p99": 5.723,
+  "memory_growth_ratio": 0.998,
+  "worktree_dirs": 0,
+  "thresholds": {
+    "no_db_corruption": true,
+    "no_orphan_worktrees": true,
+    "all_runs_unique": true
+  }
+}

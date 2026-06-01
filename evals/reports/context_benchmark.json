@@ -1,0 +1,163 @@
+{
+  "n_tasks": 15,
+  "recall_at_5": 1.0,
+  "recall_at_10": 1.0,
+  "mrr": 0.5,
+  "avg_tokens": 1490.1,
+  "avg_latency_s": 0.1003,
+  "duplicate_chunk_ratio": 0.0,
+  "secret_leakage_count": 0,
+  "false_positive_decoy_rate": 0.0,
+  "per_task": [
+    {
+      "task": "Fix feature_0",
+      "gold": [
+        "pkg0/mod0.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1533
+    },
+    {
+      "task": "Fix feature_10",
+      "gold": [
+        "pkg10/mod10.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1461
+    },
+    {
+      "task": "Fix feature_20",
+      "gold": [
+        "pkg20/mod20.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1501
+    },
+    {
+      "task": "Fix feature_30",
+      "gold": [
+        "pkg5/mod30.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1470
+    },
+    {
+      "task": "Fix feature_40",
+      "gold": [
+        "pkg15/mod40.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1499
+    },
+    {
+      "task": "Fix feature_50",
+      "gold": [
+        "pkg0/mod50.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1432
+    },
+    {
+      "task": "Fix feature_60",
+      "gold": [
+        "pkg10/mod60.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1519
+    },
+    {
+      "task": "Fix feature_70",
+      "gold": [
+        "pkg20/mod70.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1537
+    },
+    {
+      "task": "Fix feature_80",
+      "gold": [
+        "pkg5/mod80.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1481
+    },
+    {
+      "task": "Fix feature_90",
+      "gold": [
+        "pkg15/mod90.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1463
+    },
+    {
+      "task": "Fix feature_100",
+      "gold": [
+        "pkg0/mod100.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1528
+    },
+    {
+      "task": "Fix feature_110",
+      "gold": [
+        "pkg10/mod110.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1510
+    },
+    {
+      "task": "Fix feature_120",
+      "gold": [
+        "pkg20/mod120.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1512
+    },
+    {
+      "task": "Fix feature_130",
+      "gold": [
+        "pkg5/mod130.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1416
+    },
+    {
+      "task": "Fix feature_140",
+      "gold": [
+        "pkg15/mod140.py"
+      ],
+      "rank": 2,
+      "hit@5": true,
+      "hit@10": true,
+      "tokens": 1490
+    }
+  ]
+}

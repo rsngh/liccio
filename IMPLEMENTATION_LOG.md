@@ -419,3 +419,28 @@ clean; alembic head OK. Reports: context_benchmark (recall@5/10=1.0, leak=0),
 bakeoff (36 cells + taxonomy), soak (operational metrics). bandit-monte-carlo:
 beats random 20/20 seeds, margin 124.5±21.5 (95% CI). Live OpenAI embedding +
 adapter experiments pass. CURRENT_STATUS.md reflects v0/alpha honestly.
+
+## 2026-06-01 — Round 2 (Alpha 2): Blocks A–L
+
+Took ACP from Alpha 1 to "Alpha 2: real-agent-ready control plane". Each block
+shipped with tests; suite green throughout (286 passed, 4 skipped: docker+pgvector).
+
+- A: reconciled docs to actual counts; CI artifacts in reports/.
+- B: RunGraph schema; full-graph reconstruction (API/CLI), no-secret guarantee.
+- C: exhaustive crash-resume — crash + exception after EVERY node, one finalize/reward.
+- D: DockerCommandRunner (real in-container exec) + ACP_WORKSPACE_BACKEND.
+- E: expanded security red-team (escapes, argv injection, oversized output, fraud diff).
+- F: eval reports persisted as entities (EvalRun/Case/Metric/Report) + API + CLI.
+- G: adversarial retrieval benchmark (decoys/secrets/binaries) + hybrid>=single-signal;
+     1k-file experiment hybrid MRR 0.50 > embedding-only 0.30, zero leak.
+- H: Qdrant real-engine contract (':memory:' is a genuine engine); explicit pgvector
+     fallback flag; live markers.
+- I: first TRUE agent harness (OpenAIHarnessAdapter, tool-loop read/write/run_command +
+     full trace capture, is_harness=True); LIVE bugfix experiment passes.
+- J: persisted PolicyState (router learns across restarts) + drift report.
+- K: true concurrent soak (threads + WAL/busy_timeout; no DB corruption/orphans/dup ids).
+- L: PR_CHECKLIST.md + committed report artifacts + independent merge-gate test.
+
+Gates: 286 tests pass; ruff + mypy clean (117 files); alembic head OK (4 new
+migrations: run_states, spans, eval tables, policy_states). Live OpenAI harness +
+embedding experiments verified. Coverage ~85%.
