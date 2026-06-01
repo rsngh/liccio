@@ -79,3 +79,38 @@ def test_run_via_api(client, tmp_path) -> None:
 
 def test_policies_endpoint(client) -> None:
     assert client.get("/policies").status_code == 200
+
+
+def test_run_inspection_endpoints(client, tmp_path) -> None:
+    from git import Repo
+
+    src = tmp_path / "demo2"
+    src.mkdir()
+    (src / "calculator.py").write_text("def divide(a, b):\n    return 0\n")
+    repo = Repo.init(src)
+    repo.config_writer().set_value("user", "name", "t").release()
+    repo.config_writer().set_value("user", "email", "t@e.com").release()
+    repo.index.add(["calculator.py"])
+    repo.index.commit("init")
+    r = client.post("/repos", json={"name": "d", "local_path": str(src),
+                    "default_branch": "master"}).json()
+    fixed = "def divide(a, b):\n    if b == 0:\n        raise ZeroDivisionError\n    return a / b\n"
+    t = client.post("/tasks", json={"repo_id": r["id"], "title": "Fix divide",
+                    "metadata": {"files": {"calculator.py": fixed}}}).json()
+    run = client.post(f"/tasks/{t['id']}/run").json()
+    rid = run["run_id"]
+    assert client.get(f"/runs/{rid}/trace").status_code == 200
+    assert client.get(f"/runs/{rid}/diff").status_code == 200
+    assert client.get(f"/runs/{rid}/evidence").status_code == 200
+    assert client.get(f"/runs/{rid}/evaluation").status_code == 200
+    assert client.post(f"/runs/{rid}/cancel").json()["status"] == "cancelled"
+
+
+def test_policy_train_promote_rollback(client) -> None:
+    a = client.post("/policies/train").json()
+    b = client.post("/policies/train").json()
+    promoted = client.post(f"/policies/{b['id']}/promote").json()
+    assert promoted["status"] == "champion"
+    back = client.post(f"/policies/{a['id']}/rollback").json()
+    assert back["status"] == "champion"
+    assert client.post("/policies/nope/promote").status_code == 404

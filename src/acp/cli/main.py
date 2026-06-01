@@ -82,14 +82,84 @@ def demo_bandit(rounds: int = 1000, seed: int = 1234) -> None:
     console.print_json(data=result)
 
 
+repo_app = typer.Typer(help="Repository management.")
+app.add_typer(repo_app, name="repo")
+
+
+@repo_app.command("add")
+def repo_add(path: str, name: str = "repo", branch: str = "main") -> None:
+    """Register a local git repository."""
+    from acp.api.service import AppService
+
+    repo = AppService().create_repo(name, path, default_branch=branch)
+    console.print(f"repo {repo.id} -> {path}")
+
+
+@repo_app.command("list")
+def repo_list() -> None:
+    from acp.api.service import AppService
+
+    for r in AppService().list_repos():
+        console.print(f"{r.id}  {r.name}  {r.local_path}")
+
+
+task_app = typer.Typer(help="Task management.")
+app.add_typer(task_app, name="task")
+
+
+@task_app.command("create")
+def task_create(repo: str, title: str, body: str = "") -> None:
+    """Create a task for a repo."""
+    from acp.api.service import AppService
+
+    t = AppService().create_task(repo, title, body)
+    console.print(f"task {t.id}  type={t.task_type}  risk={t.risk_level}")
+
+
 run_app = typer.Typer(help="Run management.")
 app.add_typer(run_app, name="run")
 
 
+@run_app.command("start")
+def run_start(task_id: str) -> None:
+    """Run the workflow for a task."""
+    from acp.api.service import AppService
+
+    state = AppService().run_task(task_id)
+    console.print_json(data={"run_id": state.run_id, "status": state.status})
+
+
 @run_app.command("status")
 def run_status(run_id: str) -> None:
-    """Show a run's status summary (within this process)."""
-    console.print(f"run {run_id}: use the API/service to query persisted runs")
+    """Show a persisted run's status summary."""
+    from acp.api.service import AppService
+
+    state = AppService().get_run(run_id)
+    if state is None:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1)
+    console.print_json(data={"run_id": run_id, "status": state.status,
+                             "current_node": state.current_node})
+
+
+policy_app = typer.Typer(help="Policy management.")
+app.add_typer(policy_app, name="policy")
+
+
+@policy_app.command("list")
+def policy_list() -> None:
+    from acp.api.service import AppService
+
+    for p in AppService().list_policies():
+        console.print(f"{p.id}  {p.name}:{p.version}  status={p.status}")
+
+
+@policy_app.command("train")
+def policy_train() -> None:
+    from acp.api.service import AppService
+
+    p = AppService().train_policy()
+    console.print(f"trained policy {p.id} ({p.version})")
 
 
 reviews_app = typer.Typer(help="Human review queue.")

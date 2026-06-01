@@ -213,15 +213,76 @@ class AppService:
 
     def label_review(self, review_id: str, label: HumanLabel) -> HumanLabel:
         self._save(label)
-        # resolve the item + resume its run if known
+        item = self.resolve_review(review_id)
+        # Resume the paused run (rehydrating cross-process if needed).
+        if item and item.run_id:
+            self.resume_run(item.run_id, label)
+        return label
+
+    def resolve_review(self, review_id: str) -> HumanReviewItem | None:
         with session_scope(self.sessions) as s:
             item = EntityStore(s).get(HumanReviewItem, review_id)
             if item:
                 item.status = "resolved"
                 EntityStore(s).save(item)
-        if item and item.run_id and item.run_id in self._runners:
-            self.resume_run(item.run_id, label)
-        return label
+        return item
+
+    # ---- run inspection (round-1 §7) -------------------------------------
+
+    def _children(self, run_id: str) -> dict[str, list]:
+        state = self.get_run(run_id)
+        if state is None:
+            raise KeyError(run_id)
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            return {k: list(v) for k, v in es.all_for_task(state.task_id).items()}
+
+    def run_diff(self, run_id: str) -> list[dict]:
+        from acp.schemas.workspace import DiffBundle
+
+        with session_scope(self.sessions) as s:
+            state = self.get_run(run_id)
+            if state is None:
+                raise KeyError(run_id)
+            rows = [
+                d for d in EntityStore(s).list_by(DiffBundle)
+                if d.attempt_id in set(state.attempt_ids)
+            ]
+        return [d.model_dump(mode="json") for d in rows]
+
+    def run_evidence(self, run_id: str) -> list[dict]:
+        from acp.schemas.verification import Evidence
+
+        return [e.model_dump(mode="json")
+                for e in self._children(run_id).get(Evidence.__name__, [])]
+
+    def run_evaluation(self, run_id: str) -> dict | None:
+        from acp.schemas.evaluation import EvaluationResult
+
+        evals = self._children(run_id).get(EvaluationResult.__name__, [])
+        return evals[-1].model_dump(mode="json") if evals else None
+
+    def run_trace(self, run_id: str) -> dict:
+        state = self.get_run(run_id)
+        if state is None:
+            raise KeyError(run_id)
+        return {
+            "run_id": run_id, "trace_id": state.trace_id,
+            "completed_nodes": state.completed_nodes,
+            "current_node": state.current_node, "status": state.status,
+            "entities": {k: len(v) for k, v in self._children(run_id).items()},
+        }
+
+    def cancel_run(self, run_id: str) -> WorkflowState:
+        state = self.get_run(run_id)
+        if state is None:
+            raise KeyError(run_id)
+        from acp.core.enums import RunStatus
+
+        state.status = RunStatus.CANCELLED
+        self._save_state(state)
+        self._runs[run_id] = state
+        return state
 
     # ---- policies ---------------------------------------------------------
 
@@ -233,6 +294,43 @@ class AppService:
         p = PolicyVersion(name=name, version=version, kind=kind)
         self._save(p)
         return p
+
+    def _registry(self):
+        from acp.routing.registry import PolicyRegistry
+
+        reg = PolicyRegistry()
+        for p in self.list_policies():
+            reg.register(p)
+        return reg
+
+    def promote_policy(self, policy_id: str, traffic_fraction: float = 1.0) -> PolicyVersion:
+        reg = self._registry()
+        promoted = reg.promote(policy_id, traffic_fraction=traffic_fraction)
+        self._save(*reg.all())
+        self._audit("policy_promotion", target=policy_id,
+                    detail={"traffic": traffic_fraction})
+        return promoted
+
+    def rollback_policy(self, to_policy_id: str) -> PolicyVersion:
+        reg = self._registry()
+        champ = reg.rollback(to_policy_id)
+        self._save(*reg.all())
+        self._audit("policy_rollback", target=to_policy_id)
+        return champ
+
+    def train_policy(self, name: str = "bandit") -> PolicyVersion:
+        """Snapshot the live bandit policy as a versioned PolicyVersion."""
+        arms = {ctx: {k: {"n": s.n, "mean": round(s.mean, 4)} for k, s in a.items()}
+                for ctx, a in getattr(self.policy, "arms", {}).items()}
+        p = PolicyVersion(name=name, version=f"t{len(self.list_policies()) + 1}",
+                          kind="bandit", params={"arms": arms})
+        self._save(p)
+        return p
+
+    def _audit(self, event_type: str, target: str | None = None, detail: dict | None = None):
+        from acp.schemas.trace import AuditEvent
+
+        self._save(AuditEvent(event_type=event_type, target=target, detail=detail or {}))
 
 
 def state_to_task_status(task: Task, state: WorkflowState) -> Task:
