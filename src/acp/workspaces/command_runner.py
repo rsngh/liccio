@@ -35,12 +35,16 @@ class CommandRunner:
         default_timeout_s: int = 120,
         max_output_chars: int = 20_000,
         scrub_secrets: bool = True,
+        audit_hook=None,
     ) -> None:
         self.artifact_store = artifact_store
         self.redactor = redactor or Redactor()
         self.allowed_root = Path(allowed_root).resolve() if allowed_root else None
         self.default_timeout_s = default_timeout_s
         self.max_output_chars = max_output_chars
+        # Optional callback(event_type, detail) for governance audit of elevated
+        # (network/secret) command requests.
+        self.audit_hook = audit_hook
         # When True, sensitive env vars (keys/tokens/secrets) are removed from the
         # child process environment so secrets are never injected into agent or
         # verification subprocesses (charter §22 defaults; round-1 §3).
@@ -63,14 +67,14 @@ class CommandRunner:
             return env
         return {k: v for k, v in env.items() if not self.redactor.key_is_sensitive(k)}
 
-    def _store_output(self, text: str, suffix: str) -> tuple[str, str | None]:
+    def _store_output(self, text: str, suffix: str, max_chars: int) -> tuple[str, str | None]:
         if self.artifact_store is None:
             # No store: just truncate in place.
-            if len(text) <= self.max_output_chars:
+            if len(text) <= max_chars:
                 return text, None
-            return text[: self.max_output_chars] + "\n...[truncated]...", None
+            return text[:max_chars] + "\n...[truncated]...", None
         summary, ref = truncate_with_artifact(
-            self.artifact_store, text, max_chars=self.max_output_chars, suffix=suffix
+            self.artifact_store, text, max_chars=max_chars, suffix=suffix
         )
         return summary, (ref.uri if ref else None)
 
@@ -91,8 +95,15 @@ class CommandRunner:
         cwd_path = Path(cwd)
         self._check_cwd(cwd_path, allow_cwd_outside_root)
         timeout_s = timeout_s or self.default_timeout_s
-        if max_output_chars is not None:
-            self.max_output_chars = max_output_chars
+        # Local override only — never mutate instance state (D1B4).
+        out_chars = max_output_chars if max_output_chars is not None else self.max_output_chars
+
+        # Audit elevated requests (network / secret env) for governance.
+        if (allow_network or allow_secrets) and self.audit_hook is not None:
+            self.audit_hook(
+                "command_elevated_request",
+                {"network": allow_network, "secrets": allow_secrets, "argv": command[:1]},
+            )
 
         # Build environment. Secrets are scrubbed from the child env by default so
         # untrusted agent/verification commands never receive API keys. Network
@@ -133,8 +144,8 @@ class CommandRunner:
 
         stdout = self.redactor.redact_text(stdout or "")
         stderr = self.redactor.redact_text(stderr or "")
-        stdout_summary, stdout_ref = self._store_output(stdout, ".stdout.log")
-        stderr_summary, stderr_ref = self._store_output(stderr, ".stderr.log")
+        stdout_summary, stdout_ref = self._store_output(stdout, ".stdout.log", out_chars)
+        stderr_summary, stderr_ref = self._store_output(stderr, ".stderr.log", out_chars)
 
         record = CommandRunRecord(
             attempt_id=attempt_id,

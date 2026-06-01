@@ -35,7 +35,7 @@ from acp.schemas.routing import RoutingDecision
 from acp.schemas.task import Task, TaskClassification
 from acp.schemas.trace import SpanRecord
 from acp.schemas.verification import Evidence, VerificationPlan, VerificationRun
-from acp.schemas.workspace import DiffBundle, WorkspacePolicy
+from acp.schemas.workspace import CommandRunRecord, DiffBundle, WorkspacePolicy
 from acp.verification.aggregate import AggregateVerdict, EvidenceAggregator
 from acp.verification.plan import build_plan
 from acp.verification.service import VerificationService
@@ -75,6 +75,7 @@ class RunArtifacts:
     attempts: list[AgentAttempt] = field(default_factory=list)
     diffs: dict[str, DiffBundle] = field(default_factory=dict)
     evidence: list[Evidence] = field(default_factory=list)
+    command_runs: list[CommandRunRecord] = field(default_factory=list)
     verification_runs: list[VerificationRun] = field(default_factory=list)
     evidence_by_attempt: dict[str, list[Evidence]] = field(default_factory=dict)
     verdicts: dict[str, AggregateVerdict] = field(default_factory=dict)
@@ -366,17 +367,26 @@ class WorkflowRunner:
         plan = self.artifacts.plan
         assert plan is not None
         workspaces = state.scratch.get("workspaces", {})
-        svc = VerificationService(self.command_runner)
         per_attempt: dict[str, list[Evidence]] = {}
         for attempt in self.artifacts.attempts:
             ws_path = workspaces.get(attempt.id)
             if not ws_path or attempt.status not in (RunStatus.SUCCEEDED,):
                 per_attempt[attempt.id] = []
                 continue
+            # Per-workspace containment: scope the CommandRunner to THIS worktree.
+            scoped = CommandRunner(
+                artifact_store=self.command_runner.artifact_store,
+                allowed_root=ws_path, scrub_secrets=True,
+            )
+            svc = VerificationService(scoped)
             vrun, evidence = svc.run_plan(plan, ws_path, attempt_id=attempt.id)
             per_attempt[attempt.id] = evidence
             self.artifacts.verification_runs.append(vrun)
             self.artifacts.evidence.extend(evidence)
+            # Persist every command record (stamp the trace for the run graph).
+            for rec in svc.command_records:
+                rec.trace_id = state.trace_id
+                self.artifacts.command_runs.append(rec)
             state.evidence_ids.extend(e.id for e in evidence)
         state.scratch["evidence_by_attempt"] = {
             aid: [e.id for e in evs] for aid, evs in per_attempt.items()

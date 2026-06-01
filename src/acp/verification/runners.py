@@ -13,6 +13,7 @@ from pathlib import Path
 
 from acp.core.enums import EvidenceKind, EvidenceStatus
 from acp.schemas.verification import Evidence
+from acp.schemas.workspace import CommandRunRecord
 from acp.workspaces.command_runner import CommandRunner
 
 
@@ -26,6 +27,7 @@ class BaseRunner:
 
     def __init__(self, runner: CommandRunner) -> None:
         self.runner = runner
+        self.last_record: CommandRunRecord | None = None  # most recent command run
 
     def _skip(self, task_id: str, attempt_id: str | None, reason: str) -> Evidence:
         return Evidence(
@@ -44,6 +46,7 @@ class PytestRunner(BaseRunner):
         if not _cli_available(command):
             return self._skip(task_id, attempt_id, f"{command[0]} not installed")
         rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
+        self.last_record = rec
         out = f"{rec.stdout_summary}\n{rec.stderr_summary}"
         passed, failed, skipped, errors = self._parse(out)
         if rec.timed_out:
@@ -94,6 +97,7 @@ class GenericCommandRunner(BaseRunner):
         if not _cli_available(command):
             return self._skip(task_id, attempt_id, f"{command[0]} not installed")
         rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
+        self.last_record = rec
         if rec.timed_out:
             status = EvidenceStatus.FAIL
             summary = "timed out"
@@ -121,6 +125,7 @@ class SecurityScannerRunner(BaseRunner):
         if not _cli_available(command):
             return self._skip(task_id, attempt_id, f"{command[0]} not installed")
         rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
+        self.last_record = rec
         out = f"{rec.stdout_summary}\n{rec.stderr_summary}".lower()
         high = "high" in out and "severity" in out
         if rec.exit_code == 0 and not high:
@@ -147,6 +152,7 @@ class PlaywrightRunner(BaseRunner):
         if not _cli_available(command[:1]):
             return self._skip(task_id, attempt_id, "playwright/npx not installed")
         rec = self.runner.run(command, cwd=cwd, attempt_id=attempt_id)
+        self.last_record = rec
         status = EvidenceStatus.PASS if rec.exit_code == 0 else EvidenceStatus.FAIL
         return Evidence(
             task_id=task_id, attempt_id=attempt_id, kind=self.kind, name=self.name,

@@ -96,6 +96,7 @@ class AppService:
             to_save.append(artifacts.routing_decision)
         to_save.extend(artifacts.attempts)
         to_save.extend(artifacts.diffs.values())
+        to_save.extend(artifacts.command_runs)
         to_save.extend(artifacts.verification_runs)
         to_save.extend(artifacts.evidence)
         if artifacts.evaluation:
