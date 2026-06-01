@@ -546,7 +546,21 @@ class WorkflowRunner:
             state.status = RunStatus.FAILED
         else:
             state.status = RunStatus.SUCCEEDED
+        self._cleanup_workspaces(state)
         return False
+
+    def _cleanup_workspaces(self, state: WorkflowState) -> None:
+        """Remove the run's git worktrees so soaks don't leak workspaces (D2B5)."""
+        import contextlib
+
+        from acp.workspaces.git_ops import remove_worktree
+
+        source = self.repo.local_path
+        for path in state.scratch.get("workspaces", {}).values():
+            with contextlib.suppress(Exception):
+                if source:
+                    remove_worktree(source, path)
+        state.scratch["workspaces_cleaned"] = True
 
 
 def run_sync(runner: WorkflowRunner, task: Task) -> WorkflowState:
