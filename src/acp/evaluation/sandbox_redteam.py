@@ -41,7 +41,8 @@ def run_local_redteam(root: Path) -> dict:
     root.mkdir(parents=True, exist_ok=True)
     (root / "calculator.py").write_text("x = 1\n")
     runner = CommandRunner(allowed_root=root, scrub_secrets=True)
-    tools = HarnessTools(workspace=_WS(path=root), runner=runner)
+    # _WS duck-types Workspace (HarnessTools only reads .path)
+    tools = HarnessTools(workspace=_WS(path=root), runner=runner)  # type: ignore[arg-type]
     checks: list[dict] = []
 
     # 1. secret env scrubbing: a command must not see ACP/provider secrets
