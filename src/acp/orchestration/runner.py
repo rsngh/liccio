@@ -18,13 +18,16 @@ from acp.agents.base import AgentAdapter
 from acp.agents.registry import AgentRegistry
 from acp.core.classifier import classify
 from acp.core.enums import RiskLevel, RunStatus
+from acp.evaluation.active_learning import ActiveLearningSelector, ALInputs
+from acp.evaluation.llm_judges import JudgeInput, default_fake_judges
 from acp.evaluation.objective import ObjectiveEvaluator, diff_touches_tests
+from acp.evaluation.weak_supervision import default_supervisor
 from acp.orchestration.state import WorkflowState
 from acp.routing.heuristic import HeuristicRouter
 from acp.routing.reward import compute_reward
 from acp.schemas.agent import AgentAttempt, Budget
 from acp.schemas.context import ContextPack
-from acp.schemas.evaluation import EvaluationResult
+from acp.schemas.evaluation import ActiveLearningScore, EvaluationResult, WeakLabel
 from acp.schemas.human_review import HumanLabel, HumanReviewItem
 from acp.schemas.learning import RewardEvent
 from acp.schemas.repo import Repository, RepoSnapshot
@@ -50,6 +53,7 @@ NODE_ORDER = [
     "run_verification",
     "aggregate_evidence",
     "evaluate_attempt",
+    "score_signals",
     "maybe_human_review",
     "compute_reward",
     "update_policy",
@@ -74,6 +78,9 @@ class RunArtifacts:
     evidence_by_attempt: dict[str, list[Evidence]] = field(default_factory=dict)
     verdicts: dict[str, AggregateVerdict] = field(default_factory=dict)
     evaluation: EvaluationResult | None = None
+    weak_label: WeakLabel | None = None
+    al_score: ActiveLearningScore | None = None
+    judge_results: list[object] = field(default_factory=list)
     review_item: HumanReviewItem | None = None
     reward: RewardEvent | None = None
     policy_decision: object | None = None
@@ -393,6 +400,73 @@ class WorkflowRunner:
         state.scratch["selected_status"] = (
             best.status.value if hasattr(best.status, "value") else best.status
         )
+        return False
+
+    async def _node_score_signals(self, state: WorkflowState) -> bool:
+        """Weak supervision + LLM judges + active learning (eval ladder)."""
+        evaluation = self.artifacts.evaluation
+        sel_id = state.selected_attempt_id
+        attempt = next((a for a in self.artifacts.attempts if a.id == sel_id), None)
+        if evaluation is None or attempt is None:
+            return False
+        verdict = self.artifacts.verdicts.get(sel_id or "")
+        diff = self.artifacts.diffs.get(sel_id or "")
+        cls = self.artifacts.classification
+        churn = (diff.insertions + diff.deletions) if diff else 0
+        n_files = len(diff.changed_files) if diff else 0
+
+        features = {
+            "ci_passed": evaluation.spec_compliance >= 1.0,
+            "tests_failed": evaluation.spec_compliance < 1.0,
+            "task_type": cls.task_type if cls else None,
+            "touches_tests": diff_touches_tests(diff),
+            "diff_churn": churn,
+            "changed_files": n_files,
+            "security_high": evaluation.security_risk >= 0.7,
+            "agent_timeout": str(attempt.status).endswith("timed_out"),
+        }
+        weak = default_supervisor().label(features, task_id=state.task_id, attempt_id=sel_id)
+        self.artifacts.weak_label = weak
+
+        # LLM judges (deterministic fakes; real judges plug in behind same iface).
+        judge_input = JudgeInput(
+            task_spec=self._task(state).title,
+            acceptance_criteria=self._task(state).acceptance_criteria,
+            context_summary=(self.artifacts.context_pack.strategy
+                             if self.artifacts.context_pack else ""),
+            diff=(diff.unified_diff or "") if diff else "",
+            evidence_summary="; ".join(
+                f"{e.name}:{e.status}" for e in self.artifacts.evidence
+            ),
+        )
+        judgements = [j.judge(judge_input) for j in default_fake_judges()]
+        self.artifacts.judge_results = list(judgements)
+        judge_wants_review = any(j.requires_human_review for j in judgements)
+
+        # Active-learning priority.
+        disagreement = abs(
+            (1.0 if (verdict and verdict.passed) else 0.0)
+            - (1.0 if weak.label == "success" else 0.0)
+        )
+        risk_rank = {"low": 0, "medium": 1, "high": 2, "critical": 3}.get(
+            str(cls.risk_level) if cls else "medium", 1
+        )
+        al = ActiveLearningSelector().score(ALInputs(
+            task_id=state.task_id, attempt_id=sel_id,
+            uncertainty=1.0 - evaluation.confidence,
+            evaluator_disagreement=disagreement,
+            business_risk=risk_rank / 3.0,
+        ))
+        self.artifacts.al_score = al
+
+        # Fold ladder signals into the human-review decision. "suspicious" only
+        # lowers adequacy (handled by the aggregator); needs_review/failure or a
+        # judge escalation force human review.
+        if weak.label in ("needs_review", "failure") or judge_wants_review:
+            evaluation.requires_human_review = True
+            evaluation.reasons.append(
+                f"weak_label={weak.label}; judges_review={judge_wants_review}"
+            )
         return False
 
     async def _node_maybe_human_review(self, state: WorkflowState) -> bool:

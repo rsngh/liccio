@@ -100,6 +100,8 @@ class AppService:
         to_save.extend(artifacts.evidence)
         if artifacts.evaluation:
             to_save.append(artifacts.evaluation)
+        if artifacts.weak_label:
+            to_save.append(artifacts.weak_label)
         if artifacts.review_item:
             to_save.append(artifacts.review_item)
         if artifacts.reward:
