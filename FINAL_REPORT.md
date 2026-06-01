@@ -1,5 +1,30 @@
 # Final Report — agent-control-plane (`acp`)
 
+> **`CURRENT_STATUS.md` is the source of truth** for status, test counts, and
+> coverage. This file is a historical narrative of what was built across rounds;
+> numbers here may lag. Per-subsystem reality is tabulated below.
+
+## Subsystem reality (real / service-backed / simple adapter / true harness / fallback / stub)
+
+| Subsystem | Status |
+|---|---|
+| Workflow loop + durable resume | **real local** (exhaustive crash-resume tested) |
+| Persistence / provenance / RunGraph | **real local** (full graph reconstructs after restart) |
+| Command execution (local) | **real local**, cwd-contained + secret-scrubbed (not OS sandbox) |
+| Command execution (Docker) | **real** `DockerCommandRunner` (in-container); skipped w/o daemon |
+| Context compiler + retrieval | **real local** (hybrid; adversarial benchmark) |
+| Vector store — InMemory | **real local** |
+| Vector store — Qdrant | **real service-backed** (qdrant-client engine; live test) |
+| Vector store — pgvector | **explicit fallback** until a DSN is configured (visible `backend` flag) |
+| Embeddings — hashing | **real local**; OpenAI/sentence-transformers **optional real** |
+| Agent: fake / patch | **real** deterministic baselines |
+| Agent: Claude/Codex/OpenHands/SimpleLLM | **simple model adapters** (`is_harness=False`) |
+| Agent: OpenAIHarnessAdapter | **true harness** (`is_harness=True`) — tool-loop + trace capture |
+| Eval ladder + reports | **real**, persisted as `EvalRun`/`EvalReport` entities |
+| Routing policy | **real** persisted bandit (survives restart) + OPE + drift |
+| LLM judges | **fake deterministic** by default; calibration harness vs human/post-merge |
+| Observability | **real** in-process spans + JSONL; OTel exporter optional |
+
 ## Summary of what was built
 
 A local v0/alpha (not yet production-grade — see `CURRENT_STATUS.md`), Python-first
