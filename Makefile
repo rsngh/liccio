@@ -4,7 +4,8 @@
         live-openai live-second-harness live-docker \
         multi-harness-bakeoff-v2 calibration-v2 sandbox-redteam postmerge-sim \
         router-replay alpha5-artifacts live-qdrant live-pgvector \
-        ope-experiment context-strategy-benchmark live-openai-experiment alpha6-artifacts
+        ope-experiment context-strategy-benchmark live-openai-experiment \
+        live-embedder-experiment alpha6-artifacts
 
 UV ?= uv
 
@@ -123,6 +124,9 @@ context-strategy-benchmark:
 
 live-openai-experiment:
 	$(UV) run python evals/scripts/run_live_openai_experiment.py
+
+live-embedder-experiment:
+	$(UV) run python evals/scripts/run_live_embedder_experiment.py
 
 alpha6-artifacts: ope-experiment context-strategy-benchmark
 	@echo "Alpha-6 report artifacts written to evals/reports/ (+ reports/live/ when keyed)"
