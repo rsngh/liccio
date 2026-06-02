@@ -331,27 +331,123 @@ class DatasetFactory:
     def _build_viability(
         self, bundle: ExhaustBundle, cfg: DatasetBuildConfig
     ) -> list[TrainingExample]:
-        # Stub: viability distillation (task -> can-an-agent-solve?) is not yet
-        # implemented; requires linking attempts to objective outcomes.
-        return []
+        """Task features -> was the task solvable by an agent? (Alpha 8 WS6).
+
+        Label = "viable" when any trace for the task succeeded (objective), else
+        "not_viable". This is the supervised target for the learned viability
+        assessor (WS2).
+        """
+        tasks = {t.id: t for t in bundle.tasks}
+        # Per task: did any attempt succeed?
+        solved: dict[str, bool] = {}
+        for tr in bundle.traces:
+            if not tr.task_id:
+                continue
+            solved[tr.task_id] = solved.get(tr.task_id, False) or (tr.status == "succeeded")
+        out: list[TrainingExample] = []
+        for task_id, ok in solved.items():
+            task = tasks.get(task_id)
+            if task is None:
+                continue
+            out.append(TrainingExample(
+                dataset_kind="viability", task_id=task_id,
+                inputs={
+                    "task_type": task.task_type,
+                    "risk_level": task.risk_level,
+                    "ambiguity_score": getattr(task, "ambiguity_score", None),
+                    "has_acceptance_criteria": bool(task.acceptance_criteria),
+                    "body_len": len(task.body or ""),
+                },
+                target={"viable": ok},
+                label_source="objective",
+                created_at=getattr(task, "created_at", None),
+                provenance={"derived_from": "trace_outcomes"},
+            ))
+        return out
 
     def _build_context_strategy(
         self, bundle: ExhaustBundle, cfg: DatasetBuildConfig
     ) -> list[TrainingExample]:
-        # Stub: needs context-pack + retrieval-quality signals not in bundle.
-        return []
+        """(task features, routed context strategy) -> reward (Alpha 8 WS6).
+
+        Lets the context-strategy learner (WS3) learn which strategy maximizes
+        downstream reward per task class, supervised by the logged reward.
+        """
+        rewards_by_decision = {
+            r.routing_decision_id: r for r in bundle.rewards if r.routing_decision_id
+        }
+        tasks = {t.id: t for t in bundle.tasks}
+        out: list[TrainingExample] = []
+        for dec in bundle.routing_decisions:
+            reward = rewards_by_decision.get(dec.id)
+            task = tasks.get(dec.task_id)
+            out.append(TrainingExample(
+                dataset_kind="context_strategy", task_id=dec.task_id,
+                inputs={
+                    "task_type": (task.task_type if task else None),
+                    "risk_level": (task.risk_level if task else None),
+                    "context_strategy": dec.action.context_strategy,
+                },
+                target={"context_strategy": dec.action.context_strategy,
+                        "reward": (reward.reward if reward else None)},
+                label_source=(reward.label_source if reward else "derived"),
+                created_at=dec.created_at,
+                provenance={"routing_decision_id": dec.id},
+            ))
+        return out
 
     def _build_trace_summary(
         self, bundle: ExhaustBundle, cfg: DatasetBuildConfig
     ) -> list[TrainingExample]:
-        # Stub: trace -> natural-language summary requires generated summaries.
-        return []
+        """Trace -> a deterministic structured summary string (Alpha 8 WS6).
+
+        A no-LLM, templated summary so the dataset is reproducible; a fine-tuned
+        summarizer can later replace the template.
+        """
+        out: list[TrainingExample] = []
+        for tr in bundle.traces:
+            summary = (
+                f"{tr.adapter_name} {tr.status}: {tr.tool_calls} tool calls, "
+                f"{len(tr.changed_files)} files changed ({tr.diff_lines} diff lines), "
+                f"{tr.input_tokens + tr.output_tokens} tokens, "
+                f"${tr.estimated_cost_usd:.4f}."
+            )
+            out.append(TrainingExample(
+                dataset_kind="trace_summary", task_id=tr.task_id,
+                inputs={
+                    "adapter_name": tr.adapter_name, "status": tr.status,
+                    "tool_calls": tr.tool_calls, "changed_files": list(tr.changed_files),
+                    "diff_lines": tr.diff_lines,
+                },
+                target=summary, label_source="derived",
+                created_at=tr.created_at,
+                provenance={"trace_id": tr.id},
+            ))
+        return out
 
     def _build_verification_plan(
         self, bundle: ExhaustBundle, cfg: DatasetBuildConfig
     ) -> list[TrainingExample]:
-        # Stub: needs VerificationPlan records (not part of the bundle yet).
-        return []
+        """Task -> required verification kinds (Alpha 8 WS6).
+
+        Distilled from the deterministic classifier so a model can learn to
+        predict the verification plan directly from the task.
+        """
+        from acp.core.classifier import classify
+
+        out: list[TrainingExample] = []
+        for task in bundle.tasks:
+            cls = classify(task)
+            out.append(TrainingExample(
+                dataset_kind="verification_plan", task_id=task.id,
+                inputs={"title": task.title, "task_type": cls.task_type.value
+                        if hasattr(cls.task_type, "value") else cls.task_type},
+                target={"required_verification_kinds": list(cls.required_verification_kinds)},
+                label_source="derived",
+                created_at=getattr(task, "created_at", None),
+                provenance={"classifier": "deterministic"},
+            ))
+        return out
 
     # -- pipeline stages ---------------------------------------------------
 
@@ -478,8 +574,9 @@ class DatasetFactory:
             if ex.task_id:
                 tasks.add(ex.task_id)
         notes: list[str] = []
-        if kind in ("viability", "context_strategy", "trace_summary", "verification_plan"):
-            notes.append(f"{kind} distillation is a stub (returns no examples)")
+        if not examples:
+            notes.append(f"{kind} distillation produced no examples "
+                         "(insufficient exhaust of this kind)")
         return DatasetCard(
             kind=kind,
             description=f"ACP run-exhaust dataset for {kind}",

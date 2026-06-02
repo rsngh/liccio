@@ -71,11 +71,13 @@ def test_builders_produce_valid_examples() -> None:
             TrainingExample.model_validate(ex.model_dump(mode="json"))
 
 
-def test_stub_kinds_return_empty_with_note() -> None:
+def test_previously_stubbed_kinds_now_produce_examples() -> None:
+    # Alpha 8 WS6: viability/context_strategy/trace_summary/verification_plan
+    # builders are implemented; they distill examples from the bundle.
     factory = DatasetFactory()
     res = factory.build("viability", _bundle())
-    assert res.examples == []
-    assert any("stub" in n for n in res.card.notes)
+    assert res.examples, "viability builder should now produce examples"
+    assert not any("stub" in n for n in res.card.notes)
 
 
 def test_temporal_and_repo_split_deterministic() -> None:

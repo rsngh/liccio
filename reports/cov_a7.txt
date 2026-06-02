@@ -1,0 +1,20 @@
+src/acp/workspaces/command_runner.py                    79      4     14      2    94%   56, 169, 176-177
+src/acp/workspaces/diff.py                              73     10     24      3    87%   45-46, 59, 68-70, 78-79, 88, 90
+src/acp/workspaces/docker.py                            64     21     12      2    59%   30, 36-37, 65-80, 95->97, 115-122
+src/acp/workspaces/docker_runner.py                     19      0      0      0   100%
+src/acp/workspaces/factory.py                           13      1      4      1    88%   27
+src/acp/workspaces/git_ops.py                           31     12      4      0    54%   14-15, 19, 34-35, 46-52
+src/acp/workspaces/kubernetes.py                        15     15      0      0     0%   3-26
+src/acp/workspaces/local.py                             51      5      8      4    85%   34, 37, 66, 72, 77
+src/acp/workspaces/policies.py                           6      1      0      0    83%   13
+------------------------------------------------------------------------------------------------
+TOTAL                                                 8280    914   1602    254    87%
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_docker_runner.py:59: docker not available
+SKIPPED [1] tests/integration/test_docker_runner.py:78: docker not available
+SKIPPED [1] tests/integration/test_docker_security_script.py:61: docker not available
+SKIPPED [1] tests/integration/test_docker_workspace.py:106: docker not available
+SKIPPED [1] tests/integration/test_docker_workspace.py:119: docker not available
+SKIPPED [1] tests/integration/test_service_backends.py:27: no live pgvector (ACP_PGVECTOR_DSN + psycopg + pgvector)
+SKIPPED [1] tests/unit/test_vendor_harness.py:92: codex_cli is live in this environment
+498 passed, 7 skipped, 1 warning in 1240.49s (0:20:40)
