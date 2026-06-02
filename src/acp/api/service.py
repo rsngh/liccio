@@ -502,52 +502,13 @@ class AppService:
         behavior policy — IPS / SNIPS / clipped-IPS / doubly-robust with bootstrap
         CIs and overlap diagnostics. No agents are re-run.
         """
-        from acp.routing.ope import OPESample, evaluate_policy, fit_reward_model
-        from acp.routing.supervised import SupervisedRoutingPolicy
-        from acp.schemas.learning import RewardEvent
-        from acp.schemas.routing import RoutingDecision
+        from acp.routing.ope import evaluate_policy
 
-        with session_scope(self.sessions) as s:
-            es = EntityStore(s)
-            decisions = {d.id: d for d in es.list_by(RoutingDecision)}
-            rewards = es.list_by(RewardEvent)
-
-        samples: list[OPESample] = []
-        for rew in rewards:
-            dec = decisions.get(rew.routing_decision_id or "")
-            if dec is None or not dec.candidate_actions:
-                continue
-            ctx = dec.feature_hash or "global"
-            cands = [a.key() for a in dec.candidate_actions]
-            samples.append(OPESample(
-                context_key=ctx, action_key=dec.action.key(),
-                behavior_prob=dec.action_probability, reward=rew.reward,
-                candidates=cands,
-            ))
+        samples = self._ope_samples()
         if not samples:
             return {"n": 0, "note": "no (decision, reward) pairs with propensities found"}
-
         n_cands = max(len(set(s.candidates)) for s in samples)
-
-        def random_target(ctx: str, action: str, cands: list[str]) -> float:
-            return 1.0 / len(cands)
-
-        if target == "random":
-            tgt = random_target
-        elif target == "greedy":
-            q = fit_reward_model(samples)
-
-            def greedy(ctx: str, action: str, cands: list[str]) -> float:
-                best = max(q(ctx, a) for a in cands)
-                winners = [a for a in cands if q(ctx, a) == best]
-                return 1.0 / len(winners) if action in winners else 0.0
-            tgt = greedy
-        else:  # supervised
-            pol = SupervisedRoutingPolicy()
-            pol.fit([{"context_key": s.context_key, "action_key": s.action_key,
-                      "reward": s.reward} for s in samples])
-            tgt = pol.as_target()
-
+        tgt = self._ope_target(samples, target)
         report = evaluate_policy(samples, tgt, weight_clip=weight_clip)
         baseline = sum(s.reward for s in samples) / len(samples)
         return {
@@ -557,6 +518,114 @@ class AppService:
             "logged_mean_reward": round(baseline, 6),
             "estimates": report.as_dict(),
             "improvement_vs_logged": round(report.best_estimate() - baseline, 6),
+        }
+
+    def _ope_samples(self) -> list:
+        """OPE log from persisted RoutingDecision propensities matched to rewards."""
+        from acp.routing.ope import OPESample
+        from acp.schemas.learning import RewardEvent
+        from acp.schemas.routing import RoutingDecision
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            decisions = {d.id: d for d in es.list_by(RoutingDecision)}
+            rewards = es.list_by(RewardEvent)
+        samples = []
+        for rew in rewards:
+            dec = decisions.get(rew.routing_decision_id or "")
+            if dec is None or not dec.candidate_actions:
+                continue
+            samples.append(OPESample(
+                context_key=dec.feature_hash or "global", action_key=dec.action.key(),
+                behavior_prob=dec.action_probability, reward=rew.reward,
+                candidates=[a.key() for a in dec.candidate_actions],
+            ))
+        return samples
+
+    @staticmethod
+    def _ope_target(samples: list, target: str):
+        """Build an OPE TargetPolicy for a named policy from the sample log."""
+        from acp.routing.ope import fit_reward_model
+        from acp.routing.supervised import SupervisedRoutingPolicy
+
+        if target == "random":
+            def random_target(ctx: str, action: str, cands: list[str]) -> float:
+                return 1.0 / len(cands)
+            return random_target
+        if target == "greedy":
+            q = fit_reward_model(samples)
+
+            def greedy(ctx: str, action: str, cands: list[str]) -> float:
+                best = max(q(ctx, a) for a in cands)
+                winners = [a for a in cands if q(ctx, a) == best]
+                return 1.0 / len(winners) if action in winners else 0.0
+            return greedy
+        # supervised (+ cost/risk/context-aware variants share the predictor)
+        pol = SupervisedRoutingPolicy()
+        pol.fit([{"context_key": s.context_key, "action_key": s.action_key,
+                  "reward": s.reward} for s in samples])
+        return pol.as_target()
+
+    def policy_promotion_check(self, target: str = "supervised", weight_clip: float = 20.0) -> dict:
+        """Run the OPE promotion gate (Alpha 7, WS5) on a target policy.
+
+        Builds the OPE report from real logs and applies statistical-trust +
+        operational-safety conditions; returns a promote/block decision with the
+        exact failing conditions and (when promoted) a staged canary plan.
+        """
+        from acp.routing.ope import evaluate_policy
+        from acp.routing.promotion import evaluate_promotion
+
+        samples = self._ope_samples()
+        if not samples:
+            return {"promote": False, "reasons": ["no log to evaluate"], "n": 0}
+        report = evaluate_policy(samples, self._ope_target(samples, target),
+                                 weight_clip=weight_clip)
+        baseline = sum(s.reward for s in samples) / len(samples)
+        decision = evaluate_promotion(report, baseline_value=baseline)
+        return {"target": target, "n": report.n,
+                "logged_mean_reward": round(baseline, 6),
+                "estimates": report.as_dict(), **decision.as_dict()}
+
+    def real_log_ope_report(self, weight_clip: float = 20.0) -> dict:
+        """Compare candidate policies on the real persisted log (Alpha 7, WS6).
+
+        Evaluates logged/random/greedy/supervised targets via OPE and refuses to
+        rank a winner when propensity overlap or effective sample size is too poor
+        to trust — no overclaim on a thin log.
+        """
+        from acp.routing.ope import evaluate_policy
+
+        samples = self._ope_samples()
+        if not samples:
+            return {"n": 0, "note": "no (decision, reward) pairs with propensities found",
+                    "trustworthy": False}
+        baseline = sum(s.reward for s in samples) / len(samples)
+        policies: dict[str, dict] = {}
+        dr_by_name: dict[str, float] = {}
+        for name in ("random", "greedy", "supervised"):
+            rep = evaluate_policy(samples, self._ope_target(samples, name),
+                                  weight_clip=weight_clip)
+            policies[name] = {"estimates": rep.as_dict(),
+                              "dr": rep.dr.value, "dr_ci_low": rep.dr.ci_low}
+            dr_by_name[name] = rep.dr.value
+        # Trust gate: poor overlap / tiny ESS -> refuse to rank.
+        any_rep = evaluate_policy(samples, self._ope_target(samples, "supervised"),
+                                  weight_clip=weight_clip)
+        diag = any_rep.diagnostics
+        trustworthy = diag.overlap >= 0.5 and diag.effective_sample_size >= 10
+        ranking = (sorted(dr_by_name, key=lambda k: dr_by_name[k], reverse=True)
+                   if trustworthy else [])
+        return {
+            "n": len(samples),
+            "logged_mean_reward": round(baseline, 6),
+            "diagnostics": diag.as_dict(),
+            "trustworthy": trustworthy,
+            "policies": policies,
+            "ranking_by_dr": ranking,
+            "note": ("" if trustworthy else
+                     "insufficient overlap/ESS to rank policies — collect more "
+                     "exploratory logs before trusting these estimates"),
         }
 
     def cancel_run(self, run_id: str) -> WorkflowState:

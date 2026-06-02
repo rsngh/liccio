@@ -301,6 +301,24 @@ def policy_evaluate_offline(target: str = "supervised") -> None:
     console.print_json(data=result)
 
 
+@policy_app.command("promotion-check")
+def policy_promotion_check(target: str = "supervised") -> None:
+    """OPE promotion gate: decide whether a target policy is safe to deploy."""
+    from acp.api.service import AppService
+
+    result = AppService().policy_promotion_check(target=target)
+    console.print_json(data=result)
+
+
+@policy_app.command("real-log-ope")
+def policy_real_log_ope() -> None:
+    """Compare candidate policies on the real persisted log (refuses overclaim)."""
+    from acp.api.service import AppService
+
+    result = AppService().real_log_ope_report()
+    console.print_json(data=result)
+
+
 reviews_app = typer.Typer(help="Human review queue.")
 app.add_typer(reviews_app, name="reviews")
 

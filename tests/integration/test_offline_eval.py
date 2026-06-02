@@ -58,3 +58,18 @@ def test_evaluate_policy_offline_from_logged_runs(tmp_path) -> None:
     # Random baseline is also evaluable and reports its own diagnostics.
     rnd = svc.evaluate_policy_offline(target="random")
     assert rnd["n"] == report["n"]
+
+    # WS5: promotion gate runs end-to-end and returns a decision + conditions.
+    gate = svc.policy_promotion_check(target="supervised")
+    assert "promote" in gate and isinstance(gate["promote"], bool)
+    assert gate["conditions"], "gate must report its conditions"
+    if gate["promote"]:
+        assert gate["canary_plan"] is not None
+
+    # WS6: real-log OPE compares policies and gates on trust.
+    real = svc.real_log_ope_report()
+    assert real["n"] == report["n"]
+    assert {"random", "greedy", "supervised"} <= set(real["policies"].keys())
+    assert isinstance(real["trustworthy"], bool)
+    if real["trustworthy"]:
+        assert real["ranking_by_dr"]
