@@ -727,6 +727,30 @@ class AppService:
 
         return build_candidate_report(self.build_examples_by_kind())
 
+    def decision_card(self, task_id: str, *, repo_type: str = "python_package") -> dict:
+        """Explainable per-task decision card (Alpha 9): viability + capability-
+        matrix recommendation + verification + rationale."""
+        from acp.core.decision_card import build_decision_card
+        from acp.routing.capability_matrix import CapabilityMatrix
+
+        task = self.get_task(task_id)
+        if task is None:
+            raise KeyError(task_id)
+        # Build a matrix from persisted EvalRuns when available (else None).
+        try:
+            from acp.schemas.eval import EvalRun
+            with session_scope(self.sessions) as s:
+                runs = EntityStore(s).list_by(EvalRun)
+            built = CapabilityMatrix()
+            for run in runs:
+                if isinstance(run.summary, dict) and run.summary.get("cells"):
+                    for cell in CapabilityMatrix.from_bakeoff_report(run.summary).cells():
+                        built.add_cell(cell)
+            matrix: CapabilityMatrix | None = built if built.cells() else None
+        except Exception:  # noqa: BLE001 - matrix is optional context
+            matrix = None
+        return build_decision_card(task, matrix=matrix, repo_type=repo_type).as_dict()
+
     def self_improvement_report(self) -> dict:
         """Closed-loop self-improvement (Alpha 8 capstone): learn viability +
         context-strategy from exhaust, evaluate, and gate promotion."""

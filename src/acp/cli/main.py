@@ -410,6 +410,18 @@ viability_app = typer.Typer(help="Capability matrix / routing viability (Alpha 7
 app.add_typer(viability_app, name="viability")
 
 
+@viability_app.command("decision-card")
+def viability_decision_card(task_id: str) -> None:
+    """Explainable decision card for a task (viability + recommendation + why)."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().decision_card(task_id))
+    except KeyError:
+        console.print(f"task {task_id} not found")
+        raise typer.Exit(1) from None
+
+
 @viability_app.command("matrix")
 def viability_matrix(repo: str = "") -> None:
     """Empirical capability matrix per routing tuple."""
