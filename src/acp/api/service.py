@@ -727,6 +727,13 @@ class AppService:
 
         return build_candidate_report(self.build_examples_by_kind())
 
+    def self_improvement_report(self) -> dict:
+        """Closed-loop self-improvement (Alpha 8 capstone): learn viability +
+        context-strategy from exhaust, evaluate, and gate promotion."""
+        from acp.learning.self_improvement import run_self_improvement_cycle
+
+        return run_self_improvement_cycle(self.build_exhaust_bundle()).as_dict()
+
     # ---- capability matrix (Alpha 7, WS2) --------------------------------
 
     def build_capability_matrix(self, *, repo_id: str | None = None) -> dict:

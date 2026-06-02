@@ -389,6 +389,15 @@ def train_local_lora(kind: str = "viability", dataset: str = "", smoke: bool = T
     console.print_json(data=run_local_lora(cfg, dataset))
 
 
+@train_app.command("self-improve")
+def train_self_improve() -> None:
+    """Closed-loop self-improvement: learn viability + context strategy from
+    exhaust, evaluate, and gate promotion (capstone)."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().self_improvement_report())
+
+
 @train_app.command("observability-health")
 def train_observability_health() -> None:
     """Honest availability of optional observability exporters."""
