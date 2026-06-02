@@ -85,6 +85,7 @@ class RunArtifacts:
 
     task: Task | None = None
     classification: TaskClassification | None = None
+    viability: object | None = None
     snapshot: RepoSnapshot | None = None
     context_pack: ContextPack | None = None
     plan: VerificationPlan | None = None
@@ -263,9 +264,21 @@ class WorkflowRunner:
         return False
 
     async def _node_classify_task(self, state: WorkflowState) -> bool:
+        from acp.core.viability import assess_viability
+
         cls = classify(self._task(state))
         self.artifacts.classification = cls
         state.scratch["risk_level"] = cls.risk_level
+        # Viability assessment (Alpha 7 WS1): decide *whether/with what* the task
+        # is automatable before routing decides *how*. Recorded for provenance and
+        # consumed by routing as a constraint.
+        viability = assess_viability(self._task(state), cls)
+        self.artifacts.viability = viability
+        state.scratch["viability_id"] = viability.id
+        state.scratch["abstain"] = viability.abstain
+        state.scratch["true_harness_required"] = viability.true_harness_required
+        if viability.human_review_required:
+            state.scratch["viability_human_review"] = True
         return False
 
     async def _node_create_repo_snapshot(self, state: WorkflowState) -> bool:
@@ -313,9 +326,17 @@ class WorkflowRunner:
 
             risk = cls.risk_level if cls else self._task(state).risk_level
             risk = RiskLevel(risk) if isinstance(risk, str) else risk
+            # Viability (Alpha 7 WS1) narrows the strategy space: route only over
+            # strategies the assessment deemed viable (falling back to the
+            # heuristic's choice if none overlap).
+            viability = self.artifacts.viability
+            strategies = [base.action.context_strategy, "minimal"]
+            vs = list(getattr(viability, "viable_context_strategies", []) or [])
+            if vs:
+                strategies = vs
             # Multi-candidate action space: agent × strategy × verification policy.
             candidates = CandidateGenerator(
-                strategies=[base.action.context_strategy, "minimal"],
+                strategies=strategies,
                 verification_policies=[base.action.verification_policy],
             ).generate(base.action, available)
             candidates, applied = apply_constraints(

@@ -14,6 +14,7 @@ from acp.schemas.base import ACPModel
 class RunGraph(ACPModel):
     state: dict[str, Any]
     task: dict[str, Any] | None = None
+    viability: dict[str, Any] | None = None
     snapshot: dict[str, Any] | None = None
     context_pack: dict[str, Any] | None = None
     verification_plan: dict[str, Any] | None = None

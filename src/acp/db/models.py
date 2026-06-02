@@ -171,6 +171,12 @@ class AgentTraceRow(_Row):
     adapter_name: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class ViabilityAssessmentRow(_Row):
+    __tablename__ = "viability_assessments"
+    task_id: Mapped[str] = mapped_column(String, index=True)
+    repo_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

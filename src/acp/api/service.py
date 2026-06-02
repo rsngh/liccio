@@ -105,6 +105,8 @@ class AppService:
         to_save: list[Any] = []
         if artifacts.task:
             to_save.append(artifacts.task)
+        if getattr(artifacts, "viability", None) is not None:
+            to_save.append(artifacts.viability)
         if artifacts.snapshot:
             to_save.append(artifacts.snapshot)
         if artifacts.context_pack:
@@ -428,6 +430,7 @@ class AppService:
         from acp.schemas.routing import RoutingDecision
         from acp.schemas.trace import AgentTrace, AuditEvent, SpanRecord
         from acp.schemas.verification import Evidence, VerificationPlan, VerificationRun
+        from acp.schemas.viability import ViabilityAssessment
         from acp.schemas.workspace import CommandRunRecord, DiffBundle
 
         state = self.get_run(run_id)
@@ -452,6 +455,7 @@ class AppService:
             graph = {
                 "state": state.model_dump(mode="json"),
                 "task": task.model_dump(mode="json") if task else None,
+                "viability": one(ViabilityAssessment, state.scratch.get("viability_id")),
                 "snapshot": one(RepoSnapshot, state.snapshot_id),
                 "context_pack": one(ContextPack, state.context_pack_id),
                 "verification_plan": one(VerificationPlan, state.verification_plan_id),
