@@ -17,6 +17,20 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 8 — learned governance from exhaust.** ACP now learns from its own runs:
+a **learned + ensemble viability assessor** (`core/viability_learned.py`) that
+stays advisory until it makes zero high-risk false negatives on holdout; a
+**context-strategy learner**; an **evaluator trust model** that cuts low-risk
+human-review burden ~33% with no extra false auto-approves; a 9-class
+**repair-strategy classifier**; completed training-dataset builders for
+viability/context_strategy/trace_summary/verification_plan; a **fine-tuning
+governance** gate (`training/model_governance.py`: beats rules+prompt baselines,
+temporal+repo holdout, leakage+memorization audits, rollback plan) with a
+**MemorizationAudit**; a **policy canary simulator** with guardrail rollback; an
+**exploration designer** for coverage gaps; and **artifact-truth infrastructure**
+(`acp reports validate`) that fails CI on any missing/malformed cited report. See
+`ALPHA8_CHECKLIST.md` / `ALPHA8_REPORT.md`.
+
 **Alpha 7 — policy-governed routing + training pipeline.** Every run produces a
 `ViabilityAssessment` (cheap-vs-harness, abstain on unverifiable/ambiguous;
 persisted + consumed by routing). An **OPE promotion gate** (`routing/promotion.py`,

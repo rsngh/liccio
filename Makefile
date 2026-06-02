@@ -6,7 +6,8 @@
         router-replay alpha5-artifacts live-qdrant live-pgvector \
         ope-experiment context-strategy-benchmark live-openai-experiment \
         live-embedder-experiment alpha6-artifacts \
-        context-downstream-benchmark alpha7-artifacts live-alpha7-experiment
+        context-downstream-benchmark alpha7-artifacts live-alpha7-experiment \
+        alpha8-artifacts reports-validate
 
 UV ?= uv
 
@@ -140,6 +141,12 @@ alpha7-artifacts:
 
 live-alpha7-experiment:
 	$(UV) run python evals/scripts/run_live_alpha7_experiment.py
+
+alpha8-artifacts:
+	$(UV) run python evals/scripts/run_alpha8_artifacts.py
+
+reports-validate:
+	$(UV) run acp reports validate
 
 live-qdrant:
 	$(UV) run pytest -m live_qdrant -q

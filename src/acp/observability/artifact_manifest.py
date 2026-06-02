@@ -25,8 +25,7 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/training_candidate_report.json": ["report"],
     "evals/reports/vendor_harness_smoke.json": ["vendor_adapters"],
     "evals/reports/context_downstream_benchmark.json": ["results"],
-    # Alpha 8
-    "evals/reports/artifact_manifest.json": ["artifacts", "generated_at"],
+    # Alpha 8 (the manifest is the meta-artifact and is not listed in itself)
     "evals/reports/viability_learned_eval.json": ["n", "promotable"],
     "evals/reports/context_strategy_learned_eval.json": ["top1_accuracy"],
     "evals/reports/evaluator_trust_model.json": ["metrics", "thresholds"],

@@ -319,6 +319,42 @@ def policy_real_log_ope() -> None:
     console.print_json(data=result)
 
 
+reports_app = typer.Typer(help="Artifact truth infrastructure (Alpha 8).")
+app.add_typer(reports_app, name="reports")
+
+
+@reports_app.command("manifest")
+def reports_manifest(out: str = "evals/reports/artifact_manifest.json") -> None:
+    """Build + write the artifact manifest over all committed reports."""
+    import json as _json
+    from pathlib import Path as _Path
+
+    from acp.core.time import isoformat, utcnow
+    from acp.observability.artifact_manifest import build_manifest
+
+    manifest = build_manifest(_Path("."), generated_at=isoformat(utcnow()))
+    _Path(out).parent.mkdir(parents=True, exist_ok=True)
+    _Path(out).write_text(_json.dumps(manifest.as_dict(), indent=2) + "\n")
+    console.print_json(data={"n_valid": manifest.as_dict()["n_valid"],
+                             "n_total": manifest.as_dict()["n_total"]})
+
+
+@reports_app.command("validate")
+def reports_validate() -> None:
+    """Fail (exit 1) if any referenced report is missing/malformed/inconsistent."""
+    from pathlib import Path as _Path
+
+    from acp.core.time import isoformat, utcnow
+    from acp.observability.artifact_manifest import build_manifest
+
+    manifest = build_manifest(_Path("."), generated_at=isoformat(utcnow()))
+    if not manifest.all_valid():
+        for a in manifest.invalid():
+            console.print(f"[red]INVALID[/red] {a.path}: {a.errors}")
+        raise typer.Exit(1)
+    console.print(f"[green]all {len(manifest.artifacts)} artifacts valid[/green]")
+
+
 dataset_app = typer.Typer(help="Training-data factory (Alpha 7).")
 app.add_typer(dataset_app, name="dataset")
 
@@ -474,6 +510,25 @@ def eval_context_downstream_benchmark() -> None:
 
     report = run_context_downstream_benchmark()
     console.print_json(data=report.to_dict())
+
+
+@eval_app.command("evaluator-trust")
+def eval_evaluator_trust() -> None:
+    """Train the evaluator trust model; recommend risk-specific review thresholds."""
+    from acp.evaluation.evaluator_trust import default_trust_dataset, evaluate_trust
+
+    console.print_json(data=evaluate_trust(default_trust_dataset()))
+
+
+@eval_app.command("repair-classifier")
+def eval_repair_classifier() -> None:
+    """Evaluate the repair-strategy classifier on the synthetic dataset."""
+    from acp.evaluation.repair_classifier import (
+        default_repair_dataset,
+        evaluate_repair_classifier,
+    )
+
+    console.print_json(data=evaluate_repair_classifier(default_repair_dataset()))
 
 
 @eval_app.command("list")

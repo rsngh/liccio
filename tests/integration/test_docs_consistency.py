@@ -137,6 +137,33 @@ def test_alpha7_report_present() -> None:
     assert len(_read("ALPHA7_REPORT.md").strip()) > 200
 
 
+def test_alpha8_checklist_artifacts_exist() -> None:
+    checklist = _read("ALPHA8_CHECKLIST.md")
+    required = [
+        "evals/reports/artifact_manifest.json",
+        "evals/reports/viability_learned_eval.json",
+        "evals/reports/context_strategy_learned_eval.json",
+        "evals/reports/evaluator_trust_model.json",
+        "evals/reports/repair_classifier.json",
+        "evals/reports/policy_canary_sim.json",
+        "evals/reports/exploration_plan.json",
+    ]
+    for art in required:
+        assert art in checklist, f"{art} not referenced in ALPHA8_CHECKLIST.md"
+        assert (ROOT / art).exists(), f"{art} missing on disk"
+
+
+def test_alpha8_report_present() -> None:
+    assert (ROOT / "ALPHA8_REPORT.md").exists()
+    assert len(_read("ALPHA8_REPORT.md").strip()) > 200
+
+
+def test_artifact_manifest_all_valid() -> None:
+    from acp.observability.artifact_manifest import build_manifest
+    m = build_manifest(ROOT, generated_at="test")
+    assert m.all_valid(), [a.path for a in m.invalid()]
+
+
 def test_no_stale_single_harness_or_future_claims() -> None:
     # completed features must not be described as future work / not-implemented
     status = _read("CURRENT_STATUS.md").lower()
