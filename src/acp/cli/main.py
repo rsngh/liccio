@@ -389,6 +389,14 @@ def train_local_lora(kind: str = "viability", dataset: str = "", smoke: bool = T
     console.print_json(data=run_local_lora(cfg, dataset))
 
 
+@app.command("health")
+def health_snapshot() -> None:
+    """Control-plane health snapshot (counts, OPE readiness, learned models)."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().control_plane_health())
+
+
 @train_app.command("self-improve")
 def train_self_improve() -> None:
     """Closed-loop self-improvement: learn viability + context strategy from

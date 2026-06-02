@@ -751,6 +751,49 @@ class AppService:
             matrix = None
         return build_decision_card(task, matrix=matrix, repo_type=repo_type).as_dict()
 
+    def control_plane_health(self) -> dict:
+        """One-shot health snapshot of the whole control plane (Alpha 9).
+
+        Unifies counts + readiness across viability, routing logs/OPE, capability
+        matrix coverage, learned-model promotability, and counterfactual regret —
+        the single status object a dashboard or operator would consult.
+        """
+        from acp.routing.counterfactual import total_regret
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            from acp.schemas.human_review import HumanLabel
+            from acp.schemas.learning import RewardEvent
+            from acp.schemas.routing import RoutingDecision
+            from acp.schemas.viability import ViabilityAssessment
+            counts = {
+                "tasks": len(es.list_by(Task)),
+                "routing_decisions": len(es.list_by(RoutingDecision)),
+                "reward_events": len(es.list_by(RewardEvent)),
+                "human_labels": len(es.list_by(HumanLabel)),
+                "viability_assessments": len(es.list_by(ViabilityAssessment)),
+            }
+        samples = self._ope_samples()
+        ope_ready = len(samples) >= 10
+        regret = total_regret(samples) if samples else {"n": 0}
+        # Learned-model readiness via the self-improvement cycle (cheap on small logs).
+        try:
+            si = self.self_improvement_report()
+            promotions = si.get("promotions", {})
+        except Exception:  # noqa: BLE001 - health must never crash
+            promotions = {}
+        return {
+            "counts": counts,
+            "ope": {"log_size": len(samples), "ready_to_evaluate": ope_ready,
+                    "counterfactual_regret": regret},
+            "learned_models": {"promotions": promotions},
+            "readiness": {
+                "can_evaluate_policies_offline": ope_ready,
+                "has_human_feedback": counts["human_labels"] > 0,
+                "has_viability_provenance": counts["viability_assessments"] > 0,
+            },
+        }
+
     def self_improvement_report(self) -> dict:
         """Closed-loop self-improvement (Alpha 8 capstone): learn viability +
         context-strategy from exhaust, evaluate, and gate promotion."""

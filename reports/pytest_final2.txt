@@ -1,0 +1,230 @@
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+.......ss..s.....ss..................................................... [ 33%]
+........................................................F....s.......... [ 45%]
+......................FF................................................ [ 56%]
+..............................................................s......... [ 67%]
+........................................................................ [ 79%]
+........................................................................ [ 90%]
+...............................s..........s.................             [100%]
+=================================== FAILURES ===================================
+______________________ test_subquadratic_verdict_is_bool _______________________
+
+    def test_subquadratic_verdict_is_bool() -> None:
+        report = run_scale_benchmark(sizes=SIZES)
+        assert isinstance(report["subquadratic"], bool)
+        for op in report["operations"]:
+            assert isinstance(report["subquadratic_by_operation"][op], bool)
+        # On these tiny sizes nothing should look catastrophically super-quadratic.
+>       assert report["subquadratic"] is True
+E       assert False is True
+
+tests/integration/test_scale_benchmark.py:50: AssertionError
+_______________________ test_index_and_budget_respected ________________________
+
+big_repo = PosixPath('/tmp/claude-1000/pytest-of-roy/pytest-59/test_index_and_budget_respecte0')
+
+    @pytest.mark.slow
+    def test_index_and_budget_respected(big_repo) -> None:
+        task = Task(repo_id="r", title="modify func_42", body="change func_42 behavior")
+        t0 = time.monotonic()
+>       pack = ContextCompiler(big_repo, "r", "s").compile(task, token_budget=5000)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/long/test_retriever_stress.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/acp/context/compiler.py:73: in compile
+    retriever = HybridRetriever(
+src/acp/context/retrieval.py:83: in __init__
+    self._prepare()
+src/acp/context/retrieval.py:86: in _prepare
+    self._doc_vecs = [self.embedder.embed(it.content) for it in self.items]
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/acp/context/embeddings.py:134: in embed
+    vec = self.inner.embed(text)
+          ^^^^^^^^^^^^^^^^^^^^^^
+src/acp/context/embeddings.py:76: in embed
+    resp = client.embeddings.create(model=self.model, input=text[:8000])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/resources/embeddings.py:136: in create
+    return self._post(
+.venv/lib/python3.12/site-packages/openai/_base_client.py:1332: in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/_base_client.py:1037: in request
+    response = self._send_request(
+.venv/lib/python3.12/site-packages/openai/_client.py:440: in _send_request
+    return self._send_with_auth_retry(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/_client.py:418: in _send_with_auth_retry
+    response = super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/_base_client.py:964: in _send_request
+    return self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_transports/default.py:250: in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py:256: in handle_request
+    raise exc from None
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py:236: in handle_request
+    response = connection.handle_request(
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py:101: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py:78: in handle_request
+    stream = self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py:156: in _connect
+    stream = stream.start_tls(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py:165: in start_tls
+    sock = ssl_context.wrap_socket(
+../../anaconda3/lib/python3.12/ssl.py:455: in wrap_socket
+    return self.sslsocket_class._create(
+../../anaconda3/lib/python3.12/ssl.py:1042: in _create
+    self.do_handshake()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <ssl.SSLSocket [closed] fd=-1, family=2, type=1, proto=6>, block = False
+
+    @_sslcopydoc
+    def do_handshake(self, block=False):
+        self._check_connected()
+        timeout = self.gettimeout()
+        try:
+            if timeout == 0.0 and block:
+                self.settimeout(None)
+>           self._sslobj.do_handshake()
+E           Failed: Timeout (>180.0s) from pytest-timeout.
+
+../../anaconda3/lib/python3.12/ssl.py:1320: Failed
+_______________________ test_deterministic_under_stress ________________________
+
+big_repo = PosixPath('/tmp/claude-1000/pytest-of-roy/pytest-59/test_deterministic_under_stres0')
+
+    @pytest.mark.slow
+    def test_deterministic_under_stress(big_repo) -> None:
+        task = Task(repo_id="r", title="modify func_7", body="tweak func_7")
+        c = ContextCompiler(big_repo, "r", "s")
+>       assert c.compile(task, token_budget=4000).content_hash == \
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            c.compile(task, token_budget=4000).content_hash
+
+tests/long/test_retriever_stress.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/acp/context/compiler.py:73: in compile
+    retriever = HybridRetriever(
+src/acp/context/retrieval.py:83: in __init__
+    self._prepare()
+src/acp/context/retrieval.py:86: in _prepare
+    self._doc_vecs = [self.embedder.embed(it.content) for it in self.items]
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/acp/context/embeddings.py:134: in embed
+    vec = self.inner.embed(text)
+          ^^^^^^^^^^^^^^^^^^^^^^
+src/acp/context/embeddings.py:76: in embed
+    resp = client.embeddings.create(model=self.model, input=text[:8000])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/resources/embeddings.py:136: in create
+    return self._post(
+.venv/lib/python3.12/site-packages/openai/_base_client.py:1332: in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/_base_client.py:1037: in request
+    response = self._send_request(
+.venv/lib/python3.12/site-packages/openai/_client.py:440: in _send_request
+    return self._send_with_auth_retry(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/_client.py:418: in _send_with_auth_retry
+    response = super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/openai/_base_client.py:964: in _send_request
+    return self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_transports/default.py:250: in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py:256: in handle_request
+    raise exc from None
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py:236: in handle_request
+    response = connection.handle_request(
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py:103: in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:136: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:106: in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:177: in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:217: in _receive_event
+    data = self._network_stream.read(
+.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py:128: in read
+    return self._sock.recv(max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../anaconda3/lib/python3.12/ssl.py:1233: in recv
+    return self.read(buflen)
+           ^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <ssl.SSLSocket [closed] fd=-1, family=2, type=1, proto=6>, len = 65536
+buffer = None
+
+    def read(self, len=1024, buffer=None):
+        """Read up to LEN bytes and return them.
+        Return zero-length string on EOF."""
+    
+        self._checkClosed()
+        if self._sslobj is None:
+            raise ValueError("Read on closed or unwrapped SSL socket.")
+        try:
+            if buffer is not None:
+                return self._sslobj.read(len, buffer)
+            else:
+>               return self._sslobj.read(len)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E               Failed: Timeout (>180.0s) from pytest-timeout.
+
+../../anaconda3/lib/python3.12/ssl.py:1106: Failed
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/roy/development/liccio/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_docker_runner.py:59: docker not available
+SKIPPED [1] tests/integration/test_docker_runner.py:78: docker not available
+SKIPPED [1] tests/integration/test_docker_security_script.py:61: docker not available
+SKIPPED [1] tests/integration/test_docker_workspace.py:106: docker not available
+SKIPPED [1] tests/integration/test_docker_workspace.py:119: docker not available
+SKIPPED [1] tests/integration/test_service_backends.py:27: no live pgvector (ACP_PGVECTOR_DSN + psycopg + pgvector)
+SKIPPED [1] tests/unit/test_docker_security_live.py:81: docker not available
+SKIPPED [1] tests/unit/test_vendor_contract.py:188: claude_agent_sdk has no build_command argv surface (SDK-driven)
+SKIPPED [1] tests/unit/test_vendor_harness.py:92: codex_cli is live in this environment
+FAILED tests/integration/test_scale_benchmark.py::test_subquadratic_verdict_is_bool
+FAILED tests/long/test_retriever_stress.py::test_index_and_budget_respected
+FAILED tests/long/test_retriever_stress.py::test_deterministic_under_stress
+3 failed, 624 passed, 9 skipped, 1 warning in 847.17s (0:14:07)
