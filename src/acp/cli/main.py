@@ -292,6 +292,15 @@ def policy_replay_eval(eval_run_id: str) -> None:
     console.print_json(data=result)
 
 
+@policy_app.command("evaluate-offline")
+def policy_evaluate_offline(target: str = "supervised") -> None:
+    """Offline policy evaluation (IPS/SNIPS/DR) of a target policy from logs."""
+    from acp.api.service import AppService
+
+    result = AppService().evaluate_policy_offline(target=target)
+    console.print_json(data=result)
+
+
 reviews_app = typer.Typer(help="Human review queue.")
 app.add_typer(reviews_app, name="reviews")
 
@@ -354,6 +363,15 @@ def eval_context_benchmark(files: int = 100) -> None:
 
     run = AppService().run_context_benchmark(files)
     console.print_json(data={"eval_run_id": run.id, **run.summary})
+
+
+@eval_app.command("context-strategy-benchmark")
+def eval_context_strategy_benchmark() -> None:
+    """Sweep retrieval strategies across repos; report best strategy per repo."""
+    from acp.evaluation.context_strategy_benchmark import run_context_strategy_benchmark
+
+    report = run_context_strategy_benchmark()
+    console.print_json(data=report.to_dict())
 
 
 @eval_app.command("list")

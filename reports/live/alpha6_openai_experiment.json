@@ -1,0 +1,50 @@
+{
+  "experiment": "alpha6_live_openai_no_patch_bugfix",
+  "adapter": "openai_harness",
+  "category": "acp_harness",
+  "is_harness": true,
+  "status": "succeeded",
+  "solved": true,
+  "verified_raises_on_zero": true,
+  "trace": {
+    "id": "atrace_e2f8337a373a46f49493d82f80ddbea8",
+    "attempt_id": "attempt_e1033e5cd949470fa9ecd7250109e777",
+    "task_id": "task_0c097112f722401bbae8c3ea2308f358",
+    "adapter_name": "openai_harness",
+    "is_harness": true,
+    "model_name": null,
+    "session_id": "[REDACTED]",
+    "status": "succeeded",
+    "tool_calls": 1,
+    "file_reads": 0,
+    "file_writes": [
+      "calculator.py"
+    ],
+    "commands": 0,
+    "changed_files": [
+      "calculator.py"
+    ],
+    "diff_lines": 10,
+    "input_tokens": 565,
+    "output_tokens": 79,
+    "estimated_cost_usd": 0.000386,
+    "wall_time_s": 3.3452886580007544,
+    "error": null,
+    "created_at": "2026-06-02T03:59:27.488441Z",
+    "metadata": {}
+  },
+  "metrics": {
+    "tool_calls": 1,
+    "file_writes": [
+      "calculator.py"
+    ],
+    "changed_files": [
+      "calculator.py"
+    ],
+    "diff_lines": 10,
+    "input_tokens": 565,
+    "output_tokens": 79,
+    "estimated_cost_usd": 0.000386,
+    "latency_s": 3.346
+  }
+}

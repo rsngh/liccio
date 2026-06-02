@@ -401,6 +401,74 @@ class AppService:
             "entities": {k: len(v) for k, v in self._children(run_id).items()},
         }
 
+    def evaluate_policy_offline(
+        self, target: str = "supervised", weight_clip: float = 20.0
+    ) -> dict:
+        """Offline policy evaluation (Alpha 6, WS3).
+
+        Builds an OPE log from persisted ``RoutingDecision`` propensities matched
+        to ``RewardEvent``s (via ``routing_decision_id``), then estimates the value
+        of a ``target`` policy (supervised | random | greedy) against the logged
+        behavior policy — IPS / SNIPS / clipped-IPS / doubly-robust with bootstrap
+        CIs and overlap diagnostics. No agents are re-run.
+        """
+        from acp.routing.ope import OPESample, evaluate_policy, fit_reward_model
+        from acp.routing.supervised import SupervisedRoutingPolicy
+        from acp.schemas.learning import RewardEvent
+        from acp.schemas.routing import RoutingDecision
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            decisions = {d.id: d for d in es.list_by(RoutingDecision)}
+            rewards = es.list_by(RewardEvent)
+
+        samples: list[OPESample] = []
+        for rew in rewards:
+            dec = decisions.get(rew.routing_decision_id or "")
+            if dec is None or not dec.candidate_actions:
+                continue
+            ctx = dec.feature_hash or "global"
+            cands = [a.key() for a in dec.candidate_actions]
+            samples.append(OPESample(
+                context_key=ctx, action_key=dec.action.key(),
+                behavior_prob=dec.action_probability, reward=rew.reward,
+                candidates=cands,
+            ))
+        if not samples:
+            return {"n": 0, "note": "no (decision, reward) pairs with propensities found"}
+
+        n_cands = max(len(set(s.candidates)) for s in samples)
+
+        def random_target(ctx: str, action: str, cands: list[str]) -> float:
+            return 1.0 / len(cands)
+
+        if target == "random":
+            tgt = random_target
+        elif target == "greedy":
+            q = fit_reward_model(samples)
+
+            def greedy(ctx: str, action: str, cands: list[str]) -> float:
+                best = max(q(ctx, a) for a in cands)
+                winners = [a for a in cands if q(ctx, a) == best]
+                return 1.0 / len(winners) if action in winners else 0.0
+            tgt = greedy
+        else:  # supervised
+            pol = SupervisedRoutingPolicy()
+            pol.fit([{"context_key": s.context_key, "action_key": s.action_key,
+                      "reward": s.reward} for s in samples])
+            tgt = pol.as_target()
+
+        report = evaluate_policy(samples, tgt, weight_clip=weight_clip)
+        baseline = sum(s.reward for s in samples) / len(samples)
+        return {
+            "target": target,
+            "n": report.n,
+            "candidate_arms": n_cands,
+            "logged_mean_reward": round(baseline, 6),
+            "estimates": report.as_dict(),
+            "improvement_vs_logged": round(report.best_estimate() - baseline, 6),
+        }
+
     def cancel_run(self, run_id: str) -> WorkflowState:
         state = self.get_run(run_id)
         if state is None:
