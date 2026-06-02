@@ -5,10 +5,10 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-02 (Alpha 6). Tests: 451 passing, 7 skipped
+Last updated: 2026-06-02 (Alpha 7). Tests: 498 passing, 7 skipped
 (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`; `ruff` +
-`mypy` clean; 87% line coverage (see `reports/coverage.txt`). Gate: `uv run
-pytest -q && uv run ruff check . && uv run mypy src`.
+`mypy` clean; see `reports/coverage.txt`. Gate: `uv run pytest -q &&
+uv run ruff check . && uv run mypy src && uv run alembic upgrade head`.
 
 **Alpha 4 — multi-harness empirical router.** Two real tool-loop harnesses now
 exist (`openai_harness`, `claude_harness`), the execution-backend policy is

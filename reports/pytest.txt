@@ -1,5 +1,5 @@
-# Alpha 6 test run (uv run pytest -q)
+# Alpha 7 test run (uv run pytest -q)
 # Date: 2026-06-02
-451 passed, 7 skipped, 1 warning in 1143.03s (0:19:03)
-# skips: docker workspace, live pgvector, live codex_cli
-# ruff: clean | mypy: clean (142 src files)
+498 passed, 7 skipped, 1 warning in 1173.50s (0:19:33)
+# skips: docker workspace (x2), live pgvector, live codex_cli, + service backends
+# ruff: clean | mypy: clean (156 src files); alembic upgrade head: OK
