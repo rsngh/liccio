@@ -17,6 +17,20 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 9/10 — multi-objective decision system + scale hardening.** Routing is now
+multi-objective: a **Pareto routing policy** (`routing/pareto_policy.py`) with 6
+weight profiles (cost_saver…success_max) chooses on the (success/cost/latency/risk)
+frontier. **Drift detection** auto-demotes a learned model when its predictions stop
+matching outcomes; **preference learning** fits a pairwise reward from human labels;
+**counterfactual** analysis reports per-decision regret; an **active-learning
+executor** + **continuous-learning scheduler** close the loop; and `acp health`
+returns a unified control-plane snapshot (status/degraded + artifact freshness).
+Alpha 10 adds a **large empirical corpus** (930 sufficient capability cells, 1,740
+preference pairs), a **v2 scale benchmark** (sub-quadratic), an **expanded
+security/prompt-injection suite** (10 attack classes, zero leak), and **model/data
+governance**. 24 committed artifacts are manifest-validated (`acp reports validate`).
+See `ALPHA9_*`/`ALPHA10_*`.
+
 **Alpha 8 — learned governance from exhaust.** ACP now learns from its own runs:
 a **learned + ensemble viability assessor** (`core/viability_learned.py`) that
 stays advisory until it makes zero high-risk false negatives on holdout; a

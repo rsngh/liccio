@@ -8,7 +8,7 @@
         live-embedder-experiment alpha6-artifacts \
         context-downstream-benchmark alpha7-artifacts live-alpha7-experiment \
         alpha8-artifacts reports-validate capability-campaign scale-benchmark \
-        security-benchmark
+        security-benchmark alpha9-artifacts alpha10-artifacts
 
 UV ?= uv
 
@@ -157,6 +157,14 @@ scale-benchmark:
 
 security-benchmark:
 	$(UV) run python evals/scripts/run_security_benchmark.py
+
+alpha9-artifacts:
+	$(UV) run python evals/scripts/run_alpha9_artifacts.py
+
+alpha10-artifacts:
+	$(UV) run python evals/scripts/run_alpha10_artifacts.py
+	$(UV) run python evals/scripts/run_large_corpus.py
+	$(UV) run python evals/scripts/run_scale_benchmark_v2.py
 
 live-qdrant:
 	$(UV) run pytest -m live_qdrant -q

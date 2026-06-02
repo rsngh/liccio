@@ -27,7 +27,7 @@ def test_card_abstains_on_unspecified_task() -> None:
 
 def test_card_uses_capability_matrix_when_confident() -> None:
     cells = []
-    for i in range(8):
+    for _ in range(8):
         cells.append({"task_type": "bugfix", "risk": "medium",
                       "adapter": "claude_harness", "is_harness": True,
                       "context_strategy": "test_focused",

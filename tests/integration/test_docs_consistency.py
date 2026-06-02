@@ -164,6 +164,29 @@ def test_artifact_manifest_all_valid() -> None:
     assert m.all_valid(), [a.path for a in m.invalid()]
 
 
+def test_alpha9_and_alpha10_artifacts_exist() -> None:
+    for checklist, arts in (
+        ("ALPHA9_CHECKLIST.md", [
+            "evals/reports/pareto_routing.json", "evals/reports/drift_demote.json",
+            "evals/reports/preference_learning.json",
+            "evals/reports/counterfactual_regret.json",
+            "evals/reports/control_plane_health.json"]),
+        ("ALPHA10_CHECKLIST.md", [
+            "evals/reports/large_empirical_corpus.json",
+            "evals/reports/storage_scale_v2.json",
+            "evals/reports/security_injection_v2.json"]),
+    ):
+        text = _read(checklist)
+        for art in arts:
+            assert art in text, f"{art} not in {checklist}"
+            assert (ROOT / art).exists(), f"{art} missing on disk"
+
+
+def test_alpha9_alpha10_reports_present() -> None:
+    for doc in ("ALPHA9_REPORT.md", "ALPHA10_REPORT.md"):
+        assert (ROOT / doc).exists() and len(_read(doc).strip()) > 200
+
+
 def test_no_stale_single_harness_or_future_claims() -> None:
     # completed features must not be described as future work / not-implemented
     status = _read("CURRENT_STATUS.md").lower()

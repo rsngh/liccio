@@ -782,16 +782,36 @@ class AppService:
             promotions = si.get("promotions", {})
         except Exception:  # noqa: BLE001 - health must never crash
             promotions = {}
+        from acp.routing.pareto_policy import PROFILES
+        # Artifact freshness: are the committed reports present + valid?
+        try:
+            from pathlib import Path as _P
+
+            from acp.observability.artifact_manifest import build_manifest
+            mani = build_manifest(_P("."), generated_at="health")
+            artifacts_ok = mani.all_valid()
+            artifact_summary = {"valid": mani.as_dict()["n_valid"],
+                                "total": mani.as_dict()["n_total"]}
+        except Exception:  # noqa: BLE001
+            artifacts_ok, artifact_summary = False, {"valid": 0, "total": 0}
+        readiness = {
+            "can_evaluate_policies_offline": ope_ready,
+            "has_human_feedback": counts["human_labels"] > 0,
+            "has_viability_provenance": counts["viability_assessments"] > 0,
+            "artifacts_valid": artifacts_ok,
+        }
+        # Degraded when a critical gate is missing/stale.
+        degraded = not artifacts_ok
         return {
+            "status": "degraded" if degraded else "ok",
+            "degraded": degraded,
             "counts": counts,
             "ope": {"log_size": len(samples), "ready_to_evaluate": ope_ready,
                     "counterfactual_regret": regret},
             "learned_models": {"promotions": promotions},
-            "readiness": {
-                "can_evaluate_policies_offline": ope_ready,
-                "has_human_feedback": counts["human_labels"] > 0,
-                "has_viability_provenance": counts["viability_assessments"] > 0,
-            },
+            "pareto_profiles": sorted(PROFILES),
+            "artifacts": artifact_summary,
+            "readiness": readiness,
         }
 
     def self_improvement_report(self) -> dict:

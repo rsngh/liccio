@@ -36,6 +36,16 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/security_benchmark.json": ["summary"],
     "evals/reports/storage_scale.json": ["subquadratic"],
     "evals/reports/docker_security_live.json": ["checks", "passed"],
+    # Alpha 9
+    "evals/reports/pareto_routing.json": ["profiles", "choices"],
+    "evals/reports/drift_demote.json": ["report", "demoted"],
+    "evals/reports/preference_learning.json": ["n_pairs", "evaluation"],
+    "evals/reports/counterfactual_regret.json": ["total_regret"],
+    "evals/reports/control_plane_health.json": ["status", "readiness"],
+    # Alpha 10
+    "evals/reports/large_empirical_corpus.json": ["n_sufficient"],
+    "evals/reports/storage_scale_v2.json": ["subquadratic"],
+    "evals/reports/security_injection_v2.json": ["summary"],
 }
 
 
