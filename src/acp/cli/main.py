@@ -397,6 +397,22 @@ def health_snapshot() -> None:
     console.print_json(data=AppService().control_plane_health())
 
 
+@train_app.command("schedule-run")
+def train_schedule_run() -> None:
+    """Run the continuous-learning job batch once (idempotent, fault-tolerant)."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().learn_schedule_run())
+
+
+@train_app.command("explore-execute")
+def train_explore_execute(repetitions: int = 8) -> None:
+    """Simulate active-learning exploration uplift over capability-matrix gaps."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().explore_execute(repetitions=repetitions))
+
+
 @train_app.command("self-improve")
 def train_self_improve() -> None:
     """Closed-loop self-improvement: learn viability + context strategy from
@@ -611,6 +627,30 @@ def eval_docker_security_live() -> None:
     from acp.evaluation.docker_security_live import run_docker_security_live
 
     console.print_json(data=run_docker_security_live())
+
+
+@eval_app.command("security-benchmark-v2")
+def eval_security_benchmark_v2() -> None:
+    """Expanded security & prompt-injection benchmark (10 attack classes)."""
+    from acp.evaluation.security_benchmark_v2 import run_security_benchmark_v2
+
+    console.print_json(data=run_security_benchmark_v2())
+
+
+@eval_app.command("large-corpus")
+def eval_large_corpus(repetitions: int = 8) -> None:
+    """Generate the large empirical bakeoff corpus + coverage report."""
+    from acp.evaluation.large_corpus import generate_large_corpus
+
+    console.print_json(data=generate_large_corpus(repetitions=repetitions))
+
+
+@eval_app.command("scale-benchmark-v2")
+def eval_scale_benchmark_v2() -> None:
+    """v2 storage/perf scaling sweep (more measured operations)."""
+    from acp.evaluation.scale_benchmark_v2 import run_scale_benchmark_v2
+
+    console.print_json(data=run_scale_benchmark_v2(sizes=[50, 100, 200]))
 
 
 @eval_app.command("list")

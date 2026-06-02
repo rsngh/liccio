@@ -814,6 +814,30 @@ class AppService:
             "readiness": readiness,
         }
 
+    def learn_schedule_run(self) -> dict:
+        """Run the continuous-learning job batch once (Alpha 9, WS10)."""
+        from acp.learning.scheduler import ContinuousLearningScheduler, default_jobs
+
+        sched = ContinuousLearningScheduler()
+        sched.register_jobs(default_jobs(self))
+        reports = sched.run_all()
+        return {"reports": [r.to_dict() for r in reports], **sched.to_dict()}
+
+    def explore_execute(self, *, repetitions: int = 8) -> dict:
+        """Simulate the active-learning exploration uplift (Alpha 9, WS9)."""
+        from acp.evaluation.capability_campaign import generate_campaign_report
+        from acp.learning.exploration_executor import (
+            ExplorationBudgetPolicy,
+            ExplorationExecutor,
+            ExplorationTaskGenerator,
+        )
+        from acp.routing.exploration import CoverageGapAnalyzer
+
+        matrix = generate_campaign_report(repetitions=repetitions)
+        plan = CoverageGapAnalyzer().analyze(matrix)
+        specs = ExplorationTaskGenerator().generate(plan, ExplorationBudgetPolicy())
+        return ExplorationExecutor().simulate(matrix, specs)
+
     def self_improvement_report(self) -> dict:
         """Closed-loop self-improvement (Alpha 8 capstone): learn viability +
         context-strategy from exhaust, evaluate, and gate promotion."""
