@@ -269,9 +269,95 @@ class AppService:
 
     # ---- reviews ----------------------------------------------------------
 
-    def list_reviews(self) -> list[HumanReviewItem]:
+    def list_reviews(self, priority_min: float = 0.0) -> list[HumanReviewItem]:
         with session_scope(self.sessions) as s:
-            return [i for i in EntityStore(s).list_by(HumanReviewItem) if i.status == "open"]
+            items = [i for i in EntityStore(s).list_by(HumanReviewItem)
+                     if i.status == "open" and i.priority >= priority_min]
+        # Highest-priority first so the studio queue surfaces the riskiest work.
+        return sorted(items, key=lambda i: i.priority, reverse=True)
+
+    def review_bundle(self, review_id: str) -> dict:
+        """Everything a human needs to adjudicate a review (Alpha 6, WS6).
+
+        A secret-free package: the uncertainty reason, a diff summary, evidence +
+        weak-label summaries, the agent-trace summary, and judge disagreement —
+        all derived from the persisted run graph.
+        """
+        item = self.get_review(review_id)
+        if item is None:
+            raise KeyError(review_id)
+        if not item.run_id:
+            return {"review": item.model_dump(mode="json"), "note": "no run linked"}
+        graph = self.full_run_graph(item.run_id)
+        diffs = graph.get("diffs", [])
+        weak = graph.get("weak_labels", [])
+        traces = graph.get("agent_traces", [])
+        evaluation = graph.get("evaluation") or {}
+        judges = evaluation.get("judge_results", []) if isinstance(evaluation, dict) else []
+        judge_verdicts = [j.get("verdict") for j in judges if isinstance(j, dict)]
+        return {
+            "review": item.model_dump(mode="json"),
+            "uncertainty_reason": item.reason,
+            "priority": item.priority,
+            "diff_summary": [
+                {"changed_files": d.get("changed_files"),
+                 "insertions": d.get("insertions"), "deletions": d.get("deletions")}
+                for d in diffs
+            ],
+            "evidence_summary": {"count": len(graph.get("evidence", []))},
+            "weak_label_summary": [
+                {"value": w.get("value"), "confidence": w.get("confidence")} for w in weak
+            ],
+            "trace_summary": [
+                {"adapter": t.get("adapter_name"), "status": t.get("status"),
+                 "tool_calls": t.get("tool_calls"), "changed_files": t.get("changed_files"),
+                 "cost_usd": t.get("estimated_cost_usd")} for t in traces
+            ],
+            "judge_disagreement": {
+                "verdicts": judge_verdicts,
+                "disagree": len(set(judge_verdicts)) > 1,
+            },
+            "evaluation": graph.get("evaluation"),
+        }
+
+    def make_eval_case(self, review_id: str) -> dict:
+        """Convert a labeled review into a reusable eval/training case (WS6).
+
+        Appends a JSONL row to ``evals/datasets/review_eval_cases.jsonl`` so every
+        human label becomes durable supervision for calibration / training.
+        """
+        import json as _json
+        from pathlib import Path as _Path
+
+        from acp.schemas.human_review import HumanLabel as _HL
+
+        item = self.get_review(review_id)
+        if item is None:
+            raise KeyError(review_id)
+        with session_scope(self.sessions) as s:
+            labels = [
+                lbl for lbl in EntityStore(s).list_by(_HL, task_id=item.task_id)
+                if lbl.review_item_id == review_id
+            ]
+        if not labels:
+            raise ValueError(f"review {review_id} has no human label yet")
+        label = labels[-1]
+        case = {
+            "review_id": review_id,
+            "task_id": item.task_id,
+            "attempt_id": item.attempt_id,
+            "verdict": label.verdict.value if hasattr(label.verdict, "value")
+            else label.verdict,
+            "score": label.score,
+            "reason": label.reason,
+            "reviewer": label.reviewer,
+            "source": "human_review",
+        }
+        out = _Path("evals/datasets/review_eval_cases.jsonl")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with out.open("a") as fh:
+            fh.write(_json.dumps(case) + "\n")
+        return {"written_to": str(out), "case": case}
 
     def get_review(self, review_id: str) -> HumanReviewItem | None:
         with session_scope(self.sessions) as s:

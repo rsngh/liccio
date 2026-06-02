@@ -17,6 +17,21 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 6 — self-improving multi-harness routing lab.** Offline policy
+evaluation (`routing/ope.py`: IPS/SNIPS/clipped-IPS/**doubly-robust** + bootstrap
+CIs + ESS/overlap diagnostics) estimates a target policy's value from logged
+decisions without re-running agents (`acp policy evaluate-offline`); a
+**supervised meta-router** (`SupervisedRoutingPolicy`) learns from `(context,
+action)` features and, under OPE, beats random and ties the bandit; **joint
+(agent × context-strategy) routing** recompiles context with the routed strategy;
+a **vendor harness** category (`VendorHarnessAdapter` + `CapabilityRegistry`,
+`claude_agent_sdk`/`codex_cli` shims) sits beside the ACP harnesses
+(`openai_harness`, `claude_harness`); a **context-strategy benchmark** ranks
+strategies per repo; a **human-review studio** backend turns labels into eval
+cases; an **OTLP exporter** ships spans via OpenTelemetry; and a committed
+**redacted live OpenAI experiment** shows a real no-patch solve. See
+`ALPHA6_CHECKLIST.md` / `ALPHA6_REPORT.md`.
+
 **Alpha 5 — production-grade empirical routing lab.** Dataset-driven bakeoff v2
 (`acp eval multi-harness-bakeoff`) over a no-patch dataset across six task
 types; routing learns from per (adapter, task_type) **trace features**; a

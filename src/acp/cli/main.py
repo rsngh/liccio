@@ -330,6 +330,30 @@ def reviews_show(review_id: str) -> None:
     console.print_json(data=item.model_dump(mode="json"))
 
 
+@reviews_app.command("bundle")
+def reviews_bundle(review_id: str) -> None:
+    """Full adjudication bundle (trace/diff/evidence/weak-label/judge disagreement)."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().review_bundle(review_id))
+    except KeyError:
+        console.print(f"review {review_id} not found")
+        raise typer.Exit(1) from None
+
+
+@reviews_app.command("make-eval-case")
+def reviews_make_eval_case(review_id: str) -> None:
+    """Convert a labeled review into a reusable eval/training case."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().make_eval_case(review_id))
+    except (KeyError, ValueError) as exc:
+        console.print(str(exc))
+        raise typer.Exit(1) from None
+
+
 @reviews_app.command("label")
 def reviews_label(
     review_id: str,

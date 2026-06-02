@@ -3,7 +3,8 @@
         docker-security multi-harness-bakeoff calibration alpha4-artifacts \
         live-openai live-second-harness live-docker \
         multi-harness-bakeoff-v2 calibration-v2 sandbox-redteam postmerge-sim \
-        router-replay alpha5-artifacts live-qdrant live-pgvector
+        router-replay alpha5-artifacts live-qdrant live-pgvector \
+        ope-experiment context-strategy-benchmark live-openai-experiment alpha6-artifacts
 
 UV ?= uv
 
@@ -113,6 +114,18 @@ router-replay:
 
 alpha5-artifacts: multi-harness-bakeoff-v2 calibration-v2 sandbox-redteam postmerge-sim router-replay
 	@echo "Alpha-5 report artifacts written to evals/reports/"
+
+ope-experiment:
+	$(UV) run python evals/scripts/run_ope_experiment.py
+
+context-strategy-benchmark:
+	$(UV) run python evals/scripts/run_context_strategy_benchmark.py
+
+live-openai-experiment:
+	$(UV) run python evals/scripts/run_live_openai_experiment.py
+
+alpha6-artifacts: ope-experiment context-strategy-benchmark
+	@echo "Alpha-6 report artifacts written to evals/reports/ (+ reports/live/ when keyed)"
 
 live-qdrant:
 	$(UV) run pytest -m live_qdrant -q

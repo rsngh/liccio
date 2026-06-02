@@ -100,6 +100,23 @@ def test_current_status_matches_committed_test_count() -> None:
         f"CURRENT_STATUS.md does not cite the committed pass count {passed}")
 
 
+def test_alpha6_checklist_artifacts_exist() -> None:
+    checklist = _read("ALPHA6_CHECKLIST.md")
+    required = [
+        "evals/reports/ope.json",
+        "evals/reports/context_strategy_benchmark.json",
+        "reports/live/alpha6_openai_experiment.json",
+    ]
+    for art in required:
+        assert art in checklist, f"{art} not referenced in ALPHA6_CHECKLIST.md"
+        assert (ROOT / art).exists(), f"{art} missing on disk"
+
+
+def test_alpha6_report_present() -> None:
+    assert (ROOT / "ALPHA6_REPORT.md").exists()
+    assert len(_read("ALPHA6_REPORT.md").strip()) > 200
+
+
 def test_no_stale_single_harness_or_future_claims() -> None:
     # completed features must not be described as future work / not-implemented
     status = _read("CURRENT_STATUS.md").lower()
