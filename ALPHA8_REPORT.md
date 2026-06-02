@@ -61,6 +61,14 @@ workstream matrix and `GOALS.md` for the plan (Alpha 7 archived in `GOALS7.md`).
   builds + audits data and *gates* promotion, but does not train in CI.
 - The ensemble viability assessor stays advisory by design until live high-risk
   outcomes confirm zero false negatives — the safe default.
-- Several Alpha-8 plan workstreams (Docker live security gate, storage/scale
-  benchmark, prompt-injection benchmark, repo memory boundary, full review-studio
-  product API) are scoped but deferred; the learned-governance core is complete.
+- Subsequent increment added WS11 (expanded real-log OPE with an overlap-aware
+  trust gate + exploration recommendation), WS13 (capability-matrix population
+  campaign — 270 sufficient cells), WS17 (storage/scale benchmark with a
+  sub-quadratic verdict), and WS18 (security/prompt-injection benchmark — 8 attacks
+  all escalated/flagged, zero secret leak). `acp reports validate` now covers 15
+  artifacts (15/15 valid).
+- Still scoped but deferred: local LoRA fine-tuning remains a gated smoke path (no
+  GPU here); Docker live-security gate, repo memory boundary, vendor-native live
+  smoke, and the full review-studio product API are noted for a later increment.
+- The ensemble viability assessor stays advisory by design until live high-risk
+  outcomes confirm zero false negatives — the safe default.
