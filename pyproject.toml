@@ -109,6 +109,7 @@ markers = [
     "live_pgvector: tests requiring a live pgvector Postgres",
     "live_qdrant: tests requiring qdrant-client (real local engine)",
     "live_otlp: tests requiring a live OpenTelemetry OTLP endpoint",
+    "live_codex: live tests against the real codex CLI (ACP_LIVE_CODEX)",
     "e2e: end-to-end tests",
 ]
 filterwarnings = ["ignore::DeprecationWarning"]

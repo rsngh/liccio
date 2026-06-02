@@ -576,6 +576,14 @@ def eval_security_benchmark() -> None:
     console.print_json(data=run_security_benchmark())
 
 
+@eval_app.command("docker-security-live")
+def eval_docker_security_live() -> None:
+    """Run enforceable Docker sandbox security checks (skips without Docker)."""
+    from acp.evaluation.docker_security_live import run_docker_security_live
+
+    console.print_json(data=run_docker_security_live())
+
+
 @eval_app.command("list")
 def eval_list() -> None:
     """List persisted eval runs."""

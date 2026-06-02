@@ -124,6 +124,7 @@ def main() -> int:
         campaign_summary,
         generate_campaign_report,
     )
+    from acp.evaluation.docker_security_live import run_docker_security_live
     from acp.evaluation.scale_benchmark import run_scale_benchmark
     from acp.evaluation.security_benchmark import run_security_benchmark
 
@@ -138,6 +139,7 @@ def main() -> int:
             generate_campaign_report(repetitions=6)),
         "security_benchmark.json": run_security_benchmark(),
         "storage_scale.json": run_scale_benchmark(sizes=[40, 80]),
+        "docker_security_live.json": run_docker_security_live(),
     }
     for name, data in artifacts.items():
         (REPORTS / name).write_text(json.dumps(data, indent=2, default=str) + "\n")

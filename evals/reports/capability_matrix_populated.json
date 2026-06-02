@@ -29,7 +29,7 @@
     }
   },
   "exploration_plan": {
-    "generated_at": "2026-06-02T07:50:17.835610+00:00",
+    "generated_at": "2026-06-02T08:31:59.961107+00:00",
     "n_targets": 54,
     "total_samples": 162,
     "total_est_cost": 1.62,

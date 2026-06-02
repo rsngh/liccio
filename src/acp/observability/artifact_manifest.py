@@ -35,6 +35,7 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/capability_matrix_populated.json": ["n_sufficient"],
     "evals/reports/security_benchmark.json": ["summary"],
     "evals/reports/storage_scale.json": ["subquadratic"],
+    "evals/reports/docker_security_live.json": ["checks", "passed"],
 }
 
 
