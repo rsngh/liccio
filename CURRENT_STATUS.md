@@ -7,7 +7,8 @@
 
 Last updated: 2026-06-02 (Alpha 6). Tests: 451 passing, 7 skipped
 (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`; `ruff` +
-`mypy` clean. Gate: `uv run pytest -q && uv run ruff check . && uv run mypy src`.
+`mypy` clean; 87% line coverage (see `reports/coverage.txt`). Gate: `uv run
+pytest -q && uv run ruff check . && uv run mypy src`.
 
 **Alpha 4 — multi-harness empirical router.** Two real tool-loop harnesses now
 exist (`openai_harness`, `claude_harness`), the execution-backend policy is
