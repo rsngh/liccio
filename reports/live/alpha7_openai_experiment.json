@@ -1,0 +1,45 @@
+{
+  "experiment": "alpha7_live_openai_decision_slice",
+  "viability": {
+    "task_type": "bugfix",
+    "true_harness_required": false,
+    "human_review_required": false,
+    "viable_context_strategies": [
+      "bug_reproduction",
+      "test_focused",
+      "hybrid_keyword_embedding"
+    ],
+    "abstain": false,
+    "confidence": 0.938
+  },
+  "harness_run": {
+    "adapter": "openai_harness",
+    "status": "succeeded",
+    "solved": true,
+    "verified_raises_on_zero": true,
+    "tool_calls": 1,
+    "changed_files": [
+      "calculator.py"
+    ],
+    "diff_lines": 10,
+    "input_tokens": 563,
+    "output_tokens": 79,
+    "estimated_cost_usd": 0.000385,
+    "latency_s": 2.2
+  },
+  "distilled_training_example": {
+    "dataset_kind": "repair",
+    "task_id": "task_35615daaea784947bef8d9927136c708",
+    "inputs": {
+      "task": "Fix divide by zero",
+      "acceptance_criteria": [
+        "divide(x, 0) raises ZeroDivisionError"
+      ]
+    },
+    "target_changed_files": [
+      "calculator.py"
+    ],
+    "label_source": "objective",
+    "solved": true
+  }
+}

@@ -465,6 +465,17 @@ def eval_context_strategy_benchmark() -> None:
     console.print_json(data=report.to_dict())
 
 
+@eval_app.command("context-downstream-benchmark")
+def eval_context_downstream_benchmark() -> None:
+    """Score context strategies by DOWNSTREAM task success, not just recall."""
+    from acp.evaluation.context_downstream_benchmark import (
+        run_context_downstream_benchmark,
+    )
+
+    report = run_context_downstream_benchmark()
+    console.print_json(data=report.to_dict())
+
+
 @eval_app.command("list")
 def eval_list() -> None:
     """List persisted eval runs."""

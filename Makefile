@@ -5,7 +5,8 @@
         multi-harness-bakeoff-v2 calibration-v2 sandbox-redteam postmerge-sim \
         router-replay alpha5-artifacts live-qdrant live-pgvector \
         ope-experiment context-strategy-benchmark live-openai-experiment \
-        live-embedder-experiment alpha6-artifacts
+        live-embedder-experiment alpha6-artifacts \
+        context-downstream-benchmark alpha7-artifacts live-alpha7-experiment
 
 UV ?= uv
 
@@ -130,6 +131,15 @@ live-embedder-experiment:
 
 alpha6-artifacts: ope-experiment context-strategy-benchmark
 	@echo "Alpha-6 report artifacts written to evals/reports/ (+ reports/live/ when keyed)"
+
+context-downstream-benchmark:
+	$(UV) run python evals/scripts/run_context_downstream_benchmark.py
+
+alpha7-artifacts:
+	$(UV) run python evals/scripts/run_alpha7_artifacts.py
+
+live-alpha7-experiment:
+	$(UV) run python evals/scripts/run_live_alpha7_experiment.py
 
 live-qdrant:
 	$(UV) run pytest -m live_qdrant -q

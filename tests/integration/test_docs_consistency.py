@@ -117,6 +117,26 @@ def test_alpha6_report_present() -> None:
     assert len(_read("ALPHA6_REPORT.md").strip()) > 200
 
 
+def test_alpha7_checklist_artifacts_exist() -> None:
+    checklist = _read("ALPHA7_CHECKLIST.md")
+    required = [
+        "evals/reports/real_log_ope.json",
+        "evals/reports/viability_matrix.json",
+        "evals/reports/training_candidate_report.json",
+        "evals/reports/vendor_harness_smoke.json",
+        "evals/reports/context_downstream_benchmark.json",
+        "reports/live/alpha7_openai_experiment.json",
+    ]
+    for art in required:
+        assert art in checklist, f"{art} not referenced in ALPHA7_CHECKLIST.md"
+        assert (ROOT / art).exists(), f"{art} missing on disk"
+
+
+def test_alpha7_report_present() -> None:
+    assert (ROOT / "ALPHA7_REPORT.md").exists()
+    assert len(_read("ALPHA7_REPORT.md").strip()) > 200
+
+
 def test_no_stale_single_harness_or_future_claims() -> None:
     # completed features must not be described as future work / not-implemented
     status = _read("CURRENT_STATUS.md").lower()

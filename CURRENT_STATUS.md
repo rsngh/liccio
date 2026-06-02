@@ -17,6 +17,21 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 7 — policy-governed routing + training pipeline.** Every run produces a
+`ViabilityAssessment` (cheap-vs-harness, abstain on unverifiable/ambiguous;
+persisted + consumed by routing). An **OPE promotion gate** (`routing/promotion.py`,
+`acp policy promotion-check`) turns an OPE report into a deploy/block decision —
+statistical-trust (ESS/overlap/max-weight/DR-CI/SNIPS) + operational-safety
+(cost/human-review/high-risk/calibration) conditions + a staged canary plan;
+`acp policy real-log-ope` compares policies on real logs and refuses to rank when
+overlap/ESS is poor. A **CapabilityMatrix** (`acp viability matrix`) flags
+low-sample cells. A **training-data factory** (`acp dataset build`,
+`acp train candidate-report`) distills redacted, leakage-audited datasets from run
+exhaust and recommends fine-tuning only when justified. The **context-strategy
+downstream benchmark** scores strategies by task success, the **codex_cli** vendor
+harness is a real mediated loop, and the **review studio** converts labels into
+training examples. See `ALPHA7_CHECKLIST.md` / `ALPHA7_REPORT.md`.
+
 **Alpha 6 — self-improving multi-harness routing lab.** Offline policy
 evaluation (`routing/ope.py`: IPS/SNIPS/clipped-IPS/**doubly-robust** + bootstrap
 CIs + ESS/overlap diagnostics) estimates a target policy's value from logged
