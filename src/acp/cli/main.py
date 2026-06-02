@@ -380,6 +380,23 @@ def train_candidate_report() -> None:
     console.print_json(data=AppService().training_candidate_report())
 
 
+@train_app.command("local-lora")
+def train_local_lora(kind: str = "viability", dataset: str = "", smoke: bool = True) -> None:
+    """Gated local LoRA smoke fine-tune (skips cleanly if training deps absent)."""
+    from acp.training.local_lora import LocalLoRAConfig, run_local_lora
+
+    cfg = LocalLoRAConfig(kind=kind, smoke=smoke)
+    console.print_json(data=run_local_lora(cfg, dataset))
+
+
+@train_app.command("observability-health")
+def train_observability_health() -> None:
+    """Honest availability of optional observability exporters."""
+    from acp.observability.export import optional_exporter_health
+
+    console.print_json(data=optional_exporter_health())
+
+
 viability_app = typer.Typer(help="Capability matrix / routing viability (Alpha 7).")
 app.add_typer(viability_app, name="viability")
 
