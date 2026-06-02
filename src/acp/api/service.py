@@ -591,8 +591,10 @@ class AppService:
                 winners = [a for a in cands if q(ctx, a) == best]
                 return 1.0 / len(winners) if action in winners else 0.0
             return greedy
-        # supervised (+ cost/risk/context-aware variants share the predictor)
-        pol = SupervisedRoutingPolicy()
+        # supervised + an exploration-preserving (temperature-smoothed) variant
+        # that keeps mass on every arm so it overlaps the logged policy.
+        temperature = 0.25 if target == "supervised_explore" else 0.0
+        pol = SupervisedRoutingPolicy(temperature=temperature)
         pol.fit([{"context_key": s.context_key, "action_key": s.action_key,
                   "reward": s.reward} for s in samples])
         return pol.as_target()
@@ -634,19 +636,31 @@ class AppService:
         baseline = sum(s.reward for s in samples) / len(samples)
         policies: dict[str, dict] = {}
         dr_by_name: dict[str, float] = {}
-        for name in ("random", "greedy", "supervised"):
+        # Expanded policy family (Alpha 8, WS11). Variants that need per-action
+        # cost/risk features collapse to the supervised target on a thin log; the
+        # exploration-preserving variant materially changes propensity overlap.
+        for name in ("random", "greedy", "supervised", "supervised_explore"):
             rep = evaluate_policy(samples, self._ope_target(samples, name),
                                   weight_clip=weight_clip)
-            policies[name] = {"estimates": rep.as_dict(),
-                              "dr": rep.dr.value, "dr_ci_low": rep.dr.ci_low}
+            policies[name] = {"estimates": rep.as_dict(), "dr": rep.dr.value,
+                              "dr_ci_low": rep.dr.ci_low, "overlap": rep.diagnostics.overlap}
             dr_by_name[name] = rep.dr.value
-        # Trust gate: poor overlap / tiny ESS -> refuse to rank.
-        any_rep = evaluate_policy(samples, self._ope_target(samples, "supervised"),
-                                  weight_clip=weight_clip)
-        diag = any_rep.diagnostics
-        trustworthy = diag.overlap >= 0.5 and diag.effective_sample_size >= 10
-        ranking = (sorted(dr_by_name, key=lambda k: dr_by_name[k], reverse=True)
-                   if trustworthy else [])
+        # Trust gate uses each policy's OWN overlap: a winner is trustworthy only
+        # if it itself overlaps the log (greedy can be high-DR but zero-overlap).
+        best = max(dr_by_name, key=lambda k: dr_by_name[k])
+        best_overlap = policies[best]["overlap"]
+        diag = evaluate_policy(samples, self._ope_target(samples, "supervised"),
+                               weight_clip=weight_clip).diagnostics
+        trustworthy = best_overlap >= 0.5 and diag.effective_sample_size >= 10
+        # Rank only policies that individually overlap the log.
+        rankable = [k for k in dr_by_name if policies[k]["overlap"] >= 0.5]
+        ranking = (sorted(rankable, key=lambda k: dr_by_name[k], reverse=True)
+                   if (trustworthy and rankable) else [])
+        recommendation = ("" if trustworthy else
+                          "Best-DR policy has insufficient propensity overlap with the "
+                          "logged policy. Run an exploration campaign (epsilon/temperature "
+                          "exploration on under-covered routing cells) before promoting; "
+                          "see `acp viability matrix` + exploration designer.")
         return {
             "n": len(samples),
             "logged_mean_reward": round(baseline, 6),
@@ -654,6 +668,7 @@ class AppService:
             "trustworthy": trustworthy,
             "policies": policies,
             "ranking_by_dr": ranking,
+            "exploration_recommendation": recommendation,
             "note": ("" if trustworthy else
                      "insufficient overlap/ESS to rank policies — collect more "
                      "exploratory logs before trusting these estimates"),

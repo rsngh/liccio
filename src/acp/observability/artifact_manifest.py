@@ -32,6 +32,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/repair_classifier.json": ["accuracy"],
     "evals/reports/policy_canary_sim.json": ["stages", "decision"],
     "evals/reports/exploration_plan.json": ["targets"],
+    "evals/reports/capability_matrix_populated.json": ["n_sufficient"],
+    "evals/reports/security_benchmark.json": ["summary"],
+    "evals/reports/storage_scale.json": ["subquadratic"],
 }
 
 

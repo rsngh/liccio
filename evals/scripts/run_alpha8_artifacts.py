@@ -120,6 +120,13 @@ def main() -> int:
     from acp.core.time import isoformat, utcnow
 
     REPORTS.mkdir(parents=True, exist_ok=True)
+    from acp.evaluation.capability_campaign import (
+        campaign_summary,
+        generate_campaign_report,
+    )
+    from acp.evaluation.scale_benchmark import run_scale_benchmark
+    from acp.evaluation.security_benchmark import run_security_benchmark
+
     artifacts = {
         "viability_learned_eval.json": _viability_learned(),
         "context_strategy_learned_eval.json": _context_strategy_learned(),
@@ -127,6 +134,10 @@ def main() -> int:
         "repair_classifier.json": _repair_classifier(),
         "policy_canary_sim.json": _policy_canary_sim(),
         "exploration_plan.json": _exploration_plan(),
+        "capability_matrix_populated.json": campaign_summary(
+            generate_campaign_report(repetitions=6)),
+        "security_benchmark.json": run_security_benchmark(),
+        "storage_scale.json": run_scale_benchmark(sizes=[40, 80]),
     }
     for name, data in artifacts.items():
         (REPORTS / name).write_text(json.dumps(data, indent=2, default=str) + "\n")

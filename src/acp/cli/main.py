@@ -531,6 +531,34 @@ def eval_repair_classifier() -> None:
     console.print_json(data=evaluate_repair_classifier(default_repair_dataset()))
 
 
+@eval_app.command("capability-campaign")
+def eval_capability_campaign(repetitions: int = 6) -> None:
+    """Populate the capability matrix from a synthetic bakeoff campaign."""
+    from acp.evaluation.capability_campaign import (
+        campaign_summary,
+        generate_campaign_report,
+    )
+
+    matrix = generate_campaign_report(repetitions=repetitions)
+    console.print_json(data=campaign_summary(matrix))
+
+
+@eval_app.command("scale-benchmark")
+def eval_scale_benchmark() -> None:
+    """Storage & scale benchmark: seed synthetic DBs at sizes N, time core ops."""
+    from acp.evaluation.scale_benchmark import run_scale_benchmark
+
+    console.print_json(data=run_scale_benchmark(sizes=[50, 100, 200]))
+
+
+@eval_app.command("security-benchmark")
+def eval_security_benchmark() -> None:
+    """Security & prompt-injection benchmark across adapters."""
+    from acp.evaluation.security_benchmark import run_security_benchmark
+
+    console.print_json(data=run_security_benchmark())
+
+
 @eval_app.command("list")
 def eval_list() -> None:
     """List persisted eval runs."""

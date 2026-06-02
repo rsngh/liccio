@@ -7,7 +7,8 @@
         ope-experiment context-strategy-benchmark live-openai-experiment \
         live-embedder-experiment alpha6-artifacts \
         context-downstream-benchmark alpha7-artifacts live-alpha7-experiment \
-        alpha8-artifacts reports-validate
+        alpha8-artifacts reports-validate capability-campaign scale-benchmark \
+        security-benchmark
 
 UV ?= uv
 
@@ -147,6 +148,15 @@ alpha8-artifacts:
 
 reports-validate:
 	$(UV) run acp reports validate
+
+capability-campaign:
+	$(UV) run python evals/scripts/run_capability_campaign.py
+
+scale-benchmark:
+	$(UV) run python evals/scripts/run_scale_benchmark.py --sizes 50 100 200
+
+security-benchmark:
+	$(UV) run python evals/scripts/run_security_benchmark.py
 
 live-qdrant:
 	$(UV) run pytest -m live_qdrant -q
