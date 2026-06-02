@@ -79,3 +79,10 @@ def test_label_becomes_eval_case(tmp_path) -> None:
     assert result["case"]["task_id"] == task.id
     assert result["case"]["source"] == "human_review"
     assert result["case"]["verdict"] in ("pass", "PASS")
+
+    # WS9: the same label becomes a redacted training example.
+    te = svc.make_training_example(review.id)["training_example"]
+    assert te["dataset_kind"] == "human_review"
+    assert te["task_id"] == task.id
+    assert te["label_source"] == "human"
+    assert te["target"] in ("pass", "PASS")

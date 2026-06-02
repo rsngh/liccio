@@ -361,6 +361,37 @@ class AppService:
             fh.write(_json.dumps(case) + "\n")
         return {"written_to": str(out), "case": case}
 
+    def make_training_example(self, review_id: str) -> dict:
+        """Convert a labeled review into a redacted human_review TrainingExample (WS9)."""
+        from acp.observability.live_report import redact_report
+        from acp.schemas.human_review import HumanLabel as _HL
+        from acp.schemas.training import TrainingExample
+
+        item = self.get_review(review_id)
+        if item is None:
+            raise KeyError(review_id)
+        with session_scope(self.sessions) as s:
+            labels = [lbl for lbl in EntityStore(s).list_by(_HL, task_id=item.task_id)
+                      if lbl.review_item_id == review_id]
+        if not labels:
+            raise ValueError(f"review {review_id} has no human label yet")
+        label = labels[-1]
+        bundle = self.review_bundle(review_id)
+        inputs = redact_report({
+            "uncertainty_reason": bundle.get("uncertainty_reason"),
+            "diff_summary": bundle.get("diff_summary"),
+            "trace_summary": bundle.get("trace_summary"),
+            "judge_disagreement": bundle.get("judge_disagreement"),
+        })
+        verdict = label.verdict.value if hasattr(label.verdict, "value") else label.verdict
+        ex = TrainingExample(
+            dataset_kind="human_review", task_id=item.task_id,
+            inputs=inputs, target=str(verdict), label_source="human",
+            provenance={"review_id": review_id, "label_id": label.id,
+                        "reviewer": label.reviewer, "score": label.score},
+        )
+        return {"training_example": ex.model_dump(mode="json")}
+
     def get_review(self, review_id: str) -> HumanReviewItem | None:
         with session_scope(self.sessions) as s:
             return EntityStore(s).get(HumanReviewItem, review_id)
@@ -627,6 +658,85 @@ class AppService:
                      "insufficient overlap/ESS to rank policies — collect more "
                      "exploratory logs before trusting these estimates"),
         }
+
+    # ---- training-data factory wiring (Alpha 7, WS3/4/18) ----------------
+
+    def build_exhaust_bundle(self):
+        """Populate a DatasetFactory ExhaustBundle from persisted entities."""
+        from acp.schemas.evaluation import EvaluationResult, WeakLabel
+        from acp.schemas.human_review import HumanLabel
+        from acp.schemas.learning import RewardEvent
+        from acp.schemas.routing import RoutingDecision
+        from acp.schemas.trace import AgentTrace
+        from acp.training.dataset_factory import ExhaustBundle
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            return ExhaustBundle(
+                tasks=es.list_by(Task),
+                traces=es.list_by(AgentTrace),
+                evaluations=es.list_by(EvaluationResult),
+                weak_labels=es.list_by(WeakLabel),
+                human_labels=es.list_by(HumanLabel),
+                routing_decisions=es.list_by(RoutingDecision),
+                rewards=es.list_by(RewardEvent),
+            )
+
+    def build_training_dataset(self, kind: str, out: str | None = None) -> dict:
+        """Build a redacted, leakage-audited dataset of ``kind`` from run exhaust."""
+        from acp.training.dataset_factory import DatasetFactory
+
+        res = DatasetFactory().build(kind, self.build_exhaust_bundle())
+        if out:
+            from pathlib import Path as _Path
+            p = _Path(out)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("\n".join(ex.canonical_json() for ex in res.examples) + "\n"
+                         if res.examples else "")
+        return {"kind": kind, "dataset_id": res.version.id,
+                "n_examples": res.version.n_examples, "splits": res.version.splits,
+                "leakage_clean": res.leakage.clean,
+                "out": out}
+
+    def build_examples_by_kind(self) -> dict:
+        """All training examples grouped by kind (for the candidate report)."""
+        from acp.training.dataset_factory import DatasetFactory
+
+        bundle = self.build_exhaust_bundle()
+        factory = DatasetFactory()
+        kinds = ["routing", "human_review", "evaluator", "repair"]
+        return {k: factory.build(k, bundle).examples for k in kinds}
+
+    def training_candidate_report(self) -> dict:
+        from acp.training.candidate_report import build_candidate_report
+
+        return build_candidate_report(self.build_examples_by_kind())
+
+    # ---- capability matrix (Alpha 7, WS2) --------------------------------
+
+    def build_capability_matrix(self, *, repo_id: str | None = None) -> dict:
+        """Build a CapabilityMatrix from persisted bakeoff EvalRuns + outcomes."""
+        from acp.routing.capability_matrix import CapabilityMatrix
+        from acp.schemas.eval import EvalRun
+        from acp.schemas.learning import PostMergeOutcome
+
+        with session_scope(self.sessions) as s:
+            es = EntityStore(s)
+            runs = es.list_by(EvalRun)
+            outcomes = es.list_by(PostMergeOutcome)
+        matrix = CapabilityMatrix()
+        for run in runs:
+            report = run.summary if isinstance(run.summary, dict) else {}
+            if not report:
+                continue
+            try:
+                sub = CapabilityMatrix.from_bakeoff_report(report)
+            except Exception:  # noqa: BLE001 - skip non-bakeoff eval runs
+                continue
+            for cell in sub.cells():
+                matrix.add_cell(cell)
+        matrix.update_from_outcomes(outcomes)
+        return matrix.to_dict()
 
     def cancel_run(self, run_id: str) -> WorkflowState:
         state = self.get_run(run_id)

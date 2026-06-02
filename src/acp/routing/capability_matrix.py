@@ -269,6 +269,10 @@ class CapabilityMatrix:
     def cells(self) -> list[CapabilityCell]:
         return list(self._cells.values())
 
+    def add_cell(self, cell: CapabilityCell) -> None:
+        """Insert/replace a cell by its key (used when merging matrices)."""
+        self._cells[cell.key()] = cell
+
     def _score(self, cell: CapabilityCell) -> float:
         """Ranking score: prefer OPE reward if present, else success minus risk."""
         if cell.ope_estimated_reward is not None:

@@ -319,6 +319,43 @@ def policy_real_log_ope() -> None:
     console.print_json(data=result)
 
 
+dataset_app = typer.Typer(help="Training-data factory (Alpha 7).")
+app.add_typer(dataset_app, name="dataset")
+
+
+@dataset_app.command("build")
+def dataset_build(kind: str, out: str = "") -> None:
+    """Build a redacted, leakage-audited training dataset of --kind from exhaust."""
+    from acp.api.service import AppService
+
+    result = AppService().build_training_dataset(kind, out=out or None)
+    console.print_json(data=result)
+
+
+train_app = typer.Typer(help="Fine-tuning candidate analysis (Alpha 7).")
+app.add_typer(train_app, name="train")
+
+
+@train_app.command("candidate-report")
+def train_candidate_report() -> None:
+    """Report whether the run-exhaust corpus justifies a fine-tune."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().training_candidate_report())
+
+
+viability_app = typer.Typer(help="Capability matrix / routing viability (Alpha 7).")
+app.add_typer(viability_app, name="viability")
+
+
+@viability_app.command("matrix")
+def viability_matrix(repo: str = "") -> None:
+    """Empirical capability matrix per routing tuple."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().build_capability_matrix(repo_id=repo or None))
+
+
 reviews_app = typer.Typer(help="Human review queue.")
 app.add_typer(reviews_app, name="reviews")
 
@@ -367,6 +404,18 @@ def reviews_make_eval_case(review_id: str) -> None:
 
     try:
         console.print_json(data=AppService().make_eval_case(review_id))
+    except (KeyError, ValueError) as exc:
+        console.print(str(exc))
+        raise typer.Exit(1) from None
+
+
+@reviews_app.command("make-training-example")
+def reviews_make_training_example(review_id: str) -> None:
+    """Convert a labeled review into a redacted training example."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().make_training_example(review_id))
     except (KeyError, ValueError) as exc:
         console.print(str(exc))
         raise typer.Exit(1) from None
