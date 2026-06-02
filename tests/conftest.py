@@ -18,6 +18,12 @@ def _deterministic_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """Seed RNGs and reset cached settings for every test."""
     random.seed(SEED)
     monkeypatch.setenv("ACP_APP_ENV", "test")
+    # Prevent embedder/key pollution leaking between tests: a live test may write
+    # ACP_OPENAI_API_KEY / ACP_EMBEDDER straight into os.environ, which would
+    # otherwise make later tests' auto-selected embedder non-deterministic (and
+    # incur real API calls). monkeypatch restores the original after each test.
+    monkeypatch.delenv("ACP_OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("ACP_EMBEDDER", raising=False)
     reset_settings()
     yield
     reset_settings()

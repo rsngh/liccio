@@ -7,7 +7,13 @@ import time
 import pytest
 
 from acp.context.compiler import ContextCompiler
+from acp.context.embeddings import HashingEmbedder
 from acp.schemas.task import Task
+
+# Pin the deterministic hashing embedder so this stress/determinism test never
+# depends on ambient global settings (e.g. an OpenAI key leaked into get_settings
+# by an earlier live test would otherwise auto-select a non-deterministic, paid
+# embedder) and never makes a real API call.
 
 
 @pytest.fixture
@@ -28,7 +34,8 @@ def big_repo(tmp_path):
 def test_index_and_budget_respected(big_repo) -> None:
     task = Task(repo_id="r", title="modify func_42", body="change func_42 behavior")
     t0 = time.monotonic()
-    pack = ContextCompiler(big_repo, "r", "s").compile(task, token_budget=5000)
+    compiler = ContextCompiler(big_repo, "r", "s", embedder=HashingEmbedder())
+    pack = compiler.compile(task, token_budget=5000)
     elapsed = time.monotonic() - t0
 
     # budget respected for non-required items
@@ -44,6 +51,6 @@ def test_index_and_budget_respected(big_repo) -> None:
 @pytest.mark.slow
 def test_deterministic_under_stress(big_repo) -> None:
     task = Task(repo_id="r", title="modify func_7", body="tweak func_7")
-    c = ContextCompiler(big_repo, "r", "s")
+    c = ContextCompiler(big_repo, "r", "s", embedder=HashingEmbedder())
     assert c.compile(task, token_budget=4000).content_hash == \
         c.compile(task, token_budget=4000).content_hash
