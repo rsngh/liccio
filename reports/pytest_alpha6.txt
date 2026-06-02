@@ -1,3 +1,23 @@
 ........................................................................ [ 15%]
 ......................................................................ss [ 31%]
-..s.....ss...................
+..s.....ss.............................................................. [ 47%]
+....................................s................................... [ 62%]
+........................................................................ [ 78%]
+........................................................................ [ 94%]
+..............s...........                                               [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/roy/development/liccio/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_docker_runner.py:59: docker not available
+SKIPPED [1] tests/integration/test_docker_runner.py:78: docker not available
+SKIPPED [1] tests/integration/test_docker_security_script.py:61: docker not available
+SKIPPED [1] tests/integration/test_docker_workspace.py:106: docker not available
+SKIPPED [1] tests/integration/test_docker_workspace.py:119: docker not available
+SKIPPED [1] tests/integration/test_service_backends.py:27: no live pgvector (ACP_PGVECTOR_DSN + psycopg + pgvector)
+SKIPPED [1] tests/unit/test_vendor_harness.py:92: codex_cli is live in this environment
+451 passed, 7 skipped, 1 warning in 1161.31s (0:19:21)
+EXIT=0

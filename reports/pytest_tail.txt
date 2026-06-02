@@ -1,0 +1,4 @@
+SKIPPED [1] tests/integration/test_docker_workspace.py:119: docker not available
+SKIPPED [1] tests/integration/test_service_backends.py:27: no live pgvector (ACP_PGVECTOR_DSN + psycopg + pgvector)
+SKIPPED [1] tests/unit/test_vendor_harness.py:92: codex_cli is live in this environment
+451 passed, 7 skipped, 1 warning in 1143.03s (0:19:03)

@@ -1,4 +1,5 @@
-# Alpha 5 test run (uv run pytest tests/unit tests/integration tests/e2e --cov=acp)
-# Date: 2026-06-01
-371 passed, 6 skipped, 1 warning in 382.89s (0:06:22)
-# ruff: clean | mypy: clean (134 src files)
+# Alpha 6 test run (uv run pytest -q)
+# Date: 2026-06-02
+451 passed, 7 skipped, 1 warning in 1143.03s (0:19:03)
+# skips: docker workspace, live pgvector, live codex_cli
+# ruff: clean | mypy: clean (142 src files)
