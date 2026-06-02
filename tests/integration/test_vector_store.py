@@ -60,6 +60,61 @@ def test_context_compiler_can_use_vector_store(tmp_path) -> None:
     assert store.query(store._records[next(iter(store._records))].vector, top_k=1)
 
 
+def test_factory_defaults_to_hashing_and_memory() -> None:
+    from acp.context.factory import make_embedder, make_vector_store
+    from acp.core.config import ACPSettings
+
+    settings = ACPSettings()  # no key, no vector backend enabled
+    ec = make_embedder(settings)
+    assert ec.backend == "hashing"
+    assert len(ec.embedder.embed("hello")) == 256
+    vc = make_vector_store(settings)
+    assert vc.backend == "memory"
+    assert isinstance(vc.store, InMemoryVectorStore)
+
+
+def test_factory_respects_forced_hashing_env(monkeypatch) -> None:
+    from acp.context.factory import make_embedder
+    from acp.core.config import ACPSettings
+
+    monkeypatch.setenv("ACP_EMBEDDER", "hashing")
+    ec = make_embedder(ACPSettings(openai_api_key="sk-test"))
+    assert ec.backend == "hashing"
+    assert "forced" in ec.reason
+
+
+def test_factory_openai_requested_but_unavailable_degrades(monkeypatch) -> None:
+    from acp.context.factory import make_embedder
+    from acp.core.config import ACPSettings
+
+    monkeypatch.setenv("ACP_EMBEDDER", "openai")
+    # No real key/SDK wired here -> graceful degrade to hashing, never raises.
+    ec = make_embedder(ACPSettings())
+    assert ec.backend in ("openai", "hashing")
+
+
+def test_factory_pgvector_enabled_without_dsn_uses_memory(monkeypatch) -> None:
+    from acp.context.factory import make_vector_store
+    from acp.core.config import ACPSettings
+
+    monkeypatch.delenv("ACP_PGVECTOR_DSN", raising=False)
+    vc = make_vector_store(ACPSettings(enable_pgvector=True))
+    assert vc.backend == "memory"
+
+
+def test_compiler_auto_selects_backend_and_records_notes(tmp_path) -> None:
+    from acp.core.config import ACPSettings
+
+    (tmp_path / "calculator.py").write_text("def divide(a, b):\n    return a / b\n")
+    task = Task(repo_id="r", title="Fix divide", body="divide by zero")
+    compiler = ContextCompiler(tmp_path, "r", "snap", settings=ACPSettings())
+    assert compiler.embedder is not None
+    pack = compiler.compile(task, token_budget=20_000)
+    notes = " ".join(pack.retrieval_trace.notes)
+    assert "embedder=hashing" in notes
+    assert "vector_store=memory" in notes
+
+
 @pytest.mark.skipif(
     not os.environ.get("OPENAI_API_KEY"), reason="no OPENAI_API_KEY for live embedding"
 )

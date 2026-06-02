@@ -61,12 +61,18 @@ See `ALPHA5_CHECKLIST.md` / `ALPHA5_REPORT.md` and the status vocabulary in
 
 ## Partial (started, not hardened)
 
-- **Crash-resume**: durable resume works; per-node fault-injection harness is
-  being expanded (D1B3).
+- **Crash-resume** (D1B3 ✓): durable resume works; per-node fault-injection now
+  covers *post-persist* stop, *post-persist* exception, **and pre-persist crash**
+  (`fail_before_node`) across all 15 non-terminal nodes, asserting single-shot
+  finalize/reward and per-node re-execution idempotency.
 - **Bakeoff/soak reports**: present; being upgraded to richer machine-readable
   matrices + operational metrics (D2B4/D2B5).
-- **Vector retrieval**: hashing-embedding default; pluggable VectorStore +
-  OpenAI/sentence-transformer embedders in progress (D2B3).
+- **Vector retrieval** (D2B3 ✓): config-driven selection
+  (`acp.context.factory.make_embedder` / `make_vector_store`) picks the best
+  available backend and degrades to hashing + in-memory; `ContextCompiler` now
+  auto-selects and records the choice in the retrieval trace; `PgVectorStore`
+  has real psycopg + pgvector SQL wiring (cosine `<=>`), buffering in memory
+  without a DSN.
 - **Coverage**: ~85% (target 85%); optional/stub paths pull the total down.
 
 ## Stubbed / optional (degrade gracefully)
@@ -77,9 +83,12 @@ See `ALPHA5_CHECKLIST.md` / `ALPHA5_REPORT.md` and the status vocabulary in
   *simple model adapters* (single JSON-edit prompt) remain for cheap routing.
   All report `unavailable` without SDK/key/binary. Docker is required for a true
   harness unless `allow_local_harness` overrides (audited).
-- **Container isolation**: Docker/Kubernetes workspace backends (Docker v1 in
-  progress, D1B5); local runner is cwd-contained + secret-scrubbed but not an
-  OS-level sandbox.
+- **Container isolation** (Docker v1, D1B5 ✓): `DockerWorkspaceManager` mounts a
+  host git worktree into a throwaway container (network/memory/cpu/pids limits,
+  non-root, configurable network) and now implements the full workspace contract
+  — `capture_diff` / `dirty` / `final_head` run on the host worktree. Kubernetes
+  backend remains stubbed; local runner is cwd-contained + secret-scrubbed but
+  not an OS-level sandbox.
 - **Managed services**: pgvector/Qdrant, Braintrust/LangSmith/Phoenix exporters,
   MABWiser/VW bandits.
 

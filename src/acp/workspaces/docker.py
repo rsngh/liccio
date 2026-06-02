@@ -20,7 +20,8 @@ from acp.core.errors import AdapterUnavailable, WorkspaceError
 from acp.schemas.repo import Repository, RepoSnapshot
 from acp.schemas.workspace import WorkspacePolicy, WorkspaceSpec
 from acp.workspaces.base import Workspace
-from acp.workspaces.git_ops import add_worktree, remove_worktree
+from acp.workspaces.diff import DiffCapturer
+from acp.workspaces.git_ops import add_worktree, is_dirty, remove_worktree
 
 
 def docker_available() -> bool:
@@ -46,6 +47,7 @@ class DockerWorkspaceManager:
         memory_mb: int = 1024,
         cpus: float = 1.0,
         pids_limit: int = 256,
+        network: str = "bridge",
     ) -> None:
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
@@ -53,6 +55,9 @@ class DockerWorkspaceManager:
         self.memory_mb = memory_mb
         self.cpus = cpus
         self.pids_limit = pids_limit
+        # Network used when a workspace policy allows networking; "none" keeps the
+        # sandbox isolated even when the policy would otherwise permit egress.
+        self.network = network
 
     def create(
         self, repo: Repository, snapshot: RepoSnapshot, policy: WorkspacePolicy
@@ -80,7 +85,7 @@ class DockerWorkspaceManager:
         policy = workspace.spec.policy
         argv = [
             "docker", "run", "--rm",
-            "--network", "bridge" if policy.allow_network else "none",
+            "--network", self.network if policy.allow_network else "none",
             "-m", f"{policy.memory_mb or self.memory_mb}m",
             "--cpus", str(policy.cpus or self.cpus),
             "--pids-limit", str(policy.pids_limit or self.pids_limit),
@@ -91,6 +96,20 @@ class DockerWorkspaceManager:
             argv += ["-u", "1000:1000"]
         argv += [self.image, *command]
         return argv
+
+    # ---- workspace observation -------------------------------------------
+    # The worktree is a host directory mounted read-write into the container, so
+    # git observation runs on the host against the same files the container saw.
+
+    def capture_diff(self, workspace: Workspace, attempt_id: str | None = None):
+        cap = DiffCapturer(str(workspace.path), workspace.spec.base_commit)
+        return cap.build_bundle(attempt_id=attempt_id)
+
+    def dirty(self, workspace: Workspace) -> bool:
+        return is_dirty(workspace.path)
+
+    def final_head(self, workspace: Workspace) -> str:
+        return Repo(workspace.path).head.commit.hexsha
 
     def cleanup(self, workspace: Workspace, *, succeeded: bool = True) -> None:
         policy = workspace.spec.policy.cleanup

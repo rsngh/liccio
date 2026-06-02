@@ -120,6 +120,7 @@ class WorkflowRunner:
         policy=None,
         stop_after_node: str | None = None,
         fail_after_node: str | None = None,
+        fail_before_node: str | None = None,
         backend: str | None = None,
         allow_local_harness: bool | None = None,
     ) -> None:
@@ -140,6 +141,10 @@ class WorkflowRunner:
         # Fault-injection hooks for crash-resume tests (D1B3).
         self.stop_after_node = stop_after_node
         self.fail_after_node = fail_after_node
+        # Fires *before* a node executes: simulates a crash mid-flight, leaving the
+        # node uncompleted so resume must re-run it (idempotency check). Cleared
+        # after firing once so the resumed run can make progress.
+        self.fail_before_node = fail_before_node
         self.workspace_mgr = LocalWorkspaceManager(workspace_root)
         # Contain all verification commands within the workspace root and scrub
         # secrets from their environment (round-1 §3 sandbox hardening).
@@ -197,6 +202,11 @@ class WorkflowRunner:
             state.current_node = node
             state.node_attempts[node] = state.node_attempts.get(node, 0) + 1
             try:
+                # Pre-persist crash: die before the node does any work. The node is
+                # NOT appended to completed_nodes, so resume re-enters it cleanly.
+                if self.fail_before_node == node:
+                    self.fail_before_node = None  # fire once
+                    raise RuntimeError(f"injected crash before {node}")
                 handler = getattr(self, f"_node_{node}")
                 with self.tracer.span(
                     f"acp.{node}", state.trace_id, run_id=state.run_id, task_id=state.task_id
@@ -331,6 +341,22 @@ class WorkflowRunner:
             )
         self.artifacts.routing_decision = decision
         state.routing_decision_id = decision.id
+
+        # Joint (agent × context-strategy) routing (Alpha 6 WS2): context is
+        # pre-compiled with a default strategy before routing runs, so if the
+        # policy chose a *different* strategy, recompile now so the routed
+        # strategy actually drives the agent's context — not just the agent.
+        chosen_strategy = decision.action.context_strategy
+        pack = self.artifacts.context_pack
+        if pack is not None and chosen_strategy and chosen_strategy != pack.strategy:
+            from acp.context.compiler import ContextCompiler
+
+            recompiled = ContextCompiler(
+                self._repo_path(), self.repo.id, state.snapshot_id or "snap"
+            ).compile(self._task(state), strategy=chosen_strategy, token_budget=20_000)
+            self.artifacts.context_pack = recompiled
+            state.context_pack_id = recompiled.id
+            state.scratch["routed_context_strategy"] = chosen_strategy
         return False
 
     async def _node_launch_agent_attempts(self, state: WorkflowState) -> bool:

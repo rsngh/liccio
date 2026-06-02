@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 
 @dataclass
@@ -76,10 +76,24 @@ class InMemoryVectorStore:
 
 
 class PgVectorStore:
-    """pgvector-backed store (real when psycopg + pgvector + DB are present)."""
+    """pgvector-backed store (real when psycopg + pgvector + DB are present).
 
-    def __init__(self, dsn: str | None = None, *, require_real: bool = False) -> None:
+    With a live DSN it issues real SQL against a ``acp_vectors`` table using the
+    ``<=>`` cosine-distance operator; without one it transparently buffers in
+    memory so callers stay correct in dev/test.
+    """
+
+    def __init__(
+        self,
+        dsn: str | None = None,
+        *,
+        require_real: bool = False,
+        dim: int = 256,
+        table: str = "acp_vectors",
+    ) -> None:
         self.dsn = dsn
+        self.dim = dim
+        self.table = table
         # No silent fallback (round-5 WS11): if the caller explicitly requires a
         # real service-backed store, refuse to degrade to memory.
         if require_real and not (dsn and self.available()):
@@ -87,9 +101,10 @@ class PgVectorStore:
                 "pgvector requested (require_real=True) but unavailable: need a DSN "
                 "+ psycopg + pgvector. Refusing to silently fall back to memory.")
         self._mem = InMemoryVectorStore()  # fallback buffer
-        # Explicit + visible: real pgvector wiring requires a DSN + psycopg +
-        # the pgvector extension; without them this is a transparent buffer.
+        self._conn: Any = None
         self.backend = "pgvector" if (dsn and self.available()) else "memory-fallback"
+        if self.backend == "pgvector":
+            self._connect()
 
     @staticmethod
     def available() -> bool:
@@ -97,16 +112,61 @@ class PgVectorStore:
 
         return try_import("pgvector") is not None and try_import("psycopg") is not None
 
+    # ---- real pgvector wiring -------------------------------------------
+    def _connect(self) -> None:
+        import psycopg
+        from pgvector.psycopg import register_vector
+
+        assert self.dsn is not None  # guaranteed: backend=="pgvector" implies a DSN
+        self._conn = psycopg.connect(self.dsn, autocommit=True)
+        register_vector(self._conn)
+        self._conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        self._conn.execute(
+            f"CREATE TABLE IF NOT EXISTS {self.table} ("  # noqa: S608 - table is internal
+            "id text PRIMARY KEY, snapshot_id text, "
+            f"embedding vector({self.dim}), payload jsonb)"
+        )
+        self._conn.execute(
+            f"CREATE INDEX IF NOT EXISTS {self.table}_snap_idx "  # noqa: S608
+            f"ON {self.table} (snapshot_id)"
+        )
+
     def upsert(self, records: list[VectorRecord]) -> int:
-        # Real pgvector wiring lands when a Postgres+pgvector DSN is configured;
-        # until then we behave like an in-memory store so callers stay correct.
-        return self._mem.upsert(records)
+        if self._conn is None:
+            return self._mem.upsert(records)
+        import json
+
+        with self._conn.cursor() as cur:
+            for r in records:
+                cur.execute(
+                    f"INSERT INTO {self.table} (id, snapshot_id, embedding, payload) "  # noqa: S608
+                    "VALUES (%s, %s, %s, %s) ON CONFLICT (id) DO UPDATE SET "
+                    "snapshot_id = EXCLUDED.snapshot_id, embedding = EXCLUDED.embedding, "
+                    "payload = EXCLUDED.payload",
+                    (r.id, r.snapshot_id, r.vector, json.dumps(r.payload)),
+                )
+        return len(records)
 
     def query(self, vector, top_k, snapshot_id=None):
-        return self._mem.query(vector, top_k, snapshot_id)
+        if self._conn is None:
+            return self._mem.query(vector, top_k, snapshot_id)
+        where = "" if snapshot_id is None else "WHERE snapshot_id = %(snap)s"
+        sql = (
+            f"SELECT id, payload, 1 - (embedding <=> %(vec)s) AS score "  # noqa: S608
+            f"FROM {self.table} {where} ORDER BY embedding <=> %(vec)s LIMIT %(k)s"
+        )
+        params = {"vec": vector, "k": top_k, "snap": snapshot_id}
+        rows = self._conn.execute(sql, params).fetchall()
+        return [VectorHit(rid, float(score), payload or {}) for rid, payload, score in rows]
 
     def delete_snapshot(self, snapshot_id: str) -> int:
-        return self._mem.delete_snapshot(snapshot_id)
+        if self._conn is None:
+            return self._mem.delete_snapshot(snapshot_id)
+        cur = self._conn.execute(
+            f"DELETE FROM {self.table} WHERE snapshot_id = %s",  # noqa: S608
+            (snapshot_id,),
+        )
+        return cur.rowcount
 
 
 class QdrantStore:

@@ -30,6 +30,7 @@ def make_workspace_manager(
                 memory_mb=settings.docker_memory_mb,
                 cpus=settings.docker_cpus,
                 pids_limit=settings.docker_pids_limit,
+                network=settings.docker_network,
             )
         # graceful fallback
     return LocalWorkspaceManager(root)

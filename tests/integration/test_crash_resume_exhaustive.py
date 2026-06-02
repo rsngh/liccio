@@ -93,6 +93,32 @@ def test_exception_after_every_node_no_corruption(tmp_path, crash_node) -> None:
     _assert_clean_finish(fresh, state.run_id, resumed)
 
 
+@pytest.mark.parametrize("crash_node", CRASH_NODES)
+def test_crash_before_every_node_then_resume(tmp_path, crash_node) -> None:
+    """Pre-persist crash: die before a node runs, so it never completes. Resume
+    must re-enter that node and finish cleanly (per-node re-execution idempotency)."""
+    settings = _settings(tmp_path)
+    svc = AppService(settings)
+    repo = _repo(svc, tmp_path)
+    task = svc.create_task(repo.id, "Fix divide bug", "zero divisor",
+                          metadata={"files": {"calculator.py": FIXED}})
+    runner = WorkflowRunner(
+        repo, svc.registry, Path(settings.workspace_dir),
+        artifact_store=svc.artifact_store, on_persist=svc._persist_run,
+        policy=svc.policy, fail_before_node=crash_node,
+    )
+    state = asyncio.run(runner.run(task))
+    assert state.status in (RunStatus.FAILED, RunStatus.FAILED.value)
+    # The crashing node never made it into completed_nodes.
+    assert crash_node not in state.completed_nodes
+    del runner
+    fresh = AppService(settings)
+    resumed = fresh.resume_run(state.run_id)
+    _assert_clean_finish(fresh, state.run_id, resumed)
+    # The node that crashed pre-persist is present exactly once after resume.
+    assert resumed.completed_nodes.count(crash_node) == 1
+
+
 def test_waiting_for_human_no_label_does_not_finalize(tmp_path) -> None:
     settings = _settings(tmp_path)
     svc = AppService(settings)

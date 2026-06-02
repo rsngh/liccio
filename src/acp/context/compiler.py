@@ -26,13 +26,27 @@ class ContextCompiler:
         prior_paths: set[str] | None = None,
         embedder=None,
         vector_store=None,
+        settings=None,
     ) -> None:
         self.repo_path = repo_path
         self.repo_id = repo_id
         self.snapshot_id = snapshot_id
         self.weights = weights
         self.prior_paths = prior_paths
+        # When no embedder/store is supplied, select one from settings (degrades
+        # to hashing + in-memory). Choices are recorded for the retrieval trace.
+        # The vector store, if auto-selected, is (re)built per compile() so its
+        # state never leaks across compilations of the same instance.
+        self.settings = settings
+        self.backend_notes: list[str] = []
+        if embedder is None:
+            from acp.context.factory import make_embedder
+
+            ec = make_embedder(settings)
+            embedder = ec.embedder
+            self.backend_notes.append(f"embedder={ec.backend} ({ec.reason})")
         self.embedder = embedder
+        self._auto_vector_store = vector_store is None
         self.vector_store = vector_store
 
     def compile(
@@ -45,9 +59,20 @@ class ContextCompiler:
         index = RepoIndexer(self.repo_path, self.repo_id, self.snapshot_id).index()
         query = self._build_query(task)
 
+        # Build a fresh auto-selected store per compile so state never leaks
+        # across compilations; an explicitly supplied store is used as given.
+        compile_notes = list(self.backend_notes)
+        vector_store = self.vector_store
+        if self._auto_vector_store:
+            from acp.context.factory import make_vector_store
+
+            vc = make_vector_store(self.settings)
+            vector_store = vc.store
+            compile_notes.append(f"vector_store={vc.backend} ({vc.reason})")
+
         retriever = HybridRetriever(
             index.chunks, embedder=self.embedder, weights=self.weights,
-            prior_paths=self.prior_paths, vector_store=self.vector_store,
+            prior_paths=self.prior_paths, vector_store=vector_store,
             snapshot_id=self.snapshot_id,
         )
         scored, trace = retriever.retrieve(query, strategy=strategy, top_k=top_k)
@@ -79,7 +104,7 @@ class ContextCompiler:
             selected=len(result.selected),
             dropped=len(result.dropped),
             decisions=result.decisions,
-            notes=[*trace.notes, f"required={len(required)}"],
+            notes=[*trace.notes, f"required={len(required)}", *compile_notes],
         )
 
         return ContextPack(
