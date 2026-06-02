@@ -19,7 +19,19 @@ contract, and makes all evidence machine-verifiable. Status vocabulary:
 | 8 | **Fine-tuning governance** (`training/model_governance.py`): `ModelPromotionGate` (beats rules + prompt baselines, temporal + repo holdout, leakage + memorization audits, no high-risk degradation, cost/latency caps, rollback plan) + `MemorizationAudit`. |
 | 10 | **Policy canary simulator** (`routing/canary.py`): staged rollout with guardrail-driven rollback. |
 | 12 | **Exploration designer** (`routing/exploration.py`): `CoverageGapAnalyzer` → which cells need how many more samples, which policy, cost, risk. |
-| 20 | This checklist + `ALPHA8_REPORT.md` + `make alpha8-artifacts` + docs-consistency extension. |
+| 7 | **Local training path** (gated): `training/{local_lora,local_eval,model_registry,model_card}.py` — skips cleanly without torch/peft; eval feeds the model-promotion gate. CLI `acp train local-lora`. |
+| 9 | **Vendor harness hardening**: parametrized offline contract test (codex_cli + claude_agent_sdk) + key/binary-gated live codex smoke (skipped by default). |
+| 11 | **Real-log OPE expansion**: +exploration-preserving variant; per-policy overlap-aware trust gate (greedy no longer trusted at zero overlap) + exploration recommendation. |
+| 13 | **Capability-matrix population campaign**: 270 sufficient cells; gaps explained. CLI `acp eval capability-campaign`. |
+| 14 | **Docker live security gate**: `run_docker_security_live` + `DockerSecurityGate.production_allowed` (refuses real-harness prod without a passing report). CLI `acp eval docker-security-live`. |
+| 15 | **Review-studio product API** (FastAPI): `/reviews/queue|bundle|label|make-eval-case|make-training-example|calibrate`. |
+| 16 | **Observability export**: `export_traces` (jsonl/otlp), `export_eval` (json/parquet-gated), honest exporter health. CLI `acp train observability-health`. |
+| 17 | **Storage/scale benchmark**: per-N latencies + sub-quadratic verdict. CLI `acp eval scale-benchmark`. |
+| 18 | **Security/prompt-injection benchmark**: 8 attacks all escalated/flagged, zero secret leak. CLI `acp eval security-benchmark`. |
+| 19 | **Repo memory boundary**: private repos excluded from the global pool; deterministic holdout; memorization canary. |
+| Capstone A | **Closed-loop self-improvement** (`learning/self_improvement.py`): learn viability + context-strategy from exhaust, evaluate, gate promotion (advisory unless zero high-risk FN). CLI `acp train self-improve`. |
+| Capstone B | **Explainable Decision Card** (`core/decision_card.py`): per-task viability + capability-matrix recommendation (no low-sample overclaim) + verification + rationale. CLI `acp viability decision-card`. |
+| 20 | This checklist + `ALPHA8_REPORT.md` + `make alpha8-artifacts` (16 artifacts, `acp reports validate`) + docs-consistency extension. |
 
 ## Required artifacts (committed)
 
