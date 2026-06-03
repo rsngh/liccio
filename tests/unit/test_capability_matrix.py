@@ -176,3 +176,31 @@ def test_score_tiebreak_never_overrides_real_success_gap() -> None:
     capable_pricey = _cell("claude_harness", 1.0, 0.05, 18.0)
     cheap_worse = _cell("openai_harness", 0.2, 0.006, 23.0)
     assert m._score(capable_pricey) > m._score(cheap_worse)
+
+
+def test_timed_out_rows_excluded_from_capability_metrics() -> None:
+    # A wall-clock timeout is infra latency, not a solve failure: it must not drag
+    # down success_rate. Here 2 real solves + 1 timeout -> success_rate 1.0, n=2.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": True,
+         "status": "succeeded", "cost_usd": 0.001, "latency_s": 5.0},
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": True,
+         "status": "succeeded", "cost_usd": 0.001, "latency_s": 6.0},
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": False,
+         "status": "timed_out", "cost_usd": 0.0, "latency_s": 120.0},
+    ]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert cell.success_rate == 1.0
+    assert cell.sample_size == 2  # the timeout is dropped, not counted as failure
+
+
+def test_all_timeout_cell_is_low_sample_not_zero_success() -> None:
+    # If every attempt timed out, the cell has no usable evidence -> sample_size 0
+    # and not recommended, rather than a misleading success_rate 0.0.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [{"task_type": "bugfix", "adapter": "openai_harness", "success": False,
+             "status": "timed_out", "cost_usd": 0.0, "latency_s": 120.0} for _ in range(3)]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert cell.sample_size == 0
+    assert not cell.sufficient_data

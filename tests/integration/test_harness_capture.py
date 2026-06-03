@@ -54,3 +54,18 @@ def test_tools_write_outside_workspace_blocked(workspace) -> None:
 
 def test_harness_is_marked_real() -> None:
     assert OpenAIHarnessAdapter().is_harness is True
+
+
+def test_finalize_classifies_provider_timeout_as_timed_out(workspace) -> None:
+    # An SDK timeout string ("Request timed out.") must map to TIMED_OUT, not a
+    # capability FAILED -- else infra latency poisons the capability matrix.
+    import time
+
+    from acp.agents.harness_base import finalize_result, make_tools
+    from acp.core.enums import RunStatus
+
+    tools = make_tools(workspace)
+    res = finalize_result(tools=tools, workspace=workspace, t0=time.monotonic(),
+                          model="gpt-4o-mini", in_tok=10, out_tok=5,
+                          error="Request timed out.", session_id="s1")
+    assert res.status == RunStatus.TIMED_OUT

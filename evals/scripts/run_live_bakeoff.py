@@ -253,6 +253,9 @@ def _run_attempt(adapter, name: str, spec: dict, repo: Repository, ws_root: Path
         "context_strategy": "hybrid_keyword_embedding",
         "status": result.status.value if isinstance(result.status, RunStatus)
         else result.status,
+        # Wall-clock timeout = provider/infra latency, not a capability signal;
+        # excluded from success aggregation + OPE downstream.
+        "timed_out": (result.status == RunStatus.TIMED_OUT),
         "success": solved, "verification_pass": solved,
         "tool_calls": trace.tool_calls, "changed_files": trace.changed_files,
         # Verification adherence signals (Alpha 13 live-tuning): did the harness
@@ -285,14 +288,24 @@ def main() -> int:
                 print(f"  {spec['id']:18s} r{rep} {name:16s} solved={cell['success']} "
                       f"cost=${cell.get('cost_usd', 0):.4f} {cell.get('latency_s', 0)}s")
 
-    # Real capability matrix from observed cells.
+    # Real capability matrix from observed cells (the matrix itself drops
+    # timed-out rows; see CapabilityMatrix.from_bakeoff_report).
     from acp.routing.capability_matrix import CapabilityMatrix
     matrix = CapabilityMatrix.from_bakeoff_report({"cells": cells})
+
+    # Exclude wall-clock timeouts from success/OPE: they reflect provider latency,
+    # not capability, and would otherwise distort the policy. Log how many we drop
+    # so the exclusion is never silent.
+    n_timed_out = sum(1 for c in cells if c.get("timed_out"))
+    if n_timed_out:
+        print(f"[exclude] {n_timed_out}/{len(cells)} attempts timed out (infra "
+              f"latency) -> dropped from success-rate and OPE")
+    scored_cells = [c for c in cells if not c.get("timed_out")]
 
     # Real OPE log: each adapter is an action; reward = solved. Uniform behavior.
     from acp.routing.ope import OPESample, evaluate_policy, fit_reward_model
     by_task: dict[str, list[dict]] = {}
-    for c in cells:
+    for c in scored_cells:
         by_task.setdefault(c["task_type"], []).append(c)
     samples: list[OPESample] = []
     for ttype, group in by_task.items():
@@ -324,7 +337,7 @@ def main() -> int:
                 c["task_type"], c["adapter"], 1.0 / len(actions_by_task[c["task_type"]]),
                 (1.0 if c["success"] else 0.0) - cost_lambda * float(c.get("cost_usd", 0)),
                 actions_by_task[c["task_type"]])
-            for c in cells]
+            for c in scored_cells]
         qc = fit_reward_model(cost_samples)
 
         def cost_greedy(ctx, action, cands):
@@ -353,7 +366,7 @@ def main() -> int:
         }
 
     solved_by_adapter: dict[str, int] = {}
-    for c in cells:
+    for c in scored_cells:
         solved_by_adapter[c["adapter"]] = solved_by_adapter.get(c["adapter"], 0) + int(
             c["success"])
     report = {

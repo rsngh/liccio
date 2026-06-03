@@ -129,6 +129,15 @@ def _task_type(cell: dict) -> str:
     return cell.get("task_type") or cell.get("task") or "unknown"
 
 
+def _row_timed_out(cell: dict) -> bool:
+    """A run cell that timed out (provider/infra latency) — excluded from
+    capability aggregation so it is not miscounted as a solve failure."""
+    if cell.get("timed_out"):
+        return True
+    status = str(cell.get("status", "")).lower()
+    return status in ("timed_out", "timeout")
+
+
 class CapabilityMatrix:
     """Aggregated empirical capability per routing tuple.
 
@@ -173,22 +182,29 @@ class CapabilityMatrix:
             groups.setdefault(key, []).append(raw)
 
         for key, rows in groups.items():
-            n = len(rows)
             tt, risk, rtype, aclass, cstrat, vpol = key
+            # Exclude timed-out attempts from capability metrics: a wall-clock
+            # timeout reflects provider/infra latency, not whether the agent CAN
+            # solve the task, so counting it as a failure would poison routing.
+            # An all-timeout cell collapses to sample_size 0 -> low-sample -> never
+            # recommended (the no-overclaim guarantee), rather than a false 0.0.
+            scored = [r for r in rows if not _row_timed_out(r)]
+            n = len(scored)
+            denom = n or 1
             cell = CapabilityCell(
                 task_type=tt, risk_level=risk, repo_type=rtype,
                 agent_class=aclass, context_strategy=cstrat, verification_policy=vpol,
-                success_rate=round(sum(1 for r in rows if r.get("success")) / n, 4),
-                cost=round(sum(float(r.get("cost_usd", 0.0)) for r in rows) / n, 6),
-                latency=round(sum(float(r.get("latency_s", 0.0)) for r in rows) / n, 4),
+                success_rate=round(sum(1 for r in scored if r.get("success")) / denom, 4),
+                cost=round(sum(float(r.get("cost_usd", 0.0)) for r in scored) / denom, 6),
+                latency=round(sum(float(r.get("latency_s", 0.0)) for r in scored) / denom, 4),
                 human_review_rate=round(
-                    sum(1 for r in rows if r.get("human_review_required")) / n, 4
+                    sum(1 for r in scored if r.get("human_review_required")) / denom, 4
                 ),
                 sample_size=n,
                 last_updated=ts,
             )
             # Harness-benefit metrics (WS6) when the cells carry harness signals.
-            harness_rows = [r for r in rows if r.get("is_harness")]
+            harness_rows = [r for r in scored if r.get("is_harness")]
             if harness_rows:
                 hn = len(harness_rows)
                 activated = [r for r in harness_rows if r.get("tool_calls", 0) > 0]

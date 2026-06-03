@@ -156,7 +156,12 @@ def finalize_result(
 ) -> AgentAttemptResult:
     """Normalized result so every harness produces an identical trace shape."""
     cap = DiffCapturer(str(workspace.path), workspace.spec.base_commit)
-    timed_out = error in ("timeout", "budget_exceeded:wall")
+    # Recognize provider SDK timeout messages (e.g. "Request timed out.") as
+    # timeouts too, not just our internal markers — otherwise an infra latency
+    # spike is misrecorded as a capability FAILED and poisons the matrix.
+    err_l = (error or "").lower()
+    timed_out = error in ("timeout", "budget_exceeded:wall") or "timed out" in err_l \
+        or "timeout" in err_l
     if timed_out:
         status = RunStatus.TIMED_OUT
     elif tools.files_written:
