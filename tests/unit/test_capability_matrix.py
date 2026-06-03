@@ -124,3 +124,27 @@ def test_explain_ranks_cells() -> None:
     assert out["n_cells"] == 2
     assert out["ranked"][0]["agent_class"] == "adapter_a"
     assert out["best"]["agent_class"] == "adapter_a"
+
+
+def test_harness_benefit_metrics_populate_from_signals() -> None:
+    # WS6: cells carrying harness signals -> HAR/HFR/PWL on the capability cell.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    cells = [{"task_type": "bugfix", "risk": "medium", "adapter": "openai_harness",
+              "is_harness": True, "context_strategy": "hybrid_keyword_embedding",
+              "success": i < 5, "cost_usd": 0.001, "latency_s": 3.0,
+              "tool_calls": 2 if i < 5 else 0,  # one attempt didn't activate
+              "file_reads": 1, "commands": 1} for i in range(6)]
+    m = CapabilityMatrix.from_bakeoff_report({"cells": cells})
+    cell = m.cells()[0]
+    assert cell.har == round(5 / 6, 4)          # 5/6 activated
+    assert cell.pwl == 1.0                       # all activated attempts solved
+    assert "har" in cell.to_dict()
+
+
+def test_non_harness_cells_have_no_benefit_metrics() -> None:
+    from acp.routing.capability_matrix import CapabilityMatrix
+    cells = [{"task_type": "bugfix", "risk": "medium", "adapter": "fake",
+              "is_harness": False, "context_strategy": "minimal",
+              "success": False, "cost_usd": 0.0, "latency_s": 0.0} for _ in range(3)]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": cells}).cells()[0]
+    assert cell.har is None and cell.hfr is None and cell.pwl is None

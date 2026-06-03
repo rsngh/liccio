@@ -73,6 +73,10 @@ class CapabilityCell:
     post_merge_failure_rate: float = 0.0
     ope_estimated_reward: float | None = None
     calibration_confidence: float = 0.0
+    # Harness-benefit metrics (Alpha 12 WS6); None for non-harness cells.
+    har: float | None = None  # harness activation rate (tool loop engaged)
+    hfr: float | None = None  # harness following rate (read + write + verify)
+    pwl: float | None = None  # pass-when-loaded (solved | activated)
     sample_size: int = 0
     # number of post-merge outcomes folded in (denominator for failure rate)
     post_merge_sample_size: int = 0
@@ -183,6 +187,18 @@ class CapabilityMatrix:
                 sample_size=n,
                 last_updated=ts,
             )
+            # Harness-benefit metrics (WS6) when the cells carry harness signals.
+            harness_rows = [r for r in rows if r.get("is_harness")]
+            if harness_rows:
+                hn = len(harness_rows)
+                activated = [r for r in harness_rows if r.get("tool_calls", 0) > 0]
+                cell.har = round(len(activated) / hn, 4)
+                followed = sum(
+                    1 for r in activated
+                    if r.get("file_reads", 0) > 0 and r.get("commands", 0) > 0)
+                cell.hfr = round(followed / hn, 4)
+                cell.pwl = (round(sum(1 for r in activated if r.get("success")) /
+                                  len(activated), 4) if activated else 0.0)
             cell.recompute_flags()
             matrix._cells[cell.key()] = cell
         return matrix
