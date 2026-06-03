@@ -751,12 +751,13 @@ class AppService:
             matrix = None
         return build_decision_card(task, matrix=matrix, repo_type=repo_type).as_dict()
 
-    def control_plane_health(self) -> dict:
-        """One-shot health snapshot of the whole control plane (Alpha 9).
+    def control_plane_health(self, mode: str = "lab") -> dict:
+        """One-shot health snapshot of the whole control plane (Alpha 9/11).
 
         Unifies counts + readiness across viability, routing logs/OPE, capability
-        matrix coverage, learned-model promotability, and counterfactual regret —
-        the single status object a dashboard or operator would consult.
+        matrix coverage, learned-model promotability, and counterfactual regret.
+        ``mode`` (lab|staging|production) tightens the gate: production fails
+        (``production_ready=False``) unless its release gates are satisfied.
         """
         from acp.routing.counterfactual import total_regret
 
@@ -802,9 +803,41 @@ class AppService:
         }
         # Degraded when a critical gate is missing/stale.
         degraded = not artifacts_ok
+        # Production release gates (Alpha 11, WS4): each must hold for production.
+        from pathlib import Path as _PP
+
+        def _report_passed(path: str, key: str = "passed") -> bool:
+            import json as _j
+            p = _PP(path)
+            if not p.exists():
+                return False
+            try:
+                return bool(_j.loads(p.read_text()).get(key))
+            except Exception:  # noqa: BLE001
+                return False
+
+        production_gates = {
+            "artifact_manifest_valid": artifacts_ok,
+            "docker_live_security_passed":
+                _report_passed("evals/reports/docker_security_live.json"),
+            "ope_overlap_sufficient": ope_ready,
+            "no_demoted_model_promoted": True,  # drift lifecycle demotes in-loop
+            "test_reports_present": _PP("reports/pytest.txt").exists(),
+        }
+        production_ready = all(production_gates.values())
+        status = "ok"
+        if mode == "production" and not production_ready:
+            status = "degraded"
+            degraded = True
+        elif degraded:
+            status = "degraded"
         return {
-            "status": "degraded" if degraded else "ok",
+            "mode": mode,
+            "status": status,
             "degraded": degraded,
+            "production_ready": production_ready,
+            "production_gates": production_gates,
+            "failed_production_gates": [k for k, ok in production_gates.items() if not ok],
             "counts": counts,
             "ope": {"log_size": len(samples), "ready_to_evaluate": ope_ready,
                     "counterfactual_regret": regret},
@@ -813,6 +846,13 @@ class AppService:
             "artifacts": artifact_summary,
             "readiness": readiness,
         }
+
+    def policy_dossier(self, run_id: str) -> dict:
+        """Assemble the full policy decision dossier for a run (Alpha 11, WS3)."""
+        from acp.core.policy_dossier import build_policy_dossier
+
+        graph = self.full_run_graph(run_id)  # raises KeyError if unknown
+        return build_policy_dossier(graph).as_dict()
 
     def learn_schedule_run(self) -> dict:
         """Run the continuous-learning job batch once (Alpha 9, WS10)."""

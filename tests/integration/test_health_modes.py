@@ -1,0 +1,34 @@
+"""Control-plane health modes (Alpha 11, WS4)."""
+
+from __future__ import annotations
+
+from acp.api.service import AppService
+from acp.core.config import ACPSettings
+
+
+def _svc(tmp_path) -> AppService:
+    return AppService(ACPSettings(
+        database_url=f"sqlite+aiosqlite:///{tmp_path / 'h.db'}",
+        artifact_dir=tmp_path / "art", workspace_dir=tmp_path / "ws"))
+
+
+def test_lab_mode_reports_status(tmp_path) -> None:
+    h = _svc(tmp_path).control_plane_health(mode="lab")
+    assert h["mode"] == "lab"
+    assert "production_gates" in h
+    assert "production_ready" in h
+
+
+def test_production_mode_not_ready_on_empty_lab(tmp_path) -> None:
+    # A fresh lab has no OPE log / docker-live report -> production not ready.
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    assert h["production_ready"] is False
+    assert h["failed_production_gates"]
+    assert h["status"] == "degraded"
+
+
+def test_production_gates_are_explicit(tmp_path) -> None:
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    for gate in ("artifact_manifest_valid", "docker_live_security_passed",
+                 "ope_overlap_sufficient", "test_reports_present"):
+        assert gate in h["production_gates"]

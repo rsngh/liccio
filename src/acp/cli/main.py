@@ -319,6 +319,18 @@ def policy_real_log_ope() -> None:
     console.print_json(data=result)
 
 
+@policy_app.command("dossier")
+def policy_dossier(run_id: str) -> None:
+    """Full policy decision dossier for a run (why this agent/context/cost/risk)."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().policy_dossier(run_id))
+    except KeyError:
+        console.print(f"run {run_id} not found")
+        raise typer.Exit(1) from None
+
+
 reports_app = typer.Typer(help="Artifact truth infrastructure (Alpha 8).")
 app.add_typer(reports_app, name="reports")
 
@@ -390,11 +402,15 @@ def train_local_lora(kind: str = "viability", dataset: str = "", smoke: bool = T
 
 
 @app.command("health")
-def health_snapshot() -> None:
-    """Control-plane health snapshot (counts, OPE readiness, learned models)."""
+def health_snapshot(mode: str = "lab") -> None:
+    """Control-plane health snapshot. --mode production exits nonzero unless the
+    production release gates are satisfied."""
     from acp.api.service import AppService
 
-    console.print_json(data=AppService().control_plane_health())
+    health = AppService().control_plane_health(mode=mode)
+    console.print_json(data=health)
+    if mode == "production" and not health.get("production_ready"):
+        raise typer.Exit(1)
 
 
 @train_app.command("schedule-run")
