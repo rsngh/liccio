@@ -158,6 +158,55 @@ TASKS = [
                 "0,1,1,2,3,5,8,...",
         "criteria": ["fib(0)==0, fib(1)==1", "fib(6)==8"],
     },
+    {
+        # Harder: subtle bug — merge() never sorts, so unsorted input is wrong.
+        # Fixing it requires recognizing the algorithm needs sorted intervals.
+        "id": "bugfix_merge_intervals", "task_type": "bugfix",
+        "files": {"intervals.py":
+                  "def merge(intervals):\n"
+                  "    # bug: assumes input is already sorted by start\n"
+                  "    result = []\n"
+                  "    for s, e in intervals:\n"
+                  "        if result and s <= result[-1][1]:\n"
+                  "            result[-1][1] = max(result[-1][1], e)\n"
+                  "        else:\n"
+                  "            result.append([s, e])\n"
+                  "    return result\n"},
+        "test": "test_intervals.py",
+        "test_src": ("from intervals import merge\n\n"
+                     "def test_sorted():\n    "
+                     "assert merge([[1,3],[2,6],[8,10],[15,18]]) == [[1,6],[8,10],[15,18]]\n"
+                     "def test_unsorted():\n    "
+                     "assert merge([[1,4],[0,2],[3,5]]) == [[0,5]]\n"
+                     "def test_nested():\n    "
+                     "assert merge([[1,10],[2,3],[4,5]]) == [[1,10]]\n"),
+        "title": "Fix merge() for unsorted intervals",
+        "body": "merge(intervals) merges overlapping intervals but is wrong when the "
+                "input is not pre-sorted by start. Fix intervals.py so it works for "
+                "any order, e.g. merge([[1,4],[0,2],[3,5]]) == [[0,5]].",
+        "criteria": ["handles unsorted input", "merges nested/overlapping intervals"],
+    },
+    {
+        # Harder: implement a correct LRU cache (eviction order is the tricky part).
+        "id": "feature_lru_cache", "task_type": "feature",
+        "files": {"lru.py": "# Implement LRUCache here.\n"},
+        "test": "test_lru.py",
+        "test_src": ("from lru import LRUCache\n\n"
+                     "def test_lru_eviction():\n    "
+                     "c = LRUCache(2)\n    "
+                     "c.put(1, 1); c.put(2, 2)\n    "
+                     "assert c.get(1) == 1\n    "
+                     "c.put(3, 3)\n    "
+                     "assert c.get(2) == -1\n    "
+                     "c.put(4, 4)\n    "
+                     "assert c.get(1) == -1\n    "
+                     "assert c.get(3) == 3 and c.get(4) == 4\n"),
+        "title": "Implement an LRU cache",
+        "body": "Implement class LRUCache(capacity) in lru.py with get(key)->value (or "
+                "-1 if absent) and put(key, value). When over capacity, evict the "
+                "least-recently-used entry. Any get or put counts as a use.",
+        "criteria": ["evicts least-recently-used", "get returns -1 when absent"],
+    },
 ]
 
 
