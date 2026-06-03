@@ -63,6 +63,10 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 12 WS6/WS9
     "evals/reports/harness_metrics.json": ["har", "hfr", "pwl"],
     "evals/reports/trajectory_judge.json": ["comparison"],
+    # Round 12 — measurement-trust layer (WS1/WS3/WS4)
+    "evals/reports/measurement_hygiene.json": ["n_attempts", "solve_rate", "by_outcome"],
+    "evals/reports/harness_availability_audit.json": ["expected", "degraded"],
+    "evals/reports/tool_activation_metrics.json": ["by_adapter", "n_attempts"],
 }
 
 

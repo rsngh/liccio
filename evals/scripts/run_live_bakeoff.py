@@ -443,11 +443,49 @@ def main() -> int:
     OPE_OUT.write_text(json.dumps({"experiment": "alpha11_live_bakeoff_ope",
                                    "source": "REAL observed agent runs", **ope},
                                   indent=2, default=str) + "\n")
-    # Leak check.
+
+    # Round 12 measurement-trust artifacts (WS1/WS3/WS4) -> registered + health-gated.
+    reports_dir = Path("evals/reports")
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    from acp.evaluation.harness_availability import audit_harness_availability
+    from acp.evaluation.measurement_hygiene import build_hygiene_report
+    harness_cells = [c for c in cells if c.get("is_harness")]
+    hygiene = build_hygiene_report(harness_cells)
+    (reports_dir / "measurement_hygiene.json").write_text(
+        json.dumps(redact_report(hygiene.model_dump(mode="json")), indent=2) + "\n")
+    built = {n: (n in live) for n in ("openai_harness", "claude_harness")}
+    audit = audit_harness_availability(built)
+    (reports_dir / "harness_availability_audit.json").write_text(
+        json.dumps(audit.model_dump(mode="json"), indent=2) + "\n")
+    # Tool-activation rollup by adapter (WS4): activation rate + failures.
+    by_adapter: dict = {}
+    for c in harness_cells:
+        a = c["adapter"]
+        d = by_adapter.setdefault(a, {"n": 0, "activated": 0, "activation_failures": 0})
+        d["n"] += 1
+        if c.get("tool_calls", 0) > 0:
+            d["activated"] += 1
+        else:
+            d["activation_failures"] += 1
+    for d in by_adapter.values():
+        d["activation_rate"] = round(d["activated"] / d["n"], 4) if d["n"] else 0.0
+    (reports_dir / "tool_activation_metrics.json").write_text(json.dumps(
+        {"n_attempts": len(harness_cells), "tool_choice_mode": "required",
+         "by_adapter": by_adapter}, indent=2) + "\n")
+    print(f"hygiene: solve_rate={hygiene.solve_rate} conclusive={hygiene.n_conclusive}/"
+          f"{hygiene.n_attempts} contaminated={hygiene.contaminated}; "
+          f"availability degraded={audit.degraded}")
+
+    # Leak check across every artifact we wrote.
+    _written = [LIVE_OUT, MATRIX_OUT, OPE_OUT,
+                reports_dir / "measurement_hygiene.json",
+                reports_dir / "harness_availability_audit.json",
+                reports_dir / "tool_activation_metrics.json"]
     for key in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
         secret = os.environ.get(key)
         if secret:
-            assert secret not in LIVE_OUT.read_text(), f"{key} leaked!"
+            for art in _written:
+                assert secret not in art.read_text(), f"{key} leaked in {art}!"
     print(f"solved_by_adapter={solved_by_adapter}")
     print(f"wrote {LIVE_OUT}, {MATRIX_OUT}, {OPE_OUT}")
     return 0
