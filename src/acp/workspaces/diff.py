@@ -6,9 +6,23 @@ fine-grained helpers used by tests and verification.
 
 from __future__ import annotations
 
+import re
+
 from git import Repo
 
 from acp.schemas.workspace import DiffBundle
+
+# Generated/build artifacts that an agent may incidentally produce (e.g. running
+# tests creates __pycache__/*.pyc). They are not meaningful source changes, so we
+# exclude them from changed-file lists, diffs, and the metrics derived from them.
+_GENERATED = re.compile(
+    r"(^|/)(__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|node_modules|"
+    r"dist|build|\.coverage|\.egg-info)(/|$)|\.pyc$|\.pyo$"
+)
+
+
+def is_generated(path: str) -> bool:
+    return bool(_GENERATED.search(path))
 
 
 class DiffCapturer:
@@ -18,14 +32,18 @@ class DiffCapturer:
         self.repo = Repo(repo_path)
         self.base_commit = base_commit or self.repo.head.commit.hexsha
 
+    def _untracked(self) -> list[str]:
+        """Untracked files, excluding generated/build artifacts."""
+        return [p for p in self.repo.untracked_files if not is_generated(p)]
+
     def _diff_index(self):
         # Diff base commit against the working tree (including untracked).
         return self.repo.commit(self.base_commit).diff(None)
 
     def get_changed_files(self) -> list[str]:
         changed = {d.a_path or d.b_path for d in self._diff_index()}
-        changed.update(self.repo.untracked_files)
-        return sorted(p for p in changed if p)
+        changed.update(self._untracked())
+        return sorted(p for p in changed if p and not is_generated(p))
 
     def get_unified_diff(self) -> str:
         # Tracked changes.
@@ -33,7 +51,7 @@ class DiffCapturer:
         # Untracked files: show as added.
         parts = [tracked] if tracked else []
         wtd = str(self.repo.working_tree_dir or "")
-        for path in self.repo.untracked_files:
+        for path in self._untracked():
             try:
                 content = f"{wtd}/{path}"
                 with open(content, encoding="utf-8", errors="replace") as fh:
