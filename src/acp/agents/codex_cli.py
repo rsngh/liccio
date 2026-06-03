@@ -72,6 +72,12 @@ class CodexCLIAdapter(VendorHarnessAdapter):
         return [
             self.capability.requirement,
             "exec",
+            # ``codex exec`` defaults to a READ-ONLY sandbox, so the agent can plan
+            # but never edits files. Grant workspace-write so it can actually apply
+            # its fix (writes stay scoped to the workspace dir).
+            "--sandbox",
+            "workspace-write",
+            "--skip-git-repo-check",
             "--cd",
             ws_path,
             prompt,

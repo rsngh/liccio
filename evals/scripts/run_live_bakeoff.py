@@ -25,6 +25,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -102,6 +103,61 @@ TASKS = [
                 "factorial(0)==1.",
         "criteria": ["factorial(5) == 120", "factorial(0) == 1"],
     },
+    {
+        "id": "security_eval", "task_type": "security_fix",
+        "files": {"calc_eval.py":
+                  "def compute(expr):\n    # INSECURE: arbitrary code execution\n"
+                  "    return eval(expr)\n"},
+        "test": "test_sec.py",
+        "test_src": ("import pytest\nfrom calc_eval import compute\n\n"
+                     "def test_arith():\n    assert compute('2 + 3 * 4') == 14\n"
+                     "def test_no_arbitrary_exec():\n    "
+                     "with pytest.raises(Exception):\n        "
+                     "compute(\"__import__('os').getcwd()\")\n"),
+        "title": "Remove eval() injection in compute()",
+        "body": "compute(expr) uses eval(), allowing arbitrary code execution. "
+                "Replace it with a SAFE arithmetic evaluator that still computes "
+                "'2 + 3 * 4' == 14 but rejects arbitrary code like __import__.",
+        "criteria": ["compute('2 + 3 * 4') == 14",
+                     "arbitrary code (e.g. __import__) is rejected"],
+    },
+    {
+        "id": "testgen_stats", "task_type": "test_generation",
+        "files": {"stats.py":
+                  "def mean(xs):\n    return sum(xs) / len(xs)\n\n"
+                  "def variance(xs):\n    m = mean(xs)\n    "
+                  "return sum((x - m) ** 2 for x in xs) / len(xs)\n"},
+        "test": "test_meta.py",
+        "test_src": ("import subprocess, sys, pathlib\n\n"
+                     "def test_written_tests_pass_and_cover():\n    "
+                     "p = pathlib.Path('test_stats.py')\n    "
+                     "assert p.exists(), 'no test_stats.py written'\n    "
+                     "src = p.read_text()\n    "
+                     "assert 'mean' in src and 'variance' in src\n    "
+                     "r = subprocess.run([sys.executable, '-m', 'pytest', '-q', "
+                     "'test_stats.py'], capture_output=True)\n    "
+                     "assert r.returncode == 0\n"),
+        "title": "Write tests for stats.py",
+        "body": "Write a pytest file test_stats.py that tests both mean() and "
+                "variance() in stats.py with correct expected values. The tests "
+                "must pass.",
+        "criteria": ["test_stats.py exists and passes", "covers mean and variance"],
+    },
+    {
+        "id": "bugfix_fib", "task_type": "bugfix",
+        "files": {"fib.py":
+                  "def fib(n):\n    # bug: wrong base cases\n    "
+                  "if n < 2:\n        return n + 1\n    "
+                  "return fib(n - 1) + fib(n - 2)\n"},
+        "test": "test_fib.py",
+        "test_src": ("from fib import fib\n\n"
+                     "def test_seq():\n    "
+                     "assert [fib(i) for i in range(7)] == [0, 1, 1, 2, 3, 5, 8]\n"),
+        "title": "Fix fibonacci base cases",
+        "body": "fib(n) has wrong base cases. Fix fib.py so the sequence is "
+                "0,1,1,2,3,5,8,...",
+        "criteria": ["fib(0)==0, fib(1)==1", "fib(6)==8"],
+    },
 ]
 
 
@@ -149,6 +205,9 @@ def _build_adapters() -> dict:
         ca = ClaudeHarnessAdapter(max_steps=8)
         if asyncio.run(ca.healthcheck()).available:
             adapters["claude_harness"] = ca
+    if os.environ.get("ACP_LIVE_CODEX") and shutil.which("codex"):
+        from acp.agents.codex_cli import CodexCLIAdapter
+        adapters["codex_cli"] = CodexCLIAdapter()
     return adapters
 
 
