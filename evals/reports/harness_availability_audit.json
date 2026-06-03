@@ -1,0 +1,13 @@
+{
+  "expected": [
+    "claude_harness",
+    "openai_harness"
+  ],
+  "available": [
+    "claude_harness",
+    "openai_harness"
+  ],
+  "unavailable_reasons": {},
+  "silently_absent": [],
+  "degraded": false
+}

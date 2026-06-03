@@ -51,3 +51,7 @@ evals/reports/*
 !evals/reports/calibration_v2.json
 !evals/reports/sandbox_redteam.json
 !evals/reports/postmerge_sim.json
+# Round 12 — measurement-trust artifacts (committed, redacted)
+!evals/reports/measurement_hygiene.json
+!evals/reports/harness_availability_audit.json
+!evals/reports/tool_activation_metrics.json
