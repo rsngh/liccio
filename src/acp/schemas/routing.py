@@ -26,18 +26,33 @@ class RoutingAction(ACPModel):
     parallelism: int = 1
     fallback_policy: str | None = None
     requires_human_approval: bool = False
+    # Workflow-shape (topology) actions (Alpha 11/12 WS8): the router can learn the
+    # *shape* of the workflow, not just agent/model/context — e.g. skip the planner
+    # or reviewer, run a light vs strict verifier, branch in parallel, or abstain.
+    topology: list[str] = Field(default_factory=list)
 
     def key(self) -> str:
         """Stable identity of the action arm (for bandit indexing)."""
-        return "|".join(
-            [
-                self.agent_kind if isinstance(self.agent_kind, str) else self.agent_kind.value,
-                self.agent_name,
-                self.model_name or "-",
-                self.context_strategy,
-                self.verification_policy,
-            ]
-        )
+        parts = [
+            self.agent_kind if isinstance(self.agent_kind, str) else self.agent_kind.value,
+            self.agent_name,
+            self.model_name or "-",
+            self.context_strategy,
+            self.verification_policy,
+        ]
+        # Only extend the arm key when topology is set, so default actions keep
+        # their existing key (backward compatible with prior logs / arms).
+        if self.topology:
+            parts.append("topo:" + ",".join(sorted(self.topology)))
+        return "|".join(parts)
+
+
+# The workflow-shape actions a router may select (Alpha 11/12 WS8).
+TOPOLOGY_ACTIONS: tuple[str, ...] = (
+    "skip_retrieval", "skip_planner", "skip_reviewer", "skip_parallel",
+    "skip_strict_verification", "run_light_verifier", "run_strict_verifier",
+    "branch_parallel", "terminate", "abstain",
+)
 
 
 class RoutingDecision(ACPModel):

@@ -39,9 +39,13 @@ class CandidateGenerator:
         self,
         strategies: list[str] | None = None,
         verification_policies: list[str] | None = None,
+        topologies: list[list[str]] | None = None,
     ) -> None:
         self.strategies = strategies or ["hybrid_keyword_embedding"]
         self.verification_policies = verification_policies or ["standard"]
+        # Each entry is a set of topology flags; [] is the default (full) shape.
+        # The router learns which workflow shape is best per task class (WS8).
+        self.topologies = topologies or [[]]
 
     def generate(self, base: RoutingAction, available_agents: list[str]) -> list[RoutingAction]:
         out: list[RoutingAction] = []
@@ -50,11 +54,13 @@ class CandidateGenerator:
             kind = _KINDS.get(name, AgentKind.FAKE)
             for strat in self.strategies:
                 for vpol in self.verification_policies:
-                    cand = base.model_copy(update={
-                        "agent_kind": kind, "agent_name": name,
-                        "context_strategy": strat, "verification_policy": vpol,
-                    })
-                    if cand.key() not in seen:
-                        seen.add(cand.key())
-                        out.append(cand)
+                    for topo in self.topologies:
+                        cand = base.model_copy(update={
+                            "agent_kind": kind, "agent_name": name,
+                            "context_strategy": strat, "verification_policy": vpol,
+                            "topology": list(topo),
+                        })
+                        if cand.key() not in seen:
+                            seen.add(cand.key())
+                            out.append(cand)
         return out
