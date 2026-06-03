@@ -192,6 +192,17 @@ class ModelPromotionStateRow(_Row):
     model_name: Mapped[str] = mapped_column(String, index=True)
 
 
+class ReportRow(_Row):
+    __tablename__ = "reports"
+    kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    ingest_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
+class ReportLineageRow(_Row):
+    __tablename__ = "report_lineages"
+    report_id: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

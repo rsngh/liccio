@@ -884,6 +884,76 @@ class AppService:
         return {**result.as_dict(), "drift_report_id": drift_row.id,
                 "demotion_event_id": demotion_id, "persisted": True}
 
+    # ---- report warehouse (Alpha 11, WS18) -------------------------------
+
+    def ingest_reports(self, source_command: str = "manifest") -> dict:
+        """Snapshot all manifest reports into queryable Report entities."""
+        import json as _json
+        from pathlib import Path as _P
+
+        from acp.core.ids import new_id
+        from acp.observability.artifact_manifest import build_manifest
+        from acp.schemas.report import Report, ReportLineage, ReportMetric
+
+        ingest_id = new_id("ingest")
+        mani = build_manifest(_P("."), generated_at=ingest_id)
+        saved = 0
+        for entry in mani.artifacts:
+            if not entry.valid or entry.hash is None:
+                continue
+            metrics: list[ReportMetric] = []
+            try:
+                data = _json.loads((_P(".") / entry.path).read_text())
+                for k, v in (data.items() if isinstance(data, dict) else []):
+                    if isinstance(v, (int, float)) and not isinstance(v, bool):
+                        metrics.append(ReportMetric(name=k, value=float(v)))
+            except Exception:  # noqa: BLE001
+                pass
+            report = Report(path=entry.path, kind=entry.path, hash=entry.hash,
+                            valid=entry.valid, size_bytes=entry.size_bytes or 0,
+                            metrics=metrics, ingest_id=ingest_id)
+            self._save(report, ReportLineage(report_id=report.id,
+                                             source_command=source_command,
+                                             parent_ingest_id=ingest_id))
+            saved += 1
+        return {"ingest_id": ingest_id, "reports_ingested": saved}
+
+    def list_reports(self, ingest_id: str | None = None) -> list[dict]:
+        from acp.schemas.report import Report
+
+        with session_scope(self.sessions) as s:
+            rows = (EntityStore(s).list_by(Report, ingest_id=ingest_id) if ingest_id
+                    else EntityStore(s).list_by(Report))
+        return [{"id": r.id, "path": r.path, "ingest_id": r.ingest_id,
+                 "hash": r.hash[:12], "n_metrics": len(r.metrics)} for r in rows]
+
+    def show_report(self, report_id: str) -> dict:
+        from acp.schemas.report import Report
+
+        with session_scope(self.sessions) as s:
+            r = EntityStore(s).get(Report, report_id)
+        if r is None:
+            raise KeyError(report_id)
+        return r.model_dump(mode="json")
+
+    def diff_reports(self, path: str, ingest_a: str, ingest_b: str) -> dict:
+        """Diff a report's metrics between two ingests (over time)."""
+        from acp.schemas.report import Report
+
+        def _find(ingest: str) -> Report | None:
+            with session_scope(self.sessions) as s:
+                rows = EntityStore(s).list_by(Report, ingest_id=ingest)
+            return next((r for r in rows if r.path == path), None)
+
+        a, b = _find(ingest_a), _find(ingest_b)
+        if a is None or b is None:
+            raise KeyError(f"report {path} missing in one of the ingests")
+        ma, mb = a.metric_map(), b.metric_map()
+        deltas = {k: round(mb.get(k, 0.0) - ma.get(k, 0.0), 6)
+                  for k in set(ma) | set(mb)}
+        return {"path": path, "hash_changed": a.hash != b.hash,
+                "metric_deltas": deltas}
+
     def policy_dossier(self, run_id: str) -> dict:
         """Assemble the full policy decision dossier for a run (Alpha 11, WS3)."""
         from acp.core.policy_dossier import build_policy_dossier

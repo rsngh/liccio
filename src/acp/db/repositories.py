@@ -47,6 +47,7 @@ from acp.schemas.drift import (
 )
 from acp.schemas.eval import EvalCase, EvalMetric, EvalReport, EvalRun
 from acp.schemas.learning import PolicyState
+from acp.schemas.report import Report, ReportLineage
 from acp.schemas.trace import AgentTrace
 from acp.schemas.viability import ViabilityAssessment
 
@@ -87,6 +88,8 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     DriftReportEntity: m.DriftReportRow,
     ModelDemotionEventEntity: m.ModelDemotionEventRow,
     ModelPromotionState: m.ModelPromotionStateRow,
+    Report: m.ReportRow,
+    ReportLineage: m.ReportLineageRow,
 }
 
 

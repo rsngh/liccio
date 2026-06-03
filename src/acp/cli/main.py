@@ -351,6 +351,46 @@ def reports_manifest(out: str = "evals/reports/artifact_manifest.json") -> None:
                              "n_total": manifest.as_dict()["n_total"]})
 
 
+@reports_app.command("ingest")
+def reports_ingest() -> None:
+    """Snapshot all manifest reports into queryable Report entities."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().ingest_reports())
+
+
+@reports_app.command("list")
+def reports_list(ingest_id: str = "") -> None:
+    """List ingested reports (optionally for one ingest)."""
+    from acp.api.service import AppService
+
+    console.print_json(data=AppService().list_reports(ingest_id or None))
+
+
+@reports_app.command("show")
+def reports_show(report_id: str) -> None:
+    """Show one ingested report (hash, metrics, lineage)."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().show_report(report_id))
+    except KeyError:
+        console.print(f"report {report_id} not found")
+        raise typer.Exit(1) from None
+
+
+@reports_app.command("diff")
+def reports_diff(path: str, ingest_a: str, ingest_b: str) -> None:
+    """Diff a report's metrics between two ingests."""
+    from acp.api.service import AppService
+
+    try:
+        console.print_json(data=AppService().diff_reports(path, ingest_a, ingest_b))
+    except KeyError as exc:
+        console.print(str(exc))
+        raise typer.Exit(1) from None
+
+
 @reports_app.command("validate")
 def reports_validate() -> None:
     """Fail (exit 1) if any referenced report is missing/malformed/inconsistent."""
