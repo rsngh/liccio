@@ -66,12 +66,13 @@ uv run acp reports validate      # all 41 artifacts valid
 
 ## Honest status / not yet done
 
-WS5 (adherence into health/dossier), WS7 (cost-aware OPE v2 schema), WS8 (durable
-live-cell entity persistence), WS10/WS19 (broad multi-repo corpus), WS13 (full
-harness-evolution PR pipeline), WS14 (topology skip-learning), WS15 (relative
-trajectory judge integration), WS16 (vendor live campaign), WS17 (Docker live gate),
-WS18 (local LoRA pilot) remain partial or unstarted — several are environment-gated
-(Docker, vendor binaries, GPU) and are honestly labeled, not claimed.
+Delivered this round: WS1–9, 11, 12, 14 + the `acp measurement hygiene` CLI.
+
+Remaining partial or unstarted: WS10/WS19 (broad multi-repo live corpus), WS13 (full
+harness-evolution PR pipeline — governance scaffold exists), WS15 (relative trajectory
+judge integration — judge module exists), WS16 (vendor live campaign), WS17 (Docker live
+gate), WS18 (local LoRA pilot). Several are environment-gated (Docker, vendor binaries,
+GPU) and are honestly labeled, not claimed.
 
 The committed live solve-rate (0.963) reflects one clean-window run; it is trustworthy
 *for that sample*, and the contamination flag is the guard for future noisy runs.
