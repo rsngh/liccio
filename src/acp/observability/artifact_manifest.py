@@ -60,6 +60,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 11 WS14 — REAL observed live bakeoff
     "evals/reports/live_bakeoff_capability_matrix.json": ["n_cells"],
     "evals/reports/live_bakeoff_ope.json": ["source", "n"],
+    # Alpha 12 WS6/WS9
+    "evals/reports/harness_metrics.json": ["har", "hfr", "pwl"],
+    "evals/reports/trajectory_judge.json": ["comparison"],
 }
 
 

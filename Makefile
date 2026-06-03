@@ -183,3 +183,12 @@ docker-security-live:
 
 vendor-live:
 	ACP_LIVE_CODEX=1 $(UV) run python evals/scripts/run_vendor_live.py
+
+harness-metrics:
+	$(UV) run acp eval harness-metrics > evals/reports/harness_metrics.json
+
+trajectory-judge:
+	$(UV) run acp eval trajectory-judge > evals/reports/trajectory_judge.json
+
+live-harness-metrics:
+	$(UV) run python evals/scripts/run_live_harness_metrics.py

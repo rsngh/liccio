@@ -738,6 +738,39 @@ def eval_mixed_corpus(scale: str = "test") -> None:
     console.print_json(data=generate_mixed_corpus(scale=scale))
 
 
+@eval_app.command("harness-metrics")
+def eval_harness_metrics() -> None:
+    """Harness activation/adherence/benefit metrics (HAR/HFR/PWL)."""
+    from acp.evaluation.harness_metrics import (
+        default_harness_metrics_dataset,
+        harness_benefit_metrics,
+    )
+
+    data = default_harness_metrics_dataset()
+    traces = [t for t, _ in data]
+    solved = {t.attempt_id: s for t, s in data}
+    console.print_json(data=harness_benefit_metrics(traces, solved).model_dump(mode="json"))
+
+
+@eval_app.command("trajectory-judge")
+def eval_trajectory_judge() -> None:
+    """Relative trajectory judge over the default synthetic pair."""
+    from acp.evaluation.trajectory_judge import (
+        RelativeTrajectoryJudge,
+        default_pair_context,
+        default_trajectory_pair,
+    )
+
+    a, b = default_trajectory_pair()
+    ca, cb = default_pair_context()
+    judge = RelativeTrajectoryJudge()
+    cmp = judge.compare(a, b, solved_a=ca.solved, solved_b=cb.solved,
+                        diff_a=ca.diff, diff_b=cb.diff)
+    console.print_json(data={
+        "comparison": cmp.model_dump(mode="json"),
+        "audit": judge.cross_judge_audit(cmp).model_dump(mode="json")})
+
+
 @eval_app.command("list")
 def eval_list() -> None:
     """List persisted eval runs."""

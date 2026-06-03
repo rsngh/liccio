@@ -1,0 +1,71 @@
+{
+  "experiment": "alpha12_live_harness_metrics",
+  "source": "REAL observed harness traces",
+  "benefit_metrics": {
+    "har": 1.0,
+    "hfr": 1.0,
+    "pwl": 1.0,
+    "by_task_type": {
+      "bugfix": {
+        "har": 1.0,
+        "hfr": 1.0,
+        "pwl": 1.0
+      },
+      "feature": {
+        "har": 1.0,
+        "hfr": 1.0,
+        "pwl": 1.0
+      }
+    },
+    "by_model": {
+      "unknown": {
+        "har": 1.0,
+        "hfr": 1.0,
+        "pwl": 1.0
+      }
+    },
+    "sample_size": 4
+  },
+  "per_attempt": [
+    {
+      "adapter": "openai_harness",
+      "task_type": "bugfix",
+      "activated": true,
+      "followed": true,
+      "phase_adherence": 0.6667,
+      "solved": true,
+      "tool_calls": 1,
+      "latency_s": 4.11
+    },
+    {
+      "adapter": "claude_harness",
+      "task_type": "bugfix",
+      "activated": true,
+      "followed": true,
+      "phase_adherence": 1.0,
+      "solved": true,
+      "tool_calls": 2,
+      "latency_s": 3.86
+    },
+    {
+      "adapter": "openai_harness",
+      "task_type": "feature",
+      "activated": true,
+      "followed": true,
+      "phase_adherence": 0.6667,
+      "solved": true,
+      "tool_calls": 1,
+      "latency_s": 3.16
+    },
+    {
+      "adapter": "claude_harness",
+      "task_type": "feature",
+      "activated": true,
+      "followed": true,
+      "phase_adherence": 0.6667,
+      "solved": true,
+      "tool_calls": 1,
+      "latency_s": 3.58
+    }
+  ]
+}
