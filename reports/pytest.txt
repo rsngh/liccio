@@ -1,5 +1,5 @@
-# Round 10 (Alpha 9/10) test run (uv run pytest -q --timeout=300)
+# Round 11 (Alpha 11) test run (uv run pytest -q --timeout=300)
 # Date: 2026-06-02
-670 passed, 9 skipped, 1 warning in 439.42s (0:07:19)
+715 passed, 9 skipped, 1 warning in 441.20s (0:07:21)
 # skips: docker workspace, live pgvector, live codex_cli/SDK, service backends
-# ruff: clean | mypy: clean (192 src files); alembic upgrade head: OK
+# ruff: clean | mypy: clean (204 src files); alembic upgrade head: OK; reports validate: 36/36
