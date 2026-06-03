@@ -27,6 +27,28 @@ trajectories relatively across many axes.
   cost) with a cross-judge audit and leave-one-axis-out reward sensitivity; the
   result converts to a preference pair for the preference learner.
 
+## Live multi-harness bakeoff (3 real harnesses) + a real bug fixed by observation
+
+Running an expanded live bakeoff (7 varied no-patch tasks across bugfix / feature /
+security_fix / test_generation, openai+claude+codex+baselines) surfaced and fixed a
+real integration bug: `codex_cli` ran a 37-71s loop but solved **0/7** with
+`changed_files=[]`. Root cause observed from the data: `codex exec` defaults to
+`--sandbox read-only`, so the agent planned but never wrote. After passing
+`--sandbox workspace-write`, codex solves **7/7** — verified live (it edits the
+file to `raise ZeroDivisionError`). All three real harnesses now solve every task:
+
+| adapter | solved | cost/task | latency/task |
+| --- | --- | --- | --- |
+| openai_harness | 7/7 | ~$0.0006 | ~3 s |
+| claude_harness | 7/7 | ~$0.02 | ~9 s |
+| codex_cli (fixed) | 7/7 | (CLI, untracked) | ~37-113 s |
+| fake / patch | 0/7 | $0 | — |
+
+With every harness solving, the routing decision becomes a pure cost/latency
+trade-off (openai dominates here) — exactly the Pareto frontier the router weighs,
+now on observed agent behavior. This is the value of running live and tuning on
+results rather than fixtures.
+
 ## Honest limitations
 
 - The harness-evolution pipeline governs updates but does not author prompt edits;

@@ -15,9 +15,9 @@
   "solved_by_adapter": {
     "fake": 0,
     "patch": 0,
-    "openai_harness": 6,
+    "openai_harness": 7,
     "claude_harness": 7,
-    "codex_cli": 0
+    "codex_cli": 7
   },
   "cells": [
     {
@@ -35,7 +35,7 @@
       "input_tokens": 100,
       "output_tokens": 50,
       "cost_usd": 0.0,
-      "latency_s": 0.012,
+      "latency_s": 0.009,
       "rep": 0
     },
     {
@@ -53,7 +53,7 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.009,
+      "latency_s": 0.01,
       "rep": 0
     },
     {
@@ -65,15 +65,15 @@
       "status": "succeeded",
       "success": true,
       "verification_pass": true,
-      "tool_calls": 1,
+      "tool_calls": 2,
       "changed_files": [
         "calculator.py"
       ],
       "diff_lines": 10,
-      "input_tokens": 565,
-      "output_tokens": 79,
-      "cost_usd": 0.000386,
-      "latency_s": 2.557,
+      "input_tokens": 919,
+      "output_tokens": 94,
+      "cost_usd": 0.000608,
+      "latency_s": 3.27,
       "rep": 0
     },
     {
@@ -91,10 +91,10 @@
         "calculator.py"
       ],
       "diff_lines": 25,
-      "input_tokens": 5695,
-      "output_tokens": 526,
-      "cost_usd": 0.012442,
-      "latency_s": 6.013,
+      "input_tokens": 5735,
+      "output_tokens": 538,
+      "cost_usd": 0.012546,
+      "latency_s": 7.217,
       "rep": 0
     },
     {
@@ -103,16 +103,20 @@
       "adapter": "codex_cli",
       "is_harness": true,
       "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
       "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
+      "changed_files": [
+        "calculator.cpython-312.pyc",
+        "test_calc.cpython-312-pytest-9.0.3.pyc",
+        "calculator.py"
+      ],
+      "diff_lines": 106,
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 37.592,
+      "latency_s": 48.489,
       "rep": 0
     },
     {
@@ -148,7 +152,7 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.011,
+      "latency_s": 0.009,
       "rep": 0
     },
     {
@@ -160,16 +164,15 @@
       "status": "succeeded",
       "success": true,
       "verification_pass": true,
-      "tool_calls": 2,
+      "tool_calls": 1,
       "changed_files": [
-        "nums.cpython-312.pyc",
         "nums.py"
       ],
-      "diff_lines": 20,
-      "input_tokens": 924,
-      "output_tokens": 105,
-      "cost_usd": 0.000617,
-      "latency_s": 2.95,
+      "diff_lines": 9,
+      "input_tokens": 560,
+      "output_tokens": 60,
+      "cost_usd": 0.000372,
+      "latency_s": 1.756,
       "rep": 0
     },
     {
@@ -187,10 +190,10 @@
         "nums.py"
       ],
       "diff_lines": 20,
-      "input_tokens": 4382,
-      "output_tokens": 499,
-      "cost_usd": 0.009762,
-      "latency_s": 5.268,
+      "input_tokens": 4412,
+      "output_tokens": 494,
+      "cost_usd": 0.009812,
+      "latency_s": 5.346,
       "rep": 0
     },
     {
@@ -199,16 +202,20 @@
       "adapter": "codex_cli",
       "is_harness": true,
       "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
       "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
+      "changed_files": [
+        "nums.cpython-312.pyc",
+        "test_nums.cpython-312-pytest-9.0.3.pyc",
+        "nums.py"
+      ],
+      "diff_lines": 115,
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 47.443,
+      "latency_s": 36.711,
       "rep": 0
     },
     {
@@ -226,7 +233,7 @@
       "input_tokens": 100,
       "output_tokens": 50,
       "cost_usd": 0.0,
-      "latency_s": 0.009,
+      "latency_s": 0.008,
       "rep": 0
     },
     {
@@ -244,7 +251,7 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.01,
+      "latency_s": 0.009,
       "rep": 0
     },
     {
@@ -260,11 +267,11 @@
       "changed_files": [
         "clampx.py"
       ],
-      "diff_lines": 8,
-      "input_tokens": 984,
+      "diff_lines": 9,
+      "input_tokens": 983,
       "output_tokens": 86,
-      "cost_usd": 0.000642,
-      "latency_s": 2.891,
+      "cost_usd": 0.000641,
+      "latency_s": 3.112,
       "rep": 0
     },
     {
@@ -282,10 +289,10 @@
         "clampx.py"
       ],
       "diff_lines": 24,
-      "input_tokens": 4631,
-      "output_tokens": 627,
-      "cost_usd": 0.010516,
-      "latency_s": 7.583,
+      "input_tokens": 4521,
+      "output_tokens": 624,
+      "cost_usd": 0.01029,
+      "latency_s": 6.822,
       "rep": 0
     },
     {
@@ -294,16 +301,20 @@
       "adapter": "codex_cli",
       "is_harness": true,
       "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
       "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
+      "changed_files": [
+        "clampx.cpython-312.pyc",
+        "test_clamp.cpython-312-pytest-9.0.3.pyc",
+        "clampx.py"
+      ],
+      "diff_lines": 92,
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 69.472,
+      "latency_s": 37.451,
       "rep": 0
     },
     {
@@ -320,24 +331,6 @@
       "diff_lines": 0,
       "input_tokens": 100,
       "output_tokens": 50,
-      "cost_usd": 0.0,
-      "latency_s": 0.013,
-      "rep": 0
-    },
-    {
-      "task": "feature_factorial",
-      "task_type": "feature",
-      "adapter": "patch",
-      "is_harness": false,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": false,
-      "verification_pass": false,
-      "tool_calls": 0,
-      "changed_files": [],
-      "diff_lines": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
       "cost_usd": 0.0,
       "latency_s": 0.01,
       "rep": 0
@@ -345,83 +338,6 @@
     {
       "task": "feature_factorial",
       "task_type": "feature",
-      "adapter": "openai_harness",
-      "is_harness": true,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": true,
-      "verification_pass": true,
-      "tool_calls": 2,
-      "changed_files": [
-        "mathx.py"
-      ],
-      "diff_lines": 13,
-      "input_tokens": 878,
-      "output_tokens": 103,
-      "cost_usd": 0.000589,
-      "latency_s": 3.608,
-      "rep": 0
-    },
-    {
-      "task": "feature_factorial",
-      "task_type": "feature",
-      "adapter": "claude_harness",
-      "is_harness": true,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": true,
-      "verification_pass": true,
-      "tool_calls": 2,
-      "changed_files": [
-        "mathx.cpython-312.pyc",
-        "mathx.py"
-      ],
-      "diff_lines": 35,
-      "input_tokens": 3156,
-      "output_tokens": 432,
-      "cost_usd": 0.007176,
-      "latency_s": 4.0,
-      "rep": 0
-    },
-    {
-      "task": "feature_factorial",
-      "task_type": "feature",
-      "adapter": "codex_cli",
-      "is_harness": true,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
-      "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "cost_usd": 0.0,
-      "latency_s": 62.43,
-      "rep": 0
-    },
-    {
-      "task": "security_eval",
-      "task_type": "security_fix",
-      "adapter": "fake",
-      "is_harness": false,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": false,
-      "verification_pass": false,
-      "tool_calls": 0,
-      "changed_files": [],
-      "diff_lines": 0,
-      "input_tokens": 100,
-      "output_tokens": 50,
-      "cost_usd": 0.0,
-      "latency_s": 0.007,
-      "rep": 0
-    },
-    {
-      "task": "security_eval",
-      "task_type": "security_fix",
       "adapter": "patch",
       "is_harness": false,
       "context_strategy": "hybrid_keyword_embedding",
@@ -438,23 +354,122 @@
       "rep": 0
     },
     {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "mathx.py"
+      ],
+      "diff_lines": 13,
+      "input_tokens": 563,
+      "output_tokens": 88,
+      "cost_usd": 0.000391,
+      "latency_s": 2.22,
+      "rep": 0
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 3,
+      "changed_files": [
+        "mathx.cpython-312.pyc",
+        "mathx.py"
+      ],
+      "diff_lines": 31,
+      "input_tokens": 4300,
+      "output_tokens": 472,
+      "cost_usd": 0.009544,
+      "latency_s": 5.474,
+      "rep": 0
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "codex_cli",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "mathx.cpython-312.pyc",
+        "test_mathx.cpython-312-pytest-9.0.3.pyc",
+        "mathx.py"
+      ],
+      "diff_lines": 133,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 37.278,
+      "rep": 0
+    },
+    {
+      "task": "security_eval",
+      "task_type": "security_fix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.009,
+      "rep": 0
+    },
+    {
+      "task": "security_eval",
+      "task_type": "security_fix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.012,
+      "rep": 0
+    },
+    {
       "task": "security_eval",
       "task_type": "security_fix",
       "adapter": "openai_harness",
       "is_harness": true,
       "context_strategy": "hybrid_keyword_embedding",
       "status": "succeeded",
-      "success": false,
-      "verification_pass": false,
+      "success": true,
+      "verification_pass": true,
       "tool_calls": 2,
       "changed_files": [
         "calc_eval.py"
       ],
-      "diff_lines": 19,
-      "input_tokens": 1087,
-      "output_tokens": 181,
-      "cost_usd": 0.000761,
-      "latency_s": 3.961,
+      "diff_lines": 17,
+      "input_tokens": 1048,
+      "output_tokens": 148,
+      "cost_usd": 0.000718,
+      "latency_s": 3.113,
       "rep": 0
     },
     {
@@ -466,16 +481,16 @@
       "status": "succeeded",
       "success": true,
       "verification_pass": true,
-      "tool_calls": 7,
+      "tool_calls": 3,
       "changed_files": [
         "calc_eval.cpython-312.pyc",
         "calc_eval.py"
       ],
-      "diff_lines": 164,
-      "input_tokens": 15479,
-      "output_tokens": 1828,
-      "cost_usd": 0.034614,
-      "latency_s": 15.934,
+      "diff_lines": 124,
+      "input_tokens": 5813,
+      "output_tokens": 1096,
+      "cost_usd": 0.013818,
+      "latency_s": 8.89,
       "rep": 0
     },
     {
@@ -484,21 +499,126 @@
       "adapter": "codex_cli",
       "is_harness": true,
       "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
       "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
+      "changed_files": [
+        "calc_eval.py"
+      ],
+      "diff_lines": 51,
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 71.113,
+      "latency_s": 113.73,
       "rep": 0
     },
     {
       "task": "testgen_stats",
       "task_type": "test_generation",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.01,
+      "rep": 0
+    },
+    {
+      "task": "testgen_stats",
+      "task_type": "test_generation",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.012,
+      "rep": 0
+    },
+    {
+      "task": "testgen_stats",
+      "task_type": "test_generation",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 4,
+      "changed_files": [
+        "stats.cpython-312.pyc",
+        "test_stats.cpython-312-pytest-9.0.3.pyc",
+        "test_stats.py"
+      ],
+      "diff_lines": 168,
+      "input_tokens": 3986,
+      "output_tokens": 459,
+      "cost_usd": 0.002667,
+      "latency_s": 9.99,
+      "rep": 0
+    },
+    {
+      "task": "testgen_stats",
+      "task_type": "test_generation",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 8,
+      "changed_files": [
+        "stats.cpython-312.pyc",
+        "test_stats.cpython-312-pytest-9.0.3.pyc",
+        "test_stats.py"
+      ],
+      "diff_lines": 314,
+      "input_tokens": 26136,
+      "output_tokens": 1723,
+      "cost_usd": 0.055718,
+      "latency_s": 20.712,
+      "rep": 0
+    },
+    {
+      "task": "testgen_stats",
+      "task_type": "test_generation",
+      "adapter": "codex_cli",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "stats.cpython-312.pyc",
+        "test_meta.cpython-312-pytest-9.0.3.pyc",
+        "test_stats.cpython-312-pytest-9.0.3.pyc",
+        "test_stats.py"
+      ],
+      "diff_lines": 215,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 45.849,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_fib",
+      "task_type": "bugfix",
       "adapter": "fake",
       "is_harness": false,
       "context_strategy": "hybrid_keyword_embedding",
@@ -515,104 +635,6 @@
       "rep": 0
     },
     {
-      "task": "testgen_stats",
-      "task_type": "test_generation",
-      "adapter": "patch",
-      "is_harness": false,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": false,
-      "verification_pass": false,
-      "tool_calls": 0,
-      "changed_files": [],
-      "diff_lines": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "cost_usd": 0.0,
-      "latency_s": 0.007,
-      "rep": 0
-    },
-    {
-      "task": "testgen_stats",
-      "task_type": "test_generation",
-      "adapter": "openai_harness",
-      "is_harness": true,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": true,
-      "verification_pass": true,
-      "tool_calls": 2,
-      "changed_files": [
-        "stats.cpython-312.pyc",
-        "test_stats.cpython-312-pytest-9.0.3.pyc",
-        "test_stats.py"
-      ],
-      "diff_lines": 100,
-      "input_tokens": 1352,
-      "output_tokens": 185,
-      "cost_usd": 0.000922,
-      "latency_s": 4.563,
-      "rep": 0
-    },
-    {
-      "task": "testgen_stats",
-      "task_type": "test_generation",
-      "adapter": "claude_harness",
-      "is_harness": true,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": true,
-      "verification_pass": true,
-      "tool_calls": 5,
-      "changed_files": [
-        "stats.cpython-312.pyc",
-        "test_stats.cpython-312-pytest-9.0.3.pyc",
-        "test_stats.py"
-      ],
-      "diff_lines": 313,
-      "input_tokens": 15142,
-      "output_tokens": 1619,
-      "cost_usd": 0.033522,
-      "latency_s": 17.202,
-      "rep": 0
-    },
-    {
-      "task": "testgen_stats",
-      "task_type": "test_generation",
-      "adapter": "codex_cli",
-      "is_harness": true,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
-      "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
-      "input_tokens": 0,
-      "output_tokens": 0,
-      "cost_usd": 0.0,
-      "latency_s": 50.322,
-      "rep": 0
-    },
-    {
-      "task": "bugfix_fib",
-      "task_type": "bugfix",
-      "adapter": "fake",
-      "is_harness": false,
-      "context_strategy": "hybrid_keyword_embedding",
-      "status": "succeeded",
-      "success": false,
-      "verification_pass": false,
-      "tool_calls": 0,
-      "changed_files": [],
-      "diff_lines": 0,
-      "input_tokens": 100,
-      "output_tokens": 50,
-      "cost_usd": 0.0,
-      "latency_s": 0.017,
-      "rep": 0
-    },
-    {
       "task": "bugfix_fib",
       "task_type": "bugfix",
       "adapter": "patch",
@@ -627,7 +649,7 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.01,
+      "latency_s": 0.011,
       "rep": 0
     },
     {
@@ -644,10 +666,10 @@
         "fib.py"
       ],
       "diff_lines": 17,
-      "input_tokens": 1054,
-      "output_tokens": 106,
-      "cost_usd": 0.000696,
-      "latency_s": 2.774,
+      "input_tokens": 1055,
+      "output_tokens": 110,
+      "cost_usd": 0.000699,
+      "latency_s": 5.722,
       "rep": 0
     },
     {
@@ -659,16 +681,16 @@
       "status": "succeeded",
       "success": true,
       "verification_pass": true,
-      "tool_calls": 3,
+      "tool_calls": 4,
       "changed_files": [
         "fib.cpython-312.pyc",
         "fib.py"
       ],
       "diff_lines": 26,
-      "input_tokens": 4755,
-      "output_tokens": 597,
-      "cost_usd": 0.010704,
-      "latency_s": 5.765,
+      "input_tokens": 6452,
+      "output_tokens": 770,
+      "cost_usd": 0.014444,
+      "latency_s": 7.501,
       "rep": 0
     },
     {
@@ -677,16 +699,20 @@
       "adapter": "codex_cli",
       "is_harness": true,
       "context_strategy": "hybrid_keyword_embedding",
-      "status": "failed",
-      "success": false,
-      "verification_pass": false,
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
       "tool_calls": 1,
-      "changed_files": [],
-      "diff_lines": 0,
+      "changed_files": [
+        "fib.cpython-312.pyc",
+        "test_fib.cpython-312-pytest-9.0.3.pyc",
+        "fib.py"
+      ],
+      "diff_lines": 54,
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 64.625,
+      "latency_s": 47.32,
       "rep": 0
     }
   ]
