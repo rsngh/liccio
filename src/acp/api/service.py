@@ -847,6 +847,27 @@ class AppService:
             except Exception:  # noqa: BLE001
                 return False
 
+        # Harness availability (WS3/WS12): a recent audit must show no expected
+        # harness silently absent. Absent artifact fails the gate in production.
+        def _report_field(path: str, key: str, default=None):
+            import json as _j
+            p = _PP(path)
+            if not p.exists():
+                return default
+            try:
+                return _j.loads(p.read_text()).get(key, default)
+            except Exception:  # noqa: BLE001
+                return default
+
+        ha_degraded = _report_field(
+            "evals/reports/harness_availability_audit.json", "degraded", default=None)
+        harness_availability_ok = ha_degraded is False
+        # Measurement hygiene (WS1/WS12): a recent live measurement must not be
+        # contaminated (too many inconclusive/infra attempts) to trust its routing.
+        mh_contaminated = _report_field(
+            "evals/reports/measurement_hygiene.json", "contaminated", default=None)
+        measurement_not_contaminated = mh_contaminated is False
+
         production_gates = {
             "artifact_manifest_valid": artifacts_ok,
             "docker_live_security_passed":
@@ -854,6 +875,8 @@ class AppService:
             "ope_overlap_sufficient": ope_ready,
             "no_demoted_model_promoted": True,  # drift lifecycle demotes in-loop
             "test_reports_present": _PP("reports/pytest.txt").exists(),
+            "harness_availability_ok": harness_availability_ok,
+            "measurement_not_contaminated": measurement_not_contaminated,
         }
         production_ready = all(production_gates.values())
         status = "ok"
