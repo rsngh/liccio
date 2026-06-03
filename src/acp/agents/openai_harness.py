@@ -42,6 +42,13 @@ from acp.workspaces.base import Workspace
 
 __all__ = ["HarnessTools", "OpenAIHarnessAdapter"]
 
+
+def _is_timeout(exc: Exception) -> bool:
+    """True for read/connect timeouts — these must NOT be retried (a retry would
+    blow the wall-time budget); transient 429/5xx errors are retried instead."""
+    name = type(exc).__name__.lower()
+    return "timeout" in name or "timeout" in str(exc).lower()
+
 _TOOLS_SPEC = [
     {"type": "function", "function": {
         "name": "read_file", "description": "Read a file in the workspace.",
@@ -68,11 +75,14 @@ class OpenAIHarnessAdapter:
     is_harness = True  # real tool-loop harness with trace capture
 
     def __init__(self, name: str = "openai_harness", model: str = "gpt-4o-mini",
-                 max_steps: int = 8, max_tool_calls: int = 50) -> None:
+                 max_steps: int = 8, max_tool_calls: int = 50,
+                 max_nudges: int = 2, max_api_retries: int = 2) -> None:
         self.name = name
         self.model_name = model
         self.max_steps = max_steps
         self.max_tool_calls = max_tool_calls
+        self.max_nudges = max_nudges
+        self.max_api_retries = max_api_retries
 
     def _client(self):
         from acp.core.config import get_settings
@@ -117,6 +127,7 @@ class OpenAIHarnessAdapter:
         ]
         in_tok = out_tok = 0
         error = None
+        nudges = 0  # times we've re-prompted a prose-only (no tool call) response
         ledger = make_budget_ledger(budget, max_steps=self.max_steps,
                                     max_tool_calls=self.max_tool_calls, now=t0)
         try:
@@ -125,18 +136,39 @@ class OpenAIHarnessAdapter:
                 error = ledger.violation(time.monotonic())
                 if error:
                     break
-                # Bound each request by the wall-time budget remaining: without a
-                # per-call timeout the between-step ledger check can't fire until a
-                # (possibly 10-min) call returns. Leave a small floor so near-budget
-                # steps still get a real attempt rather than an instant timeout.
-                remaining = budget.max_wall_time_s - (time.monotonic() - t0)
-                if remaining <= 0:
-                    error = "budget_exceeded:wall"
+                # Bound each request by the wall-time budget remaining (computed in
+                # the retry loop below): without a per-call timeout the between-step
+                # ledger check can't fire until a (possibly 10-min) call returns.
+                # tool_choice="required" forces a tool call every turn (finish is
+                # itself a tool, so the agent can still end). Observed live: without
+                # it gpt-4o-mini often answers the task in prose and never calls
+                # write_file, so the harness produced no edit. Required + the nudge
+                # below (belt-and-suspenders) drive activation to ~100%.
+                #
+                # Our own bounded retry on transient (non-timeout) API errors: the
+                # SDK's retries are disabled (they doubled wall time on timeouts), but
+                # a 429/500 must not be miscounted as a capability failure that would
+                # poison the capability matrix. Each retry re-derives the per-call
+                # timeout from the remaining wall budget, so it stays budget-safe.
+                resp = None
+                api_tries = 0
+                while True:
+                    remaining = budget.max_wall_time_s - (time.monotonic() - t0)
+                    if remaining <= 0:
+                        error = "budget_exceeded:wall"
+                        break
+                    try:
+                        resp = client.chat.completions.create(
+                            model=self.model_name, messages=messages, tools=_TOOLS_SPEC,
+                            tool_choice="required", timeout=max(5.0, remaining),
+                        )
+                        break
+                    except Exception as api_exc:  # noqa: BLE001
+                        if _is_timeout(api_exc) or api_tries >= self.max_api_retries:
+                            raise
+                        api_tries += 1
+                if resp is None:
                     break
-                resp = client.chat.completions.create(
-                    model=self.model_name, messages=messages, tools=_TOOLS_SPEC,
-                    timeout=max(5.0, remaining),
-                )
                 usage = getattr(resp, "usage", None)
                 if usage:
                     p = getattr(usage, "prompt_tokens", 0)
@@ -146,6 +178,19 @@ class OpenAIHarnessAdapter:
                     ledger.charge_cost((p + c) / 1000 * cost_per_1k(self.model_name))
                 msg = resp.choices[0].message
                 if not msg.tool_calls:
+                    # Observed live: gpt-4o-mini sometimes answers in prose (e.g. a
+                    # code block) instead of calling write_file, then we'd silently
+                    # give up with no edit. If nothing has been written yet, nudge it
+                    # to use the tools and retry a bounded number of times.
+                    if not tools.files_written and nudges < self.max_nudges:
+                        nudges += 1
+                        messages.append({"role": "assistant", "content": msg.content or ""})
+                        messages.append({"role": "user", "content": (
+                            "Your reply made no tool call, so nothing changed. You MUST "
+                            "use the tools (write_file to create/edit files, run_command "
+                            "to run tests) to do the task — prose is ignored. Continue now."
+                        )})
+                        continue
                     break
                 messages.append({"role": "assistant", "content": msg.content or "",
                                  "tool_calls": [tc.model_dump() for tc in msg.tool_calls]})
