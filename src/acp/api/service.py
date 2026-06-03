@@ -885,6 +885,18 @@ class AppService:
             degraded = True
         elif degraded:
             status = "degraded"
+        # Measurement-trust section (Round 12 WS5/WS9): surface the live hygiene,
+        # harness availability, and tool-activation signals as first-class health.
+        measurement = {
+            "solve_rate_conclusive": _report_field(
+                "evals/reports/measurement_hygiene.json", "solve_rate"),
+            "infra_failure_rate": _report_field(
+                "evals/reports/measurement_hygiene.json", "infra_failure_rate"),
+            "contaminated": mh_contaminated,
+            "harness_availability_degraded": ha_degraded,
+            "tool_activation_by_adapter": _report_field(
+                "evals/reports/tool_activation_metrics.json", "by_adapter", default={}),
+        }
         return {
             "mode": mode,
             "status": status,
@@ -898,6 +910,7 @@ class AppService:
             "learned_models": {"promotions": promotions},
             "pareto_profiles": sorted(PROFILES),
             "artifacts": artifact_summary,
+            "measurement": measurement,
             "readiness": readiness,
         }
 

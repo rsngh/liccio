@@ -32,3 +32,13 @@ def test_production_gates_are_explicit(tmp_path) -> None:
     for gate in ("artifact_manifest_valid", "docker_live_security_passed",
                  "ope_overlap_sufficient", "test_reports_present"):
         assert gate in h["production_gates"]
+
+
+def test_health_has_measurement_section(tmp_path) -> None:
+    # WS5/WS9: measurement-trust signals are first-class in the health snapshot.
+    h = _svc(tmp_path).control_plane_health(mode="lab")
+    assert "measurement" in h
+    m = h["measurement"]
+    for k in ("solve_rate_conclusive", "infra_failure_rate", "contaminated",
+              "harness_availability_degraded", "tool_activation_by_adapter"):
+        assert k in m
