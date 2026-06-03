@@ -21,8 +21,13 @@ first-class, tested modules with live validation.
 | 4 | Tool activation metrics | `AgentTrace` carries `tools_offered / tools_required / tool_choice_mode / tool_calls_valid / first_tool_call_turn / activation_failure_reason`. The `tool_choice="required"` bug is now a visible activation failure. |
 | 6 | Capability matrix v2 | Cells gain `conclusive_sample_size / inconclusive_sample_size / infra_failure_rate / cost_per_conclusive_success`. |
 | 9 | Policy dossier v2 | Dossier gains a `measurement_quality` section (conclusive vs infra, contamination flag, `trustworthy` bool). |
+| 5 | Adherence in health | `control_plane_health` gains a `measurement` section (conclusive solve-rate, infra rate, contamination, per-adapter activation) read from the live artifacts. |
+| 7 | Cost-aware OPE | `cost_adjusted_reward` + `cost_adjusted_regret` make cost a first-class tiebreaker in OPE/regret, consistent with the matrix tiebreak, Pareto cost_saver, and the promotion cost cap. |
+| 8 | Live-cell persistence | `AttemptOutcomeRow` table + `ingest_attempt_outcomes` / `hygiene_from_store`: real conclusive/infra outcomes are durably queryable by adapter/task_type (migration `c3d4e5f6a7b8`). |
 | 11 | Measurement mutation suite | Injects each measurement flaw and asserts the trust layer detects/classifies it. |
 | 12 | Production health gates | `acp health --mode production` gates on `harness_availability_ok` and `measurement_not_contaminated`. |
+| 14 | Topology safety gate | `topology_safety.filter_topology` forbids unsafe skips (security/high-risk never skips strict verification or review) while keeping cheap skips on low-risk tasks; wired into `CandidateGenerator`. |
+| CLI | `acp measurement hygiene` | Classifies a bakeoff/cells file, prints the report, exits 1 if contaminated (CI guard). |
 
 ## Attempt outcome taxonomy (WS1)
 
@@ -52,9 +57,9 @@ Production health on these real artifacts: `harness_availability_ok=true`,
 ## Gate
 
 ```
-uv run pytest -q --timeout=300   # 797 passed, 6 skipped
+uv run pytest -q --timeout=300   # 803 passed, 5 skipped
 uv run ruff check .              # clean
-uv run mypy src                  # clean, 218 source files
+uv run mypy src                  # clean, 220 source files
 uv run alembic upgrade head      # OK (fresh DB)
 uv run acp reports validate      # all 41 artifacts valid
 ```
