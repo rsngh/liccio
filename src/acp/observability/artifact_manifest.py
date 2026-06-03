@@ -57,6 +57,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/control_plane_health_production.json": ["production_gates"],
     "evals/reports/vendor_harness_live.json": ["vendor_adapters"],
     "evals/reports/local_lora_pilot.json": ["available", "status"],
+    # Alpha 11 WS14 — REAL observed live bakeoff
+    "evals/reports/live_bakeoff_capability_matrix.json": ["n_cells"],
+    "evals/reports/live_bakeoff_ope.json": ["source", "n"],
 }
 
 

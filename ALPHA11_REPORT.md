@@ -38,6 +38,34 @@ Alpha 11 answers each clause with a concrete mechanism + committed artifact.
   reviewer agreement, post-merge correlation, and high-risk non-degradation all
   pass.
 
+## WS14 — real live bakeoff (the decision-quality claims, made real)
+
+The Alpha 9/10 routing/OPE/Pareto/drift machinery was previously fed by synthetic
+generators. WS14 closes that gap with a **keyed, multi-task live bakeoff**
+(`evals/scripts/run_live_bakeoff.py` + `evaluation/live_bakeoff.py`): the real
+`openai_harness` and `claude_harness` solve genuine no-patch tasks via their tool
+loops, each attempt is **verified by running the repo's own tests**, and the
+**observed** per-(task, adapter) outcomes feed a real capability matrix + real OPE
+log.
+
+Observed result (3 no-patch tasks × 4 adapters, redacted in
+`reports/live/alpha11_live_bakeoff.json`):
+
+| adapter | solved | cost/task | latency/task |
+| --- | --- | --- | --- |
+| openai_harness | 3/3 | ~$0.0005 | ~2.5 s |
+| claude_harness | 3/3 | ~$0.011 | ~5.4 s |
+| fake / patch (baselines) | 0/3 | $0 | — |
+
+Both real harnesses solved every task; the baselines (no answer given) solved
+none. The cost/latency spread (OpenAI ~20× cheaper, ~2× faster here) is exactly
+the trade-off the Pareto layer weighs. OPE on this **real** log
+(`evals/reports/live_bakeoff_ope.json`, `source: REAL observed agent runs`) ranks
+a solver-preferring policy (DR 1.0) above random (0.5); the capability matrix
+honestly flags all cells low-sample (3 tasks < sufficiency threshold) — no
+overclaim. This is the first round whose routing evidence is observed agent
+behavior on real workloads, not prefabricated fixtures.
+
 ## Honest limitations
 
 - Docker live-security, vendor-native live runs, and the local LoRA pilot are

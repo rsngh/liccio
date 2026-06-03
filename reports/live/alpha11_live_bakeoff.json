@@ -1,0 +1,241 @@
+{
+  "experiment": "alpha11_live_no_patch_bakeoff",
+  "n_tasks": 3,
+  "adapters": [
+    "claude_harness",
+    "fake",
+    "openai_harness",
+    "patch"
+  ],
+  "live_harnesses": [
+    "openai_harness",
+    "claude_harness"
+  ],
+  "solved_by_adapter": {
+    "fake": 0,
+    "patch": 0,
+    "openai_harness": 3,
+    "claude_harness": 3
+  },
+  "cells": [
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.01
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.009
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 2,
+      "changed_files": [
+        "calculator.py"
+      ],
+      "diff_lines": 10,
+      "input_tokens": 917,
+      "output_tokens": 94,
+      "cost_usd": 0.000607,
+      "latency_s": 3.444
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 4,
+      "changed_files": [
+        "calculator.cpython-312.pyc",
+        "calculator.py"
+      ],
+      "diff_lines": 24,
+      "input_tokens": 5721,
+      "output_tokens": 524,
+      "cost_usd": 0.01249,
+      "latency_s": 6.099
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.012
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.009
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "nums.py"
+      ],
+      "diff_lines": 9,
+      "input_tokens": 560,
+      "output_tokens": 67,
+      "cost_usd": 0.000376,
+      "latency_s": 1.603
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 3,
+      "changed_files": [
+        "nums.cpython-312.pyc",
+        "nums.py"
+      ],
+      "diff_lines": 20,
+      "input_tokens": 4406,
+      "output_tokens": 496,
+      "cost_usd": 0.009804,
+      "latency_s": 5.087
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.013
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.016
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "mathx.py"
+      ],
+      "diff_lines": 13,
+      "input_tokens": 563,
+      "output_tokens": 89,
+      "cost_usd": 0.000391,
+      "latency_s": 2.361
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 3,
+      "changed_files": [
+        "mathx.cpython-312.pyc",
+        "mathx.py"
+      ],
+      "diff_lines": 31,
+      "input_tokens": 4248,
+      "output_tokens": 457,
+      "cost_usd": 0.00941,
+      "latency_s": 5.057
+    }
+  ]
+}

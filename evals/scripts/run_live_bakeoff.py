@@ -1,0 +1,265 @@
+"""WS14 — end-to-end no-patch LIVE bakeoff (uses OPENAI_API_KEY / ANTHROPIC_API_KEY).
+
+This is the piece that makes the Alpha 9/10/11 decision-quality claims *real*:
+instead of synthetic capability cells / OPE logs, it runs real coding-agent
+harnesses (``openai_harness``, ``claude_harness``) on genuine no-patch tasks via
+the tool loop, *verifies* each attempt by running the repo's own tests, and feeds
+the **observed** per-(task, adapter) outcomes into a real ``CapabilityMatrix`` and
+a real OPE log. ``fake``/``patch`` are floor baselines (they get no answer, so a
+true no-patch task should defeat them).
+
+Outputs (redacted, committed):
+  reports/live/alpha11_live_bakeoff.json        — per (task, adapter) observed cells
+  evals/reports/live_bakeoff_capability_matrix.json — matrix from REAL cells
+  evals/reports/live_bakeoff_ope.json           — OPE on the REAL log
+
+Run::
+    OPENAI_API_KEY=... ANTHROPIC_API_KEY=... uv run python evals/scripts/run_live_bakeoff.py
+
+Skips cleanly (exit 0) when no key/harness is available; defensive per attempt
+(an adapter error never aborts the bakeoff).
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+from git import Repo
+
+from acp.agents.trace import build_agent_trace
+from acp.core.enums import RunStatus
+from acp.observability.live_report import redact_report
+from acp.schemas.agent import AgentAttempt, Budget
+from acp.schemas.context import ContextItem, ContextPack
+from acp.schemas.repo import Repository, RepoSnapshot
+from acp.schemas.task import Task
+from acp.workspaces.local import LocalWorkspaceManager
+from acp.workspaces.policies import default_policy
+
+LIVE_OUT = Path("reports/live/alpha11_live_bakeoff.json")
+MATRIX_OUT = Path("evals/reports/live_bakeoff_capability_matrix.json")
+OPE_OUT = Path("evals/reports/live_bakeoff_ope.json")
+
+
+# --- real no-patch tasks: (buggy source, test, task spec) -----------------
+TASKS = [
+    {
+        "id": "bugfix_divide", "task_type": "bugfix",
+        "files": {"calculator.py":
+                  "def divide(a, b):\n    if b == 0:\n        return 0  # bug\n    return a / b\n"},
+        "test": "test_calc.py",
+        "test_src": ("import pytest\nfrom calculator import divide\n\n"
+                     "def test_raises():\n    "
+                     "with pytest.raises(ZeroDivisionError):\n        divide(1, 0)\n"
+                     "def test_ok():\n    assert divide(6, 3) == 2\n"),
+        "title": "Fix divide by zero",
+        "body": "divide() returns 0 when b == 0; it must raise ZeroDivisionError. "
+                "Edit calculator.py.",
+        "criteria": ["divide(x, 0) raises ZeroDivisionError"],
+    },
+    {
+        "id": "bugfix_is_even", "task_type": "bugfix",
+        "files": {"nums.py": "def is_even(n):\n    return n % 2 == 1  # bug\n"},
+        "test": "test_nums.py",
+        "test_src": ("from nums import is_even\n\n"
+                     "def test_even():\n    assert is_even(4) is True\n"
+                     "def test_odd():\n    assert is_even(3) is False\n"),
+        "title": "Fix is_even parity bug",
+        "body": "is_even(n) returns the wrong result. Fix nums.py so is_even(4) is "
+                "True and is_even(3) is False.",
+        "criteria": ["is_even(4) is True", "is_even(3) is False"],
+    },
+    {
+        "id": "feature_factorial", "task_type": "feature",
+        "files": {"mathx.py": "def factorial(n):\n    pass  # TODO: implement\n"},
+        "test": "test_mathx.py",
+        "test_src": ("from mathx import factorial\n\n"
+                     "def test_factorial():\n    assert factorial(5) == 120\n"
+                     "    assert factorial(0) == 1\n"),
+        "title": "Implement factorial",
+        "body": "Implement factorial(n) in mathx.py so factorial(5)==120 and "
+                "factorial(0)==1.",
+        "criteria": ["factorial(5) == 120", "factorial(0) == 1"],
+    },
+]
+
+
+def _make_repo(tmp: Path, spec: dict) -> Repository:
+    src = tmp / f"repo_{spec['id']}"
+    src.mkdir()
+    for name, content in spec["files"].items():
+        (src / name).write_text(content)
+    (src / spec["test"]).write_text(spec["test_src"])
+    (src / "pyproject.toml").write_text(
+        '[project]\nname = "x"\nversion = "0.1.0"\nrequires-python = ">=3.11"\n')
+    repo = Repo.init(src)
+    repo.config_writer().set_value("user", "name", "t").release()
+    repo.config_writer().set_value("user", "email", "t@e.com").release()
+    repo.index.add(list(spec["files"]) + [spec["test"], "pyproject.toml"])
+    repo.index.commit("init")
+    return Repository(name=spec["id"], local_path=str(src), default_branch="master")
+
+
+def _verify(ws_path: Path, test_file: str) -> bool:
+    """Run the repo's own test in the workspace; solved == tests pass."""
+    try:
+        r = subprocess.run(  # noqa: S603
+            [sys.executable, "-m", "pytest", "-q", test_file],
+            cwd=str(ws_path), capture_output=True, timeout=60)
+        return r.returncode == 0
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _build_adapters() -> dict:
+    from acp.agents.fake import FakeAgentAdapter
+    from acp.agents.patch_agent import PatchAgentAdapter
+
+    adapters: dict[str, object] = {"fake": FakeAgentAdapter(), "patch": PatchAgentAdapter()}
+    if os.environ.get("OPENAI_API_KEY"):
+        os.environ.setdefault("ACP_OPENAI_API_KEY", os.environ["OPENAI_API_KEY"])
+        from acp.agents.openai_harness import OpenAIHarnessAdapter
+        oa = OpenAIHarnessAdapter(max_steps=8)
+        if asyncio.run(oa.healthcheck()).available:
+            adapters["openai_harness"] = oa
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
+        from acp.agents.claude_harness import ClaudeHarnessAdapter
+        ca = ClaudeHarnessAdapter(max_steps=8)
+        if asyncio.run(ca.healthcheck()).available:
+            adapters["claude_harness"] = ca
+    return adapters
+
+
+def _run_attempt(adapter, name: str, spec: dict, repo: Repository, ws_root: Path) -> dict:
+    from acp.core.config import reset_settings
+    reset_settings()
+    base = Repo(repo.local_path).head.commit.hexsha
+    ws = LocalWorkspaceManager(ws_root / f"{spec['id']}_{name}").create(
+        repo, RepoSnapshot(repo_id=repo.id, base_commit=base), default_policy())
+    target = next(iter(spec["files"]))
+    task = Task(repo_id=repo.id, title=spec["title"], body=spec["body"],
+                acceptance_criteria=spec["criteria"])
+    pack = ContextPack(repo_id=repo.id, task_id=task.id, snapshot_id="s",
+                       items=[ContextItem(kind="file_chunk", path=target,
+                                          content=(ws.path / target).read_text())])
+    t0 = time.time()
+    try:
+        result = asyncio.run(adapter.execute(task, pack, ws, Budget(
+            max_cost_usd=0.5, max_wall_time_s=120)))
+    except Exception as exc:  # noqa: BLE001 - never abort the bakeoff
+        return {"task": spec["id"], "task_type": spec["task_type"], "adapter": name,
+                "success": False, "error": f"execute raised: {exc}",
+                "cost_usd": 0.0, "latency_s": round(time.time() - t0, 3)}
+    elapsed = time.time() - t0
+    solved = _verify(ws.path, spec["test"])
+    attempt = AgentAttempt(task_id=task.id, agent_kind=adapter.kind, agent_name=name)
+    trace = build_agent_trace(attempt, result, is_harness=getattr(adapter, "is_harness",
+                                                                  False), task_id=task.id)
+    return {
+        "task": spec["id"], "task_type": spec["task_type"], "adapter": name,
+        "is_harness": bool(getattr(adapter, "is_harness", False)),
+        "context_strategy": "hybrid_keyword_embedding",
+        "status": result.status.value if isinstance(result.status, RunStatus)
+        else result.status,
+        "success": solved, "verification_pass": solved,
+        "tool_calls": trace.tool_calls, "changed_files": trace.changed_files,
+        "diff_lines": trace.diff_lines,
+        "input_tokens": trace.input_tokens, "output_tokens": trace.output_tokens,
+        "cost_usd": round(trace.estimated_cost_usd, 6), "latency_s": round(elapsed, 3),
+    }
+
+
+def main() -> int:
+    adapters = _build_adapters()
+    live = [n for n in adapters if n in ("openai_harness", "claude_harness")]
+    if not live:
+        print("[skip] no live harness available (set OPENAI_API_KEY / ANTHROPIC_API_KEY)")
+        return 0
+    print(f"live harnesses: {live}; baselines: fake, patch")
+
+    tmp = Path(tempfile.mkdtemp())
+    cells: list[dict] = []
+    for spec in TASKS:
+        repo = _make_repo(tmp, spec)
+        for name, adapter in adapters.items():
+            cell = _run_attempt(adapter, name, spec, repo, tmp / "ws")
+            cells.append(cell)
+            print(f"  {spec['id']:18s} {name:16s} solved={cell['success']} "
+                  f"cost=${cell.get('cost_usd', 0):.4f} {cell.get('latency_s', 0)}s")
+
+    # Real capability matrix from observed cells.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    matrix = CapabilityMatrix.from_bakeoff_report({"cells": cells})
+
+    # Real OPE log: each adapter is an action; reward = solved. Uniform behavior.
+    from acp.routing.ope import OPESample, evaluate_policy, fit_reward_model
+    by_task: dict[str, list[dict]] = {}
+    for c in cells:
+        by_task.setdefault(c["task_type"], []).append(c)
+    samples: list[OPESample] = []
+    for ttype, group in by_task.items():
+        actions = sorted({c["adapter"] for c in group})
+        for c in group:
+            samples.append(OPESample(ttype, c["adapter"], 1.0 / len(actions),
+                                     1.0 if c["success"] else 0.0, actions))
+    ope: dict = {"n": len(samples)}
+    if samples:
+        q = fit_reward_model(samples)
+
+        def greedy(ctx, action, cands):
+            best = max(q(ctx, a) for a in cands)
+            winners = [a for a in cands if q(ctx, a) == best]
+            return 1.0 / len(winners) if action in winners else 0.0
+
+        def random_t(ctx, action, cands):
+            return 1.0 / len(cands)
+
+        baseline = sum(s.reward for s in samples) / len(samples)
+        ope = {
+            "n": len(samples), "logged_mean_reward": round(baseline, 4),
+            "greedy_dr": evaluate_policy(samples, greedy, seed=1).dr.as_dict(),
+            "random_dr": evaluate_policy(samples, random_t, seed=1).dr.as_dict(),
+            "best_adapter_per_task_type": {
+                tt: max({c["adapter"] for c in g},
+                        key=lambda a: sum(c["success"] for c in g if c["adapter"] == a))
+                for tt, g in by_task.items()},
+        }
+
+    solved_by_adapter: dict[str, int] = {}
+    for c in cells:
+        solved_by_adapter[c["adapter"]] = solved_by_adapter.get(c["adapter"], 0) + int(
+            c["success"])
+    report = {
+        "experiment": "alpha11_live_no_patch_bakeoff",
+        "n_tasks": len(TASKS), "adapters": sorted(adapters),
+        "live_harnesses": live,
+        "solved_by_adapter": solved_by_adapter,
+        "cells": cells,
+    }
+    LIVE_OUT.parent.mkdir(parents=True, exist_ok=True)
+    LIVE_OUT.write_text(json.dumps(redact_report(report), indent=2) + "\n")
+    MATRIX_OUT.parent.mkdir(parents=True, exist_ok=True)
+    MATRIX_OUT.write_text(json.dumps(matrix.to_dict(), indent=2, default=str) + "\n")
+    OPE_OUT.write_text(json.dumps({"experiment": "alpha11_live_bakeoff_ope",
+                                   "source": "REAL observed agent runs", **ope},
+                                  indent=2, default=str) + "\n")
+    # Leak check.
+    for key in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+        secret = os.environ.get(key)
+        if secret:
+            assert secret not in LIVE_OUT.read_text(), f"{key} leaked!"
+    print(f"solved_by_adapter={solved_by_adapter}")
+    print(f"wrote {LIVE_OUT}, {MATRIX_OUT}, {OPE_OUT}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

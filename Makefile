@@ -174,3 +174,6 @@ live-pgvector:
 
 alpha11-artifacts:
 	$(UV) run python evals/scripts/run_alpha11_artifacts.py
+
+live-bakeoff:
+	$(UV) run python evals/scripts/run_live_bakeoff.py
