@@ -76,13 +76,15 @@ class OpenAIHarnessAdapter:
 
     def __init__(self, name: str = "openai_harness", model: str = "gpt-4o-mini",
                  max_steps: int = 8, max_tool_calls: int = 50,
-                 max_nudges: int = 2, max_api_retries: int = 2) -> None:
+                 max_nudges: int = 2, max_api_retries: int = 2,
+                 call_timeout_s: float = 60.0) -> None:
         self.name = name
         self.model_name = model
         self.max_steps = max_steps
         self.max_tool_calls = max_tool_calls
         self.max_nudges = max_nudges
         self.max_api_retries = max_api_retries
+        self.call_timeout_s = call_timeout_s
 
     def _client(self):
         from acp.core.config import get_settings
@@ -150,6 +152,12 @@ class OpenAIHarnessAdapter:
                 # a 429/500 must not be miscounted as a capability failure that would
                 # poison the capability matrix. Each retry re-derives the per-call
                 # timeout from the remaining wall budget, so it stays budget-safe.
+                # Observed live: infra hangs are always a hung FIRST call (~120s,
+                # zero tool calls). Cap each request well under the wall budget so a
+                # hang fails fast, and retry a *timeout* only when no tool has run yet
+                # (a pure infra hang, safe to repeat). A timeout after real work is not
+                # retried (would redo work) and becomes TIMED_OUT. Non-timeout 429/5xx
+                # retry regardless. Each try re-derives remaining, so it's budget-safe.
                 resp = None
                 api_tries = 0
                 while True:
@@ -157,14 +165,18 @@ class OpenAIHarnessAdapter:
                     if remaining <= 0:
                         error = "budget_exceeded:wall"
                         break
+                    per_call = min(remaining, self.call_timeout_s)
                     try:
                         resp = client.chat.completions.create(
                             model=self.model_name, messages=messages, tools=_TOOLS_SPEC,
-                            tool_choice="required", timeout=max(5.0, remaining),
+                            tool_choice="required", timeout=max(5.0, per_call),
                         )
                         break
                     except Exception as api_exc:  # noqa: BLE001
-                        if _is_timeout(api_exc) or api_tries >= self.max_api_retries:
+                        is_to = _is_timeout(api_exc)
+                        retryable = api_tries < self.max_api_retries and (
+                            not is_to or not tools.tool_calls)
+                        if not retryable:
                             raise
                         api_tries += 1
                 if resp is None:
