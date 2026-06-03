@@ -148,3 +148,31 @@ def test_non_harness_cells_have_no_benefit_metrics() -> None:
               "success": False, "cost_usd": 0.0, "latency_s": 0.0} for _ in range(3)]
     cell = CapabilityMatrix.from_bakeoff_report({"cells": cells}).cells()[0]
     assert cell.har is None and cell.hfr is None and cell.pwl is None
+
+
+def _cell(adapter, succ, cost, lat, n=5):
+    from acp.routing.capability_matrix import CapabilityCell
+    c = CapabilityCell(task_type="bugfix", risk_level="medium", repo_type="python_package",
+                       agent_class=adapter, context_strategy="hybrid", verification_policy="strict",
+                       success_rate=succ, cost=cost, latency=lat, sample_size=n,
+                       sufficient_data=True)
+    return c
+
+
+def test_score_cost_tiebreak_prefers_cheaper_on_equal_success() -> None:
+    # Equal success -> cheaper+faster cell scores higher (cost-optimal route).
+    from acp.routing.capability_matrix import CapabilityMatrix
+    m = CapabilityMatrix()
+    cheap = _cell("openai_harness", 1.0, 0.001, 5.0)
+    pricey = _cell("claude_harness", 1.0, 0.0135, 7.0)
+    assert m._score(cheap) > m._score(pricey)
+
+
+def test_score_tiebreak_never_overrides_real_success_gap() -> None:
+    # A genuine success gap (>= one sample) must dominate the cost tiebreak, even
+    # when the better adapter is far more expensive.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    m = CapabilityMatrix()
+    capable_pricey = _cell("claude_harness", 1.0, 0.05, 18.0)
+    cheap_worse = _cell("openai_harness", 0.2, 0.006, 23.0)
+    assert m._score(capable_pricey) > m._score(cheap_worse)

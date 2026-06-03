@@ -290,12 +290,22 @@ class CapabilityMatrix:
         self._cells[cell.key()] = cell
 
     def _score(self, cell: CapabilityCell) -> float:
-        """Ranking score: prefer OPE reward if present, else success minus risk."""
+        """Ranking score: prefer OPE reward if present, else success minus risk.
+
+        A tiny cost+latency penalty breaks ties so that, among cells with equal
+        success/quality, the cheaper and faster one is chosen (the cost-optimal
+        route). The penalty is capped well below one quality point so it can never
+        override a real success or post-merge-failure difference.
+        """
         if cell.ope_estimated_reward is not None:
             base = cell.ope_estimated_reward
         else:
             base = cell.success_rate
-        return base - cell.post_merge_failure_rate
+        # Bounded tiebreak: saturating, max magnitude < 0.01 so it only orders
+        # otherwise-equal cells. cost in $, latency in seconds.
+        tiebreak = 0.005 * (cell.cost / (cell.cost + 0.01)) + \
+            0.005 * (cell.latency / (cell.latency + 10.0))
+        return base - cell.post_merge_failure_rate - tiebreak
 
     def _matching(self, task_type: str, risk_level: str, repo_type: str
                   ) -> list[CapabilityCell]:
