@@ -177,6 +177,21 @@ class ViabilityAssessmentRow(_Row):
     repo_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
 
 
+class DriftReportRow(_Row):
+    __tablename__ = "drift_reports"
+    model_name: Mapped[str] = mapped_column(String, index=True)
+
+
+class ModelDemotionEventRow(_Row):
+    __tablename__ = "model_demotion_events"
+    model_name: Mapped[str] = mapped_column(String, index=True)
+
+
+class ModelPromotionStateRow(_Row):
+    __tablename__ = "model_promotion_states"
+    model_name: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

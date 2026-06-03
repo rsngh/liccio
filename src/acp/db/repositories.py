@@ -40,6 +40,11 @@ from acp.schemas import (
     WeakLabel,
 )
 from acp.schemas.base import ACPModel
+from acp.schemas.drift import (
+    DriftReportEntity,
+    ModelDemotionEventEntity,
+    ModelPromotionState,
+)
 from acp.schemas.eval import EvalCase, EvalMetric, EvalReport, EvalRun
 from acp.schemas.learning import PolicyState
 from acp.schemas.trace import AgentTrace
@@ -79,6 +84,9 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     PolicyState: m.PolicyState,
     AgentTrace: m.AgentTraceRow,
     ViabilityAssessment: m.ViabilityAssessmentRow,
+    DriftReportEntity: m.DriftReportRow,
+    ModelDemotionEventEntity: m.ModelDemotionEventRow,
+    ModelPromotionState: m.ModelPromotionStateRow,
 }
 
 

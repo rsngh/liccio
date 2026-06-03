@@ -847,6 +847,43 @@ class AppService:
             "readiness": readiness,
         }
 
+    def run_and_persist_drift(
+        self, ensemble, *, model_name: str, baseline, recent
+    ) -> dict:
+        """Run the drift lifecycle and DURABLY persist its outcome (Alpha 11, WS8)."""
+        from acp.learning.drift_lifecycle import run_drift_lifecycle
+        from acp.schemas.drift import (
+            DriftReportEntity,
+            ModelDemotionEventEntity,
+            ModelPromotionState,
+        )
+
+        result = run_drift_lifecycle(ensemble, model_name=model_name,
+                                     baseline=baseline, recent=recent)
+        d = result.drift
+        drift_row = DriftReportEntity(
+            model_name=model_name, accuracy_drop=d.accuracy_drop, psi=d.psi,
+            high_risk_false_negative_rate=d.high_risk_false_negative_rate_recent,
+            drifted=d.drifted, demote_recommended=d.demote_recommended,
+            reasons=list(d.reasons))
+        to_save: list = [drift_row]
+        demotion_id = None
+        if result.demoted and result.demotion_event is not None:
+            ev = ModelDemotionEventEntity(
+                model_name=model_name, drift_report_id=drift_row.id,
+                reason=result.demotion_event.reason,
+                review_item_id=result.review_item.id if result.review_item else None)
+            demotion_id = ev.id
+            to_save.append(ev)
+            if result.review_item is not None:
+                to_save.append(result.review_item)
+        to_save.append(ModelPromotionState(
+            model_name=model_name, promoted=getattr(ensemble, "learned_promoted", False),
+            last_event="demoted" if result.demoted else "checked"))
+        self._save(*to_save)
+        return {**result.as_dict(), "drift_report_id": drift_row.id,
+                "demotion_event_id": demotion_id, "persisted": True}
+
     def policy_dossier(self, run_id: str) -> dict:
         """Assemble the full policy decision dossier for a run (Alpha 11, WS3)."""
         from acp.core.policy_dossier import build_policy_dossier
