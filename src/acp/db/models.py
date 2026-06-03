@@ -203,6 +203,14 @@ class ReportLineageRow(_Row):
     report_id: Mapped[str] = mapped_column(String, index=True)
 
 
+class AttemptOutcomeRow(_Row):
+    """Durable classified attempt outcome (Round 12 WS8) — real live evidence."""
+
+    __tablename__ = "attempt_outcomes"
+    adapter_name: Mapped[str] = mapped_column(String, index=True)
+    task_type: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

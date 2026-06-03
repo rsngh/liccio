@@ -42,7 +42,12 @@ def classify_attempt(cell: Any) -> AttemptOutcome:
 
     Recognized signals: ``success`` (verified solve), ``status`` / ``timed_out``,
     ``error`` (provider attribution), ``tool_calls`` (activation), ``is_harness``.
+    A pre-decided ``_outcome`` (e.g. from a persisted record) short-circuits so
+    durable rows round-trip exactly rather than being re-derived.
     """
+    pre = _get(cell, "_outcome")
+    if pre is not None:
+        return pre if isinstance(pre, AttemptOutcome) else AttemptOutcome(str(pre))
     success = bool(_get(cell, "success", False) or _get(cell, "verification_pass", False))
     status = str(_get(cell, "status", "") or "").lower()
     error = str(_get(cell, "error", "") or "").lower()
@@ -98,6 +103,45 @@ def classify_record(cell: Any) -> AttemptOutcomeRecord:
         latency_s=float(_get(cell, "latency_s", 0.0) or 0.0),
         cost_usd=float(_get(cell, "cost_usd", 0.0) or 0.0),
     )
+
+
+def ingest_attempt_outcomes(session, cells: list[Any]) -> int:
+    """Classify and DURABLY persist attempt outcomes (WS8). Returns count stored.
+
+    Real live evidence becomes queryable by adapter/task_type, so routing/health can
+    read from persisted conclusive outcomes rather than only artifact summaries.
+    """
+    from acp.db.repositories import EntityStore
+
+    es = EntityStore(session)
+    n = 0
+    for c in cells:
+        es.save(classify_record(c))
+        n += 1
+    return n
+
+
+def hygiene_from_store(session, *, adapter_name: str | None = None,
+                       task_type: str | None = None) -> MeasurementHygieneReport:
+    """Build a hygiene report from persisted AttemptOutcomeRecord rows (WS8)."""
+    from acp.db.repositories import EntityStore
+    from acp.schemas.measurement import AttemptOutcomeRecord
+
+    es = EntityStore(session)
+    filt: dict[str, Any] = {}
+    if adapter_name is not None:
+        filt["adapter_name"] = adapter_name
+    if task_type is not None:
+        filt["task_type"] = task_type
+    records = es.list_by(AttemptOutcomeRecord, **filt)
+    # Re-shape persisted records into the dict cells the report builder expects.
+    cells = [{"adapter": r.adapter_name, "task_type": r.task_type,
+              "success": r.is_success, "tool_calls": r.tool_calls,
+              "is_harness": True,
+              # carry the already-decided outcome through so classification is stable
+              "status": "succeeded" if r.is_success else "failed",
+              "_outcome": r.outcome} for r in records]
+    return build_hygiene_report(cells)
 
 
 def build_hygiene_report(cells: list[Any]) -> MeasurementHygieneReport:

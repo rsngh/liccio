@@ -11,6 +11,7 @@ from __future__ import annotations
 from pydantic import Field
 
 from acp.core.enums import AttemptOutcome
+from acp.core.ids import new_id
 from acp.schemas.base import ACPModel
 
 
@@ -19,9 +20,10 @@ class AttemptOutcomeRecord(ACPModel):
 
     ``is_conclusive_quality`` / ``is_success`` / ``is_infra`` are denormalized
     from ``outcome`` so persisted rows and reports are self-describing without
-    re-deriving the enum semantics.
+    re-deriving the enum semantics. Persisted as a durable evidence row (WS8).
     """
 
+    id: str = Field(default_factory=lambda: new_id("aor"))
     attempt_id: str | None = None
     adapter_name: str = "unknown"
     model_name: str | None = None
