@@ -345,10 +345,19 @@ def main() -> int:
     # Exclude wall-clock timeouts from success/OPE: they reflect provider latency,
     # not capability, and would otherwise distort the policy. Log how many we drop
     # so the exclusion is never silent.
-    n_timed_out = sum(1 for c in cells if c.get("timed_out"))
-    if n_timed_out:
-        print(f"[exclude] {n_timed_out}/{len(cells)} attempts timed out (infra "
-              f"latency) -> dropped from success-rate and OPE")
+    timed_out_cells = [c for c in cells if c.get("timed_out")]
+    if timed_out_cells:
+        # A timeout with zero tool activity = the first call hung (pure infra). A
+        # timeout AFTER tool calls could be the agent genuinely struggling/looping
+        # on a hard task — surface that separately so it can't masquerade as infra.
+        no_progress = sum(1 for c in timed_out_cells if not c.get("tool_calls"))
+        with_activity = len(timed_out_cells) - no_progress
+        print(f"[exclude] {len(timed_out_cells)}/{len(cells)} attempts timed out -> "
+              f"dropped from success-rate and OPE "
+              f"({no_progress} no-progress/infra, {with_activity} had tool activity)")
+        if with_activity:
+            print(f"[warn] {with_activity} timeout(s) occurred after tool calls — "
+                  f"possible genuine struggle, not just infra latency; inspect cells")
     scored_cells = [c for c in cells if not c.get("timed_out")]
 
     # Real OPE log: each adapter is an action; reward = solved. Uniform behavior.
