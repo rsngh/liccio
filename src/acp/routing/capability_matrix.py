@@ -130,19 +130,16 @@ def _task_type(cell: dict) -> str:
 
 
 def _row_inconclusive(cell: dict) -> bool:
-    """A run cell that yields no usable capability signal: it timed out, did NOT
-    solve, and made no progress (zero tool calls) — i.e. a pure infra hang on the
-    first call. These are excluded from aggregation.
+    """A run cell that yields no usable capability signal — excluded from
+    aggregation. Delegates to the shared WS1 classifier so the matrix, the bakeoff,
+    and the live-ingest path apply one rulebook: an attempt is inconclusive iff its
+    classified outcome is not conclusive-quality (infra hang, provider error, etc.).
 
-    A timeout that nonetheless SOLVED the task (verified) is a success — the work
-    was done before a later call hung — so it is kept. A timeout that made tool
-    calls but did not solve is genuine non-completion and is kept as a failure.
+    A timeout that nonetheless SOLVED the task is a conclusive success; a timeout
+    with tool activity but no solve is a conclusive task failure — both are kept.
     """
-    timed_out = bool(cell.get("timed_out")) or \
-        str(cell.get("status", "")).lower() in ("timed_out", "timeout")
-    if not timed_out or cell.get("success"):
-        return False
-    return not cell.get("tool_calls")
+    from acp.evaluation.measurement_hygiene import classify_attempt
+    return not classify_attempt(cell).is_conclusive_quality
 
 
 class CapabilityMatrix:

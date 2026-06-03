@@ -1,144 +1,117 @@
 ## Executive assessment
 
-The current `feat/agent-control-plane` branch is now a **large, coherent alpha system** rather than a proof of concept. The Round 10 checkpoint reports **670 passing tests, 9 skipped, ruff/mypy clean across 192 source files, and Alembic upgrade head OK**. 
+The current `feat/agent-control-plane` branch has reached a strong **Alpha 10 / preproduction-lab** checkpoint. It now implements the original architecture at meaningful depth: durable agent execution, context compilation, multi-harness routing, evaluation/verification, human feedback, offline policy evaluation, capability matrices, learned governance, Pareto routing, drift demotion, preference learning, active learning, continuous scheduling, scale benchmarks, and data-governance controls.
 
-The branch now implements the majority of the original plan:
+The latest committed status reports:
 
 ```text
-agent/control-plane loop
-repo-aware context compilation
-multi-agent / multi-harness routing
-evaluation ladder
-weak supervision
-human review
-reward and delayed-outcome machinery
-OPE / policy promotion gates
-capability matrix
-training-data factory
-learned governance
-Pareto routing
-drift detection
-preference learning
-counterfactual regret
-continuous-learning scheduler
-large empirical corpus
-security/prompt-injection benchmark
-model/data governance
+670 passed
+9 skipped
+ruff clean
+mypy clean across 192 source files
+Alembic upgrade head OK
 ```
 
-The best short description is:
 
-> **ACP is now a policy-governed empirical routing platform for coding-agent work.**
 
-It is still **not production-ready for arbitrary untrusted real-world repos**. The remaining issues are now mostly around **live validation, operational hardening, real vendor harness proof, dataset realism, Docker/Kubernetes safety, and actual model fine-tuning** rather than basic architecture.
+The project is still correctly labeled as **local v0 / alpha, not production-grade**, with external harnesses, container isolation, and managed backends still optional or partially stubbed.  That caveat remains important. The branch is now impressive, but production readiness depends on live Docker/Kubernetes security, vendor harness campaigns, and real-world data volume rather than synthetic/fixture evidence alone.
 
-The project direction is also highly aligned with the two recent research papers you uploaded. AgensFlow argues that multi-agent systems should learn auditable coordination policies over task signatures, skills, model bindings, topology, skipping, and reward audit rather than rely on fixed pipelines.  The harness-evolution paper argues that harness-updating and harness-benefit are distinct capabilities, and that agents need explicit training/evaluation around harness activation and adherence.  ACP has implemented much of the first idea; the second idea is now one of the clearest next moats.
+Your sprint report says a recent live OpenAI/Anthropic bakeoff exposed several measurement bugs—missing Claude harness due to cached settings, timeout artifacts, cost-blind routing, OpenAI tool activation failure, and infra timeouts being misclassified as task failures. That is a very good sign. The system is starting to discover and correct its own measurement flaws, which is exactly what an empirical routing lab should do.
 
 ---
 
 # What has been implemented
 
-## 1. Core durable agent-control-plane loop
+## 1. Core control-plane architecture
 
-The core loop exists and is tested:
+The original plan called for an independent agent harness that routes, runs, verifies, evaluates, learns, and improves. The current branch now implements that core loop:
 
 ```text
-task → context → route → attempt → verify → evaluate → human review → reward → learn
+task → context → route → attempt → verify → evaluate → human → reward → learn
 ```
 
-`CURRENT_STATUS.md` lists this as a durable workflow runner and says the system persists full provenance: task, snapshot, context pack, plan, decision, attempts, diffs, verification runs, evidence, evaluation, weak labels, reward, and spans. 
+`CURRENT_STATUS.md` describes it as a durable 16-node `WorkflowRunner`, with persistence, resume, full provenance, adaptive routing, evaluation ladder, command execution, context compiler, verification, observability, post-merge loop, API/CLI, and long evals. 
 
-This satisfies the original architecture’s foundation.
+That is the backbone of the original product thesis.
 
-## 2. Multi-harness empirical router
+## 2. Multi-harness empirical routing
 
-The branch has two real ACP-native tool-loop harnesses, `openai_harness` and `claude_harness`, normalized `AgentTrace`, no-patch bakeoffs, and routing learning from bakeoff outcomes. 
+The repo has two ACP-native true tool-loop harnesses:
 
-This is important because the original thesis was not “build one more coding agent.” It was to build an independent control plane that can compare and govern different agents/harnesses.
+```text
+openai_harness
+claude_harness
+```
+
+It also has normalized `AgentTrace`, a multi-harness no-patch bakeoff, routing from those bakeoffs, and evaluator calibration. 
+
+Your latest sprint report adds that real OpenAI + Anthropic harnesses were run on no-patch git tasks, verified by each repo’s own pytest, and that the resulting measurements corrected several earlier routing beliefs. The most important empirical result is that **gpt-4o-mini appears competitive across tested tasks at much lower cost, while Claude Haiku keeps an edge on bugfix and test generation**. I would treat that as a useful current empirical hypothesis, not a final result, until it is repeated over larger corpora.
 
 ## 3. Viability assessment
 
-ACP now has first-class request viability assessment. Every run produces a `ViabilityAssessment` that decides whether the task is viable, whether cheap models are sufficient, whether a true harness is required, whether human review is mandatory, which context strategies are viable, and whether ACP should abstain. 
+The repo now has a first-class `ViabilityAssessment` primitive. It decides whether a request is viable, whether a cheap model can handle it, whether a true harness is required, which context strategies are viable, whether human review is required, and whether the system should abstain. 
 
-The schema includes the right decision fields:
+The schema includes task/risk, ambiguity, testability, evidence, viable agent classes, context strategies, verification requirements, model strength, human review, parallelism, abstention, confidence, and supporting features. 
 
-```text
-task_type
-risk_level
-ambiguity_score
-testability_score
-available_evidence
-viable_agent_classes
-viable_context_strategies
-required_verification
-capability_requirements
-model_strength
-cheap_model_viable
-true_harness_required
-human_review_required
-parallelism_recommended
-abstain
-abstention_reasons
-confidence
-supporting_features
-```
+This is a major implementation of the “what kinds of request are viable with what model/context?” idea.
 
+## 4. Capability matrix
 
-
-This directly implements the “which request types are viable with which models/context?” direction.
-
-## 4. Offline policy evaluation and promotion gate
-
-ACP now has OPE and a policy-promotion gate. The gate is designed to block policies with high point estimates but weak support. It checks statistical trust and operational safety: effective sample size, propensity overlap, max importance weight, DR confidence interval, SNIPS agreement, cost cap, human-review rate, high-risk degradation, and calibration.  
-
-This is one of the strongest pieces in the branch. A router should not be promoted merely because it looks good offline.
-
-## 5. Capability matrix
-
-The capability matrix aggregates evidence by:
+The capability matrix aggregates empirical evidence by routing cell:
 
 ```text
 task_type × risk_level × repo_type × agent_class × context_strategy × verification_policy
 ```
 
-It tracks success, cost, latency, human-review rate, post-merge failure, OPE reward, calibration confidence, sample size, and update time. 
+with success, cost, latency, human-review rate, post-merge failure, OPE reward, calibration confidence, sample size, and last updated. 
 
-It also refuses to overclaim: low-sample cells are flagged, and `best_for` will not recommend them. 
+It explicitly refuses to recommend under-sampled cells, marking them low-sample and requiring enough evidence before recommendation. 
 
-Alpha 10 reports **930 sufficiently sampled capability cells** and **1,740 preference pairs**, which is a meaningful scale-up for a lab setting. 
+Alpha 10 reports a large empirical corpus with **930 sufficiently sampled capability cells** and **1,740 preference pairs**, which is a meaningful lab-scale evidence base. 
 
-## 6. Learned governance from ACP exhaust
+## 5. Offline policy evaluation and promotion gating
 
-Alpha 8 added learned governance from run exhaust: learned viability, context-strategy prediction, evaluator trust, repair strategy classification, model-governance gates, memorization audit, canary simulation, and directed exploration. 
+The repo has an OPE-based policy-promotion gate. It blocks policies that look good on point estimates but have poor statistical support. It checks effective sample size, propensity overlap, max importance weight, doubly robust confidence bounds, SNIPS agreement, cost caps, human-review caps, high-risk degradation, and calibration confidence.  
 
-The report says learned viability hit 1.0 accuracy on a labeled set with zero high-risk false negatives, evaluator trust reduced low-risk human-review burden by 33%, and repair classification reached 0.95 accuracy over a nine-class taxonomy. 
+This is one of the strongest parts of the system. It prevents an unsafe router from being promoted merely because a logged dataset flatters it.
 
-The caveat is explicit: these learned models are trained/evaluated on synthetic or small distilled sets, and real promotion needs more logged traffic. 
+## 6. Learned governance and lightweight ML
 
-## 7. Classical ML exists, but not PyTorch training
-
-The repo has real lightweight ML:
+The repo has real **classical/statistical ML**, not just handwaving:
 
 ```text
-scikit-learn-style supervised predictors
-learned viability predictor
-context-strategy predictor
-preference scorer
+learned viability
+context-strategy prediction
 supervised meta-router
-bandits / OPE / drift / Pareto / counterfactuals
+preference scoring
+evaluator-trust modeling
+repair-strategy classification
+bandit/OPE/statistical routing
+drift detection
+counterfactual regret
 ```
 
-But it does not use PyTorch in the default path. The dependency file includes `scikit-learn` in optional `data` and `learning` extras, but no default PyTorch dependency. 
+It does **not** run PyTorch model training by default. The project dependencies include optional `scikit-learn`, but not default `torch`; the local LoRA module explicitly imports cleanly without `torch`, `peft`, or `transformers`, and full LoRA training is not wired.   
 
-The local LoRA module explicitly imports cleanly without `torch`, `peft`, or `transformers`; it returns a skipped record if those are unavailable, and the full non-smoke LoRA path is explicitly not implemented.  
+So the honest description is:
 
-So the honest characterization is:
+> **Real lightweight ML/statistical decision learning: yes. PyTorch/fine-tuned neural models: scaffolded, not operational.**
 
-> **ACP has real classical/statistical ML. It does not yet have real deep-learning fine-tuning.**
+## 7. Learned viability and safety contract
 
-## 8. Multi-objective Pareto routing
+The learned viability assessor is built around a good safety design: learned viability may advise but cannot override safety decisions—abstain, true-harness requirement, human review—until it has zero high-risk false negatives on holdout. 
 
-Alpha 9 added Pareto routing. The implementation computes a non-dominated frontier over:
+This is the right model-governance posture.
+
+## 8. Context-strategy learning
+
+The context-strategy predictor learns expected reward over task type, risk level, and context strategy, then ranks strategies. It remains explicitly subject to OPE and downstream benchmark promotion before live routing. 
+
+That addresses a key original premise: **context choice is part of routing**, not just model choice.
+
+## 9. Pareto routing
+
+Alpha 9/10 adds multi-objective Pareto routing across:
 
 ```text
 success ↑
@@ -147,9 +120,9 @@ latency ↓
 risk ↓
 ```
 
-and uses weight profiles to pick a frontier point. 
+The Pareto module computes non-dominated candidates and chooses from the frontier using weight profiles. 
 
-The checklist says Alpha 9 has a `ParetoRoutingPolicy` with six profiles:
+`CURRENT_STATUS.md` says there is now a Pareto routing policy with six profiles:
 
 ```text
 cost_saver
@@ -160,794 +133,797 @@ latency_min
 human_review_min
 ```
 
-and that the same candidates can produce different rational choices depending on the profile. 
 
-This is a major product feature: “best model” is not singular. It depends on user objective.
 
-## 9. Drift detection and auto-demotion
+This is an important product feature. There is no single “best” agent; the right agent depends on cost, latency, risk, and success objective.
 
-Alpha 9 added drift detection for learned models. It monitors accuracy drop, PSI, and recent high-risk false negatives, then demotes a learned model back to advisory if drift appears. 
+## 10. Drift detection and auto-demotion
 
-The implementation includes an `AutoDemoter` that flips `learned_promoted` back to `False`. 
+Drift detection watches promoted learned models for accuracy drop, PSI shift, and recent high-risk false negatives. It can demote a learned model back to advisory. 
 
-This is the right safety loop for learned viability/evaluator models.
+The implementation includes `AutoDemoter`, which flips `learned_promoted` back to `False` when demotion is recommended. 
 
-## 10. Preference learning
+This is critical if learned components are ever used in production-like decision paths.
 
-Alpha 9 added preference learning from human labels. The module converts human labels into pairwise preferences and fits a Bradley-Terry-style scorer over attempt features. 
+## 11. Preference learning
 
-This matches the product need: human feedback is often more useful as “attempt A was better than attempt B” than as a standalone scalar score.
+The repo can derive pairwise preferences from human labels and fit a preference scorer. 
 
-## 11. Counterfactual regret
+This is useful, especially given the research lesson that relative trajectory evaluation is often more informative than final answer scores alone. AgensFlow similarly argues that agentic systems should be evaluated through relative trajectory comparisons and reward audit, not only final outputs. 
 
-ACP now includes per-decision counterfactual analysis. It asks: for a logged decision, what would each alternative have been expected to yield, and what regret did the logged choice incur? 
+## 12. Counterfactual regret
 
-The implementation exposes per-decision `what_if` and log-wide `total_regret`. 
+The repo implements per-decision counterfactual what-if analysis: what would alternative actions likely have yielded, and how much regret did the logged choice incur? 
 
-This is valuable for explainability: not just “policy B is better,” but “this specific run left this much value on the table.”
+This is a strong explainability primitive for router improvement.
 
-## 12. Active learning, scheduler, and health
+## 13. Active learning, scheduler, and health
 
-Alpha 9 includes active-learning exploration, a continuous-learning scheduler, and unified `acp health`. The checklist says active learning turns capability-matrix gaps into budget/risk-bounded probes, and the scheduler runs ordered jobs idempotently and fault-tolerantly. 
+Alpha 9 adds active-learning exploration, a continuous-learning scheduler, and unified `acp health`. The checklist says active learning turns capability-matrix gaps into budget/risk-bounded probes, and the scheduler runs an idempotent, fault-tolerant job batch. 
 
-`CURRENT_STATUS.md` says `acp health` returns a unified snapshot with status/degraded state and artifact freshness. 
+That moves ACP from “run evaluations manually” toward an autonomous experimentation/control loop.
 
-This is the beginning of real operator support.
+## 14. Scale and security hardening
 
-## 13. Scale and security hardening
-
-Alpha 10 adds a large empirical corpus, a storage/performance benchmark, expanded security/prompt-injection benchmarks, and model/data governance. The Alpha 10 report says:
+Alpha 10 adds:
 
 ```text
-930 sufficiently sampled capability cells
-1,740 preference pairs
-sub-quadratic storage/perf behavior
-10 attack classes all escalated or flagged
-zero planted-secret leakage
-private-repo data blocked from global training without allowlist
+large empirical corpus
+storage/performance benchmark v2
+security/prompt-injection benchmark v2
+model/data governance
 ```
 
+The report says the scale benchmark is sub-quadratic, the security benchmark covers 10 attack classes with zero planted-secret leakage, and governance blocks private-repo data from global training without allowlist. 
 
-
-The Alpha 10 checklist confirms the delivered workstreams and explicitly says Docker live-security, vendor-harness live campaign, and local LoRA remain environment-gated. 
+This is a meaningful hardening milestone.
 
 ---
 
 # What has not been implemented or remains insufficiently proven
 
-## 1. Production-grade Docker/live sandbox proof is still missing
+## 1. Live Docker/security gate still not proven in committed default evidence
 
-Docker workspace tests are skipped in the committed test report. 
+Alpha 10 explicitly says Docker live-security is environment-gated and skipped when Docker is unavailable.  The test report also says Docker workspace tests are among the skipped tests. 
 
-The code and gates exist, but for production-like execution of untrusted real agents, the branch still needs a Docker-capable live report proving:
+For production-like use, this is a blocker. The local runner is not an OS-level sandbox.
+
+## 2. Vendor-native harness campaigns remain environment-gated
+
+The repo has ACP-native OpenAI/Claude harnesses and vendor scaffolding, but live Codex/SDK-style evidence is still skipped. 
+
+The original product is strongest when ACP can compare real coding agents such as Codex CLI/SDK, Claude Code/Agent SDK, OpenHands, Aider, Cline/Roo, etc. That is not yet proven at scale.
+
+## 3. Fine-tuning is not operational
+
+The training-data pipeline is now substantial, but actual PyTorch/LoRA training is not active. The LoRA module says the heavy dependencies are optional and that full local LoRA training is not wired in the scaffold. 
+
+This is fine for now, but the repo should not overclaim fine-tuning.
+
+## 4. Coverage artifact is stale
+
+The pytest report is Round 10 current, but `reports/coverage.txt` is still labeled Alpha 6. 
+
+This is a trust issue, not a technical architecture issue. Refresh it.
+
+## 5. Synthetic and fixture artifacts still dominate
+
+Alpha 9 explicitly says the Pareto/drift/preference machinery is real, but many artifacts use synthetic/deterministic data and become richer only with larger corpus/live campaigns. 
+
+The system has the machinery; it still needs more live and semi-live evidence.
+
+## 6. Harness activation/adherence metrics are only partially addressed
+
+Your latest sprint report says WS6, HAR/HFR/PWL, completed. That is exactly the right response to the harness-benefit paper. However, I would still verify whether these metrics are:
 
 ```text
-no-network enforcement
-non-root execution
-memory cap
-PID cap
-timeout enforcement
-workspace-only mount
-secret scrubbing
-cleanup
-diff capture
+persisted
+included in AgentTrace or run graph
+included in capability matrix
+included in routing features
+included in health reports
+available by model/harness/task type
 ```
 
-## 2. Vendor-native harnesses are still not live-proven
+The harness-benefit paper’s key point is that weak models fail in two separable ways: they fail to activate harness artifacts, or they load them but fail to follow them.  These metrics should become first-class routing features.
 
-The Alpha 10 report says the vendor-harness campaign is environment-bound.  The test report says live Codex CLI/SDK and service backends are skipped. 
+## 7. Harness evolution is still not a full PR-like pipeline
 
-ACP-native OpenAI/Claude harnesses are useful, but the original idea was to route across the fast-growing landscape of actual coding agents. The next moat is live evidence for:
-
-```text
-Codex CLI / SDK
-Claude Agent SDK / Claude Code
-OpenHands
-Aider
-Cline/Roo
-Goose
-```
-
-## 3. Fine-tuning is still not operational
-
-The branch has a training-data factory and fine-tuning governance, but local LoRA is still environment-gated and not run in CI. 
-
-The LoRA module confirms that full training is not wired and the path mostly reports readiness/skips. 
-
-## 4. Coverage is stale
-
-`reports/pytest.txt` is Round 10 current, but `reports/coverage.txt` is still labeled Alpha 6.  
-
-This is easy to fix, but important for trust.
-
-## 5. Synthetic artifacts still dominate
-
-Alpha 9 explicitly notes that artifacts use synthetic/deterministic data so they are reproducible and that richer inputs require Alpha 10 large corpus and live campaigns. 
-
-Alpha 10 expands scale, but live and production-replay evidence is still limited.
-
-## 6. Skill/harness evolution is not yet fully represented
-
-The research you uploaded emphasizes harness evolution: updating prompts, skills, memories, and tools from execution evidence while keeping the base model fixed. 
-
-ACP has training-data and governance pieces, but it does not yet appear to have a full PR-like harness-evolution pipeline:
+ACP has learned governance and training-data factories, but it does not yet clearly implement a full harness update pipeline:
 
 ```text
 HarnessUpdateProposal
 HarnessDiff
-HarnessUpdateEval
-SkillRegressionSuite
-NegativeTransferReport
-HumanReview
+Regression tests
+Negative-transfer tests
+Security scan
+Human review
 Canary
 Rollback
 ```
 
-That is now a high-leverage next step.
+The harness-evolution paper warns that persistent harness updates can carry unsafe instructions, incorrect lessons, or sensitive data into future tasks.  ACP should treat harness updates like code changes.
 
-## 7. Harness activation and adherence metrics are missing or underdeveloped
+## 8. Topology learning is still less mature than model/context routing
 
-The harness-benefit paper shows that weak models often fail either to activate relevant harness artifacts or to follow them over the trajectory, and it uses metrics like skill-load rate, harness-following rate, and pass-when-loaded. 
+AgensFlow emphasizes topology as a learnable action surface, especially `skip:X`, where the policy learns when to omit retrieval, verification, or other costly cells. 
 
-ACP has normalized traces, but it should explicitly measure:
-
-```text
-harness_candidate_retrieved
-harness_loaded
-harness_load_valid
-harness_followed
-harness_adherence_by_phase
-pass_when_loaded
-adherence_decay
-harness_abandonment_turn
-```
-
-This is important because routing should consider not just “can model X solve?” but “can model X benefit from the harness?”
-
-## 8. Topology skipping is not first-class enough
-
-AgensFlow treats `skip:X` as a routing action and shows topology compression can be learned.  ACP has context strategy and Pareto routing, but it should make workflow topology actions first-class:
-
-```text
-skip_retrieval
-skip_planner
-skip_reviewer
-skip_parallel
-skip_strict_verification
-run_light_verifier
-branch_parallel
-terminate
-abstain
-```
+ACP has Pareto routing, context routing, viability, and active learning, but topology-skip learning should become a more explicit action class.
 
 ---
 
 # Constructive feedback
 
-## 1. Cut a clean Round 10 release checkpoint
+## 1. Treat the latest live bakeoff as a pivotal product lesson
 
-Round 10 is a strong checkpoint. Before going further, make it reviewable:
-
-```text
-refresh coverage
-validate artifacts
-ensure CURRENT_STATUS matches pytest/coverage
-add ALPHA10 evidence bundle index
-run acp health
-```
-
-The repo is now large enough that every major claim needs a corresponding artifact.
-
-## 2. Reframe the product around “decision dossiers”
-
-Each significant routing decision should produce a dossier:
+Your session report is exactly the right empirical loop:
 
 ```text
-ViabilityAssessment
-CapabilityMatrix evidence
-Pareto frontier
-OPE estimate
-Promotion gate
-Counterfactual regret
-Preference reward
-Drift status
-Data sufficiency
-Chosen action
-Rejected alternatives
-Cost/risk trade-off
+measurement → surprising artifact → diagnosis → fix → remeasure
 ```
 
-That would make ACP not just a router but an explainable engineering decision system.
-
-## 3. Treat Pareto profile as a user/business policy
-
-The system should let teams configure objective profiles:
+The important findings were not just “OpenAI cheaper” or “Claude better at test generation.” The important findings were:
 
 ```text
-docs/lint → cost_saver
-bugfix → balanced
-CI outage → latency_min
-security/auth → risk_min
-incident → success_max
+cached settings can hide a harness
+provider default retries break wall-time budget
+timeouts can masquerade as model quality
+tool activation bugs can look like model weakness
+infra hangs can poison the capability matrix
+cost-blind routing disagrees with product value
 ```
 
-Each profile should have hard safety constraints and OPE promotion history.
+These should be codified into tests and metrics.
 
-## 4. Make Docker live-security a production gate
+## 2. Make “measurement hygiene” a first-class module
 
-The current implementation correctly skips Docker when unavailable. But “true harness production mode” should refuse to run without a recent passing Docker/Kubernetes security report.
-
-## 5. Prioritize vendor-native harness proof
-
-The next real product unlock is showing ACP can route across existing external coding agents, not only ACP-native wrappers.
-
-Start with:
+Add:
 
 ```text
-Codex CLI
-Claude Agent SDK / Claude Code
-OpenHands
+MeasurementHygieneReport
+InfrastructureFailureClassifier
+ProviderRetryAudit
+TimeoutAttribution
+HarnessAvailabilityAudit
+ToolActivationAudit
 ```
 
-and require normalized `AgentTrace` for each.
+This would prevent future false conclusions like “Claude dominates security” when the signal is actually timeout behavior.
 
-## 6. Implement harness-benefit metrics
+## 3. Persist real live cells into the production capability matrix
 
-Add the metrics from the harness-benefit paper:
+Your report says the natural next step is persisting real cells into production routing/health. I agree. The current empirical live result should become:
 
 ```text
-Skill Load Rate / Harness Activation Rate
-Harness Following Rate
-Pass When Loaded
-Phase-level adherence
-Adherence drift
-Activation failure reason
-Adherence failure reason
+CapabilityCell
+EvalRun
+AgentTrace
+HarnessMetrics
+CostMetrics
+TimeoutAttribution
+MeasurementQualityFlag
 ```
 
-This should become part of the capability matrix.
+Then the matrix can route from real evidence, not just artifact summaries.
 
-## 7. Build a governed harness-evolution pipeline
+## 4. Make infra failures non-poisoning by default
 
-Harness updates should be treated like code changes:
+Every attempt should be classified:
 
 ```text
-propose
-diff
-test
-redact
-security scan
-negative-transfer test
-human review
-canary
-promote
-rollback
+solved
+failed_task
+failed_verification
+failed_harness_activation
+failed_timeout_provider
+failed_timeout_agent
+failed_infra
+inconclusive
 ```
 
-Do not let an evolver mutate production harness state directly.
+Only task-relevant failures should update model quality. Infra/inconclusive failures should update reliability/availability metrics, not solve-rate.
 
-## 8. Add topology learning
+## 5. Make cost a first-class tie-breaker everywhere
 
-Inspired by AgensFlow, topology should be learnable, not static. Add `skip:X` and “run/skip” decisions to the action space, with reward/cost/quality tracking. 
-
-## 9. Replace “ML claims” with model inventory
-
-Given the repo uses mostly classical ML and statistical methods, add:
-
-```bash
-acp ml inventory
-```
-
-It should report:
+Your report says cost-blind routing was fixed with matrix cost tie-break and cost-aware OPE. That should be applied consistently:
 
 ```text
-model name
-kind
-backend
-trained?
-uses_torch?
-uses_sklearn?
-input features
-target
-promotion status
-drift status
+CapabilityMatrix.best_for
+Pareto routing
+OPE promotion
+counterfactual regret
+human review bundle
+health report
 ```
 
-This will prevent confusion about whether ACP is using PyTorch/deep learning.
+## 6. Add provider-specific timeout/retry policy
+
+The 607s / 241s vs 120s budget finding is important. Provider SDK defaults can silently violate ACP’s budget model. Make all providers pass through:
+
+```text
+per-call timeout
+max_retries=0 unless explicitly allowed
+wall-clock budget supervisor
+provider retry attribution
+budget ledger event
+```
+
+## 7. Make tool activation a harness-benefit metric
+
+The OpenAI test_generation jump after `tool_choice="required"` is a harness activation bug, not a model-quality bug. Track:
+
+```text
+tool_required
+tool_offered
+tool_called
+tool_call_valid
+first_tool_call_latency
+tool_activation_failure
+```
+
+This maps directly to HAR/HFR/PWL.
 
 ---
 
-# Additional tests and stress tests
+# Additional tests and stress tests to run
 
-## A. Release truth tests
+## A. Harness availability test
 
-Add tests that assert:
-
-```text
-reports/pytest.txt matches CURRENT_STATUS
-reports/coverage.txt is current
-all ALPHA10_CHECKLIST artifacts exist
-all artifact metrics match ALPHA10_REPORT
-acp reports validate covers 24/24 artifacts
-acp health returns expected status
-```
-
-## B. Docker live-security test
-
-In Docker-capable CI:
+Simulate cached settings and dynamic env changes:
 
 ```text
-no network
-non-root
-memory cap
-PID cap
-timeout kill
-workspace-only mount
-secret scrub
-massive stdout bounded
-cleanup
-diff capture
-```
-
-This should produce:
-
-```text
-evals/reports/docker_security_live.json
-```
-
-## C. Vendor harness live campaign
-
-For each vendor harness:
-
-```text
-codex_cli
-claude_agent_sdk
-openhands
-```
-
-test:
-
-```text
-health available/unavailable
-no-patch bugfix
-timeout stop
-budget stop
-tool trace
-file trace
-command trace
-diff capture
-verification pass/fail
-secret non-leakage
-Docker enforcement
-```
-
-## D. Pareto live-run tests
-
-For the same task/candidates, assert:
-
-```text
-cost_saver chooses cheap adapter
-success_max chooses strongest harness
-risk_min chooses low post-merge-risk arm
-latency_min chooses fast arm
-human_review_min chooses low-review-burden arm
-```
-
-Persist:
-
-```text
-profile
-frontier
-dominated candidates
-chosen score
-trade-off summary
-```
-
-## E. OPE + Pareto profile tests
-
-For each Pareto profile:
-
-```text
-OPE estimate
-ESS
-overlap
-DR CI
-SNIPS
-cost cap
-high-risk slice
-human-review slice
-```
-
-Assert profiles with poor overlap or unacceptable cost/risk are blocked.
-
-## F. Drift lifecycle e2e
-
-Simulate:
-
-```text
-baseline window
-recent degraded window
-high-risk false negative
-recovery window
+OPENAI_API_KEY present/absent
+ANTHROPIC_API_KEY present/absent
+settings cached before env set
+settings reset
+adapter registry rebuild
 ```
 
 Assert:
 
 ```text
-drift report persisted
-model demoted
-audit event created
-review item created
-health degraded
-scheduler records job
-fallback policy activated
+both harnesses appear when keys exist
+missing harness is reported as unavailable, not silently absent
+health degrades if expected harness absent
 ```
 
-## G. Preference learning robustness
+## B. Provider timeout and retry test
 
-Test:
+For each provider adapter:
 
 ```text
-multiple reviewers
-reviewer disagreement
-ties/uncertain labels
-objective pass but human reject
-human prefer but post-merge revert
-reviewer bias
+per-call timeout respected
+max_retries=0 by default
+wall-time budget respected
+provider internal retry disabled
+long first call classified infra timeout if no tool call
+timeout does not become model-quality failure
 ```
 
-Assert preference reward remains advisory unless agreement and post-merge correlation pass thresholds.
+## C. Inconclusive/infra failure classification test
 
-## H. Counterfactual uncertainty tests
-
-For counterfactual regret:
+Create attempts that:
 
 ```text
-supported alternative
-low-sample alternative
-zero-overlap alternative
-high-risk alternative
-conflicting reward model
+timeout before first tool call
+timeout after solving
+provider 429
+provider 500
+network failure
+verification command timeout
+harness process hang
 ```
 
-Assert unsupported regret is marked untrusted, not shown as fact.
-
-## I. Harness activation/adherence benchmark
-
-For each harness/model:
+Assert:
 
 ```text
-harness retrieved
-harness loaded
-valid load format
-first-step adherence
-midpoint adherence
-final adherence
-pass when loaded
+matrix quality not poisoned
+availability/reliability metrics updated
+solved-despite-hang retained as solved + infra warning
+inconclusive excluded from success denominator
 ```
 
-Track:
+## D. Tool activation regression test
+
+For OpenAI/Anthropic harnesses:
 
 ```text
-HAR
-HFR
-PWL
-adherence_decay
-activation_failure_reason
-adherence_failure_reason
+tool_choice required
+tool_choice auto
+tool schema malformed
+tool schema valid
+model refuses tool
+model calls wrong tool
 ```
 
-## J. Harness-evolution grid
+Assert activation metrics reflect the outcome.
 
-Separate evolver and task agent:
+## E. Cost-aware routing consistency test
+
+For the same capability matrix:
 
 ```text
-evolver ∈ cheap, mid, strong
-task agent ∈ cheap, mid, strong
+CapabilityMatrix.best_for
+ParetoRouter cost_saver
+OPE target policy
+Counterfactual best action
+Control-plane health recommendation
 ```
 
-Measure:
+should agree under a cost-aware objective.
+
+## F. Live no-patch corpus expansion
+
+Run live/semi-live:
 
 ```text
-harness-update quality
-task solve gain
-harness activation
-harness adherence
-cost
-negative transfer
+bugfix
+test_generation
+security
+migration
+refactor
+CI failure
 ```
 
-This tests the “spend capability on the task-solving agent, not necessarily the evolver” hypothesis from the harness-evolution paper. 
-
-## K. Topology skip ablation
-
-Compare:
+Across:
 
 ```text
-fixed full pipeline
-no-skip
-learned skip
-always skip retrieval
-always skip verifier
-always strict verifier
+gpt-4o-mini via openai_harness
+claude-haiku via claude_harness
+codex_cli if available
 ```
 
-Measure:
+Require:
 
 ```text
-success
-cost
-latency
-human review
-post-merge failure
-token usage
+repo pytest verification
+per-call timeout
+zero hidden retries
+cost logging
+HAR/HFR/PWL
+inconclusive classification
 ```
 
-This directly imports the AgensFlow `skip:X` insight. 
+## G. Measurement mutation test
 
-## L. Harness update governance red-team
-
-Attack classes:
+Deliberately break measurement:
 
 ```text
-write secret into skill
-disable verifier in skill
-add unsafe network guidance
-teach agent to skip tests
-poison reward model
-poison training dataset
-overfit to one task
-negative transfer to unrelated tasks
+disable Claude env after registry init
+turn on provider retries
+remove tool_choice required
+force verification timeout
+inject fake provider 500s
 ```
 
-Assert proposal is blocked, flagged, or requires human review.
+Assert ACP detects the measurement flaw.
 
-## M. Long-run soak
+## H. Capability matrix non-poisoning test
 
-Run:
+Feed:
 
 ```text
-5,000–20,000 workflows
-mixed task types
-mixed profiles
-mixed adapters
-some Docker
-some human-review
-some post-merge outcomes
-scheduler enabled
+5 true failures
+5 infra failures
+5 successes
+5 solved-despite-timeout
+5 inconclusive
 ```
 
-Track:
+Assert:
 
 ```text
-RSS
-FDs
-DB locks
-artifact growth
-run graph latency
-capability matrix build time
-OPE build time
-scheduler duration
-health snapshot latency
+success_rate only uses conclusive task outcomes
+reliability_rate tracks infra
+cost includes all billable attempts
+recommendation explains excluded samples
 ```
+
+## I. Harness benefit metrics test
+
+For each harness:
+
+```text
+HAR: relevant harness/tool loaded
+HFR: harness followed
+PWL/PWHL: pass when loaded
+activation failure
+adherence failure
+```
+
+Assert those metrics enter:
+
+```text
+AgentTrace
+CapabilityCell
+PolicyDossier
+HealthSnapshot
+```
+
+## J. Long live soak with provider budgets
+
+Run controlled live soak with hard caps:
+
+```text
+N tasks
+max total spend
+max per provider spend
+max wall-clock per task
+max retries 0
+```
+
+Assert spend never exceeds budget and failures are classified correctly.
 
 ---
 
-# Next-level plan for an LLM coding agent
+# Detailed next-step plan for an LLM coding agent
 
-Below is an ambitious Alpha 11/12 plan meant for a long continuous implementation pass.
+Below is a deliberately ambitious Alpha 11/12 plan focused on the new live-measurement findings.
 
 ## Alpha 11 mission
 
-Turn ACP from an alpha routing lab into a **controlled preproduction platform** with live sandbox proof, vendor harness evidence, policy dossiers, and harness-benefit metrics.
+Turn ACP from a powerful empirical lab into a **measurement-trustworthy live routing system**.
+
+The key acceptance question:
+
+> Can ACP run real harnesses, classify infrastructure vs model failures correctly, enforce cost/time budgets, persist clean evidence, and update routing only from trustworthy conclusive outcomes?
 
 ---
 
-## Workstream 1 — Release hygiene and artifact truth
-
-### Tasks
-
-1. Refresh `reports/coverage.txt`.
-2. Add `test_report_freshness.py`.
-3. Ensure `CURRENT_STATUS.md`, `reports/pytest.txt`, and `reports/coverage.txt` match.
-4. Add artifact schemas for all Alpha 9/10 reports.
-5. Add `acp reports diff`.
-
-### Acceptance
-
-```bash
-acp reports validate
-uv run pytest tests/integration/test_docs_consistency.py -q
-```
-
-No stale Alpha 6 coverage file remains.
-
----
-
-## Workstream 2 — Policy decision dossier
-
-### Add
-
-```text
-PolicyDecisionDossier
-```
-
-Includes:
-
-```text
-ViabilityAssessment
-CapabilityMatrix evidence
-Pareto frontier
-OPE estimate
-promotion gate
-counterfactual regret
-preference reward
-drift status
-human-review threshold
-chosen action
-rejected alternatives
-```
-
-### CLI/API
-
-```bash
-acp policy dossier <run-id>
-GET /runs/{run_id}/policy-dossier
-```
-
-### Acceptance
-
-Every real run has a reviewable reason for why the chosen agent/context/verifier was selected.
-
----
-
-## Workstream 3 — Pareto profile configuration
-
-### Add
-
-```text
-ParetoProfileRegistry
-RepoRoutingObjectivePolicy
-TaskTypeRoutingObjectivePolicy
-```
-
-### Config
-
-```yaml
-profiles:
-  docs: cost_saver
-  lint: cost_saver
-  bugfix: balanced
-  ci_fix: latency_min
-  security_fix: risk_min
-  incident: success_max
-```
-
-### Acceptance
-
-Same candidate set yields different choices under different profiles, and every override is audited.
-
----
-
-## Workstream 4 — Docker live-security gate
+## Workstream 1 — Measurement hygiene layer
 
 ### Build
 
-```bash
-acp eval docker-security-live
+```text
+MeasurementHygieneReport
+AttemptOutcomeClassifier
+InfrastructureFailureKind
+ProviderCallAudit
+MeasurementQualityFlag
 ```
 
-### Artifact
+### Classify
 
 ```text
-evals/reports/docker_security_live.json
-```
-
-### Checks
-
-```text
-no network
-non-root
-memory cap
-PID cap
-workspace-only mount
-secret scrub
-timeout
-massive stdout
-cleanup
-diff capture
-```
-
-### Acceptance
-
-`acp health --mode production` fails without a fresh passing Docker live report.
-
----
-
-## Workstream 5 — Vendor harness live campaign
-
-### Targets
-
-```text
-codex_cli
-claude_agent_sdk
-openhands
-```
-
-### Contract
-
-```text
-health
-no-patch solve
-budget stop
-timeout stop
-tool/file/command trace
-diff capture
-verification
-secret non-leakage
-Docker enforcement
+task_success
+task_failure
+verification_failure
+harness_activation_failure
+harness_adherence_failure
+infra_timeout_before_action
+infra_timeout_after_solution
+provider_rate_limit
+provider_server_error
+provider_retry_exceeded
+inconclusive
 ```
 
 ### Acceptance
 
-At least one vendor-native harness has a committed live evidence artifact.
+Capability matrix and OPE use only conclusive task-quality outcomes for solve rate, while infra failures feed reliability metrics.
 
 ---
 
-## Workstream 6 — Harness activation/adherence metrics
+## Workstream 2 — Provider budget enforcement
 
-### Add schemas
+### Build
 
 ```text
-HarnessActivationReport
-HarnessAdherenceReport
-HarnessBenefitMetrics
+ProviderPolicy
+ProviderCallBudget
+ProviderRetryPolicy
+ProviderTimeoutPolicy
+```
+
+### Requirements
+
+```text
+per-call timeout
+wall-clock budget
+max_retries default 0
+provider retry audit
+hard stop on budget
+budget ledger event
+```
+
+### Tests
+
+```text
+OpenAI respects per-call timeout
+Anthropic respects per-call timeout
+provider retry disabled by default
+wall-clock cap wins over provider behavior
+timeout attribution correct
+```
+
+---
+
+## Workstream 3 — Harness availability and settings invalidation
+
+### Build
+
+```text
+HarnessAvailabilityAudit
+SettingsCacheReset
+AdapterRegistryRefresh
+```
+
+### Tests
+
+```text
+env key appears after settings load
+env key disappears after registry build
+expected harness absent
+health degraded
+registry refresh fixes it
+```
+
+### Acceptance
+
+A harness can never be silently absent.
+
+---
+
+## Workstream 4 — Tool activation metrics
+
+### Add to `AgentTrace`
+
+```text
+tools_offered
+tools_required
+tool_calls_valid
+first_tool_call_turn
+activation_failure_reason
+tool_choice_mode
 ```
 
 ### Metrics
 
 ```text
-HAR = harness activation rate
-HFR = harness following rate
-PWL = pass when loaded
-phase_adherence
-adherence_decay
-activation_failure_reason
-adherence_failure_reason
+ToolActivationRate
+ToolValidityRate
+FirstToolLatency
+ToolChoiceSensitivity
 ```
 
 ### Acceptance
 
-Capability matrix includes harness-benefit metrics by model/harness/task type.
+The OpenAI `tool_choice="required"` bug would have been visible as an activation failure.
 
 ---
 
-## Workstream 7 — Harness evolution pipeline
+## Workstream 5 — Harness adherence metrics
 
 ### Add
 
 ```text
-HarnessUpdateProposal
-HarnessUpdateDiff
-HarnessUpdateReview
-HarnessUpdateEval
-HarnessUpdateCanary
-HarnessUpdateRollback
+HarnessActivationRate
+HarnessFollowingRate
+PassWhenLoaded
+AdherenceDecay
+ActivationFailureReason
+AdherenceFailureReason
 ```
 
-### Flow
+### Integrate into
 
 ```text
-execution evidence → evolver proposal → diff → redaction/security → regression tests → negative-transfer tests → human review → canary → promote/rollback
+AgentTrace
+CapabilityMatrix
+PolicyDossier
+HealthSnapshot
 ```
 
 ### Acceptance
 
-No persistent harness update can merge without eval, audit, and rollback metadata.
+Routing can prefer a model with lower raw capability but higher harness adherence when appropriate.
 
 ---
 
-## Workstream 8 — Topology action learning
+## Workstream 6 — Capability matrix v2
+
+### Add fields
+
+```text
+conclusive_sample_size
+inconclusive_sample_size
+infra_failure_rate
+provider_failure_rate
+harness_activation_rate
+harness_following_rate
+pass_when_loaded
+cost_per_conclusive_success
+```
+
+### Recommendation logic
+
+```text
+use conclusive success
+penalize infra/reliability separately
+cost tiebreak
+no-overclaim on thin samples
+```
+
+### Acceptance
+
+Timeout artifacts cannot create false “Claude dominates” conclusions.
+
+---
+
+## Workstream 7 — Cost-aware OPE v2
+
+### Add
+
+```text
+reward_cost_weight
+expected_cost
+cost_per_success
+provider_cost_model
+```
+
+### Tests
+
+```text
+high-success high-cost policy blocked under cost_saver
+low-cost equal-quality policy promoted
+cost cap enforced in promotion gate
+counterfactual regret includes cost-adjusted regret
+```
+
+---
+
+## Workstream 8 — Live cell persistence
+
+### Build
+
+```text
+LiveEvalRun
+LiveCapabilityCellIngest
+LiveMeasurementArtifact
+```
+
+### Ingest
+
+```text
+live OpenAI/Claude no-patch tasks
+pytest verification
+cost
+latency
+HAR/HFR/PWL
+timeout attribution
+excluded inconclusive rows
+```
+
+### Acceptance
+
+Real cells affect `acp viability matrix` and `acp health`.
+
+---
+
+## Workstream 9 — Policy dossier v2
+
+### Add measurement section
+
+```text
+measurement quality
+excluded samples
+infra failures
+provider reliability
+tool activation
+harness adherence
+cost sensitivity
+```
+
+### Acceptance
+
+Reviewer can see whether a recommendation is based on clean task outcomes or contaminated by infra.
+
+---
+
+## Workstream 10 — Live corpus broadening
+
+### Add tasks
+
+```text
+bugfix
+test_generation
+security_fix
+migration
+refactor
+CI_failure
+docs/lint
+```
+
+### Harnesses
+
+```text
+openai_harness gpt-4o-mini
+claude_harness haiku
+codex_cli if available
+```
+
+### Acceptance
+
+At least 30–100 live/semi-live conclusive cells, with clear spend cap and redacted artifacts.
+
+---
+
+## Workstream 11 — Measurement mutation suite
+
+### Mutations
+
+```text
+hide Claude key
+enable provider retries
+disable tool_choice required
+force provider 500
+force 429
+force verification hang
+force post-solve timeout
+```
+
+### Acceptance
+
+ACP flags the mutation and prevents poisoned routing updates.
+
+---
+
+## Workstream 12 — Production health modes
+
+### Extend
+
+```bash
+acp health --mode lab
+acp health --mode staging
+acp health --mode production
+```
+
+Production fails on:
+
+```text
+stale live Docker security
+expected harness absent
+provider timeout policy missing
+inconclusive rate too high
+coverage stale
+artifact validation stale
+capability matrix thin
+OPE overlap poor
+```
+
+---
+
+## Workstream 13 — Harness evolution proposal pipeline
+
+### Build
+
+```text
+HarnessUpdateProposal
+HarnessUpdateDiff
+HarnessUpdateVerifier
+HarnessNegativeTransferTest
+HarnessUpdateReview
+HarnessUpdateCanary
+HarnessRollback
+```
+
+### Inputs
+
+```text
+failure traces
+harness activation failures
+adherence failures
+review labels
+post-merge outcomes
+```
+
+### Acceptance
+
+Harness updates are PR-like, tested, reviewed, canaried, and reversible.
+
+---
+
+## Workstream 14 — Topology action learning
 
 ### Add actions
 
@@ -964,23 +940,19 @@ terminate
 abstain
 ```
 
-### Update
+### Tests
 
 ```text
-RoutingAction
-CandidateGenerator
-OPE logs
-CapabilityMatrix
-ParetoRouter
+learned skip reduces cost on docs/lint
+security never skips strict verifier
+ambiguous tasks skip implementation and route to spec
 ```
 
-### Acceptance
-
-ACP can learn workflow shape, not just agent/model/context.
+This directly incorporates the AgensFlow `skip:X` idea. 
 
 ---
 
-## Workstream 9 — Relative trajectory judge
+## Workstream 15 — Relative trajectory judge
 
 ### Add
 
@@ -994,9 +966,9 @@ RewardSensitivityReport
 ### Axes
 
 ```text
-goal achievement
-test adequacy
+task success
 minimality
+test adequacy
 security
 harness activation
 harness adherence
@@ -1006,126 +978,62 @@ cost
 
 ### Acceptance
 
-Preference learning can consume relative trajectory comparisons.
+Preference learning can consume relative same-task trajectory rankings.
 
 ---
 
-## Workstream 10 — Preference reward governance
+## Workstream 16 — Vendor harness live campaign
 
-### Add
+### Targets
 
 ```text
-ReviewerReliabilityModel
-PreferenceRewardGate
-PreferenceRewardReport
+codex_cli
+claude_agent_sdk
+openhands
 ```
 
-### Gate
-
-Preference reward may affect routing only if:
+### Required evidence
 
 ```text
-reviewer agreement high
-post-merge correlation positive
-high-risk non-degradation
-pairwise accuracy acceptable
-```
-
----
-
-## Workstream 11 — Drift persistence
-
-### Add entities
-
-```text
-DriftReportEntity
-ModelDemotionEvent
-ModelPromotionState
+health
+no-patch solve
+trace
+budget stop
+timeout stop
+secret non-leakage
+Docker enforcement
+verification
 ```
 
 ### Acceptance
 
-Auto-demotion persists audit events, health state, and fallback policy activation.
+At least one vendor-native harness has a committed live evidence pack.
 
 ---
 
-## Workstream 12 — Exploration executor productionization
+## Workstream 17 — Docker live-security gate
 
-### Inputs
+### Build
 
-```text
-low-sample capability cells
-poor OPE overlap
-high regret
-uncertain viability
-drift windows
+```bash
+acp eval docker-security-live
 ```
 
-### Output
+### Artifact
 
 ```text
-budgeted exploration plan
-risk constraints
-expected sample gains
+evals/reports/docker_security_live.json
 ```
 
 ### Acceptance
 
-Simulated exploration improves capability coverage and OPE overlap.
+Production mode refuses true harness execution without fresh passing Docker/Kubernetes security report.
 
 ---
 
-## Workstream 13 — Continuous-learning scheduler hardening
+## Workstream 18 — Local LoRA pilot
 
-### Jobs
-
-```text
-artifact validation
-dataset build
-OPE refresh
-capability refresh
-Pareto reports
-drift detection
-preference update
-exploration planning
-health snapshot
-```
-
-### Tests
-
-```text
-idempotent
-resumable
-locked
-partial failure
-stale artifact alert
-duplicate prevention
-```
-
----
-
-## Workstream 14 — Data governance red-team
-
-### Attacks
-
-```text
-private repo → global dataset
-repo A → repo B model
-memorization canary in training
-allowlist bypass
-model artifact without rollback plan
-dataset export before leakage audit
-```
-
-### Acceptance
-
-All attacks blocked or flagged.
-
----
-
-## Workstream 15 — Local LoRA pilot
-
-### Model
+### Target
 
 ```text
 Qwen2.5-Coder-1.5B-Instruct
@@ -1134,115 +1042,40 @@ Qwen2.5-Coder-1.5B-Instruct
 ### Dataset
 
 ```text
+harness_activation
 viability
-evaluator trust
-repair strategy
-trace summary
-```
-
-### Outputs
-
-```text
-adapter
-model card
-memorization audit
-baseline comparison
-repo holdout
-temporal holdout
+evaluator_trust
+repair_strategy
 ```
 
 ### Acceptance
 
-Optional/live only, but real training must run when deps/hardware exist.
+Optional local smoke produces adapter, model card, memorization audit, baseline comparison.
 
 ---
 
-## Workstream 16 — Larger mixed corpus
+## Workstream 19 — Large mixed live/semi-live corpus
 
-Generate:
+### Goal
 
 ```text
-5,000+ tasks
-20 fixture repos
-6 task types
-3 risk levels
-6 context strategies
-4 adapters
-3 repetitions
+500+ conclusive live/semi-live cells
+multiple repos
+multiple task types
+multiple harnesses
+multiple context strategies
+cost-bounded
 ```
 
-Goal:
+### Measure
 
 ```text
->2,000 sufficient capability cells
->10,000 preference pairs
-usable OPE overlap for common task classes
-```
-
----
-
-## Workstream 17 — Operator health modes
-
-Add:
-
-```text
-acp health --mode lab
-acp health --mode staging
-acp health --mode production
-```
-
-Production should fail on:
-
-```text
-stale artifacts
-missing Docker live gate
-unproven vendor harness
-poor OPE overlap
-demoted learned model still active
-private-data governance failure
-```
-
----
-
-## Workstream 18 — UI/API backend for review and policy operations
-
-Add:
-
-```text
-GET /health/control-plane
-GET /capability-matrix
-GET /policy-dossier/{run_id}
-GET /reviews/queue
-POST /reviews/{id}/preference
-POST /harness-updates/{id}/review
-GET /reports
-GET /scheduler/jobs
-```
-
-This can remain backend-first.
-
----
-
-## Workstream 19 — Production policy pack
-
-Define:
-
-```text
-lab_policy.yaml
-staging_policy.yaml
-production_policy.yaml
-```
-
-Production policy:
-
-```text
-Docker live gate required
-vendor harness proof required
-OPE promotion required
-human review for high risk
-local harness disallowed
-private data governance enforced
-fresh test/coverage reports required
+cost per conclusive success
+HAR/HFR/PWL
+infra failure rate
+provider reliability
+routing regret
+Pareto profile performance
 ```
 
 ---
@@ -1254,24 +1087,26 @@ Commit:
 ```text
 ALPHA11_REPORT.md
 ALPHA11_CHECKLIST.md
-evals/reports/policy_dossier.json
-evals/reports/docker_security_live.json
-evals/reports/vendor_harness_live.json
-evals/reports/harness_benefit_metrics.json
-evals/reports/harness_update_pipeline.json
-evals/reports/topology_skip_ablation.json
-evals/reports/relative_trajectory_judge.json
-evals/reports/preference_reward_gate.json
-evals/reports/drift_persistence.json
-evals/reports/exploration_executor.json
-evals/reports/scheduler_hardening.json
-evals/reports/data_governance_redteam.json
-evals/reports/local_lora_pilot.json
-evals/reports/mixed_corpus_v2.json
+evals/reports/measurement_hygiene.json
+evals/reports/provider_budget_policy.json
+evals/reports/harness_availability_audit.json
+evals/reports/tool_activation_metrics.json
+evals/reports/harness_adherence_metrics.json
+evals/reports/capability_matrix_v2.json
+evals/reports/cost_aware_ope_v2.json
+evals/reports/live_cells_ingest.json
+evals/reports/policy_dossier_v2.json
+evals/reports/live_corpus_broadening.json
+evals/reports/measurement_mutation_suite.json
 evals/reports/production_health.json
+evals/reports/harness_update_pipeline.json
+evals/reports/topology_skip_learning.json
+evals/reports/relative_trajectory_judge.json
+evals/reports/vendor_harness_live.json
+evals/reports/docker_security_live.json
 ```
 
-### Gate
+Gate:
 
 ```bash
 uv run pytest -q --timeout=300
@@ -1289,16 +1124,23 @@ acp health --mode production
 
 # Merge recommendation
 
-Round 10 is strong enough to merge into an alpha branch after one final hygiene pass:
+Round 10 is a strong alpha checkpoint. I would merge it into an alpha/preproduction branch after:
 
 ```text
 1. Refresh reports/coverage.txt.
-2. Confirm CURRENT_STATUS.md references the refreshed coverage.
-3. Run acp reports validate.
-4. Run acp health.
-5. Clearly mark Docker/vendor/LoRA live gates as skipped, not passed.
+2. Confirm acp reports validate covers all 24 artifacts.
+3. Confirm acp health output is committed or attached.
+4. Clearly label Docker/vendor/LoRA live gates as skipped, not passed.
 ```
 
-For anything production-facing, keep it gated until Docker live security and vendor harness live campaigns pass.
+For anything production-facing, the required next gates are:
 
-The next leap should not be more standalone algorithms. It should be **closed-loop operational trust**: policy dossiers, live sandbox proof, vendor harness proof, harness activation/adherence metrics, governed harness evolution, topology learning, and production-mode health gates.
+```text
+Docker live-security
+vendor harness live campaign
+measurement hygiene / infra classification
+cost-aware routing consistency
+real-cell persistence into capability matrix
+```
+
+The latest sprint’s live bakeoff is extremely valuable because it exposed measurement bugs. The next stage should focus less on adding new abstractions and more on making the live empirical loop **clean, trustworthy, cost-aware, and non-poisoning**.
