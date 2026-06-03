@@ -77,6 +77,12 @@ class CapabilityCell:
     har: float | None = None  # harness activation rate (tool loop engaged)
     hfr: float | None = None  # harness following rate (read + write + verify)
     pwl: float | None = None  # pass-when-loaded (solved | activated)
+    # Measurement-quality columns (Round 12 WS6 v2): separate conclusive task
+    # signal from infra noise so a reviewer can see what the success_rate rests on.
+    conclusive_sample_size: int = 0
+    inconclusive_sample_size: int = 0
+    infra_failure_rate: float = 0.0
+    cost_per_conclusive_success: float | None = None
     sample_size: int = 0
     # number of post-merge outcomes folded in (denominator for failure rate)
     post_merge_sample_size: int = 0
@@ -207,6 +213,20 @@ class CapabilityMatrix:
                 sample_size=n,
                 last_updated=ts,
             )
+            # Measurement-quality columns (WS6 v2): conclusive vs inconclusive +
+            # infra failure rate + cost per conclusive success.
+            from acp.evaluation.measurement_hygiene import classify_attempt
+            n_succ = sum(1 for r in scored if r.get("success"))
+            inconclusive_rows = [r for r in rows if _row_inconclusive(r)]
+            infra_rows = [r for r in rows
+                          if classify_attempt(r).is_infra and not r.get("success")]
+            total = len(rows) or 1
+            cell.conclusive_sample_size = n
+            cell.inconclusive_sample_size = len(inconclusive_rows)
+            cell.infra_failure_rate = round(len(infra_rows) / total, 4)
+            if n_succ:
+                cell.cost_per_conclusive_success = round(
+                    sum(float(r.get("cost_usd", 0.0)) for r in scored) / n_succ, 6)
             # Harness-benefit metrics (WS6) when the cells carry harness signals.
             harness_rows = [r for r in scored if r.get("is_harness")]
             if harness_rows:

@@ -234,3 +234,24 @@ def test_timeout_with_activity_but_no_solve_counts_as_failure() -> None:
     ]
     cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
     assert cell.sample_size == 2 and cell.success_rate == 0.5
+
+
+def test_v2_measurement_quality_columns() -> None:
+    # Conclusive vs inconclusive split + infra rate + cost-per-success (WS6 v2).
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [
+        {"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+         "success": True, "status": "succeeded", "tool_calls": 2, "cost_usd": 0.002},
+        {"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+         "success": False, "status": "failed", "tool_calls": 3, "cost_usd": 0.001},
+        {"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+         "success": False, "status": "timed_out", "timed_out": True, "tool_calls": 0,
+         "error": "timed out", "cost_usd": 0.0},
+    ]
+    c = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert c.conclusive_sample_size == 2     # 1 success + 1 task_failure
+    assert c.inconclusive_sample_size == 1   # the first-call hang
+    assert c.infra_failure_rate == round(1 / 3, 4)
+    # Total conclusive cost (0.002 + 0.001) per success (1) = realistic cost/success.
+    assert c.cost_per_conclusive_success == 0.003
+    assert c.success_rate == 0.5
