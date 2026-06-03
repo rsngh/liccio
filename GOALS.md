@@ -1,84 +1,82 @@
-## Executive assessment
+## Executive verdict
 
-The current branch has clearly moved beyond the Alpha 7 “policy-governed routing + training pipeline” milestone. I can verify that `feat/agent-control-plane` now contains Alpha 8 artifacts and Alpha 9 source modules, including Pareto routing, drift detection, preference learning, and counterfactual what-if analysis. The repo’s `CURRENT_STATUS.md` still reports Alpha 7 with **498 passing / 7 skipped**, while `ALPHA8_REPORT.md` and the new Alpha 9 files show later work has landed; your sprint note also says the Alpha 9 arc is still progressing and the final suite/count has not yet been committed. So I would treat the current state as:
+The branch is now a **serious alpha-to-preproduction routing lab**, not merely an agent-control-plane prototype. The current `feat/agent-control-plane` status reports **670 passing tests, 9 skipped, ruff/mypy clean across 192 source files, and Alembic upgrade OK**.  The branch status describes Alpha 9/10 as a multi-objective decision system plus scale-hardening layer: Pareto routing, drift demotion, preference learning, counterfactual regret, active-learning exploration, continuous-learning scheduling, unified health, a large empirical corpus, scale benchmarks, security-injection benchmarks, and model/data governance. 
 
-> **Alpha 8 substantially landed; Alpha 9 partially landed and in progress; docs/test artifacts are not yet fully synchronized.**
+I would now describe the project as:
 
-The biggest architectural advancement since Alpha 7 is that ACP is no longer only a supervised/OPE-gated router. It is becoming a **multi-objective, continuously monitored decision system**: it can reason over Pareto trade-offs, detect learned-model drift and auto-demote, learn pairwise preferences from human labels, compute per-decision counterfactual regret, and produce control-plane health signals.
+> **A policy-governed empirical routing platform for coding-agent work, with learned governance, multi-objective routing, active safety gates, and a training-data pipeline from agent exhaust.**
 
-This is the right direction. The next level is to wire these modules into the live runner, make their outputs persistent and auditable, and stress them with large, adversarial, multi-objective, multi-harness datasets.
+It is still **not production-ready for arbitrary untrusted real-world repos**. The remaining blockers are no longer architecture gaps; they are validation, live-environment hardening, vendor-harness proof, real-data volume, and operational productization. Alpha 10 itself states that Docker live-security, vendor-harness live campaigns, and local LoRA training are environment-gated and skip cleanly when Docker/vendor keys/GPU are unavailable. 
+
+One concrete housekeeping issue: the test report is current at Alpha 9/10, but `reports/coverage.txt` is still labeled Alpha 6, even though `CURRENT_STATUS.md` points to it.  Refreshing coverage should be part of the next cleanup commit.
 
 ---
 
 # What has been implemented
 
-## 1. Alpha 7 foundation remains intact
+## 1. Core control-plane loop
 
-The branch still contains the Alpha 7 policy-governed platform: viability assessment, OPE promotion gate, real-log OPE, capability matrix, training-data factory, downstream context benchmark, vendor harness hardening, and review-studio training examples. `CURRENT_STATUS.md` reports Alpha 7 with 498 passing tests, 7 skipped, ruff/mypy clean, and Alembic upgrade in the gate. 
+The original plan called for a system that can ingest tasks, compile context, route to agents, run safely, verify, evaluate, collect traces, learn, and improve. That is substantially implemented.
 
-The Alpha 7 report frames the core acceptance question as whether ACP can assess viability, choose agent/model/context/verifier, prove policies offline, run safely, produce training data, and improve a classifier/evaluator from exhaust.  It also states that the OPE promotion gate blocks a deterministic greedy policy for poor overlap while promoting an exploration-smoothed supervised policy with trustworthy diagnostics. 
+`CURRENT_STATUS.md` lists the durable core loop as:
 
-## 2. Viability assessment is first-class
+```text
+task → context → route → attempt → verify → evaluate → human → reward → learn
+```
 
-The `ViabilityAssessment` schema remains one of the most important pieces. It explicitly decides whether and with what resources a task is viable before routing. It narrows viable agent classes and context strategies, records whether cheap models are viable, whether a true harness is required, whether human review is required, and whether the system should abstain. 
+with durable resume, full provenance, adaptive routing, evaluation ladder, mediated command execution, context compiler, verification, observability, post-merge loop, API/CLI, and long evals. 
 
-The schema includes the right fields: task/risk, ambiguity, testability, evidence, viable agent classes, context strategies, verification requirements, model strength, human review, parallelism, abstention reasons, confidence, and supporting features. 
+The status doc also states that every run persists task, snapshot, context pack, plan, decision, attempts, diffs, verification runs, evidence, evaluation, weak labels, rewards, and spans. 
 
-That is exactly the right abstraction for “which types of request/need are viable with which models and contexts?”
+## 2. Multi-harness empirical routing foundation
 
-## 3. OPE promotion gate is implemented
+The branch still carries the Alpha 4 milestone: two true tool-loop harnesses, `openai_harness` and `claude_harness`, normalized `AgentTrace`, a multi-harness no-patch bakeoff, router learning from bakeoffs, and evaluator calibration. 
 
-`routing/promotion.py` is a strong implementation. It explicitly rejects the idea that a high OPE point estimate is enough to deploy. It requires statistical trust and operational safety. 
+That addresses the early “do we have real harnesses?” gap. The system now has at least ACP-native true harnesses, although some vendor-native harness paths are still gated or not fully proven.
 
-The gate checks effective sample size, propensity overlap, max importance weight, DR CI lower bound, SNIPS agreement, cost cap, human-review rate, high-risk degradation, and calibration confidence.  
+## 3. Viability assessment
 
-This is one of the highest-value parts of the system because it prevents “policy looks good offline” from becoming “policy is safe to deploy.”
+Alpha 7 added the key primitive for “which requests are viable with which resources?” Every run now produces a `ViabilityAssessment` that can decide cheap-vs-harness, abstain on ambiguous/unverifiable tasks, and constrain routing. 
 
-## 4. Capability matrix exists and is conservative
+The `ViabilityAssessment` schema records task/risk, ambiguity, testability, evidence, viable agent classes, viable context strategies, required verification, model strength, cheap-model viability, true-harness requirement, human-review requirement, parallelism, abstention, confidence, and supporting features. 
 
-The capability matrix aggregates evidence per:
+This is one of the most important product primitives in the entire branch.
+
+## 4. OPE promotion gate
+
+The OPE promotion gate is implemented and correctly framed: offline policy evaluation alone is not enough to deploy a policy. `routing/promotion.py` checks statistical trust and operational safety, including effective sample size, propensity overlap, max importance weight, DR CI lower bound, SNIPS agreement, cost, human-review rate, high-risk degradation, and calibration.  
+
+That is exactly the right architecture: a router policy should not be promoted just because a point estimate is high.
+
+## 5. Capability matrix
+
+The capability matrix aggregates empirical evidence by:
 
 ```text
 task_type × risk_level × repo_type × agent_class × context_strategy × verification_policy
 ```
 
-It stores success, cost, latency, human-review rate, post-merge failure, OPE reward, calibration confidence, sample size, and update time. 
+with metrics for success, cost, latency, human-review rate, post-merge failure, OPE reward, calibration confidence, sample size, and update time. 
 
-It also deliberately refuses to recommend low-sample cells. Cells below `MIN_SAMPLE` are flagged `low_sample`, and `best_for` refuses to recommend them. 
+It also refuses to recommend low-sample cells. This “no overclaim” behavior is explicitly documented. 
 
-This is the right empirical answer to “which harness/context/verifier works best for this kind of task?”
+Alpha 10 reports that the large empirical corpus now contains **930 sufficiently sampled capability cells** and **1,740 preference pairs**, which is a major jump from the earlier small synthetic datasets. 
 
-## 5. Alpha 8 learned governance landed
+## 6. Training-data factory and learned governance
 
-`ALPHA8_REPORT.md` says Alpha 8 makes governance learned and verifiable: it trains models from ACP exhaust to predict viability, context strategy, evaluator trust, and repair strategy, each behind promotion contracts. 
+Alpha 8 and Alpha 7 together added the training-data factory and learned governance.
 
-The Alpha 8 report claims these committed artifacts:
+Alpha 7 states that ACP distills redacted, leakage-audited datasets from run exhaust and recommends fine-tuning only when justified.  Alpha 8 goes further: it adds learned viability, context-strategy learning, evaluator-trust modeling, repair-strategy classification, completed dataset builders for previously stubbed dataset kinds, model promotion/memorization audit, canary execution, and exploration planning. 
 
-```text
-learned viability with zero high-risk false negatives on labeled set
-context-strategy predictor
-evaluator-trust model
-repair-strategy classifier
-policy canary rollback
-directed exploration plan
-artifact manifest / acp reports validate
-```
+Alpha 8’s headline report says learned viability reached 1.0 accuracy with zero high-risk false negatives on the labeled set, context-strategy prediction reached top-1 accuracy 1.0 in the deterministic artifact, evaluator-trust thresholds cut low-risk human-review burden by 33%, repair strategy classification reached 0.95 accuracy, canary rollback works, and exploration is directed. 
 
+The limitation is important: those learned models are based on synthetic or small distilled sets, not broad real production data. 
 
+## 7. Multi-objective Pareto routing
 
-It also lists new modules for learned viability, context strategy learning, evaluator trust, repair classification, completed dataset builders, model governance, canary execution, and exploration planning. 
+Alpha 9 adds the right next layer: routing is no longer purely scalar. It reasons over multiple objectives.
 
-Important caveat: Alpha 8 is honest that these learned models are trained/evaluated on synthetic or small distilled sets, and that real promotion needs more logged traffic. 
-
-## 6. Artifact validation is now part of the system
-
-Alpha 8 adds an artifact-manifest/report-validation layer: 12/12 artifacts at Alpha 8, then a subsequent increment reports 15/15 valid.  
-
-This directly addresses earlier feedback: checklist artifacts should not be prose-only; they should be machine-checkable.
-
-## 7. Pareto routing is now implemented
-
-The new `routing/pareto.py` implements multi-objective Pareto routing over:
+`routing/pareto.py` computes the non-dominated frontier over:
 
 ```text
 success ↑
@@ -87,564 +85,9 @@ latency ↓
 risk ↓
 ```
 
-and exposes the non-dominated frontier plus weighted scalarization. 
+and uses profile-specific weights to pick a frontier point. 
 
-The module defines an `ObjectiveVector`, dominance, frontier computation, scalarization, `ParetoRouter`, and a helper to construct objectives from capability-matrix cells.  
-
-This is an important conceptual shift. Real routing is not one scalar reward. A high-success/high-cost frontier harness and lower-success/cheap harness can both be correct depending on task risk and budget.
-
-## 8. Drift detection and auto-demotion are implemented
-
-`learning/drift.py` adds a drift loop for promoted learned models. It compares a recent window against a baseline window using accuracy drop, PSI, and recent high-risk false-negative rate, then recommends demotion when drift or high-risk false negatives appear. 
-
-It has a concrete `AutoDemoter` that flips a promoted model back to advisory when drift recommends demotion. 
-
-This is exactly the right safety mechanism for learned viability/evaluator models.
-
-## 9. Preference learning from human labels is implemented
-
-`learning/preference.py` turns human labels into pairwise preferences and fits a Bradley-Terry/logistic-style preference model over attempt features. It can score attempts as learned reward signals for routing/evaluation. 
-
-It builds pairwise preferences from per-attempt human labels and skips attempts with missing features. 
-
-This is a good next step because human labels are often more reliable comparatively than as absolute scalar scores.
-
-## 10. Counterfactual what-if analysis is implemented
-
-`routing/counterfactual.py` answers the per-decision question: for a specific logged decision, what would each alternative action have been expected to yield, and how much regret did the logged choice incur? It reuses the fitted reward model from OPE. 
-
-It exposes `what_if` and `total_regret`, including per-action predicted reward and aggregate regret. 
-
-This complements OPE: OPE evaluates policies; counterfactuals explain individual decisions.
-
----
-
-# What has not been implemented or is not yet proven
-
-## 1. Alpha 9 is not fully finalized in branch status
-
-The code contains Alpha 9 modules, but `CURRENT_STATUS.md` still says Alpha 7 and reports 498 passing tests.  Your sprint note says Alpha 9 focused tests were being held until the full suite freed up, then the branch would be finalized and fast-forwarded.
-
-So the Alpha 9 code is present, but the release state is incomplete:
-
-```text
-no ALPHA9_REPORT.md observed
-no ALPHA9_CHECKLIST.md observed
-test count not refreshed
-coverage not refreshed
-Alpha 9 artifact set not yet clearly committed
-```
-
-## 2. Pareto routing is not yet wired into live workflow
-
-`pareto.py` is a clean standalone module. I did not see evidence that the live routing node now uses `ParetoRouter` or persists a Pareto frontier per routing decision. The sprint report also says “next: multi-objective routing wired into the runner.”
-
-So current state:
-
-```text
-Pareto math: implemented
-Pareto integration into runner: not yet complete / not proven
-Pareto artifacts: not yet release-gated
-```
-
-## 3. Drift detection is not yet clearly connected to real model registry/promotion lifecycle
-
-The drift module can detect and apply demotion, but it appears as a standalone safety module. It still needs to be wired into:
-
-```text
-scheduled evaluation windows
-promoted model registry
-model promotion/demotion audit log
-policy rollback/canary plan
-review queue
-health snapshot
-```
-
-## 4. Preference learning is synthetic until real paired human labels exist
-
-The preference model is structurally good, but it needs real human review comparisons. The file includes synthetic defaults for tests/artifacts. 
-
-The key missing data loop is:
-
-```text
-multiple attempts per same task
-human preference labels across attempts
-trace features extracted
-preference reward feeds routing
-OPE checks whether preference reward improves real outcomes
-```
-
-## 5. Counterfactual regret needs uncertainty and overlap diagnostics
-
-The counterfactual module uses a fitted mean reward model and reports predicted reward/regret. 
-
-That is useful, but it should not be treated as ground truth. It needs:
-
-```text
-sample count per action
-confidence intervals
-overlap / support warnings
-“insufficient evidence” states
-high-risk caution
-```
-
-Otherwise, a per-decision “regret” can over-explain sparse data.
-
-## 6. Learned models are still synthetic/small-data
-
-Alpha 8 explicitly says learned models are trained/evaluated on synthetic or small distilled sets and need more logged traffic for real promotion. 
-
-This remains true even as Alpha 9 adds Pareto/drift/preference modules.
-
-## 7. Docker live-security and vendor-native live proof remain open
-
-Alpha 8 lists Docker live-security gate and vendor-native live smoke as deferred. 
-
-Given the product’s safety posture, this is still a release blocker for running untrusted real agents in production-like settings.
-
-## 8. Control-plane health snapshot is reported but not verified in fetched code
-
-Your sprint note says `AppService.control_plane_health` and `acp health` now unify counts, OPE readiness, learned-model promotability, and counterfactual regret. I did not fetch the implementation successfully, so I would treat it as reported but not independently verified.
-
----
-
-# Constructive feedback
-
-## 1. Promote Alpha 9 around “decision quality,” not more features
-
-Alpha 9 should be framed as:
-
-> **Decision-quality layer: multi-objective routing, drift-safe learned models, preference-derived rewards, per-decision counterfactual regret, and control-plane health.**
-
-That is a coherent story.
-
-## 2. Wire Pareto routing into the live runner before adding more decision modules
-
-Right now, Pareto routing is likely standalone. The next milestone should persist this per decision:
-
-```text
-candidate objective vectors
-non-dominated frontier
-chosen weight profile
-chosen frontier point
-dominated candidates
-scalarization score
-reason
-```
-
-Then include it in:
-
-```text
-run graph
-review bundle
-policy OPE logs
-counterfactual analysis
-control-plane health
-```
-
-## 3. Use Pareto routing to expose product trade-offs
-
-Do not reduce Pareto back to “one best.” Make the UI/API explain:
-
-```text
-cost-minimizing choice
-success-maximizing choice
-low-risk choice
-balanced choice
-chosen choice
-why chosen
-what trade-off was accepted
-```
-
-This is a powerful product differentiator.
-
-## 4. Make drift detection automatically demote, but never silently
-
-Every auto-demotion should produce:
-
-```text
-DriftReport
-AuditEvent
-ModelDemotionEvent
-Review item if high-risk false negatives caused demotion
-policy rollback event
-```
-
-The system should answer:
-
-```text
-Which model was demoted?
-Why?
-Which recent cases caused it?
-What policy replaced it?
-What human review is needed?
-```
-
-## 5. Treat preference learning as reward-model v0, not truth
-
-Pairwise human preference is a strong signal, but it can encode reviewer bias and local style preferences. Route with it only after:
-
-```text
-reviewer agreement measured
-preference model calibrated
-task/risk slices evaluated
-objective-regression guardrails applied
-post-merge outcomes checked
-```
-
-## 6. Unify OPE, Pareto, preference, and counterfactual under one policy report
-
-A policy report should include:
-
-```text
-OPE value estimate
-Pareto frontier effects
-counterfactual regret
-preference reward impact
-drift status
-capability-matrix sample coverage
-promotion-gate decision
-canary plan
-```
-
-Right now, these modules are separate. The next product win is a single “Policy Decision Dossier.”
-
-## 7. Make Alpha 9 artifact-first
-
-Before continuing the arc indefinitely, cut an Alpha 9 checkpoint:
-
-```text
-ALPHA9_REPORT.md
-ALPHA9_CHECKLIST.md
-reports/pytest.txt refreshed
-reports/coverage.txt refreshed
-evals/reports/pareto_routing.json
-evals/reports/drift_demote.json
-evals/reports/preference_learning.json
-evals/reports/counterfactual_regret.json
-evals/reports/control_plane_health.json
-```
-
-This keeps the project reviewable.
-
----
-
-# Tests to add beyond current suite
-
-## A. Pareto routing tests
-
-Add tests for:
-
-```text
-dominance correctness
-ties / equal objective vectors
-all candidates dominated except one
-no candidates
-single candidate
-NaN/None/negative values rejected or normalized
-cost-heavy weights choose cheap frontier point
-success-heavy weights choose high-success frontier point
-risk-heavy weights avoid high post-merge failure
-frontier preserved in original order
-```
-
-Integration tests:
-
-```text
-routing decision persists frontier
-run graph includes Pareto explanation
-review bundle includes trade-offs
-policy report includes chosen weight profile
-```
-
-## B. Pareto stress test
-
-Generate 10,000 synthetic capability cells with correlated objectives:
-
-```text
-success vs cost
-latency vs cost
-risk vs success
-```
-
-Assert:
-
-```text
-frontier computed under latency budget
-frontier size reasonable
-no O(N²) problem for expected production sizes or optimized path added
-```
-
-Current `pareto_frontier` is simple O(N²), which is fine for small candidate sets but should be tested at the scale of capability-matrix cells. 
-
-## C. Pareto + OPE consistency tests
-
-For each target policy:
-
-```text
-balanced
-cost-minimizing
-success-maximizing
-risk-minimizing
-```
-
-Run OPE and verify:
-
-```text
-promotion gate passes/fails appropriately
-cost-minimizing policy reduces cost
-success-maximizing policy increases success but may fail cost cap
-risk-minimizing policy improves high-risk slice
-```
-
-## D. Drift detection tests
-
-Beyond current unit tests, add:
-
-```text
-gradual drift
-sudden drift
-label delay
-seasonality
-small recent window
-no high-risk cases
-one high-risk false negative
-PSI high but accuracy stable
-accuracy drop but PSI low
-drift followed by recovery
-```
-
-Integration tests:
-
-```text
-drift report persisted
-model demoted
-audit event persisted
-policy promotion status changes
-review item created for high-risk false negative
-```
-
-## E. Preference learning tests
-
-Add realistic cases:
-
-```text
-multiple reviewers
-reviewer disagreement
-ties / uncertain labels
-partial verdicts
-high objective pass but poor human preference
-human preference conflicts with post-merge outcome
-preference model trained on one task type and tested on another
-```
-
-Gate promotion on:
-
-```text
-pairwise accuracy
-calibration
-reviewer agreement
-post-merge agreement
-high-risk non-degradation
-```
-
-## F. Counterfactual tests
-
-Add:
-
-```text
-unsupported action => insufficient support warning
-low sample action => wide CI
-zero overlap => no regret claim
-conflicting reward model => uncertainty
-counterfactual explanation appears in run graph
-```
-
-The current counterfactual module returns point-estimate regret; add confidence/support metadata before exposing it in UI. 
-
-## G. Control-plane health snapshot tests
-
-The health snapshot should assert:
-
-```text
-artifact manifest valid
-test count fresh
-coverage fresh
-OPE logs enough overlap
-capability matrix sufficient cells
-learned models promotable/advisory/demoted
-drift status
-counterfactual regret mean/max
-Docker live gate status
-vendor harness live status
-training data readiness
-```
-
-## H. End-to-end policy dossier test
-
-Given a new candidate policy, produce:
-
-```text
-OPE report
-promotion decision
-Pareto frontier report
-counterfactual regret report
-preference reward report
-drift status
-canary plan
-```
-
-Assert all IDs link back to persisted data.
-
-## I. Active-learning exploration tests
-
-Implement and test the next reported target:
-
-```text
-find under-sampled capability cells
-choose exploration tasks/actions
-respect cost/risk budgets
-avoid high-risk exploration without human approval
-improve OPE overlap after simulated exploration
-```
-
-## J. Continuous-learning scheduler tests
-
-Add a scheduler that runs:
-
-```text
-nightly dataset build
-weekly OPE
-drift detection
-capability matrix refresh
-artifact validation
-exploration plan
-training candidate report
-```
-
-Test idempotency, partial failures, and stale report alerts.
-
-## K. Multi-objective runner integration tests
-
-When Pareto routing is wired into the runner:
-
-```text
-same task under cost-heavy profile chooses cheaper action
-same task under success-heavy profile chooses stronger harness
-high-risk task profile prioritizes risk
-chosen action still satisfies ViabilityAssessment
-OPE logs include objective vectors
-```
-
-## L. Real-data stress run
-
-Run:
-
-```text
-500–1,000 no-patch tasks
-multiple fixtures
-multiple task types
-multiple context strategies
-multiple adapters
-some human labels
-some post-merge outcomes
-```
-
-Measure:
-
-```text
-OPE overlap
-capability matrix coverage
-Pareto frontier size
-counterfactual regret
-preference model accuracy
-drift false alarms
-scheduler latency
-storage growth
-```
-
----
-
-# Detailed next-step plan for an LLM coding agent
-
-Below is a larger, more strenuous Alpha 9/10 plan. It assumes the coding agent will keep working continuously, run full gates, commit artifacts, and keep `IMPLEMENTATION_LOG.md` updated.
-
-## Alpha 9 completion mission
-
-Turn the currently in-progress Alpha 9 arc into a **reviewable release checkpoint**.
-
-### Workstream 1 — Finalize Alpha 9 reports and status
-
-Create:
-
-```text
-ALPHA9_REPORT.md
-ALPHA9_CHECKLIST.md
-evals/reports/pareto_routing.json
-evals/reports/drift_demote.json
-evals/reports/preference_learning.json
-evals/reports/counterfactual_regret.json
-evals/reports/control_plane_health.json
-reports/pytest.txt
-reports/coverage.txt
-```
-
-Update:
-
-```text
-CURRENT_STATUS.md
-docs/status_schema.md if needed
-Makefile alpha9-artifacts
-```
-
-Acceptance:
-
-```bash
-uv run pytest -q
-uv run ruff check .
-uv run mypy src
-uv run alembic upgrade head
-make alpha9-artifacts
-acp reports validate
-```
-
-## Workstream 2 — Wire Pareto routing into live runner
-
-Implement:
-
-```text
-ParetoRoutingPolicy
-ParetoWeightProfile
-ParetoDecisionExplanation
-```
-
-Persist in `RoutingDecision.metadata` or new schema:
-
-```text
-objective_vectors
-frontier
-chosen_weight_profile
-dominated_count
-chosen_score
-tradeoff_summary
-```
-
-Add CLI:
-
-```bash
-acp policy pareto-report
-acp run explain-route <run-id>
-```
-
-Acceptance:
-
-```text
-Pareto explanation appears in full_run_graph and review bundle.
-```
-
-## Workstream 3 — Multi-objective policy profiles
-
-Add profiles:
+The Alpha 9 checklist says there is also a `ParetoRoutingPolicy` with six profiles:
 
 ```text
 cost_saver
@@ -655,267 +98,667 @@ latency_min
 human_review_min
 ```
 
-Each profile must define:
+and that it exposes OPE targets per profile. 
+
+This is a big product leap because the “best” agent is not singular; it depends on task risk, budget, latency, and operational tolerance.
+
+## 8. Drift detection and auto-demotion
+
+Alpha 9 adds drift detection: accuracy drop, PSI, and recent high-risk false-negative rate. The module demotes a promoted learned model back to advisory when drift is detected or when recent high-risk false negatives appear. 
+
+The implementation has an `AutoDemoter` that flips `learned_promoted` back to false when the drift report recommends demotion. 
+
+This is the correct safety posture for learned viability and evaluator models.
+
+## 9. Preference learning
+
+Alpha 9 adds preference learning from human labels. The module derives pairwise preferences between attempts for the same task and fits a Bradley-Terry/logistic-style preference model to produce a learned reward. 
+
+The checklist says this is now part of Alpha 9’s delivered workstreams. 
+
+This is valuable because human labels are often more reliable as pairwise preferences than as absolute scalar judgments.
+
+## 10. Counterfactual regret
+
+Alpha 9 adds per-decision counterfactual analysis. It answers: for this logged decision, what would each alternative action have been expected to yield, and what regret did the logged action incur? 
+
+The module exposes both per-decision `what_if` and log-wide `total_regret`. 
+
+This turns routing into an explainable learning system: not just “what policy is better?” but “which individual decisions left value on the table?”
+
+## 11. Active learning, scheduler, and health
+
+Alpha 9 includes active-learning exploration, a continuous-learning scheduler, and unified `acp health`. The checklist says the exploration executor turns capability-matrix gaps into budget/risk-bounded probes, and the scheduler runs the learning pipeline idempotently and fault-tolerantly. 
+
+The status report says `acp health` now returns a unified control-plane snapshot with status/degraded state and artifact freshness. 
+
+This is moving toward operational maintainability.
+
+## 12. Scale and security hardening
+
+Alpha 10 adds the scale/security layer:
 
 ```text
-weights
-hard constraints
-allowed risk levels
-minimum success estimate
-cost ceiling
-human review policy
+large empirical corpus
+storage/performance benchmark v2
+security/prompt-injection benchmark v2
+model/data governance
 ```
 
-Acceptance:
+The Alpha 10 report says the large corpus has 930 sufficiently sampled cells and 1,740 preference pairs, the scale benchmark shows sub-quadratic growth across six core operations, the security benchmark covers 10 attack classes with zero planted-secret leakage, and governance prevents private-repo data from entering the global training pool without allowlist. 
+
+The Alpha 10 checklist confirms those workstreams and lists Docker live-security, vendor live campaigns, and local LoRA as environment-gated skips. 
+
+---
+
+# What has not been implemented or remains insufficiently proven
+
+## 1. Production-grade live sandbox proof is still missing
+
+Docker live-security remains environment-gated. Alpha 10 says Docker live-security requires Docker and skips cleanly here.  The current pytest report also says Docker workspace tests are skipped. 
+
+This is the biggest production-readiness blocker. The code may support Docker; the committed default test evidence does not prove the live Docker path.
+
+## 2. Vendor-native harness campaigns are still gated
+
+The same Alpha 10 report says vendor-harness live campaign is environment-bound.  The test report says live Codex CLI/SDK tests are skipped. 
+
+So ACP has ACP-native harnesses and vendor scaffolding, but production-grade evidence across Codex/Claude Agent SDK/OpenHands-style loops is still incomplete.
+
+## 3. Local LoRA / actual fine-tuning remains gated
+
+Alpha 8 says local LoRA fine-tuning remains a smoke path because no GPU is present; Alpha 10 says local LoRA is still environment-gated.  
+
+So the training-data pipeline is mature, but actual repeated local model improvement is not yet proven.
+
+## 4. Coverage report is stale
+
+`reports/pytest.txt` is current for Round 10, but `reports/coverage.txt` is still labeled Alpha 6 at 87%.  
+
+This is not a core product issue, but it matters for reviewer trust.
+
+## 5. Synthetic/deterministic artifacts still dominate many claims
+
+Alpha 9 and Alpha 10 artifacts are manifest-validated, but Alpha 9 explicitly says artifacts use synthetic/deterministic data so they are reproducible; richer inputs come from the Alpha 10 corpus and live campaigns. 
+
+Synthetic artifacts are useful, but the platform now needs increasing amounts of live and semi-live data.
+
+## 6. Governance exists, but enforcement boundaries need live adversarial proof
+
+Model/data governance is reported as implemented: no private repo data enters global training without allowlist, repo-local training is permitted, and rollback plans are recorded. 
+
+The next proof should not just validate policy objects; it should run adversarial data-boundary tests across repos, datasets, model exports, and training artifacts.
+
+## 7. Human-review productization is still not the main focus
+
+The system now has human labels, preference learning, and training examples. But it is not yet a product-grade review UX/workflow. The backend is advancing; the next hard step is making review efficient, calibrated, and useful to real engineers.
+
+## 8. Pareto routing must be user-configurable and governed
+
+Pareto profiles exist, but your sprint note correctly identifies “live `ParetoRoutingPolicy` selection via config” as a natural follow-on. The branch status says Pareto routing exists, but production deployment requires explicit profile selection, auditability, OPE promotion per profile, and per-repo defaults. 
+
+---
+
+# Constructive feedback
+
+## 1. Stop adding standalone modules until the live decision path is tightened
+
+The architecture is rich now. The next value is not another isolated evaluator. It is a **closed, governed, operational path**:
 
 ```text
-Same candidate set produces different rational choices under different profiles.
+request → viability → candidate generation → Pareto profile → OPE gate → execution → verification → human/reward → drift/preference/counterfactual → scheduler → next policy
 ```
 
-## Workstream 4 — Pareto + OPE integration
+Every new module should be visible in the run graph, policy dossier, health snapshot, and artifacts.
 
-For each profile, create target policy and evaluate:
+## 2. Make Pareto profiles first-class product settings
+
+Add explicit profile selection:
 
 ```text
-cost_saver under OPE
-balanced under OPE
-success_max under OPE
-risk_min under OPE
+repo default profile
+task-type default profile
+risk-level override
+budget override
+human-review override
+security override
 ```
 
-Promotion gate must include:
+The user should be able to say:
 
 ```text
-DR/SNIPS
-ESS
-overlap
-cost delta
-high-risk delta
-human-review delta
+For docs/lint: cost_saver
+For bugfix: balanced
+For auth/security: risk_min
+For incident response: success_max with strict verifier
 ```
 
-Acceptance:
+Then persist the chosen profile and rationale in every `RoutingDecision`.
+
+## 3. Treat `acp health` as the operational entry point
+
+The health snapshot should become the single “can we trust this control plane?” answer.
+
+It should return:
 
 ```text
-Policies with bad overlap or unacceptable cost/risk trade-off are blocked.
+green / degraded / red
+why
+which artifacts are stale
+which policies are promotable
+which learned models are demoted
+which capability cells are under-sampled
+which live gates are skipped
+which vendor harnesses are unproven
+what to run next
 ```
 
-## Workstream 5 — Drift lifecycle integration
+## 4. Make artifact validation non-negotiable
 
-Add entities:
+You now have 24 manifest-validated artifacts according to `CURRENT_STATUS.md`.  Good. Add a policy that no Alpha report can be merged unless:
 
 ```text
-DriftReportEntity
-ModelDemotionEvent
-ModelPromotionState
+all referenced artifacts exist
+all schemas validate
+all headline numbers match artifact values
+all stale report files fail CI
 ```
 
-Wire:
+## 5. Make Docker live-security a release blocker for real agents
+
+Local tests may skip Docker, but “production-like real agent execution” should not.
+
+Define modes:
 
 ```text
-nightly drift detector
-auto-demote
-audit event
-policy rollback
-review item for high-risk false negative
+lab mode: Docker optional
+trusted local dev: Docker optional
+real harness mode: Docker live security report required
+production mode: Docker/Kubernetes policy report required
 ```
 
-Acceptance:
+## 6. Push vendor harnesses from scaffold to evidence
+
+The next big product moat is not more ACP-native harnesses. It is making ACP a router across real tools:
 
 ```text
-A simulated high-risk false negative demotes a promoted learned model and creates a review item.
+Codex CLI / SDK
+Claude Agent SDK / Claude Code
+OpenHands
+Aider
+Cline/Roo
 ```
 
-## Workstream 6 — Preference reward integration
+Each needs the same normalized `AgentTrace`.
 
-Add:
+## 7. Convert preference learning into reviewer calibration
 
-```text
-PreferenceDatasetBuilder
-PreferenceRewardModel
-PreferenceRewardEvent
-```
-
-Use preference reward alongside objective reward:
-
-```text
-combined_reward = objective_reward + preference_weight * preference_reward
-```
-
-But gate it behind:
+Pairwise preference learning is good, but it can encode reviewer bias. Add:
 
 ```text
 reviewer agreement
-pairwise accuracy
+reviewer reliability
+domain expertise
+preference drift
 post-merge correlation
-high-risk non-degradation
 ```
 
-Acceptance:
+Only use preference reward where reviewers agree and outcomes support it.
+
+## 8. Move from synthetic corpus to mixed corpus
+
+The large corpus is a good scale artifact. Now build tiers:
 
 ```text
-Preference model affects routing only after passing gate.
+synthetic deterministic
+fixture-generated
+semi-live local harness
+live model API
+real repo replay
+post-merge outcome replay
 ```
 
-## Workstream 7 — Counterfactual decision dossier
+Reports should show which tier each result came from.
 
-For every completed run, optionally compute:
+---
+
+# Tests and stress tests to add
+
+## A. Pareto routing in live workflow
+
+Test:
 
 ```text
-best alternative
-logged choice predicted reward
-regret
-support count per alternative
-insufficient-support warnings
+cost_saver selects cheaper frontier point
+success_max selects higher-success harness
+risk_min avoids high post-merge failure
+latency_min avoids slow harness
+human_review_min avoids high-review-burden arm
 ```
 
-Add to:
+And assert:
 
 ```text
-run graph
-review bundle
-policy dossier
-control-plane health
+profile persisted
+frontier persisted
+dominated candidates persisted
+chosen rationale persisted
+run graph exposes profile/frontier
+review bundle shows trade-off
 ```
 
-Acceptance:
+## B. Pareto profile OPE gate
+
+For each profile:
 
 ```text
-Counterfactual regret is hidden or marked untrusted when sample support is too low.
+cost_saver
+balanced
+success_max
+risk_min
+latency_min
+human_review_min
 ```
 
-## Workstream 8 — Control-plane health snapshot
-
-Implement/finish:
+run:
 
 ```text
-AppService.control_plane_health
-acp health
-GET /health/control-plane
+OPE report
+promotion gate
+cost cap
+risk slice
+human-review slice
+overlap diagnostics
 ```
 
-Include:
+Assert bad-overlap profiles cannot become default.
+
+## C. Drift lifecycle end-to-end
+
+Use a promoted learned viability model, then simulate:
 
 ```text
-test/artifact freshness
-OPE readiness
-policy promotion state
-drift state
-learned model state
-capability matrix coverage
-Pareto profile status
-counterfactual regret
-Docker security status
-vendor harness status
-training readiness
-storage health
+accuracy drop
+PSI drift
+one high-risk false negative
+drift recovery
+label delay
+conflicting outcomes
 ```
 
-Acceptance:
+Assert:
 
 ```text
-Health snapshot exits nonzero or reports degraded when critical gates are stale/missing.
+drift report persisted
+model demoted
+audit event persisted
+review item created
+health degrades
+scheduler records the job
+policy falls back to rules
 ```
 
-## Workstream 9 — Active-learning exploration executor
+## D. Preference learning under reviewer disagreement
 
-Implement:
+Simulate:
 
 ```text
-ExplorationExecutor
-ExplorationTaskGenerator
-ExplorationBudgetPolicy
+multiple reviewers
+tie labels
+uncertain labels
+conflicting preferences
+reviewer bias
+post-merge contradiction
 ```
 
-Inputs:
+Assert:
 
 ```text
-capability matrix low-sample cells
-OPE poor-overlap diagnostics
-counterfactual high-regret decisions
-drift uncertain windows
+low agreement blocks preference reward promotion
+high agreement enables advisory reward
+post-merge conflict deweights reviewer
+preference model uncertainty visible
 ```
 
-Outputs:
+## E. Counterfactual regret trust tests
+
+For each decision:
 
 ```text
-recommended task/adapters/context strategies
-expected cost
-risk constraints
-sample-size target
+supported alternative
+low-sample alternative
+zero-overlap alternative
+high-risk task
+conflicting reward model
 ```
 
-Acceptance:
+Assert regret is:
 
 ```text
-After simulated exploration, capability-matrix coverage and OPE overlap improve.
+reported with support counts
+hidden or marked untrusted when support is weak
+excluded from health if insufficient overlap
 ```
 
-## Workstream 10 — Continuous-learning scheduler
+## F. Active-learning exploration executor tests
 
-Implement:
+Given capability matrix gaps and OPE poor-overlap cells, assert:
 
 ```text
-ContinuousLearningScheduler
-ScheduledJobState
-JobRunReport
+exploration tasks generated
+risk budget enforced
+cost budget enforced
+high-risk exploration requires human approval
+exploration improves coverage in simulation
+exploration improves OPE overlap
 ```
 
-Jobs:
+## G. Continuous-learning scheduler fault tests
+
+Test:
 
 ```text
-artifact validation
-dataset build
-capability matrix refresh
-OPE refresh
-promotion check
-drift detection
-exploration planning
-training candidate report
-health snapshot
+idempotency
+partial failure
+stale artifact
+failed dataset build
+failed OPE
+failed drift job
+resumption
+duplicate prevention
+parallel scheduler invocation
 ```
 
-Acceptance:
+Assert the scheduler produces a partial report and clear retry plan.
+
+## H. Control-plane health degradation tests
+
+Health should become degraded/red when:
 
 ```text
-Scheduler is idempotent, resumable, and produces reports even on partial failures.
+artifact manifest stale
+coverage stale
+Docker live gate missing in production mode
+vendor harness unproven
+OPE overlap poor
+policy promotion expired
+drift demoted model
+capability cells under-sampled
+training dataset leakage audit fails
+```
+
+## I. Security-injection v3
+
+Extend the 10 attack classes to include:
+
+```text
+training-data poisoning
+reward-model poisoning
+policy-promotion poisoning
+artifact-manifest tampering
+counterfactual-report tampering
+review-label manipulation
+repo boundary escape
+secret canary extraction
+dependency compromise
+test harness spoofing
+```
+
+Assert every attack is blocked, escalated, or flagged.
+
+## J. Data governance adversarial tests
+
+Create:
+
+```text
+private repo A
+private repo B
+global dataset
+repo-local dataset
+allowlisted dataset
+non-allowlisted dataset
+```
+
+Assert:
+
+```text
+private repo A does not leak into global
+repo B cannot query repo A examples
+fine-tuning export enforces policy
+memorization canaries retained for audit but not training
+rollback plan exists for model artifacts
+```
+
+## K. Large-corpus replay stress
+
+Scale beyond the current large corpus:
+
+```text
+10k tasks
+100k traces
+1M context chunks
+10M artifact references if feasible through synthetic refs
+```
+
+Measure:
+
+```text
+run graph latency
+artifact validation latency
+capability matrix build
+OPE log build
+counterfactual report
+scheduler runtime
+health snapshot runtime
+```
+
+## L. Vendor harness live campaign
+
+Run live, environment-gated tests for:
+
+```text
+codex_cli
+claude_agent_sdk
+OpenHands
+```
+
+Each must prove:
+
+```text
+health
+no-patch solve
+diff capture
+tool/command trace
+timeout stop
+budget stop
+Docker requirement
+secret non-leakage
+verification result
+```
+
+## M. Local LoRA smoke
+
+Run a real local LoRA smoke outside default CI:
+
+```text
+Qwen2.5-Coder-1.5B-Instruct
+dataset: viability or evaluator
+tiny sample
+one epoch or short run
+adapter save/load
+baseline comparison
+memorization audit
 ```
 
 ---
 
-# Alpha 10 mission: scale and production-lab hardening
+# Next-level plan for an LLM coding agent
 
-Once Alpha 9 is finalized, Alpha 10 should be much more operational and scale-focused.
+Below is an ambitious Alpha 11 plan. It assumes the coding agent will keep working continuously, commit in coherent chunks, run long gates, and update `IMPLEMENTATION_LOG.md`.
 
-## Workstream 11 — Large empirical corpus
+## Alpha 11 mission
 
-Generate:
+Turn ACP from a **manifest-validated alpha lab** into a **production-readiness candidate** for controlled internal use.
 
-```text
-1,000+ no-patch tasks
-10 fixture repos
-6 task types
-3 risk levels
-5 context strategies
-4 adapters/harnesses
-3 repetitions
+The key acceptance question:
+
+> Can ACP safely and repeatedly route real coding-agent work under explicit objectives, prove policy decisions with offline evidence, enforce data/sandbox governance, detect drift, and tell operators what to do next?
+
+---
+
+## Workstream 1 — Fresh release hygiene
+
+### Tasks
+
+1. Refresh `reports/coverage.txt` for Round 10.
+2. Add a test that fails if `coverage.txt` is older than `pytest.txt` for the current alpha.
+3. Ensure `CURRENT_STATUS.md`, `ALPHA9_REPORT.md`, `ALPHA10_REPORT.md`, `reports/pytest.txt`, and `reports/coverage.txt` agree.
+4. Confirm both branches point to the same commit.
+
+### Acceptance
+
+```bash
+uv run pytest tests/integration/test_docs_consistency.py -q
+acp reports validate
 ```
 
-Targets:
+No stale Alpha 6 coverage reference remains.
+
+---
+
+## Workstream 2 — Pareto routing live configuration
+
+### Build
 
 ```text
->500 sufficient capability cells
-meaningful OPE overlap
-non-trivial Pareto frontiers
-preference dataset >1,000 pairs
+ParetoRoutingConfig
+ParetoProfileRegistry
+RepoRoutingObjectivePolicy
+TaskTypeRoutingObjectivePolicy
 ```
 
-## Workstream 12 — Real Docker security gate
+### Config examples
 
-Run in Docker-capable CI and commit:
+```yaml
+profiles:
+  docs: cost_saver
+  lint: cost_saver
+  bugfix: balanced
+  ci_fix: latency_min
+  security_fix: risk_min
+  incident: success_max
+```
+
+### Integration
 
 ```text
-evals/reports/docker_security_live.json
+candidate generation
+RoutingDecision
+full_run_graph
+review bundle
+policy OPE
+acp health
+```
+
+### Tests
+
+```text
+same task with cost_saver chooses cheap arm
+same task with success_max chooses harness
+security task defaults to risk_min
+explicit override audited
+invalid profile blocked
+```
+
+---
+
+## Workstream 3 — Policy decision dossier
+
+### Build
+
+```text
+PolicyDecisionDossier
+```
+
+Contains:
+
+```text
+ViabilityAssessment
+CapabilityMatrix cells
+Pareto frontier
+OPE estimate
+promotion gate
+counterfactual regret
+preference reward
+drift status
+data sufficiency
+cost/risk tradeoff
+chosen action
+why not other actions
+```
+
+### CLI/API
+
+```bash
+acp policy dossier <run-id>
+GET /runs/{run_id}/policy-dossier
+```
+
+### Acceptance
+
+Every nontrivial run can explain:
+
+```text
+why this agent
+why this context
+why this verifier
+why this cost
+why this risk
+what would likely have happened otherwise
+```
+
+---
+
+## Workstream 4 — Control-plane health as release gate
+
+### Extend `acp health`
+
+Modes:
+
+```text
+lab
+staging
+production
+```
+
+Production mode should fail if:
+
+```text
+Docker live security missing/stale
+vendor harness live proof missing/stale
+artifact manifest stale
+OPE overlap insufficient
+drift-demoted model still promoted
+capability matrix coverage below threshold
+coverage/test reports stale
+```
+
+### Acceptance
+
+```bash
+acp health --mode production
+```
+
+returns nonzero unless production gates are satisfied.
+
+---
+
+## Workstream 5 — Docker live-security campaign
+
+### Build
+
+```text
+evals/scripts/run_docker_live_security.py
 ```
 
 Checks:
@@ -925,222 +768,509 @@ no network
 non-root
 memory cap
 PID cap
-timeout
-workspace containment
+workspace-only mount
 secret scrub
-massive stdout bound
+massive stdout
+timeout kill
 cleanup
+diff capture
 ```
 
-Production mode should refuse true harness runs without a fresh passing Docker report.
+### Artifact
 
-## Workstream 13 — Vendor harness live campaign
+```text
+evals/reports/docker_security_live.json
+```
 
-For:
+### Acceptance
+
+Production mode cannot claim true-harness-safe execution without this artifact.
+
+---
+
+## Workstream 6 — Vendor harness live campaign
+
+### Implement or harden
 
 ```text
 codex_cli
 claude_agent_sdk
-openhands if feasible
+openhands
 ```
 
-Run:
+### Live tests
+
+For each available harness:
 
 ```text
 health
 no-patch bugfix
-budget stop
 timeout stop
-trace capture
+budget stop
 diff capture
-verification
-secret non-leakage
+AgentTrace capture
 Docker enforcement
+secret non-leakage
+verification result
 ```
 
-Commit:
+### Artifact
 
 ```text
 evals/reports/vendor_harness_live.json
 ```
 
-## Workstream 14 — Real preference-learning campaign
+### Acceptance
 
-Create a review-label simulator plus optional real review UI flow:
+At least one vendor-native harness is proven beyond ACP-native OpenAI/Claude.
+
+---
+
+## Workstream 7 — Preference reward governance
+
+### Build
 
 ```text
-two attempts per task
-human preference labels
-reviewer disagreement
-tie/uncertain labels
-post-merge outcomes
+ReviewerReliabilityModel
+PreferenceRewardGate
+PreferenceRewardReport
 ```
 
-Evaluate:
+### Inputs
 
 ```text
-pairwise accuracy
-calibration
+pairwise labels
 reviewer agreement
-post-merge correlation
-routing improvement under OPE
+post-merge outcomes
+objective verification
+task/risk slices
 ```
 
-## Workstream 15 — Learned viability promotion campaign
+### Gate
 
-Take learned viability from advisory to canary-authoritative only if:
+Preference reward may influence routing only if:
 
 ```text
-zero high-risk false negatives on temporal holdout
-zero high-risk false negatives on repo holdout
-drift monitor clean
-human-review false-negative rate acceptable
-abstention precision acceptable
+pairwise accuracy above threshold
+reviewer agreement above threshold
+post-merge correlation positive
+high-risk slice non-degraded
 ```
 
-Then run canary simulation:
+### Acceptance
+
+Preference reward is advisory by default and promoted only with sufficient evidence.
+
+---
+
+## Workstream 8 — Drift/demotion persistence
+
+### Add entities
 
 ```text
-5% → 25% → 50% → 100%
+DriftReportEntity
+ModelDemotionEvent
+ModelPromotionState
 ```
 
-## Workstream 16 — Local LoRA training experiment
-
-Use the training factory to run a real local smoke experiment:
+### Behavior
 
 ```text
-Qwen2.5-Coder-1.5B-Instruct
-dataset: viability or evaluator
-LoRA adapter
-baseline vs fine-tuned
-memorization audit
-repo holdout
-temporal holdout
-model card
+drift detected
+model demoted
+audit event created
+review item created if high-risk FN
+health degrades
+scheduler records job
 ```
 
-Commit:
+### Acceptance
+
+Auto-demotion is durable and inspectable, not just in-memory.
+
+---
+
+## Workstream 9 — Active learning as an executor
+
+### Build
 
 ```text
-evals/reports/local_lora_viability.json
+ExplorationExecutor
+ExplorationRun
+ExplorationBudget
+ExplorationResult
 ```
 
-Do not require this in default CI.
-
-## Workstream 17 — Storage and performance benchmark
-
-Run scale benchmark:
+### Inputs
 
 ```text
-10k tasks
-100k traces
-1M context chunks if feasible
+capability gaps
+OPE overlap gaps
+high counterfactual regret
+uncertain viability
+drift uncertainty
 ```
 
-Measure:
+### Behavior
 
 ```text
-run graph reconstruction
-capability matrix build
-OPE build
-dataset build
-context retrieval
+propose probes
+respect budget
+respect risk constraints
+execute safe probes
+update matrix
+update OPE logs
+```
+
+### Acceptance
+
+Simulated exploration increases capability coverage and OPE overlap, and live exploration is gated by risk/cost.
+
+---
+
+## Workstream 10 — Continuous-learning scheduler productionization
+
+### Build
+
+```text
+ScheduledJob
+JobRun
+JobDependencyGraph
+SchedulerLock
+```
+
+### Jobs
+
+```text
 artifact validation
+dataset build
+capability matrix refresh
+OPE refresh
+Pareto profile report
+drift detection
+preference update
+exploration planning
 health snapshot
 ```
 
-Add indexes or query optimizations where needed.
-
-## Workstream 18 — Security/prompt-injection v2
-
-Expand attacks:
+### Tests
 
 ```text
-prompt asks to exfiltrate secrets
-disable tests
-delete tests
-modify policy
-hide malicious code
-write outside workspace
-network exfiltration
-supply-chain mutation
-poison training data
-poison reward model
+idempotent
+resumable
+single-writer lock
+partial failure
+retry
+stale report alert
 ```
 
-Run against:
+---
+
+## Workstream 11 — Data governance red-team
+
+### Attack classes
 
 ```text
-simple model
-openai_harness
-claude_harness
-codex_cli
+private repo data enters global training
+repo A examples in repo B model
+memorization canary included in training
+allowlist bypass
+model artifact without rollback plan
+dataset export before leakage audit
 ```
 
-## Workstream 19 — Model/data governance
+### Acceptance
 
-Add:
+All attacks blocked or flagged.
+
+---
+
+## Workstream 12 — Larger mixed empirical corpus
+
+Generate/collect:
 
 ```text
-DatasetAccessPolicy
-RepoDataBoundary
-ModelTrainingPermission
-MemorizationCanary
-ModelRollbackPolicy
+5,000 tasks
+20 fixture repos
+6 task types
+3 risk levels
+6 context strategies
+4 adapters
+3 repetitions
 ```
 
-Acceptance:
+Track:
 
 ```text
-No private repo data enters global datasets without explicit policy.
+sufficient capability cells
+preference pairs
+OPE overlap
+Pareto frontier size
+drift windows
+counterfactual regret
 ```
 
-## Workstream 20 — Alpha 10 release bundle
+### Acceptance
+
+The capability matrix has enough coverage for meaningful recommendations in all common task/risk classes.
+
+---
+
+## Workstream 13 — Realistic repo fixtures
+
+Add richer fixtures:
+
+```text
+Python package with CLI
+FastAPI service
+React/TypeScript app
+monorepo with shared package
+database migration app
+security/auth app
+flaky CI repo
+legacy refactor repo
+```
+
+Each should have:
+
+```text
+real tests
+lint/type checks
+known bugs
+security fixtures
+migration fixtures
+generated files
+decoy files
+```
+
+---
+
+## Workstream 14 — End-to-end no-patch live bakeoff
+
+Run a controlled live bakeoff on a subset:
+
+```text
+OpenAI harness
+Claude harness
+Codex CLI if available
+simple model adapter
+```
+
+Across:
+
+```text
+bugfix
+test generation
+security
+migration
+refactor
+```
+
+Metrics:
+
+```text
+solve rate
+verification pass
+cost
+latency
+human-review need
+diff size
+adversarial findings
+post-merge simulation
+```
+
+---
+
+## Workstream 15 — Local LoRA pilot
+
+### Model
+
+Use:
+
+```text
+Qwen2.5-Coder-1.5B-Instruct
+```
+
+### Dataset
+
+Start with:
+
+```text
+viability
+evaluator trust
+repair strategy
+trace summary
+```
+
+### Gates
+
+```text
+temporal holdout
+repo holdout
+memorization audit
+baseline comparison
+high-risk false-negative check
+model card
+rollback plan
+```
+
+### Acceptance
+
+Do not require quality improvement in CI; require a full reproducible artifact and honest result.
+
+---
+
+## Workstream 16 — Human review product backend
+
+### API
+
+```text
+GET /reviews/queue
+GET /reviews/{id}/bundle
+POST /reviews/{id}/label
+POST /reviews/{id}/preference
+POST /reviews/{id}/make-eval-case
+POST /reviews/{id}/make-training-example
+```
+
+### Bundle
+
+```text
+task
+viability
+routing dossier
+Pareto tradeoff
+diff
+evidence
+AgentTrace
+counterfactual regret
+preference prompt
+calibration warning
+recommended action
+```
+
+### Acceptance
+
+A reviewer can produce labels, preferences, eval cases, and training examples from one screen/API bundle.
+
+---
+
+## Workstream 17 — UI/API surface for operators
+
+Even a minimal web/API view should expose:
+
+```text
+control-plane health
+capability matrix
+policy dossier
+artifact manifest
+scheduler jobs
+exploration plan
+review queue
+model registry
+```
+
+This can be backend-first; UI can follow.
+
+---
+
+## Workstream 18 — Artifact and report warehouse
+
+Store reports as DB entities, not only files:
+
+```text
+Report
+ReportArtifact
+ReportMetric
+ReportLineage
+```
+
+Support:
+
+```bash
+acp reports list
+acp reports show
+acp reports diff
+```
+
+### Acceptance
+
+Every Alpha report is queryable and comparable over time.
+
+---
+
+## Workstream 19 — Production-mode policy pack
+
+Define:
+
+```text
+lab policy
+staging policy
+production policy
+```
+
+Production policy:
+
+```text
+Docker live gate required
+vendor harness proof required
+no local true harness
+OPE promotion required
+human review required for high risk
+private data governance enforced
+coverage/test artifacts fresh
+```
+
+---
+
+## Workstream 20 — Alpha 11 release bundle
 
 Commit:
 
 ```text
-ALPHA10_REPORT.md
-ALPHA10_CHECKLIST.md
-evals/reports/large_empirical_corpus.json
+ALPHA11_REPORT.md
+ALPHA11_CHECKLIST.md
+evals/reports/policy_dossier.json
 evals/reports/docker_security_live.json
 evals/reports/vendor_harness_live.json
-evals/reports/preference_campaign.json
-evals/reports/learned_viability_canary.json
-evals/reports/local_lora_viability.json
-evals/reports/storage_scale_v2.json
-evals/reports/security_injection_v2.json
-evals/reports/control_plane_health.json
+evals/reports/preference_reward_gate.json
+evals/reports/drift_persistence.json
+evals/reports/exploration_executor.json
+evals/reports/scheduler_report.json
+evals/reports/data_governance_redteam.json
+evals/reports/mixed_empirical_corpus.json
+evals/reports/local_lora_pilot.json
+evals/reports/control_plane_health_production.json
 ```
 
 Gate:
 
 ```bash
-uv run pytest -q
+uv run pytest -q --timeout=300
 uv run ruff check .
 uv run mypy src
 uv run alembic upgrade head
 make alpha9-artifacts
 make alpha10-artifacts
+make alpha11-artifacts
 acp reports validate
-acp health
+acp health --mode lab
+acp health --mode production
 ```
 
 ---
 
 # Merge recommendation
 
-I would not merge the in-progress Alpha 9 arc until the release checkpoint is cut.
-
-Before merge:
+Round 10 is a clean checkpoint. I would merge only after one final small hygiene commit:
 
 ```text
-1. Finish full suite.
-2. Refresh reports/pytest.txt and reports/coverage.txt.
-3. Add ALPHA9_REPORT.md and ALPHA9_CHECKLIST.md.
-4. Commit Pareto/drift/preference/counterfactual/health artifacts.
-5. Fast-forward feat/agent-control-plane.
-6. Run acp reports validate.
+1. Refresh reports/coverage.txt for Round 10.
+2. Confirm CURRENT_STATUS.md references the refreshed coverage report.
+3. Run acp reports validate and acp health.
+4. Ensure ALPHA9/10 artifact paths validate in CI.
 ```
 
-The Alpha 9 direction is excellent. It adds the missing decision-quality layer: multi-objective trade-offs, drift-safe learned models, human preference rewards, counterfactual explanations, and health snapshots. The next step is not more standalone modules; it is wiring them into the live runner, policy promotion flow, review bundle, and continuous-learning scheduler so the system can not only **choose** but also **explain, monitor, demote, and improve** those choices.
+Then open/merge the PR if the target is an alpha branch. For production-facing use, keep it gated until Docker live security and vendor harness live campaigns pass.
+
+The project has reached the point where further progress should be judged less by “number of modules added” and more by whether the system can **operate safely over time**: choose under explicit objectives, prove policy changes, detect drift, avoid data leakage, survive live adversarial runs, and tell operators exactly what evidence is missing before it acts.
