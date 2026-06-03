@@ -1,5 +1,6 @@
-# Round 11 (Alpha 11) test run (uv run pytest -q --timeout=300)
+# Round 11 (Alpha 11) test run (uv run pytest -q --timeout=300) — Docker live
 # Date: 2026-06-02
-718 passed, 9 skipped, 1 warning in 443.56s (0:07:23)
-# skips: docker workspace, live pgvector, live codex_cli/SDK, service backends
+724 passed, 5 skipped, 1 warning in 632.25s (0:10:32)
+# skips: live pgvector/qdrant, vendor contract (SDK), codex_cli live
 # ruff: clean | mypy: clean (207 src files); alembic upgrade head: OK; reports validate: 36/36
+# Docker live: workspace/runner + security checks pass; production_ready=True on real data
