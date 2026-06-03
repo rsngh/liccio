@@ -313,13 +313,42 @@ def main() -> int:
             return 1.0 / len(cands)
 
         baseline = sum(s.reward for s in samples) / len(samples)
+
+        # Cost-aware reward = success - LAMBDA*cost. LAMBDA=2 keeps the cost term
+        # below the smallest real success gap (0.2 at n=5) so it only orders cells
+        # that tie on success -> the cost-optimal policy, not a success-blind one.
+        cost_lambda = 2.0
+        actions_by_task = {tt: sorted({c["adapter"] for c in g}) for tt, g in by_task.items()}
+        cost_samples = [
+            OPESample(
+                c["task_type"], c["adapter"], 1.0 / len(actions_by_task[c["task_type"]]),
+                (1.0 if c["success"] else 0.0) - cost_lambda * float(c.get("cost_usd", 0)),
+                actions_by_task[c["task_type"]])
+            for c in cells]
+        qc = fit_reward_model(cost_samples)
+
+        def cost_greedy(ctx, action, cands):
+            best = max(qc(ctx, a) for a in cands)
+            winners = [a for a in cands if qc(ctx, a) == best]
+            return 1.0 / len(winners) if action in winners else 0.0
+
+        def _mean_cost_reward(a, g):
+            rs = [(1.0 if c["success"] else 0.0) - cost_lambda * float(c.get("cost_usd", 0))
+                  for c in g if c["adapter"] == a]
+            return sum(rs) / len(rs) if rs else -1e9
+
         ope = {
             "n": len(samples), "logged_mean_reward": round(baseline, 4),
             "greedy_dr": evaluate_policy(samples, greedy, seed=1).dr.as_dict(),
             "random_dr": evaluate_policy(samples, random_t, seed=1).dr.as_dict(),
+            "cost_aware_greedy_dr": evaluate_policy(cost_samples, cost_greedy, seed=1).dr.as_dict(),
+            "cost_lambda": cost_lambda,
             "best_adapter_per_task_type": {
                 tt: max({c["adapter"] for c in g},
                         key=lambda a: sum(c["success"] for c in g if c["adapter"] == a))
+                for tt, g in by_task.items()},
+            "cost_aware_best_adapter_per_task_type": {
+                tt: max({c["adapter"] for c in g}, key=lambda a, g=g: _mean_cost_reward(a, g))
                 for tt, g in by_task.items()},
         }
 
