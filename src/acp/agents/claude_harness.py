@@ -79,9 +79,10 @@ class ClaudeHarnessAdapter:
         key = get_settings().anthropic_api_key
         if key is None:
             return None
-        # Cap SDK retries so backoff can't multiply a single call past the budget
-        # (see openai_harness for the ~600s rate-limit blowout this prevents).
-        return anthropic.Anthropic(api_key=key.get_secret_value(), max_retries=1)
+        # No SDK retries so backoff/retry can't multiply a single call past the
+        # budget (see openai_harness: even one retry doubled a timed-out call).
+        # The per-request timeout bounded by remaining wall budget is the hard cap.
+        return anthropic.Anthropic(api_key=key.get_secret_value(), max_retries=0)
 
     async def healthcheck(self) -> AgentHealth:
         client = self._client()

@@ -84,10 +84,12 @@ class OpenAIHarnessAdapter:
         key = get_settings().openai_api_key
         if key is None:
             return None
-        # Cap SDK retries: the default (2) multiplies each request's wall time via
-        # exponential backoff, which let a single rate-limited call run ~600s past
-        # the budget. One retry keeps transient resilience without budget blowout.
-        return openai.OpenAI(api_key=key.get_secret_value(), max_retries=1)
+        # No SDK retries: the default (2) multiplied each request's wall time via
+        # exponential backoff (~600s past a 120s budget); even one retry doubles a
+        # timed-out call (observed 241s vs a 120s budget). The harness drives its
+        # own multi-step loop, so a per-call timeout (set per request, bounded by
+        # the remaining wall budget) is the single, hard latency ceiling.
+        return openai.OpenAI(api_key=key.get_secret_value(), max_retries=0)
 
     async def healthcheck(self) -> AgentHealth:
         client = self._client()
