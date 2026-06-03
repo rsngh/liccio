@@ -38,6 +38,9 @@ class ACPSettings(BaseSettings):
     sync_database_url: str | None = None
     artifact_dir: Path = Path(".acp/artifacts")
     workspace_dir: Path = Path(".acp/workspaces")
+    # Destination for human-label -> eval-case export. Overridable so tests and
+    # ad-hoc runs never mutate the committed fixture at this default path.
+    eval_cases_path: Path = Path("evals/datasets/review_eval_cases.jsonl")
 
     default_token_budget: int = 80_000
     default_cost_budget_usd: float = 5.0

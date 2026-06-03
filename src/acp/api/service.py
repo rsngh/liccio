@@ -331,6 +331,7 @@ class AppService:
         import json as _json
         from pathlib import Path as _Path
 
+        from acp.core.config import get_settings as _get_settings
         from acp.schemas.human_review import HumanLabel as _HL
 
         item = self.get_review(review_id)
@@ -355,7 +356,7 @@ class AppService:
             "reviewer": label.reviewer,
             "source": "human_review",
         }
-        out = _Path("evals/datasets/review_eval_cases.jsonl")
+        out = _Path(_get_settings().eval_cases_path)
         out.parent.mkdir(parents=True, exist_ok=True)
         with out.open("a") as fh:
             fh.write(_json.dumps(case) + "\n")
