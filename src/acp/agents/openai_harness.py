@@ -36,6 +36,7 @@ from acp.schemas.agent import (
     Budget,
 )
 from acp.schemas.context import ContextPack
+from acp.schemas.provider_policy import ProviderPolicy
 from acp.schemas.task import Task
 from acp.schemas.workspace import DiffBundle
 from acp.workspaces.base import Workspace
@@ -86,6 +87,12 @@ class OpenAIHarnessAdapter:
         self.max_api_retries = max_api_retries
         self.call_timeout_s = call_timeout_s
 
+    def provider_policy(self) -> ProviderPolicy:
+        """The declared budget-safety contract this harness enforces (WS2)."""
+        return ProviderPolicy(provider="openai", max_retries=0,
+                              per_call_timeout_s=self.call_timeout_s,
+                              retry_non_timeout_only=True, wall_budget_enforced=True)
+
     def _client(self):
         from acp.core.config import get_settings
         from acp.core.optional import try_import
@@ -101,7 +108,8 @@ class OpenAIHarnessAdapter:
         # timed-out call (observed 241s vs a 120s budget). The harness drives its
         # own multi-step loop, so a per-call timeout (set per request, bounded by
         # the remaining wall budget) is the single, hard latency ceiling.
-        return openai.OpenAI(api_key=key.get_secret_value(), max_retries=0)
+        return openai.OpenAI(api_key=key.get_secret_value(),
+                             max_retries=self.provider_policy().max_retries)
 
     async def healthcheck(self) -> AgentHealth:
         client = self._client()

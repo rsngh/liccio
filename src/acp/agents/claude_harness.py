@@ -35,6 +35,7 @@ from acp.schemas.agent import (
     Budget,
 )
 from acp.schemas.context import ContextPack
+from acp.schemas.provider_policy import ProviderPolicy
 from acp.schemas.task import Task
 from acp.schemas.workspace import DiffBundle
 from acp.workspaces.base import Workspace
@@ -69,6 +70,12 @@ class ClaudeHarnessAdapter:
         self.max_steps = max_steps
         self.max_tool_calls = max_tool_calls
 
+    def provider_policy(self) -> ProviderPolicy:
+        """The declared budget-safety contract this harness enforces (WS2)."""
+        return ProviderPolicy(provider="anthropic", max_retries=0,
+                              per_call_timeout_s=60.0, retry_non_timeout_only=True,
+                              wall_budget_enforced=True)
+
     def _client(self):
         from acp.core.config import get_settings
         from acp.core.optional import try_import
@@ -82,7 +89,8 @@ class ClaudeHarnessAdapter:
         # No SDK retries so backoff/retry can't multiply a single call past the
         # budget (see openai_harness: even one retry doubled a timed-out call).
         # The per-request timeout bounded by remaining wall budget is the hard cap.
-        return anthropic.Anthropic(api_key=key.get_secret_value(), max_retries=0)
+        return anthropic.Anthropic(api_key=key.get_secret_value(),
+                                   max_retries=self.provider_policy().max_retries)
 
     async def healthcheck(self) -> AgentHealth:
         client = self._client()
