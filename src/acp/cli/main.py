@@ -407,6 +407,35 @@ def reports_validate() -> None:
     console.print(f"[green]all {len(manifest.artifacts)} artifacts valid[/green]")
 
 
+measure_app = typer.Typer(help="Measurement-trust layer (Round 12).")
+app.add_typer(measure_app, name="measurement")
+
+
+@measure_app.command("hygiene")
+def measurement_hygiene(
+    path: str = "reports/live/alpha11_live_bakeoff.json",
+    harness_only: bool = True,
+) -> None:
+    """Classify a bakeoff/cells JSON file and print its measurement-hygiene report.
+
+    Exits 1 if the measurement is contaminated (too much infra/inconclusive noise to
+    trust the solve-rate) — a guard you can wire into CI before trusting routing.
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    from acp.evaluation.measurement_hygiene import build_hygiene_report
+
+    doc = _json.loads(_Path(path).read_text())
+    cells = doc.get("cells", doc) if isinstance(doc, dict) else doc
+    if harness_only:
+        cells = [c for c in cells if c.get("is_harness")]
+    rep = build_hygiene_report(cells)
+    console.print_json(data=rep.model_dump(mode="json"))
+    if rep.contaminated:
+        raise typer.Exit(1)
+
+
 dataset_app = typer.Typer(help="Training-data factory (Alpha 7).")
 app.add_typer(dataset_app, name="dataset")
 
