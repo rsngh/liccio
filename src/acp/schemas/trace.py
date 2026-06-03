@@ -56,6 +56,15 @@ class AgentTrace(ACPModel):
     file_reads: int = 0
     file_writes: list[str] = Field(default_factory=list)
     commands: int = 0
+    # Tool activation signals (Alpha 11/12 WS4): the tool_choice="required" bug
+    # (the model answered in prose, never calling a tool) is visible here as
+    # tools_required=True + tool_calls=0 + activation_failure_reason set.
+    tools_offered: int = 0
+    tools_required: bool = False
+    tool_choice_mode: str | None = None  # "required" | "auto" | None
+    tool_calls_valid: int = 0
+    first_tool_call_turn: int | None = None
+    activation_failure_reason: str | None = None
     changed_files: list[str] = Field(default_factory=list)
     diff_lines: int = 0
     input_tokens: int = 0

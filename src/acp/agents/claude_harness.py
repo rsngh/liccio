@@ -124,9 +124,11 @@ class ClaudeHarnessAdapter:
                 if remaining <= 0:
                     error = "budget_exceeded:wall"
                     break
+                # tool_choice={"type": "any"} forces a tool call every turn (parity
+                # with openai_harness; finish is itself a tool, so the agent can end).
                 resp = client.messages.create(
                     model=self.model_name, max_tokens=2048, system=SYSTEM_PROMPT,
-                    messages=messages, tools=_TOOLS_SPEC,
+                    messages=messages, tools=_TOOLS_SPEC, tool_choice={"type": "any"},
                     timeout=max(5.0, remaining),
                 )
                 usage = getattr(resp, "usage", None)
@@ -163,7 +165,7 @@ class ClaudeHarnessAdapter:
         return finalize_result(
             tools=tools, workspace=workspace, t0=t0, model=self.model_name,
             in_tok=in_tok, out_tok=out_tok, error=error, session_id=session_id,
-            ledger=ledger,
+            ledger=ledger, tool_choice_mode="required", tools_offered=len(_TOOLS_SPEC),
         )
 
     async def review(

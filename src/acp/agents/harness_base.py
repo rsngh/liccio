@@ -153,6 +153,7 @@ def finalize_result(
     *, tools: HarnessTools, workspace: Workspace, t0: float, model: str,
     in_tok: int, out_tok: int, error: str | None, session_id: str,
     ledger: BudgetLedger | None = None,
+    tool_choice_mode: str | None = None, tools_offered: int = 0,
 ) -> AgentAttemptResult:
     """Normalized result so every harness produces an identical trace shape."""
     cap = DiffCapturer(str(workspace.path), workspace.spec.base_commit)
@@ -171,7 +172,8 @@ def finalize_result(
     else:
         status = RunStatus.FAILED
     metadata: dict = {"session_id": session_id, "steps_tool_calls": len(tools.tool_calls),
-                      "commands": len(tools.command_runs), "files_written": tools.files_written}
+                      "commands": len(tools.command_runs), "files_written": tools.files_written,
+                      "tool_choice_mode": tool_choice_mode, "tools_offered": tools_offered}
     if ledger is not None:
         metadata["budget"] = ledger.summary()
         metadata["budget_events"] = [e.model_dump(mode="json") for e in ledger.events]

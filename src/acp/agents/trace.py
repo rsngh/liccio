@@ -21,6 +21,19 @@ def build_agent_trace(
         writes = changed
     diff_lines = len((result.diff.unified_diff or "").splitlines()) if result.diff else 0
     status = result.status if isinstance(result.status, str) else result.status.value
+
+    # Tool activation signals (WS4). The harness reports its tool_choice mode and
+    # offered-tool count via metadata; valid calls are those that ran error-free.
+    # The tool_choice="required" bug shows here as required + tool_calls=0.
+    meta = result.metadata or {}
+    tool_choice_mode = meta.get("tool_choice_mode")
+    tools_offered = int(meta.get("tools_offered", 0) or 0)
+    tools_required = tool_choice_mode == "required"
+    valid = sum(1 for t in tcs if not t.error)
+    activation_failure_reason: str | None = None
+    if is_harness and not tcs:
+        activation_failure_reason = (
+            "tools_required_but_none_called" if tools_required else "no_tool_calls")
     return AgentTrace(
         attempt_id=attempt.id,
         task_id=task_id or attempt.task_id,
@@ -33,6 +46,12 @@ def build_agent_trace(
         file_reads=reads,
         file_writes=writes,
         commands=commands,
+        tools_offered=tools_offered,
+        tools_required=tools_required,
+        tool_choice_mode=tool_choice_mode,
+        tool_calls_valid=valid,
+        first_tool_call_turn=1 if tcs else None,
+        activation_failure_reason=activation_failure_reason,
         changed_files=changed,
         diff_lines=diff_lines,
         input_tokens=result.input_token_count,

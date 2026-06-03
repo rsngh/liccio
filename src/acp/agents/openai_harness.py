@@ -222,7 +222,7 @@ class OpenAIHarnessAdapter:
         return finalize_result(
             tools=tools, workspace=workspace, t0=t0, model=self.model_name,
             in_tok=in_tok, out_tok=out_tok, error=error, session_id=session_id,
-            ledger=ledger,
+            ledger=ledger, tool_choice_mode="required", tools_offered=len(_TOOLS_SPEC),
         )
 
     async def review(
