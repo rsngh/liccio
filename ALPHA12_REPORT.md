@@ -49,6 +49,16 @@ trade-off (openai dominates here) — exactly the Pareto frontier the router wei
 now on observed agent behavior. This is the value of running live and tuning on
 results rather than fixtures.
 
+## Real capability differentiation (live, repeated)
+
+Repeating the hardest task (replace an `eval()` injection with a safe evaluator,
+security_fix) 3x per harness surfaced a genuine, reliable capability gap:
+**claude_harness 3/3 vs openai_harness 2/3**. On plain bugfixes both are 7/7 but
+openai is ~20x cheaper. So real observed data teaches the capability matrix a
+real routing rule: **security_fix -> claude_harness (reliability), bugfix ->
+openai_harness (cost)** — exactly the decision quality the platform is built to
+learn, now from observed behavior (`reports/live/alpha13_security_reliability.json`).
+
 ## Honest limitations
 
 - The harness-evolution pipeline governs updates but does not author prompt edits;

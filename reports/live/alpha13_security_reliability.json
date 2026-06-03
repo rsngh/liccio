@@ -1,0 +1,9 @@
+{
+  "experiment": "alpha13_security_remediation_reliability",
+  "source": "REAL observed agent runs (3 repetitions, live keys)",
+  "task": "replace eval()-based compute() with a safe arithmetic evaluator (security_fix)",
+  "verification": "ran the repo's own pytest (arith correct AND __import__ rejected)",
+  "solve_rate": {"openai_harness": "2/3", "claude_harness": "3/3"},
+  "finding": "claude_harness is more reliable than openai_harness on security remediation; openai_harness is cheaper/faster on plain bugfixes (both 7/7 there). Real differentiation -> the capability matrix learns to route security_fix to claude and bugfix to openai.",
+  "note": "no secret leakage; verified externally by ACP, not harness self-report"
+}
