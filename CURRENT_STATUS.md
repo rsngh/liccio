@@ -17,6 +17,16 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 12 — harness quality + workflow-shape learning.** **Harness metrics**
+(`evaluation/harness_metrics.py`: HAR/HFR/PWL activation/adherence/pass-when-loaded
+by model/harness/task-type; live result HAR=HFR=PWL=1.0 on real harness traces); a
+governed **harness-evolution pipeline** (proposal->scan->eval->review->canary->
+rollback; no promotion without eval+audit+rollback); **topology action learning**
+(`RoutingAction.topology` + `TOPOLOGY_ACTIONS`: skip planner/reviewer, light/strict
+verifier, branch_parallel, terminate, abstain — OPE-learnable, backward-compatible
+arm keys); and a **relative trajectory judge** (8 axes + cross-judge audit + reward
+sensitivity, feeding preference learning). See `ALPHA12_*`.
+
 **Alpha 11 — production-readiness candidate.** Routing objectives are configurable
 per task class (`core/pareto_config.py`; docs→cost_saver, security_fix→risk_min,
 incident→success_max, high-risk safety override). Every run carries a **policy

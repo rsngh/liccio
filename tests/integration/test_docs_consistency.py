@@ -202,6 +202,17 @@ def test_alpha11_report_present() -> None:
     assert len(_read("ALPHA11_REPORT.md").strip()) > 200
 
 
+def test_alpha12_artifacts_and_report() -> None:
+    checklist = _read("ALPHA12_CHECKLIST.md")
+    for art in ("evals/reports/harness_metrics.json",
+                "evals/reports/trajectory_judge.json",
+                "reports/live/alpha12_harness_metrics.json"):
+        assert art in checklist, f"{art} not in ALPHA12_CHECKLIST.md"
+        assert (ROOT / art).exists(), f"{art} missing on disk"
+    assert (ROOT / "ALPHA12_REPORT.md").exists()
+    assert len(_read("ALPHA12_REPORT.md").strip()) > 200
+
+
 def test_no_stale_single_harness_or_future_claims() -> None:
     # completed features must not be described as future work / not-implemented
     status = _read("CURRENT_STATUS.md").lower()
