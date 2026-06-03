@@ -107,6 +107,16 @@ def _health_production() -> dict:
 
 
 def _vendor_harness_live() -> dict:
+    """Preserve a live-proven vendor report if one exists (run_vendor_live.py);
+    otherwise emit a capability-only report in the same schema."""
+    existing = REPORTS / "vendor_harness_live.json"
+    if existing.exists():
+        try:
+            prior = json.loads(existing.read_text())
+            if prior.get("live_proven"):
+                return prior  # don't downgrade a real live proof
+        except Exception:  # noqa: BLE001
+            pass
     import asyncio
     import dataclasses
 
@@ -114,12 +124,12 @@ def _vendor_harness_live() -> dict:
     from acp.agents.capabilities import build_capability_registry
 
     caps = asyncio.run(build_capability_registry(build_default_registry()))
-    vendor = [dataclasses.asdict(e) for e in caps.entries if e.category == "vendor"]
-    return {"experiment": "alpha11_vendor_harness_live",
-            "note": "live vendor runs require ACP_LIVE_CODEX / SDK keys + Docker; "
-                    "reporting capability/availability only in this environment",
-            "vendor_adapters": vendor,
-            "live_proven": False}
+    vendor = {e.name: dataclasses.asdict(e) for e in caps.entries
+              if e.category == "vendor"}
+    return {"experiment": "alpha11_vendor_harness_live", "live_proven": False,
+            "codex_cli": vendor.get("codex_cli", {"available": False}),
+            "note": "run `make vendor-live` (codex binary + ACP_LIVE_CODEX + Docker) "
+                    "to produce a live-proven report"}
 
 
 def _local_lora_pilot() -> dict:
