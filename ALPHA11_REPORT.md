@@ -68,10 +68,27 @@ log (`source: REAL observed agent runs`) ranks a solver-preferring policy (DR 1.
 above random (0.5). This is the first round whose routing evidence is observed
 agent behavior on real workloads.
 
+
+## WS5/WS6 — live-proven on a Docker + keyed host
+
+With Docker available and OpenAI/Anthropic keys present, the previously
+environment-gated proofs are now real:
+
+- **Docker live security (WS5)** — all 9 enforceable checks pass live
+  (`docker_security_live.json`: `passed=True`: no-network, non-root, memory/PID
+  caps, timeout, workspace containment, secret scrub, massive-stdout bound,
+  cleanup). The production gate `docker_live_security_passed` is now genuinely
+  satisfiable, and all 10 Docker workspace/runner tests pass live.
+- **Vendor harness live (WS6)** — `vendor_harness_live.json` now reports
+  `live_proven=True`: the real vendor-native `codex_cli` CLI loop runs end-to-end
+  (trace captured, no secret leak, defensive on failure), and an ACP harness fix is
+  **verified inside a network-isolated, non-root container** (`verified_in_docker=True`,
+  diff captured) — true Docker-enforced execution, not just capability reporting.
+
 ## Honest limitations
 
-- Docker live-security, vendor-native live runs, and the local LoRA pilot are
-  environment-gated (no Docker / vendor keys / GPU here); their artifacts report
-  availability honestly (`vendor_harness_live.json`, `local_lora_pilot.json`).
+- The local LoRA pilot remains gated (no GPU); `local_lora_pilot.json` reports
+  `skipped` honestly. Docker live-security (WS5) and vendor-native live (WS6)
+  are now PROVEN on this host (see above).
 - Corpus/fixtures are synthetic-but-realistic; the production gates are wired and
   enforced, but a true production sign-off needs the live Docker + vendor proofs.

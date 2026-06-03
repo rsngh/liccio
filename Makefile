@@ -177,3 +177,9 @@ alpha11-artifacts:
 
 live-bakeoff:
 	$(UV) run python evals/scripts/run_live_bakeoff.py
+
+docker-security-live:
+	$(UV) run python evals/scripts/run_docker_security_live.py
+
+vendor-live:
+	ACP_LIVE_CODEX=1 $(UV) run python evals/scripts/run_vendor_live.py
