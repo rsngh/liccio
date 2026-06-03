@@ -35,6 +35,10 @@ class PolicyDecisionDossier:
     human_review_required: bool = False
     exploration_reason: str = ""
     notes: list[str] = field(default_factory=list)
+    # Measurement-quality section (Round 12 WS9): lets a reviewer see whether the
+    # recommendation rests on clean conclusive task outcomes or is contaminated by
+    # infra noise. Populated via attach_measurement_quality(); None when absent.
+    measurement_quality: dict[str, Any] | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -47,6 +51,7 @@ class PolicyDecisionDossier:
             "risk_level": self.risk_level,
             "human_review_required": self.human_review_required,
             "exploration_reason": self.exploration_reason, "notes": self.notes,
+            "measurement_quality": self.measurement_quality,
         }
 
 
@@ -104,3 +109,32 @@ def build_policy_dossier(graph: dict) -> PolicyDecisionDossier:
         exploration_reason=decision.get("exploration_reason", ""),
         notes=notes,
     )
+
+
+def attach_measurement_quality(
+    dossier: PolicyDecisionDossier, cells: list,
+) -> PolicyDecisionDossier:
+    """Attach a WS9 measurement-quality section from the attempts behind a decision.
+
+    ``cells`` are attempt cells (dicts) for the routed task/adapter. The summary
+    surfaces conclusive vs infra/inconclusive shares and a ``trustworthy`` flag so a
+    reviewer can tell whether the recommendation rests on clean task signal.
+    """
+    from acp.evaluation.measurement_hygiene import build_hygiene_report
+
+    rep = build_hygiene_report(cells)
+    dossier.measurement_quality = {
+        "solve_rate_conclusive": rep.solve_rate,
+        "n_conclusive": rep.n_conclusive,
+        "n_infra": rep.n_infra,
+        "n_inconclusive": rep.n_inconclusive,
+        "infra_failure_rate": rep.infra_failure_rate,
+        "contaminated": rep.contaminated,
+        "contamination_reasons": rep.contamination_reasons,
+        "by_outcome": rep.by_outcome,
+        "trustworthy": (not rep.contaminated) and rep.n_conclusive > 0,
+    }
+    if rep.contaminated:
+        dossier.notes.append(
+            "measurement contaminated: " + "; ".join(rep.contamination_reasons))
+    return dossier
