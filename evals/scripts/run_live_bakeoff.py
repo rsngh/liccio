@@ -191,16 +191,26 @@ def _verify(ws_path: Path, test_file: str) -> bool:
 def _build_adapters() -> dict:
     from acp.agents.fake import FakeAgentAdapter
     from acp.agents.patch_agent import PatchAgentAdapter
+    from acp.core.config import reset_settings
+
+    # Mirror the provider keys into the ACP_-prefixed names BEFORE any adapter
+    # builds. The settings singleton is cached on first read, so if openai's
+    # healthcheck loads settings before ACP_ANTHROPIC_API_KEY is set, claude's
+    # healthcheck reads a stale (anthropic=None) cache and falsely reports
+    # unavailable. Set both, then reset the cache once, so both providers resolve.
+    if os.environ.get("OPENAI_API_KEY"):
+        os.environ.setdefault("ACP_OPENAI_API_KEY", os.environ["OPENAI_API_KEY"])
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
+    reset_settings()
 
     adapters: dict[str, object] = {"fake": FakeAgentAdapter(), "patch": PatchAgentAdapter()}
     if os.environ.get("OPENAI_API_KEY"):
-        os.environ.setdefault("ACP_OPENAI_API_KEY", os.environ["OPENAI_API_KEY"])
         from acp.agents.openai_harness import OpenAIHarnessAdapter
         oa = OpenAIHarnessAdapter(max_steps=8)
         if asyncio.run(oa.healthcheck()).available:
             adapters["openai_harness"] = oa
     if os.environ.get("ANTHROPIC_API_KEY"):
-        os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
         from acp.agents.claude_harness import ClaudeHarnessAdapter
         ca = ClaudeHarnessAdapter(max_steps=8)
         if asyncio.run(ca.healthcheck()).available:

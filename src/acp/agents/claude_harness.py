@@ -79,7 +79,9 @@ class ClaudeHarnessAdapter:
         key = get_settings().anthropic_api_key
         if key is None:
             return None
-        return anthropic.Anthropic(api_key=key.get_secret_value())
+        # Cap SDK retries so backoff can't multiply a single call past the budget
+        # (see openai_harness for the ~600s rate-limit blowout this prevents).
+        return anthropic.Anthropic(api_key=key.get_secret_value(), max_retries=1)
 
     async def healthcheck(self) -> AgentHealth:
         client = self._client()
@@ -115,9 +117,16 @@ class ClaudeHarnessAdapter:
                 error = ledger.violation(time.monotonic())
                 if error:
                     break
+                # Bound each request by the remaining wall-time budget so a single
+                # hung/rate-limited call can't run past it (parity with openai_harness).
+                remaining = budget.max_wall_time_s - (time.monotonic() - t0)
+                if remaining <= 0:
+                    error = "budget_exceeded:wall"
+                    break
                 resp = client.messages.create(
                     model=self.model_name, max_tokens=2048, system=SYSTEM_PROMPT,
                     messages=messages, tools=_TOOLS_SPEC,
+                    timeout=max(5.0, remaining),
                 )
                 usage = getattr(resp, "usage", None)
                 if usage:

@@ -84,7 +84,10 @@ class OpenAIHarnessAdapter:
         key = get_settings().openai_api_key
         if key is None:
             return None
-        return openai.OpenAI(api_key=key.get_secret_value())
+        # Cap SDK retries: the default (2) multiplies each request's wall time via
+        # exponential backoff, which let a single rate-limited call run ~600s past
+        # the budget. One retry keeps transient resilience without budget blowout.
+        return openai.OpenAI(api_key=key.get_secret_value(), max_retries=1)
 
     async def healthcheck(self) -> AgentHealth:
         client = self._client()
@@ -120,8 +123,17 @@ class OpenAIHarnessAdapter:
                 error = ledger.violation(time.monotonic())
                 if error:
                     break
+                # Bound each request by the wall-time budget remaining: without a
+                # per-call timeout the between-step ledger check can't fire until a
+                # (possibly 10-min) call returns. Leave a small floor so near-budget
+                # steps still get a real attempt rather than an instant timeout.
+                remaining = budget.max_wall_time_s - (time.monotonic() - t0)
+                if remaining <= 0:
+                    error = "budget_exceeded:wall"
+                    break
                 resp = client.chat.completions.create(
                     model=self.model_name, messages=messages, tools=_TOOLS_SPEC,
+                    timeout=max(5.0, remaining),
                 )
                 usage = getattr(resp, "usage", None)
                 if usage:
