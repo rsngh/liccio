@@ -59,6 +59,19 @@ class OPESample:
 # A target policy returns pi_target(action | context, candidates).
 TargetPolicy = Callable[[str, str, list[str]], float]
 
+# Default cost penalty (per $ of attempt cost) for cost-adjusted reward. Kept small
+# so cost only orders policies that are otherwise tied on success — never flips a
+# real quality difference (a sample's success gap is >= 1/n >> cost_weight*cost).
+DEFAULT_COST_WEIGHT = 2.0
+
+
+def cost_adjusted_reward(success: float, cost_usd: float,
+                         cost_weight: float = DEFAULT_COST_WEIGHT) -> float:
+    """reward = success - cost_weight * cost. The cost-aware reward used to make
+    cost a first-class tie-breaker in OPE / counterfactual regret (WS7), consistent
+    with the capability-matrix cost tiebreak and the Pareto cost_saver profile."""
+    return float(success) - cost_weight * float(cost_usd)
+
 
 @dataclass
 class Estimate:

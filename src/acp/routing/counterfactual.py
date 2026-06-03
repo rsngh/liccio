@@ -85,3 +85,25 @@ def total_regret(log: list[OPESample]) -> dict:
     n = len(regrets) or 1
     return {"n": len(regrets), "mean_regret": round(sum(regrets) / n, 6),
             "max_regret": round(max(regrets), 6) if regrets else 0.0}
+
+
+def cost_adjusted_regret(log: list[OPESample], costs: list[float], *,
+                         cost_weight: float | None = None) -> dict:
+    """Counterfactual regret under a cost-aware reward (WS7).
+
+    ``costs[i]`` is the realized $ cost of ``log[i]``. The reward model is refit on
+    cost-adjusted rewards (success - cost_weight*cost), so the "best arm" the logged
+    policy is compared against is the cost-OPTIMAL one — a cheaper equal-quality
+    action is no longer counted as regret-free when a pricier one was chosen.
+    """
+    from acp.routing.ope import DEFAULT_COST_WEIGHT, OPESample, cost_adjusted_reward
+
+    w = DEFAULT_COST_WEIGHT if cost_weight is None else cost_weight
+    adjusted = [
+        OPESample(s.context_key, s.action_key, s.behavior_prob,
+                  cost_adjusted_reward(s.reward, c, w), s.candidates)
+        for s, c in zip(log, costs, strict=True)
+    ]
+    out = total_regret(adjusted)
+    out["cost_weight"] = w
+    return out
