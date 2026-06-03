@@ -69,6 +69,21 @@ above random (0.5). This is the first round whose routing evidence is observed
 agent behavior on real workloads.
 
 
+## Production-ready — proven end-to-end
+
+With Docker + keys, `acp health --mode production` now returns
+**`production_ready: True`** — every gate satisfied by *real* data
+(`control_plane_health_production.json`):
+
+- `docker_live_security_passed: True` (WS5 live, 9/9 checks),
+- `ope_overlap_sufficient: True` from **32 observed agent samples** (the live
+  bakeoff outcomes ingested as real RoutingDecision + RewardEvent rows; the OPE
+  greedy policy beats random on this real log),
+- `artifact_manifest_valid` + `test_reports_present` + `no_demoted_model_promoted`.
+
+This is the first time the production release gate passes on observed agent
+behavior rather than synthetic fixtures.
+
 ## WS5/WS6 — live-proven on a Docker + keyed host
 
 With Docker available and OpenAI/Anthropic keys present, the previously

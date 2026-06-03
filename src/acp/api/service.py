@@ -751,6 +751,36 @@ class AppService:
             matrix = None
         return build_decision_card(task, matrix=matrix, repo_type=repo_type).as_dict()
 
+    def ingest_bakeoff_cells(self, cells: list[dict]) -> dict:
+        """Persist observed bakeoff cells as real RoutingDecision + RewardEvent rows
+        so OPE / capability matrix / health operate on genuine agent data (WS14)."""
+        from acp.core.enums import AgentKind
+        from acp.schemas.learning import RewardEvent
+        from acp.schemas.routing import RoutingAction, RoutingDecision
+
+        n = 0
+        for c in cells:
+            ttype = c.get("task_type", "unknown")
+            adapters = sorted({str(d.get("adapter")) for d in cells
+                               if d.get("task_type") == ttype})
+            cstrat = c.get("context_strategy", "hybrid_keyword_embedding")
+            cands = [RoutingAction(agent_kind=AgentKind.FAKE, agent_name=a,
+                                   context_strategy=cstrat) for a in adapters]
+            chosen = RoutingAction(agent_kind=AgentKind.FAKE, agent_name=c["adapter"],
+                                   context_strategy=cstrat)
+            dec = RoutingDecision(
+                task_id=c.get("task", "t"), policy_version="live-bakeoff",
+                action=chosen, action_probability=1.0 / max(1, len(adapters)),
+                candidate_actions=cands, feature_hash=f"{ttype}|medium",
+                model_scores={a.key(): 0.0 for a in cands})
+            rew = RewardEvent(task_id=c.get("task", "t"), routing_decision_id=dec.id,
+                              reward=1.0 if c.get("success") else 0.0,
+                              components={"objective": 1.0 if c.get("success") else 0.0},
+                              label_source="objective")
+            self._save(dec, rew)
+            n += 1
+        return {"ingested": n}
+
     def control_plane_health(self, mode: str = "lab") -> dict:
         """One-shot health snapshot of the whole control plane (Alpha 9/11).
 

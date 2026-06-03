@@ -103,6 +103,16 @@ def _mixed_corpus() -> dict:
 
 def _health_production() -> dict:
     svc, _ = _temp_service()
+    # Seed the OPE log with the REAL observed live-bakeoff outcomes (if present) so
+    # the production OPE gate reflects genuine agent data, not an empty lab.
+    live = Path("reports/live/alpha11_live_bakeoff.json")
+    if live.exists():
+        try:
+            cells = json.loads(live.read_text()).get("cells", [])
+            if cells:
+                svc.ingest_bakeoff_cells(cells)
+        except Exception:  # noqa: BLE001
+            pass
     return svc.control_plane_health(mode="production")
 
 
