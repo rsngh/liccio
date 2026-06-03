@@ -129,13 +129,20 @@ def _task_type(cell: dict) -> str:
     return cell.get("task_type") or cell.get("task") or "unknown"
 
 
-def _row_timed_out(cell: dict) -> bool:
-    """A run cell that timed out (provider/infra latency) — excluded from
-    capability aggregation so it is not miscounted as a solve failure."""
-    if cell.get("timed_out"):
-        return True
-    status = str(cell.get("status", "")).lower()
-    return status in ("timed_out", "timeout")
+def _row_inconclusive(cell: dict) -> bool:
+    """A run cell that yields no usable capability signal: it timed out, did NOT
+    solve, and made no progress (zero tool calls) — i.e. a pure infra hang on the
+    first call. These are excluded from aggregation.
+
+    A timeout that nonetheless SOLVED the task (verified) is a success — the work
+    was done before a later call hung — so it is kept. A timeout that made tool
+    calls but did not solve is genuine non-completion and is kept as a failure.
+    """
+    timed_out = bool(cell.get("timed_out")) or \
+        str(cell.get("status", "")).lower() in ("timed_out", "timeout")
+    if not timed_out or cell.get("success"):
+        return False
+    return not cell.get("tool_calls")
 
 
 class CapabilityMatrix:
@@ -188,7 +195,7 @@ class CapabilityMatrix:
             # solve the task, so counting it as a failure would poison routing.
             # An all-timeout cell collapses to sample_size 0 -> low-sample -> never
             # recommended (the no-overclaim guarantee), rather than a false 0.0.
-            scored = [r for r in rows if not _row_timed_out(r)]
+            scored = [r for r in rows if not _row_inconclusive(r)]
             n = len(scored)
             denom = n or 1
             cell = CapabilityCell(

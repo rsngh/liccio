@@ -204,3 +204,33 @@ def test_all_timeout_cell_is_low_sample_not_zero_success() -> None:
     cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
     assert cell.sample_size == 0
     assert not cell.sufficient_data
+
+
+def test_timeout_that_solved_is_kept_as_success() -> None:
+    # The agent wrote a correct fix (verified) then a later call hung -> the work
+    # was done; it must count as a success, not be dropped as inconclusive.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": True,
+         "status": "timed_out", "timed_out": True, "tool_calls": 2,
+         "cost_usd": 0.001, "latency_s": 63.0},
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": True,
+         "status": "succeeded", "tool_calls": 2, "cost_usd": 0.001, "latency_s": 5.0},
+    ]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert cell.sample_size == 2 and cell.success_rate == 1.0
+
+
+def test_timeout_with_activity_but_no_solve_counts_as_failure() -> None:
+    # Did work (tool calls) but did not solve before timing out -> genuine
+    # non-completion, kept as a failure (not excluded as infra).
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": False,
+         "status": "timed_out", "timed_out": True, "tool_calls": 4,
+         "cost_usd": 0.001, "latency_s": 60.0},
+        {"task_type": "bugfix", "adapter": "openai_harness", "success": True,
+         "status": "succeeded", "tool_calls": 2, "cost_usd": 0.001, "latency_s": 5.0},
+    ]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert cell.sample_size == 2 and cell.success_rate == 0.5

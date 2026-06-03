@@ -345,20 +345,22 @@ def main() -> int:
     # Exclude wall-clock timeouts from success/OPE: they reflect provider latency,
     # not capability, and would otherwise distort the policy. Log how many we drop
     # so the exclusion is never silent.
-    timed_out_cells = [c for c in cells if c.get("timed_out")]
-    if timed_out_cells:
-        # A timeout with zero tool activity = the first call hung (pure infra). A
-        # timeout AFTER tool calls could be the agent genuinely struggling/looping
-        # on a hard task — surface that separately so it can't masquerade as infra.
-        no_progress = sum(1 for c in timed_out_cells if not c.get("tool_calls"))
-        with_activity = len(timed_out_cells) - no_progress
-        print(f"[exclude] {len(timed_out_cells)}/{len(cells)} attempts timed out -> "
-              f"dropped from success-rate and OPE "
-              f"({no_progress} no-progress/infra, {with_activity} had tool activity)")
-        if with_activity:
-            print(f"[warn] {with_activity} timeout(s) occurred after tool calls — "
-                  f"possible genuine struggle, not just infra latency; inspect cells")
-    scored_cells = [c for c in cells if not c.get("timed_out")]
+    # Exclude only INCONCLUSIVE attempts: timed out, did not solve, and made no
+    # progress (pure infra hang on the first call). A timeout that still solved is a
+    # success (work done before a later call hung); a timeout that did work but did
+    # not solve is a genuine non-completion. Both are kept.
+    def _inconclusive(c: dict) -> bool:
+        return (bool(c.get("timed_out")) and not c.get("success")
+                and not c.get("tool_calls"))
+
+    excluded = [c for c in cells if _inconclusive(c)]
+    kept_timeouts = [c for c in cells if c.get("timed_out") and not _inconclusive(c)]
+    if excluded or kept_timeouts:
+        print(f"[exclude] {len(excluded)}/{len(cells)} inconclusive (infra hang, no "
+              f"progress) dropped; {len(kept_timeouts)} timeout(s) kept "
+              f"({sum(1 for c in kept_timeouts if c.get('success'))} solved despite a "
+              f"late hang, rest counted as non-completion)")
+    scored_cells = [c for c in cells if not _inconclusive(c)]
 
     # Real OPE log: each adapter is an action; reward = solved. Uniform behavior.
     from acp.routing.ope import OPESample, evaluate_policy, fit_reward_model
