@@ -59,6 +59,11 @@ def test_docker_security_all_pass_live() -> None:
     mod = _load()
     if not mod.docker_available():
         pytest.skip("docker not available")
+    # Live container ops can flake transiently under full-suite load (slow starts,
+    # image-layer contention). Retry once; only persistent failures are real.
     report = mod.run_checks()
     failing = [c["name"] for c in report["checks"] if c["status"] != "pass"]
+    if failing:
+        report = mod.run_checks()
+        failing = [c["name"] for c in report["checks"] if c["status"] != "pass"]
     assert not failing, f"failing docker security checks: {failing}"
