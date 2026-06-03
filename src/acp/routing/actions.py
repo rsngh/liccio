@@ -47,7 +47,15 @@ class CandidateGenerator:
         # The router learns which workflow shape is best per task class (WS8).
         self.topologies = topologies or [[]]
 
-    def generate(self, base: RoutingAction, available_agents: list[str]) -> list[RoutingAction]:
+    def generate(
+        self, base: RoutingAction, available_agents: list[str],
+        *, task_type: str | None = None, risk_level: str | None = None,
+    ) -> list[RoutingAction]:
+        # When task context is given, unsafe topology skips are filtered out so a
+        # security/high-risk task can never be routed with strict verification or
+        # review skipped (WS14 safety gate); cheap skips on low-risk tasks survive.
+        from acp.routing.topology_safety import filter_topology
+
         out: list[RoutingAction] = []
         seen: set[str] = set()
         for name in available_agents:
@@ -55,10 +63,14 @@ class CandidateGenerator:
             for strat in self.strategies:
                 for vpol in self.verification_policies:
                     for topo in self.topologies:
+                        safe_topo = list(topo)
+                        if topo and task_type is not None and risk_level is not None:
+                            safe_topo, _ = filter_topology(
+                                list(topo), task_type, risk_level)
                         cand = base.model_copy(update={
                             "agent_kind": kind, "agent_name": name,
                             "context_strategy": strat, "verification_policy": vpol,
-                            "topology": list(topo),
+                            "topology": safe_topo,
                         })
                         if cand.key() not in seen:
                             seen.add(cand.key())
