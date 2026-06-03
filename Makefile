@@ -171,3 +171,6 @@ live-qdrant:
 
 live-pgvector:
 	$(UV) run pytest -m live_pgvector -q
+
+alpha11-artifacts:
+	$(UV) run python evals/scripts/run_alpha11_artifacts.py

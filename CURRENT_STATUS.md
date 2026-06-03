@@ -17,6 +17,20 @@ multi-harness no-patch bakeoff compares adapters and persists as an `EvalRun`,
 the router learns from those bakeoffs, and the evaluator ladder is calibrated
 with a human-review threshold recommendation. See `ALPHA4_CHECKLIST.md`.
 
+**Alpha 11 — production-readiness candidate.** Routing objectives are configurable
+per task class (`core/pareto_config.py`; docs→cost_saver, security_fix→risk_min,
+incident→success_max, high-risk safety override). Every run carries a **policy
+decision dossier** (`acp policy dossier`: why this agent/context/cost/risk + why-not
+others). **Health is mode-gated** (`acp health --mode production` exits nonzero
+unless docker-live-security + OPE-overlap + fresh-test + manifest gates hold).
+**Drift auto-demotion is durable** (persisted drift report + demotion event +
+review item + promotion state). **Preference reward is governed** (advisory until
+pairwise-accuracy / reviewer-agreement / post-merge / high-risk gates pass), a
+**data-governance red-team** blocks all 6 attacks with zero leaks, a **production
+policy pack** declares lab/staging/production requirements, and a productionized
+**scheduler** (dependency graph + single-writer lock) runs the learning jobs. 34
+artifacts manifest-validated. See `ALPHA11_*`.
+
 **Alpha 9/10 — multi-objective decision system + scale hardening.** Routing is now
 multi-objective: a **Pareto routing policy** (`routing/pareto_policy.py`) with 6
 weight profiles (cost_saver…success_max) chooses on the (success/cost/latency/risk)

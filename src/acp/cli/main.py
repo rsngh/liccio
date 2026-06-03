@@ -669,6 +669,35 @@ def eval_scale_benchmark_v2() -> None:
     console.print_json(data=run_scale_benchmark_v2(sizes=[50, 100, 200]))
 
 
+@eval_app.command("data-governance-redteam")
+def eval_data_governance_redteam() -> None:
+    """Red-team the data/model governance policies (attacks must be blocked)."""
+    from acp.evaluation.data_governance_redteam import run_data_governance_redteam
+
+    console.print_json(data=run_data_governance_redteam())
+
+
+@eval_app.command("preference-reward-gate")
+def eval_preference_reward_gate() -> None:
+    """Preference-reward governance gate over the synthetic governance dataset."""
+    from acp.learning.reviewer_reliability import (
+        default_governance_dataset,
+        evaluate_preference_reward_governance,
+    )
+
+    labels, features, truth = default_governance_dataset()
+    console.print_json(data=evaluate_preference_reward_governance(
+        labels, features, truth_by_attempt=truth, post_merge_correlation=0.5))
+
+
+@eval_app.command("mixed-corpus")
+def eval_mixed_corpus(scale: str = "test") -> None:
+    """Generate the larger mixed empirical corpus."""
+    from acp.evaluation.mixed_corpus import generate_mixed_corpus
+
+    console.print_json(data=generate_mixed_corpus(scale=scale))
+
+
 @eval_app.command("list")
 def eval_list() -> None:
     """List persisted eval runs."""

@@ -46,6 +46,17 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/large_empirical_corpus.json": ["n_sufficient"],
     "evals/reports/storage_scale_v2.json": ["subquadratic"],
     "evals/reports/security_injection_v2.json": ["summary"],
+    # Alpha 11
+    "evals/reports/policy_dossier.json": ["run_id", "why_chosen"],
+    "evals/reports/preference_reward_gate.json": ["gate", "promoted"],
+    "evals/reports/data_governance_redteam.json": ["summary"],
+    "evals/reports/drift_persistence.json": ["persisted", "drift"],
+    "evals/reports/exploration_executor.json": ["coverage_delta"],
+    "evals/reports/scheduler_report.json": ["reports"],
+    "evals/reports/mixed_empirical_corpus.json": ["n_sufficient", "n_preference_pairs"],
+    "evals/reports/control_plane_health_production.json": ["production_gates"],
+    "evals/reports/vendor_harness_live.json": ["vendor_adapters"],
+    "evals/reports/local_lora_pilot.json": ["available", "status"],
 }
 
 

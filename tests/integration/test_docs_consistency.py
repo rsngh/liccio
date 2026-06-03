@@ -187,6 +187,21 @@ def test_alpha9_alpha10_reports_present() -> None:
         assert (ROOT / doc).exists() and len(_read(doc).strip()) > 200
 
 
+def test_alpha11_artifacts_exist() -> None:
+    checklist = _read("ALPHA11_CHECKLIST.md")
+    for art in ("evals/reports/policy_dossier.json",
+                "evals/reports/data_governance_redteam.json",
+                "evals/reports/drift_persistence.json",
+                "evals/reports/control_plane_health_production.json"):
+        assert art in checklist, f"{art} not in ALPHA11_CHECKLIST.md"
+        assert (ROOT / art).exists(), f"{art} missing on disk"
+
+
+def test_alpha11_report_present() -> None:
+    assert (ROOT / "ALPHA11_REPORT.md").exists()
+    assert len(_read("ALPHA11_REPORT.md").strip()) > 200
+
+
 def test_no_stale_single_harness_or_future_claims() -> None:
     # completed features must not be described as future work / not-implemented
     status = _read("CURRENT_STATUS.md").lower()
