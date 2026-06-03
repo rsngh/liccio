@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+from acp.api.routes.operator import build_operator_router
 from acp.api.routes.reviews import build_reviews_router
 from acp.api.service import AppService
 from acp.schemas.human_review import HumanLabel
@@ -40,6 +41,7 @@ def create_app(service: AppService | None = None) -> FastAPI:
     # Studio router first so its concrete paths (/reviews/queue, /reviews/{id}/bundle)
     # win over the inline /reviews/{review_id} catch-all below.
     app.include_router(build_reviews_router(svc))
+    app.include_router(build_operator_router(svc))
 
     @app.get("/health")
     def health() -> dict[str, str]:
