@@ -245,6 +245,9 @@ def _run_attempt(adapter, name: str, spec: dict, repo: Repository, ws_root: Path
         else result.status,
         "success": solved, "verification_pass": solved,
         "tool_calls": trace.tool_calls, "changed_files": trace.changed_files,
+        # Verification adherence signals (Alpha 13 live-tuning): did the harness
+        # read before editing, and did it run a command (e.g. the tests)?
+        "file_reads": trace.file_reads, "commands": trace.commands,
         "diff_lines": trace.diff_lines,
         "input_tokens": trace.input_tokens, "output_tokens": trace.output_tokens,
         "cost_usd": round(trace.estimated_cost_usd, 6), "latency_s": round(elapsed, 3),

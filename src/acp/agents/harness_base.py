@@ -47,7 +47,10 @@ TOOL_NAMES = ("read_file", "write_file", "run_command", "finish")
 SYSTEM_PROMPT = (
     "You are a coding agent operating in a sandboxed workspace. Use the tools to "
     "inspect and edit files and run commands. Make the minimal change to satisfy "
-    "the task, then call finish. Never print secrets or environment variables."
+    "the task. AFTER editing, you MUST run the project's tests with run_command "
+    "(e.g. `python -m pytest -q`) and iterate on your fix until they pass before "
+    "calling finish — do not finish on an unverified edit. "
+    "Never print secrets or environment variables."
 )
 
 
