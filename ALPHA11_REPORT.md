@@ -48,23 +48,25 @@ loops, each attempt is **verified by running the repo's own tests**, and the
 **observed** per-(task, adapter) outcomes feed a real capability matrix + real OPE
 log.
 
-Observed result (3 no-patch tasks × 4 adapters, redacted in
-`reports/live/alpha11_live_bakeoff.json`):
+Observed result (4 no-patch tasks × 2 repetitions × 4 adapters = 32 real
+attempts, redacted in `reports/live/alpha11_live_bakeoff.json`):
 
 | adapter | solved | cost/task | latency/task |
 | --- | --- | --- | --- |
-| openai_harness | 3/3 | ~$0.0005 | ~2.5 s |
-| claude_harness | 3/3 | ~$0.011 | ~5.4 s |
-| fake / patch (baselines) | 0/3 | $0 | — |
+| openai_harness | 8/8 | ~$0.0005 | ~2 s |
+| claude_harness | 8/8 | ~$0.010 | ~5 s |
+| fake / patch (baselines) | 0/8 | $0 | — |
 
 Both real harnesses solved every task; the baselines (no answer given) solved
 none. The cost/latency spread (OpenAI ~20× cheaper, ~2× faster here) is exactly
-the trade-off the Pareto layer weighs. OPE on this **real** log
-(`evals/reports/live_bakeoff_ope.json`, `source: REAL observed agent runs`) ranks
-a solver-preferring policy (DR 1.0) above random (0.5); the capability matrix
-honestly flags all cells low-sample (3 tasks < sufficiency threshold) — no
-overclaim. This is the first round whose routing evidence is observed agent
-behavior on real workloads, not prefabricated fixtures.
+the trade-off the Pareto layer weighs. With repetitions, the **bugfix** capability
+cells now cross the sufficiency threshold (n=6 each) from real data:
+`best_for(bugfix)` confidently recommends `openai_harness`
+(`selected_from_4_confident_of_4`) — a no-overclaim recommendation backed by
+observed agent behavior, not synthetic fixtures. OPE on this **real** 32-sample
+log (`source: REAL observed agent runs`) ranks a solver-preferring policy (DR 1.0)
+above random (0.5). This is the first round whose routing evidence is observed
+agent behavior on real workloads.
 
 ## Honest limitations
 

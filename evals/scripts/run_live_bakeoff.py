@@ -77,6 +77,20 @@ TASKS = [
         "criteria": ["is_even(4) is True", "is_even(3) is False"],
     },
     {
+        "id": "bugfix_clamp", "task_type": "bugfix",
+        "files": {"clampx.py":
+                  "def clamp(x, lo, hi):\n    return min(x, hi)  # bug: ignores lo\n"},
+        "test": "test_clamp.py",
+        "test_src": ("from clampx import clamp\n\n"
+                     "def test_low():\n    assert clamp(-5, 0, 10) == 0\n"
+                     "def test_high():\n    assert clamp(50, 0, 10) == 10\n"
+                     "def test_mid():\n    assert clamp(5, 0, 10) == 5\n"),
+        "title": "Fix clamp lower bound",
+        "body": "clamp(x, lo, hi) ignores the lower bound. Fix clampx.py so "
+                "clamp(-5, 0, 10) == 0.",
+        "criteria": ["clamp(-5, 0, 10) == 0", "clamp(50, 0, 10) == 10"],
+    },
+    {
         "id": "feature_factorial", "task_type": "feature",
         "files": {"mathx.py": "def factorial(n):\n    pass  # TODO: implement\n"},
         "test": "test_mathx.py",
@@ -138,11 +152,12 @@ def _build_adapters() -> dict:
     return adapters
 
 
-def _run_attempt(adapter, name: str, spec: dict, repo: Repository, ws_root: Path) -> dict:
+def _run_attempt(adapter, name: str, spec: dict, repo: Repository, ws_root: Path,
+                 rep: int = 0) -> dict:
     from acp.core.config import reset_settings
     reset_settings()
     base = Repo(repo.local_path).head.commit.hexsha
-    ws = LocalWorkspaceManager(ws_root / f"{spec['id']}_{name}").create(
+    ws = LocalWorkspaceManager(ws_root / f"{spec['id']}_{name}_{rep}").create(
         repo, RepoSnapshot(repo_id=repo.id, base_commit=base), default_policy())
     target = next(iter(spec["files"]))
     task = Task(repo_id=repo.id, title=spec["title"], body=spec["body"],
@@ -185,15 +200,18 @@ def main() -> int:
         return 0
     print(f"live harnesses: {live}; baselines: fake, patch")
 
+    reps = int(os.environ.get("ACP_BAKEOFF_REPS", "2"))
     tmp = Path(tempfile.mkdtemp())
     cells: list[dict] = []
     for spec in TASKS:
         repo = _make_repo(tmp, spec)
-        for name, adapter in adapters.items():
-            cell = _run_attempt(adapter, name, spec, repo, tmp / "ws")
-            cells.append(cell)
-            print(f"  {spec['id']:18s} {name:16s} solved={cell['success']} "
-                  f"cost=${cell.get('cost_usd', 0):.4f} {cell.get('latency_s', 0)}s")
+        for rep in range(reps):
+            for name, adapter in adapters.items():
+                cell = _run_attempt(adapter, name, spec, repo, tmp / "ws", rep=rep)
+                cell["rep"] = rep
+                cells.append(cell)
+                print(f"  {spec['id']:18s} r{rep} {name:16s} solved={cell['success']} "
+                      f"cost=${cell.get('cost_usd', 0):.4f} {cell.get('latency_s', 0)}s")
 
     # Real capability matrix from observed cells.
     from acp.routing.capability_matrix import CapabilityMatrix

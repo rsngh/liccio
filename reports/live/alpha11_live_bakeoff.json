@@ -1,6 +1,6 @@
 {
   "experiment": "alpha11_live_no_patch_bakeoff",
-  "n_tasks": 3,
+  "n_tasks": 4,
   "adapters": [
     "claude_harness",
     "fake",
@@ -14,8 +14,8 @@
   "solved_by_adapter": {
     "fake": 0,
     "patch": 0,
-    "openai_harness": 3,
-    "claude_harness": 3
+    "openai_harness": 8,
+    "claude_harness": 8
   },
   "cells": [
     {
@@ -33,7 +33,8 @@
       "input_tokens": 100,
       "output_tokens": 50,
       "cost_usd": 0.0,
-      "latency_s": 0.01
+      "latency_s": 0.013,
+      "rep": 0
     },
     {
       "task": "bugfix_divide",
@@ -50,7 +51,8 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.009
+      "latency_s": 0.008,
+      "rep": 0
     },
     {
       "task": "bugfix_divide",
@@ -61,15 +63,16 @@
       "status": "succeeded",
       "success": true,
       "verification_pass": true,
-      "tool_calls": 2,
+      "tool_calls": 1,
       "changed_files": [
         "calculator.py"
       ],
       "diff_lines": 10,
-      "input_tokens": 917,
-      "output_tokens": 94,
-      "cost_usd": 0.000607,
-      "latency_s": 3.444
+      "input_tokens": 567,
+      "output_tokens": 80,
+      "cost_usd": 0.000388,
+      "latency_s": 2.067,
+      "rep": 0
     },
     {
       "task": "bugfix_divide",
@@ -85,11 +88,89 @@
         "calculator.cpython-312.pyc",
         "calculator.py"
       ],
-      "diff_lines": 24,
-      "input_tokens": 5721,
-      "output_tokens": 524,
-      "cost_usd": 0.01249,
-      "latency_s": 6.099
+      "diff_lines": 25,
+      "input_tokens": 5770,
+      "output_tokens": 576,
+      "cost_usd": 0.012692,
+      "latency_s": 6.088,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.009,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.011,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "calculator.py"
+      ],
+      "diff_lines": 10,
+      "input_tokens": 567,
+      "output_tokens": 80,
+      "cost_usd": 0.000388,
+      "latency_s": 2.28,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_divide",
+      "task_type": "bugfix",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 4,
+      "changed_files": [
+        "calculator.cpython-312.pyc",
+        "calculator.py"
+      ],
+      "diff_lines": 23,
+      "input_tokens": 5737,
+      "output_tokens": 573,
+      "cost_usd": 0.01262,
+      "latency_s": 6.005,
+      "rep": 1
     },
     {
       "task": "bugfix_is_even",
@@ -106,7 +187,8 @@
       "input_tokens": 100,
       "output_tokens": 50,
       "cost_usd": 0.0,
-      "latency_s": 0.012
+      "latency_s": 0.011,
+      "rep": 0
     },
     {
       "task": "bugfix_is_even",
@@ -123,7 +205,8 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.009
+      "latency_s": 0.012,
+      "rep": 0
     },
     {
       "task": "bugfix_is_even",
@@ -138,11 +221,89 @@
       "changed_files": [
         "nums.py"
       ],
-      "diff_lines": 9,
-      "input_tokens": 560,
-      "output_tokens": 67,
-      "cost_usd": 0.000376,
-      "latency_s": 1.603
+      "diff_lines": 8,
+      "input_tokens": 561,
+      "output_tokens": 62,
+      "cost_usd": 0.000374,
+      "latency_s": 2.144,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 2,
+      "changed_files": [
+        "nums.cpython-312.pyc",
+        "nums.py"
+      ],
+      "diff_lines": 20,
+      "input_tokens": 3207,
+      "output_tokens": 448,
+      "cost_usd": 0.00731,
+      "latency_s": 4.484,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.011,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.01,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_is_even",
+      "task_type": "bugfix",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "nums.py"
+      ],
+      "diff_lines": 8,
+      "input_tokens": 561,
+      "output_tokens": 61,
+      "cost_usd": 0.000373,
+      "latency_s": 1.615,
+      "rep": 1
     },
     {
       "task": "bugfix_is_even",
@@ -159,10 +320,166 @@
         "nums.py"
       ],
       "diff_lines": 20,
-      "input_tokens": 4406,
-      "output_tokens": 496,
-      "cost_usd": 0.009804,
-      "latency_s": 5.087
+      "input_tokens": 4435,
+      "output_tokens": 536,
+      "cost_usd": 0.009942,
+      "latency_s": 8.289,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.011,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.011,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 2,
+      "changed_files": [
+        "clampx.py"
+      ],
+      "diff_lines": 8,
+      "input_tokens": 985,
+      "output_tokens": 87,
+      "cost_usd": 0.000643,
+      "latency_s": 3.449,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 3,
+      "changed_files": [
+        "clampx.cpython-312.pyc",
+        "clampx.py"
+      ],
+      "diff_lines": 24,
+      "input_tokens": 4699,
+      "output_tokens": 743,
+      "cost_usd": 0.010884,
+      "latency_s": 6.619,
+      "rep": 0
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.01,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.01,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 5,
+      "changed_files": [
+        "clampx.cpython-312-pytest-9.0.3.pyc",
+        "clampx.py"
+      ],
+      "diff_lines": 36,
+      "input_tokens": 3086,
+      "output_tokens": 257,
+      "cost_usd": 0.002006,
+      "latency_s": 10.194,
+      "rep": 1
+    },
+    {
+      "task": "bugfix_clamp",
+      "task_type": "bugfix",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 3,
+      "changed_files": [
+        "clampx.cpython-312.pyc",
+        "clampx.py"
+      ],
+      "diff_lines": 24,
+      "input_tokens": 4612,
+      "output_tokens": 623,
+      "cost_usd": 0.01047,
+      "latency_s": 5.819,
+      "rep": 1
     },
     {
       "task": "feature_factorial",
@@ -179,7 +496,8 @@
       "input_tokens": 100,
       "output_tokens": 50,
       "cost_usd": 0.0,
-      "latency_s": 0.013
+      "latency_s": 0.011,
+      "rep": 0
     },
     {
       "task": "feature_factorial",
@@ -196,7 +514,8 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "cost_usd": 0.0,
-      "latency_s": 0.016
+      "latency_s": 0.011,
+      "rep": 0
     },
     {
       "task": "feature_factorial",
@@ -213,9 +532,87 @@
       ],
       "diff_lines": 13,
       "input_tokens": 563,
-      "output_tokens": 89,
+      "output_tokens": 88,
       "cost_usd": 0.000391,
-      "latency_s": 2.361
+      "latency_s": 1.953,
+      "rep": 0
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "claude_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 3,
+      "changed_files": [
+        "mathx.cpython-312.pyc",
+        "mathx.py"
+      ],
+      "diff_lines": 24,
+      "input_tokens": 4248,
+      "output_tokens": 476,
+      "cost_usd": 0.009448,
+      "latency_s": 4.656,
+      "rep": 0
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "fake",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "cost_usd": 0.0,
+      "latency_s": 0.012,
+      "rep": 1
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "patch",
+      "is_harness": false,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": false,
+      "verification_pass": false,
+      "tool_calls": 0,
+      "changed_files": [],
+      "diff_lines": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_s": 0.01,
+      "rep": 1
+    },
+    {
+      "task": "feature_factorial",
+      "task_type": "feature",
+      "adapter": "openai_harness",
+      "is_harness": true,
+      "context_strategy": "hybrid_keyword_embedding",
+      "status": "succeeded",
+      "success": true,
+      "verification_pass": true,
+      "tool_calls": 1,
+      "changed_files": [
+        "mathx.py"
+      ],
+      "diff_lines": 14,
+      "input_tokens": 567,
+      "output_tokens": 93,
+      "cost_usd": 0.000396,
+      "latency_s": 1.95,
+      "rep": 1
     },
     {
       "task": "feature_factorial",
@@ -232,10 +629,11 @@
         "mathx.py"
       ],
       "diff_lines": 31,
-      "input_tokens": 4248,
-      "output_tokens": 457,
-      "cost_usd": 0.00941,
-      "latency_s": 5.057
+      "input_tokens": 4341,
+      "output_tokens": 538,
+      "cost_usd": 0.009758,
+      "latency_s": 5.967,
+      "rep": 1
     }
   ]
 }
