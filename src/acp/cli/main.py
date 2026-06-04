@@ -446,6 +446,39 @@ def skill_show(skill_id: str) -> None:
     console.print_json(data=skill.model_dump(mode="json"))
 
 
+@skill_app.command("optimize")
+def skill_optimize(backend: str = "microsoft_skillopt", dry_run: bool = False) -> None:
+    """Launch (or dry-run) a SkillOpt optimization. --dry-run reports backend
+    availability + plan without running rollouts (WS3 acceptance)."""
+    from acp.training.skillopt_backend import (
+        ACPInternalSkillOptBackend,
+        MicrosoftSkillOptBackend,
+        get_backend,
+    )
+
+    ms = MicrosoftSkillOptBackend()
+    resolved = get_backend(backend)
+    status = {
+        "requested_backend": backend,
+        "microsoft_skillopt_available": ms.available(),
+        "resolved_backend": resolved.name,
+        "internal_backend_available": ACPInternalSkillOptBackend().available(),
+        "dry_run": dry_run,
+    }
+    if dry_run:
+        status["plan"] = (
+            "build trusted dataset from conclusive traces -> propose bounded edits -> "
+            "apply -> score on held-out rollouts -> gate -> deploy best if it improves")
+        if backend.startswith("microsoft") and not ms.available():
+            status["note"] = ("skillopt not installed; would fall back to acp_internal. "
+                              "Install with `pip install skillopt`.")
+        console.print_json(data=status)
+        return
+    status["note"] = ("live optimization runs via evals/scripts/run_skillopt_live.py "
+                      "(needs OPENAI_API_KEY + bounded spend)")
+    console.print_json(data=status)
+
+
 @skill_app.command("diff")
 def skill_diff(old_id: str, new_id: str) -> None:
     """Unified diff between two skill versions."""
