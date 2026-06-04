@@ -1050,11 +1050,27 @@ class AppService:
                 "metric_deltas": deltas}
 
     def policy_dossier(self, run_id: str) -> dict:
-        """Assemble the full policy decision dossier for a run (Alpha 11, WS3)."""
-        from acp.core.policy_dossier import build_policy_dossier
+        """Assemble the full policy decision dossier for a run (Alpha 11 WS3 /
+        Round 13 WS9 v3): attaches the measurement-quality section so a reviewer can
+        answer not just "why this harness/cost/risk" but "why trust this evidence"."""
+        from acp.core.policy_dossier import attach_measurement_quality, build_policy_dossier
 
         graph = self.full_run_graph(run_id)  # raises KeyError if unknown
-        return build_policy_dossier(graph).as_dict()
+        dossier = build_policy_dossier(graph)
+        # Attempt cells behind this run's chosen action -> measurement-quality view.
+        attempt = graph.get("attempt") or {}
+        adapter = (dossier.chosen_action or {}).get("agent_name") or attempt.get("agent_name")
+        cells = [{
+            "adapter": adapter, "task_type": (dossier.viability or {}).get("task_type", "unknown"),
+            "success": (graph.get("evaluation") or {}).get("passed", False),
+            "status": attempt.get("status", "unknown"),
+            "is_harness": "harness" in str(adapter or ""),
+            "tool_calls": (graph.get("trace") or {}).get("tool_calls", 0),
+            "error": attempt.get("error"),
+        }] if adapter else []
+        if cells:
+            attach_measurement_quality(dossier, cells)
+        return dossier.as_dict()
 
     def learn_schedule_run(self) -> dict:
         """Run the continuous-learning job batch once (Alpha 9, WS10)."""
