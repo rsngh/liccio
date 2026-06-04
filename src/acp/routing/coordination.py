@@ -81,10 +81,13 @@ def compose_coordination(
     if store is not None:
         from acp.core.enums import SkillStatus
         from acp.training.skill_composition import compose_skills
+        from acp.training.skill_negative_transfer import applies_to_domain
         from acp.training.skill_registry import list_skills
+        # Exclude skills that showed negative transfer on this task type (WS10).
         applicable = [s for s in list_skills(store, status=SkillStatus.ACTIVE)
                       if s.scope.matches(task_type=task_type, risk_level=risk_level,
-                                         harness=agent_name)]
+                                         harness=agent_name)
+                      and applies_to_domain(s, task_type)]
         if applicable:
             comp = compose_skills(applicable, risk_level=risk_level)
             composed = comp.content
