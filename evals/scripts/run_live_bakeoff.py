@@ -207,6 +207,46 @@ TASKS = [
                 "least-recently-used entry. Any get or put counts as a use.",
         "criteria": ["evicts least-recently-used", "get returns -1 when absent"],
     },
+    {
+        # Live corpus expansion (Round 13 WS13): a refactor that must PRESERVE behavior.
+        "id": "refactor_dedup", "task_type": "refactor",
+        "files": {"shapes.py":
+                  "def area(kind, a, b=0):\n"
+                  "    if kind == 'rect':\n        return a * b\n"
+                  "    if kind == 'square':\n        return a * a\n"
+                  "    if kind == 'tri':\n        return 0.5 * a * b\n"
+                  "    raise ValueError(kind)\n"},
+        "test": "test_shapes.py",
+        "test_src": ("from shapes import area\n\n"
+                     "def test_behavior_preserved():\n    "
+                     "assert area('rect', 3, 4) == 12\n    "
+                     "assert area('square', 5) == 25\n    "
+                     "assert area('tri', 6, 8) == 24.0\n"),
+        "title": "Refactor area() without changing behavior",
+        "body": "Refactor area() in shapes.py to be cleaner (e.g. a dispatch dict) while "
+                "keeping identical behavior: area('rect',3,4)==12, area('square',5)==25, "
+                "area('tri',6,8)==24.0. The existing tests must still pass.",
+        "criteria": ["behavior preserved", "cleaner structure"],
+    },
+    {
+        # CI-failure style: a failing test reveals an off-by-one in a date range util.
+        "id": "ci_failure_daterange", "task_type": "ci_fix",
+        "files": {"daterange.py":
+                  "def days_between(a, b):\n"
+                  "    # bug: off-by-one, excludes the end day inclusive-count\n"
+                  "    return b - a\n"},
+        "test": "test_daterange.py",
+        "test_src": ("from daterange import days_between\n\n"
+                     "def test_inclusive_count():\n    "
+                     "assert days_between(1, 1) == 1\n    "
+                     "assert days_between(1, 5) == 5\n    "
+                     "assert days_between(10, 12) == 3\n"),
+        "title": "Fix failing CI: days_between inclusive count",
+        "body": "CI is red: days_between(a, b) should return the INCLUSIVE count of days "
+                "from a to b (days_between(1,1)==1, days_between(1,5)==5). Fix daterange.py "
+                "so the tests pass.",
+        "criteria": ["inclusive day count", "tests pass"],
+    },
 ]
 
 
