@@ -71,6 +71,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/measurement_quality.json": ["score", "trusted"],
     # Round 15 — live SkillOpt optimization run
     "reports/live/skillopt_run.json": ["experiment", "base_score", "best_score"],
+    # Round 16 — cross-harness skill transfer
+    "reports/live/skill_transfer.json": ["experiment", "baseline_score", "transfer_gain"],
 }
 
 
