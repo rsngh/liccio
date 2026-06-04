@@ -247,6 +247,41 @@ TASKS = [
                 "so the tests pass.",
         "criteria": ["inclusive day count", "tests pass"],
     },
+    {
+        # Migration (Round 14 WS12): migrate callers from a deprecated API to a new
+        # one while keeping the old name working (a backward-compatible migration).
+        "id": "migration_api_rename", "task_type": "migration",
+        "files": {"client.py":
+                  "def fetch_old(url, tmout):\n"
+                  "    # legacy signature; migrate to fetch(url, timeout=...)\n"
+                  "    return (url, tmout)\n"},
+        "test": "test_client.py",
+        "test_src": ("from client import fetch\n\n"
+                     "def test_new_api():\n    "
+                     "assert fetch('http://x', timeout=5) == ('http://x', 5)\n    "
+                     "assert fetch('http://y') == ('http://y', 30)\n"),
+        "title": "Migrate fetch_old to a fetch(url, timeout=30) API",
+        "body": "Add a new fetch(url, timeout=30) function in client.py (default timeout "
+                "30) that returns (url, timeout). fetch('http://x', timeout=5) must equal "
+                "('http://x', 5) and fetch('http://y') must equal ('http://y', 30).",
+        "criteria": ["new fetch API with default timeout", "tests pass"],
+    },
+    {
+        # Docs: add a correct docstring without changing behavior.
+        "id": "docs_docstring", "task_type": "docs",
+        "files": {"mathy.py":
+                  "def gcd(a, b):\n    while b:\n        a, b = b, a % b\n    return a\n"},
+        "test": "test_mathy.py",
+        "test_src": ("from mathy import gcd\n\n"
+                     "def test_documented_and_correct():\n    "
+                     "assert gcd.__doc__ is not None and len(gcd.__doc__.strip()) > 10\n    "
+                     "assert gcd(12, 8) == 4 and gcd(17, 5) == 1\n"),
+        "title": "Document gcd() with a docstring",
+        "body": "Add a clear docstring (>10 chars) to gcd() in mathy.py explaining it "
+                "returns the greatest common divisor. Do not change its behavior: "
+                "gcd(12,8)==4, gcd(17,5)==1.",
+        "criteria": ["gcd has a docstring", "behavior unchanged"],
+    },
 ]
 
 
