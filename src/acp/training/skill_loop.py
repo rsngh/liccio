@@ -54,6 +54,14 @@ def optimize_and_deploy(
         new_ver = candidate.version
         deployment = deploy_skill(store, candidate, canary_score=run.best_score,
                                   baseline_score=run.base_score)
+    # WS3: persist the provenance graph so every run is traceable (evidence ->
+    # candidates/edits -> validation -> promotion decision).
+    from acp.training.skill_provenance import build_provenance, persist_provenance
+    prov = build_provenance(
+        run, base, deployed=deployment.deployed, deployed_skill_id=deployment.skill_id,
+        decision_reason=("deployed" if deployment.deployed
+                         else "; ".join(deployment.blocked_reasons)))
+    persist_provenance(store, prov)
     return SkillLoopResult(
         base_score=run.base_score, best_score=run.best_score, deployable=run.deployable,
         deployed=deployment.deployed, new_version=new_ver, deployment=deployment,

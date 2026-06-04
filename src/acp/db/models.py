@@ -228,6 +228,14 @@ class SkillEvolutionEventRow(_Row):
     action: Mapped[str] = mapped_column(String, index=True)
 
 
+class SkillProvenanceRunRow(_Row):
+    """SkillOpt provenance graph run (Alpha 21 WS3)."""
+
+    __tablename__ = "skill_provenance_runs"
+    scope_key: Mapped[str] = mapped_column(String, index=True)
+    skill_name: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

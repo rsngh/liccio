@@ -140,8 +140,11 @@ def optimize_skill(
             candidate_skill=candidate, cand_score=cand_score, current_skill=current,
             current_score=current_score, best_skill=best, best_score=best_score,
             best_step=best_step, global_step=step)
-        run.history.append({"step": step, "cand_score": round(cand_score, 4),
-                            "action": decision.action})
+        run.history.append({
+            "step": step, "cand_score": round(cand_score, 4), "action": decision.action,
+            "edits": [{"op": getattr(e, "op", "append"),
+                       "content": getattr(e, "content", ""),
+                       "target": getattr(e, "target", "")} for e in edits]})
         if decision.action == "accept_new_best":
             best, best_score, best_step = candidate, cand_score, step
             current, current_score = candidate, cand_score
