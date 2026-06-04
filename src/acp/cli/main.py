@@ -459,6 +459,30 @@ def skill_dashboard_cmd() -> None:
         console.print_json(data=skill_dashboard(EntityStore(s)))
 
 
+@skill_app.command("overview")
+def skill_overview_cmd() -> None:
+    """Self-improvement overview: active skills, learned models, and the prioritized
+    next optimization targets across known task types."""
+    from acp.api.service import AppService
+    from acp.core.enums import TaskType
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.schemas.skill import SkillScope
+    from acp.training.skill_overview import self_improvement_overview
+
+    svc = AppService()
+    scopes = [SkillScope(task_type=t.value).key() for t in TaskType if t != TaskType.UNKNOWN]
+    learned: dict = {}
+    try:
+        learned = svc.self_improvement_report().get("promotions", {})
+    except Exception:  # noqa: BLE001 - overview must not crash on thin logs
+        learned = {}
+    with session_scope(svc.sessions) as s:
+        ov = self_improvement_overview(EntityStore(s), candidate_scopes=scopes,
+                                       learned_models={"promotions": learned})
+    console.print_json(data=ov)
+
+
 @skill_app.command("optimize")
 def skill_optimize(backend: str = "microsoft_skillopt", dry_run: bool = False) -> None:
     """Launch (or dry-run) a SkillOpt optimization. --dry-run reports backend
