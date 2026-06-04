@@ -344,3 +344,30 @@ def greedy_target_for_profile(samples: list[OPESample], profile: str = "balanced
         return 1.0 / len(winners) if action in winners else 0.0
 
     return pi
+
+
+def policy_value_under_profile(
+    samples: list[OPESample], target: TargetPolicy, profile: str = "balanced",
+    cost_weight: float = DEFAULT_COST_WEIGHT,
+) -> float:
+    """SNIPS value of a target policy under a profile-reweighted reward (WS5 v3).
+
+    Lets a promotion gate score a candidate on cost/measurement-trust, not just raw
+    success — so a high-success-but-contaminated or unacceptably costly policy scores
+    low and is blocked under the relevant profile.
+    """
+    weights = _weights(samples, target)
+    wsum = sum(weights)
+    if wsum <= 0:
+        return 0.0
+    num = sum(w * profile_reward(s, profile, cost_weight)
+              for w, s in zip(weights, samples, strict=True))
+    return num / wsum
+
+
+def is_policy_promotable_under_profile(
+    samples: list[OPESample], target: TargetPolicy, *, profile: str = "balanced",
+    min_value: float, cost_weight: float = DEFAULT_COST_WEIGHT,
+) -> bool:
+    """True iff the target's profile-reweighted value clears ``min_value``."""
+    return policy_value_under_profile(samples, target, profile, cost_weight) >= min_value
