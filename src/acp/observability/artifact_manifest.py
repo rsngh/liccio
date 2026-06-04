@@ -69,6 +69,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/tool_activation_metrics.json": ["by_adapter", "n_attempts"],
     # Round 13 — measurement-quality score + trust verdict (WS3/WS10)
     "evals/reports/measurement_quality.json": ["score", "trusted"],
+    # Round 15 — live SkillOpt optimization run
+    "reports/live/skillopt_run.json": ["experiment", "base_score", "best_score"],
 }
 
 
