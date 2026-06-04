@@ -73,6 +73,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "reports/live/skillopt_run.json": ["experiment", "base_score", "best_score"],
     # Round 16 — cross-harness skill transfer
     "reports/live/skill_transfer.json": ["experiment", "baseline_score", "transfer_gain"],
+    # Round 17 — online A/B skill canary
+    "reports/live/skill_canary.json": ["experiment", "control_rate", "canary_rate", "promote"],
 }
 
 
