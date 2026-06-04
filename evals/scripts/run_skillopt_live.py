@@ -70,7 +70,16 @@ def main() -> int:
     if adapter is None:
         print("[skip] openai_harness unavailable (set OPENAI_API_KEY)")
         return 0
-    specs = [s for s in B.TASKS if s["id"] in TASK_IDS]
+    # Weak mode (ACP_SKILLOPT_WEAK): a budget-constrained harness (few steps) on the
+    # harder tasks, so a "verify-before-finish" skill has genuine headroom to help —
+    # demonstrating a DEPLOYABLE skill, not just the ceiling no-op.
+    if os.environ.get("ACP_SKILLOPT_WEAK"):
+        from acp.agents.openai_harness import OpenAIHarnessAdapter
+        adapter = OpenAIHarnessAdapter(max_steps=3, max_nudges=0)
+        task_ids = ["testgen_stats", "feature_lru_cache", "security_eval", "bugfix_fib"]
+        specs = [s for s in B.TASKS if s["id"] in task_ids]
+    else:
+        specs = [s for s in B.TASKS if s["id"] in TASK_IDS]
     # Train/held-out split by index (deterministic).
     train_specs = specs[::2]
     held_specs = specs[1::2]
