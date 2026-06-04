@@ -55,3 +55,4 @@ evals/reports/*
 !evals/reports/measurement_hygiene.json
 !evals/reports/harness_availability_audit.json
 !evals/reports/tool_activation_metrics.json
+!evals/reports/measurement_quality.json

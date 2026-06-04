@@ -1,0 +1,16 @@
+{
+  "score": {
+    "provider_policy_compliance": 1.0,
+    "timeout_attribution": 1.0,
+    "tool_activation_validity": 1.0,
+    "verification_validity": 1.0,
+    "secret_clean": 1.0,
+    "artifact_complete": 1.0,
+    "infra_clean": 1.0,
+    "harness_available": 1.0,
+    "overall": 1.0,
+    "sample_size": 36
+  },
+  "trusted": true,
+  "block_reasons": []
+}
