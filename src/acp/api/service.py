@@ -805,6 +805,9 @@ class AppService:
                 "human_labels": len(es.list_by(HumanLabel)),
                 "viability_assessments": len(es.list_by(ViabilityAssessment)),
             }
+            # Self-improving skills summary (Round 18): active skills + deploy timeline.
+            from acp.training.skill_improvement import skill_dashboard
+            skills_summary = skill_dashboard(es, recent=5)
         samples = self._ope_samples()
         ope_ready = len(samples) >= 10
         regret = total_regret(samples) if samples else {"n": 0}
@@ -939,6 +942,7 @@ class AppService:
             "pareto_profiles": sorted(PROFILES),
             "artifacts": artifact_summary,
             "measurement": measurement,
+            "skills": skills_summary,
             "readiness": readiness,
         }
 

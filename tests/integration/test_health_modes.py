@@ -49,3 +49,11 @@ def test_health_surfaces_harness_benefit_and_quality(tmp_path) -> None:
     m = _svc(tmp_path).control_plane_health(mode="lab")["measurement"]
     assert "harness_benefit_by_adapter" in m
     assert "measurement_quality_overall" in m
+
+
+def test_health_has_skills_section(tmp_path) -> None:
+    # Round 18: self-improving skills summary is part of the health snapshot.
+    h = _svc(tmp_path).control_plane_health(mode="lab")
+    assert "skills" in h
+    for k in ("active_skills", "n_active_skills", "evolution_by_action", "recent_events"):
+        assert k in h["skills"]
