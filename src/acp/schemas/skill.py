@@ -80,9 +80,12 @@ class SkillDocument(ACPModel):
     negative_transfer_history: list[str] = Field(default_factory=list)  # scopes it hurt
     deployment_state: str = "registered"     # registered | canary | active | retired
     rollback_pointer: str | None = None      # the version to roll back to
+    skill_family: str = ""                    # family for cross-version capability rollups
 
     def model_post_init(self, __context: object) -> None:  # noqa: D401
         # Keep the content hash + a cheap token estimate in sync with content.
         object.__setattr__(self, "content_sha", content_hash(self.content))
         object.__setattr__(self, "token_estimate", max(1, len(self.content) // 4)
                            if self.content else 0)
+        if not self.skill_family:
+            object.__setattr__(self, "skill_family", self.name)
