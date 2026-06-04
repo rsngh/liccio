@@ -220,6 +220,14 @@ class SkillDocumentRow(_Row):
     status: Mapped[str] = mapped_column(String, index=True)
 
 
+class SkillEvolutionEventRow(_Row):
+    """Durable skill-evolution timeline event (Round 18)."""
+
+    __tablename__ = "skill_evolution_events"
+    scope_key: Mapped[str] = mapped_column(String, index=True)
+    action: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

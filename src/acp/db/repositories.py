@@ -50,6 +50,7 @@ from acp.schemas.learning import PolicyState
 from acp.schemas.measurement import AttemptOutcomeRecord
 from acp.schemas.report import Report, ReportLineage
 from acp.schemas.skill import SkillDocument
+from acp.schemas.skill_evolution import SkillEvolutionEvent
 from acp.schemas.trace import AgentTrace
 from acp.schemas.viability import ViabilityAssessment
 
@@ -94,6 +95,7 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     ReportLineage: m.ReportLineageRow,
     AttemptOutcomeRecord: m.AttemptOutcomeRow,
     SkillDocument: m.SkillDocumentRow,
+    SkillEvolutionEvent: m.SkillEvolutionEventRow,
 }
 
 

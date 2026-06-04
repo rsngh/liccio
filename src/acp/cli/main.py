@@ -446,6 +446,19 @@ def skill_show(skill_id: str) -> None:
     console.print_json(data=skill.model_dump(mode="json"))
 
 
+@skill_app.command("dashboard")
+def skill_dashboard_cmd() -> None:
+    """Unified skill self-improvement dashboard: active skills + evolution timeline."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.training.skill_improvement import skill_dashboard
+
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        console.print_json(data=skill_dashboard(EntityStore(s)))
+
+
 @skill_app.command("optimize")
 def skill_optimize(backend: str = "microsoft_skillopt", dry_run: bool = False) -> None:
     """Launch (or dry-run) a SkillOpt optimization. --dry-run reports backend
