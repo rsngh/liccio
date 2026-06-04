@@ -1,35 +1,33 @@
 {
   "experiment": "alpha15_skillopt_live",
   "backend": "microsoft_skillopt",
-  "base_score": 1.0,
+  "base_score": 0.5,
   "best_score": 1.0,
-  "improved": false,
-  "deployable": false,
-  "accepted": 0,
-  "rejected": 3,
+  "improved": true,
+  "deployable": true,
+  "accepted": 1,
+  "rejected": 2,
   "steps": 3,
   "history": [
     {
       "step": 1,
       "cand_score": 1.0,
-      "action": "reject"
+      "action": "accept_new_best"
     },
     {
       "step": 2,
-      "cand_score": 1.0,
+      "cand_score": 0.5,
       "action": "reject"
     },
     {
       "step": 3,
-      "cand_score": 1.0,
+      "cand_score": 0.5,
       "action": "reject"
     }
   ],
-  "notes": [
-    "not deployable: no held-out improvement over baseline"
-  ],
-  "held_out_size": 3,
-  "train_size": 3,
-  "best_skill": "# Coding skill\n",
-  "elapsed_s": 120.2
+  "notes": [],
+  "held_out_size": 2,
+  "train_size": 2,
+  "best_skill": "# Coding skill\n- After editing, ALWAYS run the project's tests and fix failures before finishing.\n",
+  "elapsed_s": 89.2
 }
