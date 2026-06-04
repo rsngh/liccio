@@ -71,6 +71,15 @@ class SkillDocument(ACPModel):
     token_estimate: int = 0
     provenance: list[str] = Field(default_factory=list)
     rationale: str = ""
+    # Skill registry v2 (Alpha 21 WS2): richer applicability + audit history.
+    applicability: dict[str, str] = Field(default_factory=dict)  # extra match conditions
+    risk_class: str = "low"                  # low | medium | high (gates risky scopes)
+    required_tools: list[str] = Field(default_factory=list)
+    allowed_repositories: list[str] = Field(default_factory=list)  # [] == any
+    validation_history: list[float] = Field(default_factory=list)  # held-out scores over time
+    negative_transfer_history: list[str] = Field(default_factory=list)  # scopes it hurt
+    deployment_state: str = "registered"     # registered | canary | active | retired
+    rollback_pointer: str | None = None      # the version to roll back to
 
     def model_post_init(self, __context: object) -> None:  # noqa: D401
         # Keep the content hash + a cheap token estimate in sync with content.
