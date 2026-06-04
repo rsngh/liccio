@@ -22,6 +22,8 @@ across matrix/Pareto/OPE/regret, and `acp health --mode production` gates on har
 availability + measurement non-contamination. A measurement mutation suite is the
 self-check. See `ROUND12_REPORT.md` and `acp measurement hygiene`.
 
+**Round 13 — preproduction router.** `AttemptOutcome` is now the mandatory learning gate (`evaluation/learning_gate.py`): only conclusive attempts update solve-rate/OPE quality. A measurement-quality score (8 dimensions) gates production health (`measurement_quality_trusted`); the capability matrix (v3), cost-aware OPE (v3, 5 objective profiles), and policy dossier all carry measurement-quality; classified outcomes persist to a queryable `attempt_outcomes` table; the live corpus spans 6 task types; relative trajectory judgments feed preference learning. See `ALPHA13_REPORT.md`.
+
 **Alpha 4 — multi-harness empirical router.** Two real tool-loop harnesses now
 exist (`openai_harness`, `claude_harness`), the execution-backend policy is
 enforced in orchestration, every attempt carries a normalized `AgentTrace`, a
