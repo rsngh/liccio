@@ -1,6 +1,6 @@
 # Round 12/13 (Alpha 12 + live tuning) test run (uv run pytest -q --timeout=300) — Docker live
 # Date: 2026-06-03
-877 passed, 7 skipped, 1 warning in 600.26s (0:10:00)
+889 passed, 5 skipped, 1 warning in 600.26s (0:10:00)
 # skips: live pgvector/qdrant, vendor contract (SDK), codex_cli live
 # ruff: clean | mypy: clean (213 src files); alembic upgrade head: OK; reports validate: 38/38
 # Live: codex_cli fixed (read-only sandbox) -> 7/7; generated-file diff filter; Pareto routes openai on real data
