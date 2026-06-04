@@ -38,12 +38,18 @@ def deploy_skill(
     - the prior ACTIVE skill for the same scope is archived (rollback target);
     - the candidate is saved ACTIVE with its held-out / canary provenance.
     """
+    from acp.training.skill_poisoning import scan_skill
+
     reasons: list[str] = []
     if canary_score < baseline_score + min_gain:
         reasons.append(
             f"canary {canary_score:.3f} does not beat baseline {baseline_score:.3f}")
     if not candidate.content.strip():
         reasons.append("empty skill content")
+    # WS12 poisoning defense: a poisoned skill never reaches deployment.
+    scan = scan_skill(candidate.content)
+    if not scan.safe:
+        reasons.append("poisoned skill: " + ", ".join(sorted(scan.categories)))
     if reasons:
         return SkillDeploymentResult(deployed=False, scope_key=candidate.scope.key(),
                                      blocked_reasons=reasons)
