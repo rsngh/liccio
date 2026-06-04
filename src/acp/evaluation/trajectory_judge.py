@@ -312,3 +312,40 @@ def default_pair_context() -> tuple[AxisContext, AxisContext]:
         AxisContext(solved=True, diff=diff_a),
         AxisContext(solved=False, diff=diff_b),
     )
+
+
+def trace_features(trace: AgentTrace, ctx: AxisContext) -> dict[str, float]:
+    """Per-trajectory feature vector for the preference model (WS17): the same
+    eight axis scores the judge compares on, so a preference learned from relative
+    trajectory rankings is expressed in the axes a reviewer reasons about."""
+    judge = RelativeTrajectoryJudge()
+    feats: dict[str, float] = {}
+    for axis, fn in judge.axes.items():
+        feats[axis] = float(fn(trace, ctx))
+    return feats
+
+
+def preferences_from_same_task_trajectories(
+    by_task: dict[str, list[tuple[AgentTrace, AxisContext]]],
+) -> list:
+    """Run the relative judge over same-task trajectory pairs and emit a preference
+    dataset (WS17). For each task with >=2 trajectories, each ordered pair is judged
+    and its non-tie verdict becomes a Preference the PreferenceModel can train on.
+
+    Returns a list of ``acp.learning.preference.Preference``.
+    """
+    judge = RelativeTrajectoryJudge()
+    prefs: list = []
+    for task_id, trajs in by_task.items():
+        for i in range(len(trajs)):
+            for j in range(i + 1, len(trajs)):
+                (ta, ca), (tb, cb) = trajs[i], trajs[j]
+                comparison = judge.compare(
+                    ta, tb, solved_a=ca.solved, diff_a=ca.diff,
+                    solved_b=cb.solved, diff_b=cb.diff)
+                pref = judge.to_preference(
+                    comparison, trace_features(ta, ca), trace_features(tb, cb),
+                    task_id=task_id)
+                if pref is not None:
+                    prefs.append(pref)
+    return prefs
