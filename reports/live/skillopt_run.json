@@ -1,0 +1,35 @@
+{
+  "experiment": "alpha15_skillopt_live",
+  "backend": "microsoft_skillopt",
+  "base_score": 1.0,
+  "best_score": 1.0,
+  "improved": false,
+  "deployable": false,
+  "accepted": 0,
+  "rejected": 3,
+  "steps": 3,
+  "history": [
+    {
+      "step": 1,
+      "cand_score": 1.0,
+      "action": "reject"
+    },
+    {
+      "step": 2,
+      "cand_score": 1.0,
+      "action": "reject"
+    },
+    {
+      "step": 3,
+      "cand_score": 1.0,
+      "action": "reject"
+    }
+  ],
+  "notes": [
+    "not deployable: no held-out improvement over baseline"
+  ],
+  "held_out_size": 3,
+  "train_size": 3,
+  "best_skill": "# Coding skill\n",
+  "elapsed_s": 120.2
+}
