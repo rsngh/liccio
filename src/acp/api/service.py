@@ -893,15 +893,37 @@ class AppService:
             status = "degraded"
         # Measurement-trust section (Round 12 WS5/WS9): surface the live hygiene,
         # harness availability, and tool-activation signals as first-class health.
+        # HAR/HFR/PWL per adapter from the live capability-matrix cells (WS8): the
+        # harness-benefit metrics become first-class health signals so an operator
+        # can see activation/adherence, not just solve-rate.
+        harness_benefit: dict = {}
+        mcells = _report_field(
+            "evals/reports/live_bakeoff_capability_matrix.json", "cells", default=[]) or []
+        for c in mcells:
+            if c.get("har") is None:
+                continue
+            a = c.get("agent_class", "unknown")
+            b = harness_benefit.setdefault(a, {"har": [], "hfr": [], "pwl": []})
+            for k in ("har", "hfr", "pwl"):
+                if c.get(k) is not None:
+                    b[k].append(c[k])
+        harness_benefit = {
+            a: {k: round(sum(v) / len(v), 4) for k, v in d.items() if v}
+            for a, d in harness_benefit.items()}
+        _mq_score = _report_field(
+            "evals/reports/measurement_quality.json", "score", default={})
         measurement = {
             "solve_rate_conclusive": _report_field(
                 "evals/reports/measurement_hygiene.json", "solve_rate"),
             "infra_failure_rate": _report_field(
                 "evals/reports/measurement_hygiene.json", "infra_failure_rate"),
             "contaminated": mh_contaminated,
+            "measurement_quality_overall": (
+                _mq_score.get("overall") if isinstance(_mq_score, dict) else None),
             "harness_availability_degraded": ha_degraded,
             "tool_activation_by_adapter": _report_field(
                 "evals/reports/tool_activation_metrics.json", "by_adapter", default={}),
+            "harness_benefit_by_adapter": harness_benefit,
         }
         return {
             "mode": mode,

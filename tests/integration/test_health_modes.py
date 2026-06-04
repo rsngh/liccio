@@ -42,3 +42,10 @@ def test_health_has_measurement_section(tmp_path) -> None:
     for k in ("solve_rate_conclusive", "infra_failure_rate", "contaminated",
               "harness_availability_degraded", "tool_activation_by_adapter"):
         assert k in m
+
+
+def test_health_surfaces_harness_benefit_and_quality(tmp_path) -> None:
+    # WS8: HAR/HFR/PWL per adapter + measurement-quality overall in the snapshot.
+    m = _svc(tmp_path).control_plane_health(mode="lab")["measurement"]
+    assert "harness_benefit_by_adapter" in m
+    assert "measurement_quality_overall" in m
