@@ -36,6 +36,19 @@ class AttemptOutcomeRecord(ACPModel):
     tool_calls: int = 0
     latency_s: float = 0.0
     cost_usd: float = 0.0
+    # WS2 learning-gate fields: explicit eligibility so no input layer re-derives
+    # the rules. A sample may update a QUALITY metric (solve-rate) only when
+    # ``include_in_quality_denominator``; it updates RELIABILITY otherwise.
+    conclusive: bool = False
+    contaminated: bool = False
+    infra_failure_kind: str | None = None     # which infra mode, if any
+    provider_failure_kind: str | None = None  # rate_limit | server_error | retry_exceeded
+    verification_valid: bool = False          # a verification verdict was obtained
+    tool_activation_valid: bool = True        # harness emitted >=1 tool call (or n/a)
+    harness_adherence_valid: bool = False     # read+write+verify pattern followed
+    cost_billable: bool = False               # the attempt incurred provider cost
+    include_in_quality_denominator: bool = False
+    include_in_reliability_denominator: bool = True
 
 
 class MeasurementHygieneReport(ACPModel):

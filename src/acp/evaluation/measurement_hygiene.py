@@ -86,9 +86,29 @@ def classify_attempt(cell: Any) -> AttemptOutcome:
     return AttemptOutcome.TASK_FAILURE
 
 
+_PROVIDER_FAILURE_KIND = {
+    AttemptOutcome.PROVIDER_RATE_LIMIT: "rate_limit",
+    AttemptOutcome.PROVIDER_SERVER_ERROR: "server_error",
+    AttemptOutcome.PROVIDER_RETRY_EXCEEDED: "retry_exceeded",
+}
+_INFRA_FAILURE_KIND = {
+    AttemptOutcome.INFRA_TIMEOUT_BEFORE_ACTION: "timeout_before_action",
+    AttemptOutcome.INFRA_TIMEOUT_AFTER_SOLUTION: "timeout_after_solution",
+    AttemptOutcome.PROVIDER_RATE_LIMIT: "rate_limit",
+    AttemptOutcome.PROVIDER_SERVER_ERROR: "server_error",
+    AttemptOutcome.PROVIDER_RETRY_EXCEEDED: "retry_exceeded",
+}
+
+
 def classify_record(cell: Any) -> AttemptOutcomeRecord:
-    """Classify and wrap an attempt into a self-describing record."""
+    """Classify and wrap an attempt into a self-describing record with explicit
+    WS2 learning-gate eligibility (so no input layer re-derives the rules)."""
     outcome = classify_attempt(cell)
+    tool_calls = int(_get(cell, "tool_calls", 0) or 0)
+    is_harness = bool(_get(cell, "is_harness", False))
+    commands = int(_get(cell, "commands", 0) or 0)
+    file_reads = int(_get(cell, "file_reads", 0) or 0)
+    cost = float(_get(cell, "cost_usd", 0.0) or 0.0)
     return AttemptOutcomeRecord(
         attempt_id=_get(cell, "attempt_id") or _get(cell, "task"),
         adapter_name=str(_get(cell, "adapter", "unknown") or "unknown"),
@@ -99,9 +119,22 @@ def classify_record(cell: Any) -> AttemptOutcomeRecord:
         is_success=outcome.is_success,
         is_infra=outcome.is_infra,
         reason=(_get(cell, "error") or None),
-        tool_calls=int(_get(cell, "tool_calls", 0) or 0),
+        tool_calls=tool_calls,
         latency_s=float(_get(cell, "latency_s", 0.0) or 0.0),
-        cost_usd=float(_get(cell, "cost_usd", 0.0) or 0.0),
+        cost_usd=cost,
+        conclusive=outcome.is_conclusive_quality,
+        contaminated=outcome.is_infra and not outcome.is_success,
+        infra_failure_kind=_INFRA_FAILURE_KIND.get(outcome),
+        provider_failure_kind=_PROVIDER_FAILURE_KIND.get(outcome),
+        verification_valid=outcome in (
+            AttemptOutcome.TASK_SUCCESS, AttemptOutcome.TASK_FAILURE,
+            AttemptOutcome.VERIFICATION_FAILURE,
+            AttemptOutcome.INFRA_TIMEOUT_AFTER_SOLUTION),
+        tool_activation_valid=(tool_calls > 0) if is_harness else True,
+        harness_adherence_valid=(file_reads > 0 and commands > 0) if is_harness else False,
+        cost_billable=cost > 0,
+        include_in_quality_denominator=outcome.is_conclusive_quality,
+        include_in_reliability_denominator=True,
     )
 
 
