@@ -32,3 +32,41 @@ class ProviderPolicy(ACPModel):
         """True iff this policy cannot silently violate the wall-time budget."""
         return (self.max_retries == 0 and self.per_call_timeout_s > 0
                 and self.wall_budget_enforced)
+
+
+class ProviderCallRecord(ACPModel):
+    """An audit record of one provider API call (WS6): how many retries the SDK
+    used, how long it took, whether it timed out, and how an error was classified —
+    so SDK behavior that exceeds the policy is observable, not silent."""
+
+    provider: str
+    model: str | None = None
+    retries_used: int = 0
+    wall_time_s: float = 0.0
+    timed_out: bool = False
+    error_kind: str | None = None  # rate_limit | server_error | timeout | retry_exceeded
+
+
+class ProviderViolation(ACPModel):
+    """A policy violation detected on a provider call."""
+
+    kind: str   # retry_violation | timeout_violation
+    detail: str
+
+
+def detect_violations(
+    record: ProviderCallRecord, policy: ProviderPolicy,
+    *, wall_budget_s: float | None = None,
+) -> list[ProviderViolation]:
+    """Flag any way the call exceeded the policy/budget (WS6 enforcement audit)."""
+    out: list[ProviderViolation] = []
+    if record.retries_used > policy.max_retries:
+        out.append(ProviderViolation(
+            kind="retry_violation",
+            detail=f"{record.retries_used} retries > policy max {policy.max_retries}"))
+    cap = wall_budget_s if wall_budget_s is not None else policy.per_call_timeout_s
+    if record.wall_time_s > cap + 1e-6:
+        out.append(ProviderViolation(
+            kind="timeout_violation",
+            detail=f"wall {record.wall_time_s:.1f}s > cap {cap:.1f}s"))
+    return out
