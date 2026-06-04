@@ -12,9 +12,9 @@ from acp.schemas.trace import AgentTrace
 
 
 def _trace(**kw) -> AgentTrace:
-    base = dict(attempt_id="a", adapter_name="h", is_harness=True, status="succeeded",
-                tool_calls=4, file_reads=2, commands=2, changed_files=["x.py"],
-                diff_lines=8, estimated_cost_usd=0.001)
+    base = {"attempt_id": "a", "adapter_name": "h", "is_harness": True,
+            "status": "succeeded", "tool_calls": 4, "file_reads": 2, "commands": 2,
+            "changed_files": ["x.py"], "diff_lines": 8, "estimated_cost_usd": 0.001}
     base.update(kw)
     return AgentTrace(**base)
 
