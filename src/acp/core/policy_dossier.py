@@ -121,8 +121,12 @@ def attach_measurement_quality(
     reviewer can tell whether the recommendation rests on clean task signal.
     """
     from acp.evaluation.measurement_hygiene import build_hygiene_report
+    from acp.evaluation.measurement_quality import measurement_quality_report
 
     rep = build_hygiene_report(cells)
+    # Per-dimension measurement-quality breakdown (WS3 v2): each dimension is
+    # independently visible so a reviewer sees exactly which trust dimension is weak.
+    mq = measurement_quality_report(cells)
     dossier.measurement_quality = {
         "solve_rate_conclusive": rep.solve_rate,
         "n_conclusive": rep.n_conclusive,
@@ -133,6 +137,11 @@ def attach_measurement_quality(
         "contamination_reasons": rep.contamination_reasons,
         "by_outcome": rep.by_outcome,
         "trustworthy": (not rep.contaminated) and rep.n_conclusive > 0,
+        "quality_overall": mq.score.overall,
+        "quality_trusted": mq.trusted,
+        "quality_breakdown": {d.dimension: {"value": d.value, "floor": d.floor,
+                                            "passed": d.passed} for d in mq.breakdown},
+        "quality_violations": [v.dimension for v in mq.violations],
     }
     if rep.contaminated:
         dossier.notes.append(

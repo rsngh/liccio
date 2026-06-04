@@ -66,8 +66,11 @@ def score_measurement_quality(
 def measurement_quality_report(
     cells: list[Any], *, policy: MeasurementQualityPolicy | None = None, **facts: Any,
 ) -> MeasurementQualityReport:
-    """Score a batch and apply a trust policy."""
+    """Score a batch, apply the trust policy, and attach the per-dimension breakdown
+    + violations (WS3 v2) so each dimension is independently visible in the dossier."""
     pol = policy or MeasurementQualityPolicy()
     score = score_measurement_quality(cells, **facts)
     trusted, reasons = pol.evaluate(score)
-    return MeasurementQualityReport(score=score, trusted=trusted, block_reasons=reasons)
+    return MeasurementQualityReport(
+        score=score, trusted=trusted, block_reasons=reasons,
+        breakdown=pol.breakdown(score), violations=pol.violations(score))

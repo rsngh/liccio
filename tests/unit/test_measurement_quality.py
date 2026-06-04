@@ -36,7 +36,7 @@ def test_infra_heavy_batch_lowers_infra_clean_and_blocks() -> None:
 
 def test_silently_absent_harness_blocks() -> None:
     rep = measurement_quality_report([_cell() for _ in range(5)], harness_available=False)
-    assert not rep.trusted and any("silently absent" in r for r in rep.block_reasons)
+    assert not rep.trusted and any("harness_available" in r for r in rep.block_reasons)
 
 
 def test_secret_leak_blocks_under_default_policy() -> None:
@@ -49,3 +49,23 @@ def test_policy_threshold_is_configurable() -> None:
     strict = MeasurementQualityPolicy(min_overall=1.01)
     trusted, reasons = strict.evaluate(score)
     assert not trusted and reasons
+
+
+def test_breakdown_has_all_eight_dimensions() -> None:
+    from acp.schemas.measurement_quality import QUALITY_DIMENSIONS
+    rep = measurement_quality_report([_cell() for _ in range(5)])
+    assert len(rep.breakdown) == 8
+    assert {d.dimension for d in rep.breakdown} == set(QUALITY_DIMENSIONS)
+    assert all(d.passed for d in rep.breakdown) and not rep.violations
+
+
+def test_each_dimension_independently_violatable() -> None:
+    # A no-activation run violates exactly the tool_activation_validity dimension.
+    cells = [_cell(success=False, status="failed", tool_calls=0, error="no edit")
+             for _ in range(5)]
+    rep = measurement_quality_report(cells)
+    viol_dims = {v.dimension for v in rep.violations}
+    assert "tool_activation_validity" in viol_dims
+    # The breakdown marks that dimension failed and reports its value/floor.
+    ta = next(d for d in rep.breakdown if d.dimension == "tool_activation_validity")
+    assert not ta.passed and ta.value == 0.0 and ta.floor == 0.8
