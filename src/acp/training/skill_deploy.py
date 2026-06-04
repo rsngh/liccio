@@ -62,6 +62,29 @@ def deploy_skill(
         rollback_to=rollback_to)
 
 
+def canary_then_deploy(
+    store: EntityStore, candidate: SkillDocument, *, control_cells: list,
+    canary_cells: list, alpha: float = 0.05, min_lift: float = 0.0,
+) -> tuple[SkillDeploymentResult, object]:
+    """Online-validated deployment (Round 17): deploy ONLY if the A/B canary promotes.
+
+    The candidate is deployed iff the canary's conclusive-solve lift over the control is
+    statistically significant and uncontaminated. Returns (deployment, canary_result).
+    """
+    from acp.training.skill_canary import evaluate_ab_canary
+
+    canary = evaluate_ab_canary(control_cells, canary_cells, alpha=alpha,
+                                min_lift=min_lift)
+    if not canary.promote:
+        return (SkillDeploymentResult(
+            deployed=False, scope_key=candidate.scope.key(),
+            blocked_reasons=["canary did not promote: " + "; ".join(canary.reasons)]),
+            canary)
+    deployment = deploy_skill(store, candidate, canary_score=canary.canary_rate,
+                              baseline_score=canary.control_rate)
+    return deployment, canary
+
+
 def rollback_skill(store: EntityStore, scope_key: str) -> SkillDeploymentResult:
     """Revert the ACTIVE skill for a scope to its most recent ARCHIVED predecessor."""
     active = [s for s in list_skills(store, status=SkillStatus.ACTIVE)

@@ -63,3 +63,30 @@ def test_rollback_restores_prior(tmp_path) -> None:
         active = active_skill_for(EntityStore(s), task_type="bugfix",
                                   harness="openai_harness")
         assert active.version == 1
+
+
+def test_canary_then_deploy_promotes_on_significant_lift(tmp_path) -> None:
+    from acp.training.skill_deploy import canary_then_deploy
+    sf = _sf(tmp_path)
+    control = [{"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+                "success": i < 6, "status": "succeeded" if i < 6 else "failed",
+                "tool_calls": 2, "commands": 1, "file_reads": 1} for i in range(20)]
+    canary_cells = [{"task_type": "bugfix", "adapter": "openai_harness",
+                     "is_harness": True, "success": True, "status": "succeeded",
+                     "tool_calls": 2, "commands": 1, "file_reads": 1} for _ in range(20)]
+    with session_scope(sf) as s:
+        dep, canary = canary_then_deploy(EntityStore(s), _skill(version=2),
+                                         control_cells=control, canary_cells=canary_cells)
+    assert canary.promote and dep.deployed and dep.version == 2
+
+
+def test_canary_then_deploy_blocks_without_lift(tmp_path) -> None:
+    from acp.training.skill_deploy import canary_then_deploy
+    sf = _sf(tmp_path)
+    same = [{"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+             "success": True, "status": "succeeded", "tool_calls": 2, "commands": 1,
+             "file_reads": 1} for _ in range(10)]
+    with session_scope(sf) as s:
+        dep, canary = canary_then_deploy(EntityStore(s), _skill(version=2),
+                                         control_cells=same, canary_cells=same)
+    assert not canary.promote and not dep.deployed
