@@ -472,6 +472,33 @@ def main() -> int:
     (reports_dir / "tool_activation_metrics.json").write_text(json.dumps(
         {"n_attempts": len(harness_cells), "tool_choice_mode": "required",
          "by_adapter": by_adapter}, indent=2) + "\n")
+    # Measurement-quality score + trust verdict (WS3/WS10). secret_clean is asserted
+    # by the leak check below; harness_available comes from the audit; artifacts
+    # complete because we just wrote them.
+    from acp.evaluation.measurement_quality import measurement_quality_report
+    mq = measurement_quality_report(
+        harness_cells, secret_clean=True, artifact_complete=True,
+        harness_available=not audit.degraded)
+    (reports_dir / "measurement_quality.json").write_text(
+        json.dumps(mq.model_dump(mode="json"), indent=2) + "\n")
+    print(f"measurement_quality: overall={mq.score.overall} trusted={mq.trusted}")
+    # WS12 live cell ingestion: optionally persist classified outcomes to a DB so
+    # routing/health can read conclusive evidence from a table, not just artifacts.
+    if os.environ.get("ACP_BAKEOFF_PERSIST"):
+        import acp.db.models  # noqa: F401 - register tables
+        from acp.db.session import (
+            create_all,
+            make_engine,
+            make_session_factory,
+            session_scope,
+        )
+        from acp.evaluation.measurement_hygiene import ingest_attempt_outcomes
+        url = os.environ.get("ACP_BAKEOFF_DB", "sqlite:///bakeoff_outcomes.db")
+        eng = make_engine(url)
+        create_all(eng)
+        with session_scope(make_session_factory(eng)) as s:
+            n_persisted = ingest_attempt_outcomes(s, harness_cells)
+        print(f"persisted {n_persisted} attempt outcomes to {url}")
     print(f"hygiene: solve_rate={hygiene.solve_rate} conclusive={hygiene.n_conclusive}/"
           f"{hygiene.n_attempts} contaminated={hygiene.contaminated}; "
           f"availability degraded={audit.degraded}")
@@ -480,7 +507,8 @@ def main() -> int:
     _written = [LIVE_OUT, MATRIX_OUT, OPE_OUT,
                 reports_dir / "measurement_hygiene.json",
                 reports_dir / "harness_availability_audit.json",
-                reports_dir / "tool_activation_metrics.json"]
+                reports_dir / "tool_activation_metrics.json",
+                reports_dir / "measurement_quality.json"]
     for key in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
         secret = os.environ.get(key)
         if secret:

@@ -67,6 +67,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/measurement_hygiene.json": ["n_attempts", "solve_rate", "by_outcome"],
     "evals/reports/harness_availability_audit.json": ["expected", "degraded"],
     "evals/reports/tool_activation_metrics.json": ["by_adapter", "n_attempts"],
+    # Round 13 — measurement-quality score + trust verdict (WS3/WS10)
+    "evals/reports/measurement_quality.json": ["score", "trusted"],
 }
 
 

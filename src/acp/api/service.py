@@ -867,6 +867,11 @@ class AppService:
         mh_contaminated = _report_field(
             "evals/reports/measurement_hygiene.json", "contaminated", default=None)
         measurement_not_contaminated = mh_contaminated is False
+        # Measurement-quality trust verdict (WS3/WS10): the live measurement must
+        # pass the trust policy. Absent artifact fails the gate in production.
+        mq_trusted = _report_field(
+            "evals/reports/measurement_quality.json", "trusted", default=None)
+        measurement_quality_trusted = mq_trusted is True
 
         production_gates = {
             "artifact_manifest_valid": artifacts_ok,
@@ -877,6 +882,7 @@ class AppService:
             "test_reports_present": _PP("reports/pytest.txt").exists(),
             "harness_availability_ok": harness_availability_ok,
             "measurement_not_contaminated": measurement_not_contaminated,
+            "measurement_quality_trusted": measurement_quality_trusted,
         }
         production_ready = all(production_gates.values())
         status = "ok"
