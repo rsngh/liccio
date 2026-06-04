@@ -211,6 +211,15 @@ class AttemptOutcomeRow(_Row):
     task_type: Mapped[str] = mapped_column(String, index=True)
 
 
+class SkillDocumentRow(_Row):
+    """Versioned, scoped skill document (Alpha 15 WS2)."""
+
+    __tablename__ = "skill_documents"
+    name: Mapped[str] = mapped_column(String, index=True)
+    scope_key: Mapped[str] = mapped_column(String, index=True)
+    status: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

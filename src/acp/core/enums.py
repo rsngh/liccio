@@ -108,6 +108,16 @@ _CONCLUSIVE_QUALITY = frozenset({
 })
 
 
+class SkillStatus(str, Enum):
+    """Lifecycle of a skill document (Alpha 15 WS2)."""
+
+    DRAFT = "draft"          # authored, not yet validated
+    CANDIDATE = "candidate"  # under optimization / held-out validation
+    ACTIVE = "active"        # deployed (best validated version for its scope)
+    ARCHIVED = "archived"    # superseded by a newer active version
+    REJECTED = "rejected"    # failed validation / negative-transfer / contamination
+
+
 class EvidenceKind(str, Enum):
     UNIT_TEST = "unit_test"
     INTEGRATION_TEST = "integration_test"

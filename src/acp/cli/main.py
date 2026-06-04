@@ -407,6 +407,63 @@ def reports_validate() -> None:
     console.print(f"[green]all {len(manifest.artifacts)} artifacts valid[/green]")
 
 
+skill_app = typer.Typer(help="Skill registry + SkillOpt optimization (Alpha 15).")
+app.add_typer(skill_app, name="skill")
+
+
+@skill_app.command("list")
+def skill_list(status: str = "") -> None:
+    """List skill documents (optionally by status)."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.training.skill_registry import list_skills
+
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        skills = list_skills(EntityStore(s), status=status or None)
+        rows = [{"id": k.id, "name": k.name, "version": k.version,
+                 "status": k.status, "scope": k.scope.key(),
+                 "held_out_score": k.held_out_score, "tokens": k.token_estimate}
+                for k in skills]
+    console.print_json(data={"skills": rows, "n": len(rows)})
+
+
+@skill_app.command("show")
+def skill_show(skill_id: str) -> None:
+    """Show a skill document's content + provenance."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.training.skill_registry import get_skill
+
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        skill = get_skill(EntityStore(s), skill_id)
+    if skill is None:
+        console.print(f"[red]no skill {skill_id}[/red]")
+        raise typer.Exit(1)
+    console.print_json(data=skill.model_dump(mode="json"))
+
+
+@skill_app.command("diff")
+def skill_diff(old_id: str, new_id: str) -> None:
+    """Unified diff between two skill versions."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.training.skill_registry import diff_skills, get_skill
+
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        es = EntityStore(s)
+        old, new = get_skill(es, old_id), get_skill(es, new_id)
+    if old is None or new is None:
+        console.print("[red]unknown skill id[/red]")
+        raise typer.Exit(1)
+    console.print(diff_skills(old, new) or "(no content change)")
+
+
 measure_app = typer.Typer(help="Measurement-trust layer (Round 12).")
 app.add_typer(measure_app, name="measurement")
 
