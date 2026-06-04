@@ -1,0 +1,11 @@
+{
+  "experiment": "round16_skill_transfer_live",
+  "source_harness": "openai_harness",
+  "target_harness": "claude_harness",
+  "skill": "# Coding skill\n- After editing, ALWAYS run the project's tests and fix failures before finishing.\n",
+  "held_out_size": 3,
+  "baseline_score": 0.3333,
+  "with_skill_score": 0.3333,
+  "transfer_gain": 0.0,
+  "transferred": false
+}

@@ -312,3 +312,23 @@ def test_high_measurement_quality_cell_is_recommended() -> None:
     m = CapabilityMatrix.from_bakeoff_report({"cells": rows})
     best, reason = m.best_for(*m.cells()[0].task_key())
     assert best is not None and "trustworthy" in reason
+
+
+def test_skill_aware_cell_attribution() -> None:
+    # Round 16: cells carrying skill_id/version attribute evidence to the skill.
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [{"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+             "success": True, "status": "succeeded", "tool_calls": 2, "commands": 1,
+             "file_reads": 1, "cost_usd": 0.001, "skill_id": "skill_abc",
+             "skill_version": 2} for _ in range(5)]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert cell.skill_id == "skill_abc" and cell.skill_version == 2
+
+
+def test_no_skill_cell_has_none_attribution() -> None:
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [{"task_type": "bugfix", "adapter": "openai_harness", "is_harness": True,
+             "success": True, "status": "succeeded", "tool_calls": 2, "commands": 1,
+             "file_reads": 1, "cost_usd": 0.001} for _ in range(5)]
+    cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
+    assert cell.skill_id is None and cell.skill_version is None

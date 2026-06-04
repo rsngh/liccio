@@ -100,6 +100,11 @@ class CapabilityCell:
     provider_failure_rate: float = 0.0
     cost_per_attempt: float | None = None
     measurement_quality_mean: float | None = None
+    # Skill-aware evidence (Round 16): the active skill id/version the attempts ran
+    # under, so routing evidence is attributed to the skill version in effect. None
+    # means the cell's attempts ran with no active skill.
+    skill_id: str | None = None
+    skill_version: int | None = None
     sample_size: int = 0
     # number of post-merge outcomes folded in (denominator for failure rate)
     post_merge_sample_size: int = 0
@@ -255,6 +260,12 @@ class CapabilityMatrix:
                 sum(float(r.get("cost_usd", 0.0)) for r in rows) / total, 6)
             from acp.evaluation.measurement_quality import score_measurement_quality
             cell.measurement_quality_mean = score_measurement_quality(rows).overall
+            # Skill-aware attribution (Round 16): which active skill the attempts ran
+            # under, when the bakeoff cells carry it.
+            skilled = next((r for r in rows if r.get("skill_id")), None)
+            if skilled is not None:
+                cell.skill_id = skilled.get("skill_id")
+                cell.skill_version = skilled.get("skill_version")
             # Harness-benefit metrics (WS6) when the cells carry harness signals.
             harness_rows = [r for r in scored if r.get("is_harness")]
             if harness_rows:
