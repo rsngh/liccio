@@ -5,7 +5,7 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-03 (Round 12 — measurement-trust). Tests: 869 passing, 5 skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
+Last updated: 2026-06-03 (Round 12 — measurement-trust). Tests: 877 passing, 7 skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
 `ruff` + `mypy` clean across 220 source files; see `reports/coverage.txt`. Gate:
 `uv run pytest -q && uv run ruff check . && uv run mypy src && uv run alembic
 upgrade head && acp reports validate` (41 artifacts valid).
