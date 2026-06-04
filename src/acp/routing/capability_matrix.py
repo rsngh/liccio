@@ -26,7 +26,15 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field, fields
 from datetime import datetime
 
+from acp.core.enums import AttemptOutcome
 from acp.core.time import isoformat, utcnow
+
+# Provider-attributable infra outcomes (for the v3 provider_failure_rate column).
+_PROVIDER_OUTCOMES = frozenset({
+    AttemptOutcome.PROVIDER_RATE_LIMIT,
+    AttemptOutcome.PROVIDER_SERVER_ERROR,
+    AttemptOutcome.PROVIDER_RETRY_EXCEEDED,
+})
 
 # Cells with fewer than this many observations cannot support a confident claim.
 MIN_SAMPLE = 5
@@ -83,6 +91,12 @@ class CapabilityCell:
     inconclusive_sample_size: int = 0
     infra_failure_rate: float = 0.0
     cost_per_conclusive_success: float | None = None
+    # Capability matrix v3 (Round 13 WS4): finer-grained quality/reliability split
+    # and a per-cell measurement-trust score.
+    conclusive_failure_rate: float = 0.0
+    provider_failure_rate: float = 0.0
+    cost_per_attempt: float | None = None
+    measurement_quality_mean: float | None = None
     sample_size: int = 0
     # number of post-merge outcomes folded in (denominator for failure rate)
     post_merge_sample_size: int = 0
@@ -227,6 +241,17 @@ class CapabilityMatrix:
             if n_succ:
                 cell.cost_per_conclusive_success = round(
                     sum(float(r.get("cost_usd", 0.0)) for r in scored) / n_succ, 6)
+            # v3 (WS4): conclusive failure rate, provider failure rate, cost/attempt,
+            # and a per-cell measurement-trust score over all rows.
+            cell.conclusive_failure_rate = round((n - n_succ) / n, 4) if n else 0.0
+            provider_rows = [r for r in rows
+                             if classify_attempt(r).is_infra
+                             and classify_attempt(r) in _PROVIDER_OUTCOMES]
+            cell.provider_failure_rate = round(len(provider_rows) / total, 4)
+            cell.cost_per_attempt = round(
+                sum(float(r.get("cost_usd", 0.0)) for r in rows) / total, 6)
+            from acp.evaluation.measurement_quality import score_measurement_quality
+            cell.measurement_quality_mean = score_measurement_quality(rows).overall
             # Harness-benefit metrics (WS6) when the cells carry harness signals.
             harness_rows = [r for r in scored if r.get("is_harness")]
             if harness_rows:

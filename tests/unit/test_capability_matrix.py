@@ -255,3 +255,32 @@ def test_v2_measurement_quality_columns() -> None:
     # Total conclusive cost (0.002 + 0.001) per success (1) = realistic cost/success.
     assert c.cost_per_conclusive_success == 0.003
     assert c.success_rate == 0.5
+
+
+def test_v3_columns_and_recommendation_stable_under_infra_noise() -> None:
+    # WS4: injecting infra timeouts must not change the recommended adapter or its
+    # conclusive success_rate (only measurement_quality_mean / infra rate move).
+    from acp.routing.capability_matrix import CapabilityMatrix
+
+    def rows(extra_infra):
+        base = [{"task_type": "bugfix", "risk": "medium", "adapter": a,
+                 "is_harness": True, "context_strategy": "hybrid", "success": s,
+                 "status": "succeeded" if s else "failed", "tool_calls": 2,
+                 "commands": 1, "file_reads": 1, "cost_usd": 0.001}
+                for a, n_ok in (("openai_harness", 6), ("claude_harness", 6))
+                for s in [True] * n_ok]
+        base += [{"task_type": "bugfix", "risk": "medium", "adapter": "openai_harness",
+                  "is_harness": True, "context_strategy": "hybrid", "success": False,
+                  "status": "timed_out", "timed_out": True, "tool_calls": 0,
+                  "error": "timed out", "cost_usd": 0.0} for _ in range(extra_infra)]
+        return base
+
+    clean = CapabilityMatrix.from_bakeoff_report({"cells": rows(0)})
+    noisy = CapabilityMatrix.from_bakeoff_report({"cells": rows(10)})
+    bc, _ = clean.best_for("bugfix", "medium", "python_package")
+    bn, _ = noisy.best_for("bugfix", "medium", "python_package")
+    # Same recommendation + same conclusive success_rate despite 10 infra timeouts.
+    oc = [c for c in clean.cells() if c.agent_class == "openai_harness"][0]
+    on = [c for c in noisy.cells() if c.agent_class == "openai_harness"][0]
+    assert oc.success_rate == on.success_rate == 1.0
+    assert on.infra_failure_rate > 0 and on.measurement_quality_mean < oc.measurement_quality_mean
