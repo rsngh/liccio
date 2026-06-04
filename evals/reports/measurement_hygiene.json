@@ -1,17 +1,17 @@
 {
-  "n_attempts": 44,
-  "n_conclusive": 44,
-  "n_success": 41,
-  "n_infra": 0,
+  "n_attempts": 104,
+  "n_conclusive": 103,
+  "n_success": 98,
+  "n_infra": 1,
   "n_inconclusive": 0,
-  "solve_rate": 0.9318,
-  "conclusive_rate": 1.0,
-  "infra_failure_rate": 0.0,
-  "inconclusive_rate": 0.0,
+  "solve_rate": 0.9515,
+  "conclusive_rate": 0.9904,
+  "infra_failure_rate": 0.0096,
+  "inconclusive_rate": 0.0096,
   "by_outcome": {
-    "task_success": 37,
-    "infra_timeout_after_solution": 4,
-    "task_failure": 3
+    "task_success": 98,
+    "infra_timeout_before_action": 1,
+    "task_failure": 5
   },
   "contaminated": false,
   "contamination_reasons": []
