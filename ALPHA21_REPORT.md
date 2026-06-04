@@ -46,9 +46,15 @@ uv run alembic upgrade head      # OK (skill_provenance_runs migration)
 uv run acp reports validate      # artifacts valid
 ```
 
-## Remaining (environment-gated)
+## Environment-gated workstreams — now verified live
 
-WS18 (Docker live-security gate — daemon contention), WS19 (vendor-native harness gate —
-needs codex/SDK binaries) are honestly labeled, not claimed. WS11 (multi-stage canary
-platform) and WS14–16 build naturally on the A/B canary, evolver, and trajectory-judge
-foundations already in place.
+- **WS18 — Docker live-security gate: PASSING.** With Docker 29.2.1 on the machine,
+  `acp eval docker-security-live` returns `passed: true` with **9/9** checks green
+  (no_network, non_root, memory_cap, pid_cap, timeout, workspace_containment, secret_scrub,
+  massive_stdout, cleanup); the artifact is secret-clean and the production health gate
+  `docker_live_security_passed` is **true**. (The occasional full-suite failure is Docker-
+  daemon contention; the tests pass in isolation.)
+- **WS19 — Vendor-native harness gate: WIRED.** `live_vendor` marker + `acp eval
+  vendor-harness-live` + `evals/reports/vendor_harness_live.json` (registered) detect
+  codex / Claude Code / OpenHands and run a no-patch fix-the-failing-test task on the
+  headless-drivable ones (OpenHands health-checked); unavailable harnesses skip, not fail.

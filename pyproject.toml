@@ -110,6 +110,7 @@ markers = [
     "live_qdrant: tests requiring qdrant-client (real local engine)",
     "live_otlp: tests requiring a live OpenTelemetry OTLP endpoint",
     "live_codex: live tests against the real codex CLI (ACP_LIVE_CODEX)",
+    "live_vendor: live tests against vendor-native harnesses (codex/claude/openhands)",
     "e2e: end-to-end tests",
 ]
 filterwarnings = ["ignore::DeprecationWarning"]

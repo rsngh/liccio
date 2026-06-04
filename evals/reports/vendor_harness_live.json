@@ -1,0 +1,44 @@
+{
+  "experiment": "ws19_vendor_harness_live",
+  "available": true,
+  "passed": true,
+  "n_solved": 2,
+  "n_inconclusive": 0,
+  "conclusive_failures": [],
+  "harnesses": {
+    "codex_cli": {
+      "available": true,
+      "version": "codex-cli 0.136.0",
+      "no_patch_solve": true,
+      "trace_captured": true,
+      "diff_captured": true,
+      "pytest_passed": true,
+      "secret_leak": false,
+      "timeout_enforced": true,
+      "exit_code": 0,
+      "wall_time_s": 28.48
+    },
+    "claude_code": {
+      "available": true,
+      "version": "2.1.160 (Claude Code)",
+      "no_patch_solve": true,
+      "trace_captured": true,
+      "diff_captured": true,
+      "pytest_passed": true,
+      "secret_leak": false,
+      "timeout_enforced": true,
+      "exit_code": 0,
+      "wall_time_s": 14.22
+    },
+    "openhands": {
+      "available": true,
+      "version": "OpenHands CLI 1.16.0",
+      "health_checked": true
+    }
+  },
+  "versions": {
+    "codex_cli": "codex-cli 0.136.0",
+    "claude_code": "2.1.160 (Claude Code)",
+    "openhands": "OpenHands CLI 1.16.0"
+  }
+}

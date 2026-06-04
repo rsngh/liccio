@@ -869,6 +869,18 @@ def eval_docker_security_live() -> None:
     console.print_json(data=run_docker_security_live())
 
 
+@eval_app.command("vendor-harness-live")
+def eval_vendor_harness_live() -> None:
+    """Run the vendor-native harness live gate (codex/claude/openhands).
+
+    Detects each installed vendor harness and runs a tiny no-patch repo task on the
+    ones that drive headlessly; unavailable harnesses are skipped, not failed.
+    """
+    from acp.evaluation.vendor_harness_live import run_vendor_harness_live
+
+    console.print_json(data=run_vendor_harness_live())
+
+
 @eval_app.command("security-benchmark-v2")
 def eval_security_benchmark_v2() -> None:
     """Expanded security & prompt-injection benchmark (10 attack classes)."""

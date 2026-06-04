@@ -57,3 +57,4 @@ evals/reports/*
 !evals/reports/tool_activation_metrics.json
 !evals/reports/measurement_quality.json
 !reports/live/skillopt_run.json
+!evals/reports/vendor_harness_live.json
