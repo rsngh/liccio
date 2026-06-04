@@ -5,10 +5,23 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-02 (Alpha 11). Tests: 761 passing, 5 skipped
-(docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`; `ruff` +
-`mypy` clean; see `reports/coverage.txt`. Gate: `uv run pytest -q &&
-uv run ruff check . && uv run mypy src && uv run alembic upgrade head`.
+Last updated: 2026-06-03 (Round 12 — measurement-trust). Tests: 804 passing, 7
+skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
+`ruff` + `mypy` clean across 220 source files; see `reports/coverage.txt`. Gate:
+`uv run pytest -q && uv run ruff check . && uv run mypy src && uv run alembic
+upgrade head && acp reports validate` (41 artifacts valid).
+
+**Round 12 — measurement-trust layer.** ACP now classifies every attempt into an
+`AttemptOutcome` (conclusive task signal vs infra/inconclusive noise) so infra
+timeouts and provider errors never poison capability measurement; a durable
+`attempt_outcomes` table persists the evidence. Provider calls run under a declared
+`ProviderPolicy` (`max_retries=0` + per-call timeout). A `HarnessAvailabilityAudit`
+makes a silently-absent harness loud, tool-activation metrics (`tools_required` /
+`activation_failure_reason`) live on every `AgentTrace`, the capability matrix and
+policy dossier carry conclusive-vs-infra columns, cost is a first-class tiebreaker
+across matrix/Pareto/OPE/regret, and `acp health --mode production` gates on harness
+availability + measurement non-contamination. A measurement mutation suite is the
+self-check. See `ROUND12_REPORT.md` and `acp measurement hygiene`.
 
 **Alpha 4 — multi-harness empirical router.** Two real tool-loop harnesses now
 exist (`openai_harness`, `claude_harness`), the execution-backend policy is
