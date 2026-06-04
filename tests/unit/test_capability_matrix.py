@@ -284,3 +284,31 @@ def test_v3_columns_and_recommendation_stable_under_infra_noise() -> None:
     on = [c for c in noisy.cells() if c.agent_class == "openai_harness"][0]
     assert oc.success_rate == on.success_rate == 1.0
     assert on.infra_failure_rate > 0 and on.measurement_quality_mean < oc.measurement_quality_mean
+
+
+def test_low_measurement_quality_cell_is_not_recommended() -> None:
+    # WS4 hardening: a confident cell whose measurement_quality_mean is below the
+    # floor is not recommended even though its conclusive sample is sufficient.
+    from acp.routing.capability_matrix import MIN_MEASUREMENT_QUALITY, CapabilityMatrix
+    rows = [{"task_type": "bugfix", "risk": "medium", "adapter": "openai_harness",
+             "is_harness": True, "context_strategy": "hybrid", "success": True,
+             "status": "succeeded", "tool_calls": 2, "commands": 1, "file_reads": 1,
+             "cost_usd": 0.001} for _ in range(6)]
+    m = CapabilityMatrix.from_bakeoff_report({"cells": rows})
+    cell = m.cells()[0]
+    assert cell.sufficient_data
+    # Force a low measurement-quality score (a noisy run).
+    cell.measurement_quality_mean = MIN_MEASUREMENT_QUALITY - 0.1
+    best, reason = m.best_for(*m.cells()[0].task_key())
+    assert best is None and "measurement_quality" in reason
+
+
+def test_high_measurement_quality_cell_is_recommended() -> None:
+    from acp.routing.capability_matrix import CapabilityMatrix
+    rows = [{"task_type": "bugfix", "risk": "medium", "adapter": "openai_harness",
+             "is_harness": True, "context_strategy": "hybrid", "success": True,
+             "status": "succeeded", "tool_calls": 2, "commands": 1, "file_reads": 1,
+             "cost_usd": 0.001} for _ in range(6)]
+    m = CapabilityMatrix.from_bakeoff_report({"cells": rows})
+    best, reason = m.best_for(*m.cells()[0].task_key())
+    assert best is not None and "trustworthy" in reason

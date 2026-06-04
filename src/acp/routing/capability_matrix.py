@@ -38,6 +38,9 @@ _PROVIDER_OUTCOMES = frozenset({
 
 # Cells with fewer than this many observations cannot support a confident claim.
 MIN_SAMPLE = 5
+# A confident cell whose measurement quality is below this floor is not trustworthy
+# enough to recommend — the run that produced it was too noisy (WS4 hardening).
+MIN_MEASUREMENT_QUALITY = 0.6
 # Default routing-tuple components when a bakeoff cell doesn't carry them. Cells
 # come from objective bakeoffs (a single canonical action arm), so the strategy
 # / policy default to the RoutingAction defaults.
@@ -392,8 +395,18 @@ class CapabilityMatrix:
         confident = [c for c in candidates if c.sufficient_data]
         if not confident:
             return None, f"all_{len(candidates)}_candidate_cells_low_sample"
-        best = max(confident, key=self._score)
-        return best, f"selected_from_{len(confident)}_confident_of_{len(candidates)}"
+        # WS4 hardening: a confident cell whose measurement quality is below the
+        # floor is not trustworthy enough to recommend (its conclusive sample may be
+        # right but the run was too noisy). None == no quality score computed (legacy
+        # cells) and is allowed through.
+        trustworthy = [c for c in confident if c.measurement_quality_mean is None
+                       or c.measurement_quality_mean >= MIN_MEASUREMENT_QUALITY]
+        if not trustworthy:
+            return None, (f"all_{len(confident)}_confident_cells_below_measurement_"
+                          f"quality_floor_{MIN_MEASUREMENT_QUALITY}")
+        best = max(trustworthy, key=self._score)
+        return best, (f"selected_from_{len(trustworthy)}_trustworthy_of_"
+                      f"{len(confident)}_confident_of_{len(candidates)}")
 
     def explain(self, task_key: tuple[str, str, str]) -> dict:
         """Ranked cells + flags for a (task_type, risk_level, repo_type) key."""
