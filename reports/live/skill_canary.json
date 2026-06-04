@@ -1,0 +1,17 @@
+{
+  "experiment": "round17_skill_canary_live",
+  "skill": "# Coding skill\n- After editing, ALWAYS run the project's tests and fix failures before finishing.\n",
+  "control_rate": 0.0,
+  "canary_rate": 0.0,
+  "control_n": 6,
+  "canary_n": 6,
+  "lift": 0.0,
+  "z_score": 0.0,
+  "p_value": 0.5,
+  "significant": false,
+  "contaminated": false,
+  "promote": false,
+  "reasons": [
+    "not significant (p=0.5 >= alpha=0.05)"
+  ]
+}
