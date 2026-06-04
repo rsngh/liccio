@@ -75,6 +75,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "reports/live/skill_transfer.json": ["experiment", "baseline_score", "transfer_gain"],
     # Round 17 — online A/B skill canary
     "reports/live/skill_canary.json": ["experiment", "control_rate", "canary_rate", "promote"],
+    # Round 19 — end-to-end live autonomous self-improvement cycle
+    "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
 
 
