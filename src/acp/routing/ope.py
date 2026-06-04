@@ -47,6 +47,12 @@ class OPESample:
     behavior_prob: float
     reward: float
     candidates: list[str] = field(default_factory=list)
+    # OPE v3 (Round 13 WS5): operational signals so a target policy can score on
+    # cost / measurement-trust, not just raw reward. Optional; default neutral.
+    cost: float = 0.0
+    latency: float = 0.0
+    measurement_quality: float = 1.0
+    outcome_kind: str | None = None
 
     def __post_init__(self) -> None:
         if not (0.0 < self.behavior_prob <= 1.0):
@@ -291,3 +297,50 @@ def from_decision_log(
             candidates=cands,
         ))
     return samples
+
+
+def profile_reward(sample: OPESample, profile: str = "balanced",
+                   cost_weight: float = DEFAULT_COST_WEIGHT) -> float:
+    """Re-weight a sample's reward for an OPE *objective profile* (WS5 v3).
+
+    - ``quality_max``: raw reward (solve-rate only).
+    - ``cost_saver``: reward minus a cost penalty (cost is a first-class term).
+    - ``measurement_trust_max``: reward scaled by measurement quality, so a policy
+      whose wins come from contaminated measurement is discounted.
+    - ``balanced``: cost-penalized AND trust-scaled.
+    - ``risk_min``: reward minus a latency proxy for operational risk.
+    """
+    r = sample.reward
+    if profile == "quality_max":
+        return r
+    if profile == "cost_saver":
+        return r - cost_weight * sample.cost
+    if profile == "measurement_trust_max":
+        return r * sample.measurement_quality
+    if profile == "risk_min":
+        return r - 0.01 * sample.latency
+    # balanced
+    return (r - cost_weight * sample.cost) * sample.measurement_quality
+
+
+OPE_PROFILES: tuple[str, ...] = (
+    "quality_max", "cost_saver", "balanced", "risk_min", "measurement_trust_max",
+)
+
+
+def greedy_target_for_profile(samples: list[OPESample], profile: str = "balanced",
+                              cost_weight: float = DEFAULT_COST_WEIGHT) -> TargetPolicy:
+    """A greedy TargetPolicy that maximizes the profile-reweighted reward per context."""
+    by_ctx_action: dict[tuple[str, str], list[float]] = {}
+    for s in samples:
+        by_ctx_action.setdefault((s.context_key, s.action_key), []).append(
+            profile_reward(s, profile, cost_weight))
+    scores = {k: sum(v) / len(v) for k, v in by_ctx_action.items()}
+
+    def pi(ctx: str, action: str, cands: list[str]) -> float:
+        ranked = {a: scores.get((ctx, a), float("-inf")) for a in cands}
+        best = max(ranked.values()) if ranked else float("-inf")
+        winners = [a for a, sc in ranked.items() if sc == best]
+        return 1.0 / len(winners) if action in winners else 0.0
+
+    return pi
