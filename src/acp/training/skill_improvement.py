@@ -31,40 +31,80 @@ class SkillScopeJob:
 
 
 @dataclass
+class CycleGuardrails:
+    """Safety bounds on an autonomous self-improvement cycle (Round 19).
+
+    - ``max_deploys``: cap the blast radius — stop deploying after N this cycle.
+    - ``abort_on_contaminated``: skip a scope whose evidence is contaminated (a
+      noisy run must never drive a deploy), recording a no_op with the reason.
+    """
+
+    max_deploys: int = 3
+    abort_on_contaminated: bool = True
+
+
+@dataclass
 class SkillCycleReport:
     cycle_id: str
     n_scopes: int = 0
     n_deployed: int = 0
     n_no_op: int = 0
+    n_skipped_contaminated: int = 0
+    n_skipped_cap: int = 0
     events: list[dict] = field(default_factory=list)
 
 
 def run_skill_improvement_cycle(
     store: EntityStore, jobs: list[SkillScopeJob], *, cycle_id: str, backend=None,
-    max_steps: int = 5,
+    max_steps: int = 5, guardrails: CycleGuardrails | None = None,
 ) -> SkillCycleReport:
-    """Run one governed self-improvement cycle over the given scope jobs."""
+    """Run one governed, guardrailed self-improvement cycle over the scope jobs."""
+    from acp.evaluation.measurement_hygiene import build_hygiene_report
+    g = guardrails or CycleGuardrails()
     report = SkillCycleReport(cycle_id=cycle_id, n_scopes=len(jobs))
     for job in jobs:
+        # Contamination guardrail: never optimize from a noisy run.
+        if g.abort_on_contaminated and build_hygiene_report(job.cells).contaminated:
+            report.n_skipped_contaminated += 1
+            _record(store, report, job, action="no_op", reason="evidence contaminated",
+                    cycle_id=cycle_id, res=None)
+            continue
+        # Deploy-cap guardrail: stop DEPLOYING (not optimizing) past the cap.
+        if report.n_deployed >= g.max_deploys:
+            report.n_skipped_cap += 1
+            _record(store, report, job, action="no_op",
+                    reason=f"deploy cap {g.max_deploys} reached", cycle_id=cycle_id,
+                    res=None)
+            continue
         res = optimize_and_deploy(store, job.base, job.cells, scorer=job.scorer,
                                   proposer=job.proposer, backend=backend,
                                   max_steps=max_steps)
         action = "deployed" if res.deployed else "no_op"
         reason = ("; ".join(res.deployment.blocked_reasons)
                   if not res.deployed else "canary/held-out improvement deployed")
-        event = SkillEvolutionEvent(
-            scope_key=job.base.scope.key(), action=action,
-            skill_id=res.deployment.skill_id, from_version=job.base.version,
-            to_version=res.new_version, base_score=res.base_score,
-            best_score=res.best_score, reason=reason, cycle_id=cycle_id)
-        store.save(event, extra_index={"scope_key": event.scope_key,
-                                       "action": event.action})
-        if res.deployed:
-            report.n_deployed += 1
-        else:
-            report.n_no_op += 1
-        report.events.append(event.model_dump(mode="json"))
+        _record(store, report, job, action=action, reason=reason, cycle_id=cycle_id,
+                res=res)
     return report
+
+
+def _record(store: EntityStore, report: SkillCycleReport, job: SkillScopeJob, *,
+            action: str, reason: str, cycle_id: str, res) -> None:
+    """Persist a SkillEvolutionEvent and update the cycle report counters."""
+    event = SkillEvolutionEvent(
+        scope_key=job.base.scope.key(), action=action,
+        skill_id=(res.deployment.skill_id if res else None),
+        from_version=job.base.version,
+        to_version=(res.new_version if res else None),
+        base_score=(res.base_score if res else None),
+        best_score=(res.best_score if res else None),
+        reason=reason, cycle_id=cycle_id)
+    store.save(event, extra_index={"scope_key": event.scope_key,
+                                   "action": event.action})
+    if action == "deployed":
+        report.n_deployed += 1
+    else:
+        report.n_no_op += 1
+    report.events.append(event.model_dump(mode="json"))
 
 
 def skill_dashboard(store: EntityStore, *, recent: int = 20) -> dict:
