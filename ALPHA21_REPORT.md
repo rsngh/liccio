@@ -23,6 +23,9 @@ defenses.
 | 10 | Negative-transfer | `assess_transfer` + auto-narrowing via `negative_transfer_history`; routing excludes a skill on domains it hurt. |
 | 12 | Poisoning defense | `scan_skill` (8 threat categories) is a HARD block in `deploy_skill` — no poisoned skill reaches deployment. |
 | 13 | Cross-harness study | `run_transfer_study` classifies portable vs harness-specific skills and recommends scope. |
+| 11 | Staged canary platform | `run_staged_canary` (5/25/50/100%) advances only while guardrails hold (solve-rate/cost/quality/HAR/HFR/security/human-review), else rolls back. |
+| 15 | Topology+skill co-opt | `cooptimize` chooses the (topology, skill) combination jointly, safety-gated. |
+| 16 | Trajectory judge for skills | `judge_skill_update` scores a skill update on the eight trajectory axes (beyond solve-rate). |
 
 ## Safety properties (all enforced + tested)
 
