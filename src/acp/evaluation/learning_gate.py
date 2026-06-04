@@ -41,3 +41,18 @@ def split_for_learning(cells: list[Any]) -> tuple[list[Any], list[Any]]:
     quality = [c for c in cells if eligible_for_quality(c)]
     reliability_only = [c for c in cells if not eligible_for_quality(c)]
     return quality, reliability_only
+
+
+class ContaminatedSampleError(ValueError):
+    """Raised when a contaminated/inconclusive attempt reaches a quality learner."""
+
+
+def assert_quality_eligible(cell: Any) -> None:
+    """HARD invariant (Alpha 14 WS2): reject any attempt that must not update a
+    quality metric. Use at the entry of a strict quality learner to fail loudly
+    rather than silently mis-learn from infra noise."""
+    if not eligible_for_quality(cell):
+        outcome = classify_attempt(cell)
+        raise ContaminatedSampleError(
+            f"attempt with outcome {getattr(outcome, 'value', outcome)} is not "
+            "conclusive-quality and must not update solve-rate / OPE quality reward")
