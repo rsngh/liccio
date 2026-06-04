@@ -1,16 +1,16 @@
 {
-  "n_attempts": 36,
+  "n_attempts": 44,
   "tool_choice_mode": "required",
   "by_adapter": {
     "openai_harness": {
-      "n": 18,
-      "activated": 18,
+      "n": 22,
+      "activated": 22,
       "activation_failures": 0,
       "activation_rate": 1.0
     },
     "claude_harness": {
-      "n": 18,
-      "activated": 18,
+      "n": 22,
+      "activated": 22,
       "activation_failures": 0,
       "activation_rate": 1.0
     }

@@ -1,16 +1,17 @@
 {
-  "n_attempts": 36,
-  "n_conclusive": 36,
-  "n_success": 35,
+  "n_attempts": 44,
+  "n_conclusive": 44,
+  "n_success": 41,
   "n_infra": 0,
   "n_inconclusive": 0,
-  "solve_rate": 0.9722,
+  "solve_rate": 0.9318,
   "conclusive_rate": 1.0,
   "infra_failure_rate": 0.0,
   "inconclusive_rate": 0.0,
   "by_outcome": {
-    "task_success": 35,
-    "task_failure": 1
+    "task_success": 37,
+    "infra_timeout_after_solution": 4,
+    "task_failure": 3
   },
   "contaminated": false,
   "contamination_reasons": []
