@@ -54,3 +54,24 @@ def test_security_topology_safety_in_coordination() -> None:
 def test_compose_with_no_evidence_is_safe() -> None:
     dec = compose_coordination(task_type="docs", risk_level="low")
     assert dec.topology == [] and dec.skill_id is None
+
+
+def test_coordination_composes_skill_set_and_explains(tmp_path) -> None:
+    # WS8: routing composes the applicable skill library and explains selected/rejected.
+    e = make_engine(f"sqlite:///{tmp_path / 'cs.db'}")
+    create_all(e)
+    sf = make_session_factory(e)
+    with session_scope(sf) as s:
+        es = EntityStore(s)
+        save_skill(es, SkillDocument(name="bugfix_pytest", content="# s\n- run pytest\n",
+                   status=SkillStatus.ACTIVE, held_out_score=1.0,
+                   scope=SkillScope(task_type="bugfix")))
+        save_skill(es, SkillDocument(name="minimal", content="# s\n- minimal change\n",
+                   status=SkillStatus.ACTIVE, held_out_score=0.9,
+                   scope=SkillScope(task_type="bugfix")))
+    with session_scope(sf) as s:
+        dec = compose_coordination(task_type="bugfix", risk_level="medium",
+                                   store=EntityStore(s), harness_hint="openai_harness")
+    assert len(dec.selected_skills) == 2
+    assert "- run pytest" in dec.composed_skill and "- minimal change" in dec.composed_skill
+    assert "composed 2 skill" in dec.rationale["skill"]

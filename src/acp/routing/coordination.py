@@ -19,8 +19,11 @@ class CoordinationDecision:
     risk_level: str
     agent_name: str | None
     topology: list[str] = field(default_factory=list)
-    skill_id: str | None = None
+    skill_id: str | None = None        # primary skill (back-compat)
     skill_version: int | None = None
+    selected_skills: list[dict] = field(default_factory=list)  # composed skill set (WS8)
+    rejected_skills: dict[str, str] = field(default_factory=dict)
+    composed_skill: str = ""           # the composed skill document content
     rationale: dict[str, str] = field(default_factory=dict)
 
     def as_dict(self) -> dict:
@@ -28,6 +31,8 @@ class CoordinationDecision:
             "task_type": self.task_type, "risk_level": self.risk_level,
             "agent_name": self.agent_name, "topology": self.topology,
             "skill_id": self.skill_id, "skill_version": self.skill_version,
+            "selected_skills": self.selected_skills,
+            "rejected_skills": self.rejected_skills,
             "rationale": self.rationale,
         }
 
@@ -68,20 +73,33 @@ def compose_coordination(
     else:
         rationale["topology"] = "full shape (no topology evidence)"
 
-    # 3) Skill — the ACTIVE skill bound to this routing scope.
+    # 3) Skill SET — compose the active skill library applicable to this scope (WS8).
     skill_id = skill_version = None
+    selected: list[dict] = []
+    rejected: dict[str, str] = {}
+    composed = ""
     if store is not None:
-        from acp.training.skill_registry import active_skill_for
-        skill = active_skill_for(store, task_type=task_type, risk_level=risk_level,
-                                 harness=agent_name)
-        if skill is not None:
-            skill_id, skill_version = skill.id, skill.version
-            rationale["skill"] = (f"active skill v{skill.version} "
-                                  f"(held_out_score={skill.held_out_score})")
+        from acp.core.enums import SkillStatus
+        from acp.training.skill_composition import compose_skills
+        from acp.training.skill_registry import list_skills
+        applicable = [s for s in list_skills(store, status=SkillStatus.ACTIVE)
+                      if s.scope.matches(task_type=task_type, risk_level=risk_level,
+                                         harness=agent_name)]
+        if applicable:
+            comp = compose_skills(applicable, risk_level=risk_level)
+            composed = comp.content
+            selected, rejected = comp.included, comp.excluded
+            if selected:
+                skill_id = selected[0]["skill_id"]
+                skill_version = selected[0]["version"]
+            rationale["skill"] = (
+                f"composed {len(selected)} skill(s), {len(rejected)} rejected, "
+                f"{comp.conflicts_resolved} conflicts resolved, ~{comp.token_estimate} tok")
         else:
             rationale["skill"] = "no active skill for scope"
 
     return CoordinationDecision(
         task_type=task_type, risk_level=risk_level, agent_name=agent_name,
         topology=topology, skill_id=skill_id, skill_version=skill_version,
+        selected_skills=selected, rejected_skills=rejected, composed_skill=composed,
         rationale=rationale)
