@@ -98,3 +98,61 @@ def run_staged_canary(
             return result
     result.promoted = True
     return result
+
+
+def staged_canary_deploy(
+    store, candidate, baseline_skill_id, stage_metrics, *,
+    stages=DEFAULT_STAGES, guardrails=None,
+):
+    """Run a staged canary, persist it, and promote/rollback (Alpha 22 WS15).
+
+    Returns (canary_run, deployment_result). On a clean rollout to 100% the candidate is
+    deployed ACTIVE; on a rollback at any stage the candidate is left in advisory
+    (CANDIDATE) state and the run is recorded rolled_back. The persisted SkillCanaryRun is
+    the audit trail (survives restart, WS13).
+    """
+    from acp.core.enums import SkillStatus
+    from acp.db.repositories import EntityStore
+    from acp.schemas.skill_canary_run import SkillCanaryRun, SkillCanaryStageRecord
+    from acp.training.skill_deploy import SkillDeploymentResult, deploy_skill
+
+    es = store if isinstance(store, EntityStore) else EntityStore(store)
+    rollout = run_staged_canary(stage_metrics, stages=stages, guardrails=guardrails)
+
+    stage_records: list[SkillCanaryStageRecord] = []
+    for v in rollout.stages:
+        m = stage_metrics.get(v.stage)
+        stage_records.append(SkillCanaryStageRecord(
+            stage=v.stage,
+            canary_n=int(getattr(m, "canary_solve", 0) and 0) or 0,
+            canary_successes=0,
+            cost=getattr(m, "canary_cost", 0.0) if m else 0.0,
+            measurement_quality=getattr(m, "measurement_quality", 1.0) if m else 1.0,
+            har=getattr(m, "canary_har", 0.0) if m else 0.0,
+            hfr=getattr(m, "canary_hfr", 0.0) if m else 0.0,
+            security_findings=getattr(m, "security_findings", 0) if m else 0,
+            decision=v.decision, breaches=v.breaches))
+
+    run = SkillCanaryRun(
+        scope_key=candidate.scope.key(), candidate_skill_id=candidate.id,
+        baseline_skill_id=baseline_skill_id, current_stage=rollout.final_stage,
+        stages=stage_records,
+        status="promoted" if rollout.promoted else "rolled_back",
+        rollback_reason=rollout.rollback_reason)
+
+    if rollout.promoted:
+        deployment = deploy_skill(es, candidate, canary_score=1.0, baseline_score=0.0)
+        if not deployment.deployed:  # e.g. poison scan blocked it
+            run.status = "rolled_back"
+            run.rollback_reason = "; ".join(deployment.blocked_reasons)
+    else:
+        # Leave candidate advisory; do not activate.
+        deployment = SkillDeploymentResult(
+            deployed=False, scope_key=candidate.scope.key(),
+            blocked_reasons=[f"canary rolled back: {rollout.rollback_reason}"])
+        es.save(candidate.model_copy(update={"status": SkillStatus.CANDIDATE}),
+                extra_index={"scope_key": candidate.scope.key(),
+                             "status": SkillStatus.CANDIDATE.value})
+
+    es.save(run, extra_index={"scope_key": run.scope_key, "status": run.status})
+    return run, deployment
