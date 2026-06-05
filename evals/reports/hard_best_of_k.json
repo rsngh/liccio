@@ -1,0 +1,48 @@
+{
+  "experiment": "hard_best_of_k",
+  "model": "gpt-4o-mini",
+  "single_shot_reps": 5,
+  "k": 8,
+  "single_shot_rate": 0.84,
+  "best_of_k_rate": 1.0,
+  "best_of_k_lift": 0.16,
+  "ceiling_escaped": true,
+  "total_cost": 0.012462,
+  "rows": [
+    {
+      "task": "coin_change",
+      "single_shot_rate": 0.6,
+      "best_of_k_solved": true,
+      "best_of_k_n_passed": 8,
+      "k": 8
+    },
+    {
+      "task": "word_break",
+      "single_shot_rate": 1.0,
+      "best_of_k_solved": true,
+      "best_of_k_n_passed": 8,
+      "k": 8
+    },
+    {
+      "task": "lis",
+      "single_shot_rate": 1.0,
+      "best_of_k_solved": true,
+      "best_of_k_n_passed": 8,
+      "k": 8
+    },
+    {
+      "task": "max_product",
+      "single_shot_rate": 0.6,
+      "best_of_k_solved": true,
+      "best_of_k_n_passed": 5,
+      "k": 8
+    },
+    {
+      "task": "min_path_sum",
+      "single_shot_rate": 1.0,
+      "best_of_k_solved": true,
+      "best_of_k_n_passed": 7,
+      "k": 8
+    }
+  ]
+}
