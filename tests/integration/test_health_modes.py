@@ -63,3 +63,14 @@ def test_production_gate_includes_vendor_harness(tmp_path) -> None:
     # Alpha 22 WS12: vendor-native harness pass is a production gate.
     h = _svc(tmp_path).control_plane_health(mode="production")
     assert "vendor_harness_live_passed" in h["production_gates"]
+
+
+def test_health_has_benchmark_section_and_gate(tmp_path) -> None:
+    # Alpha 23 WS7: graded benchmark capability is a first-class health section, and a
+    # real difficulty-stratified baseline is a production gate.
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    assert "benchmark" in h
+    for key in ("baseline_overall", "baseline_by_difficulty", "discriminating",
+                "skill_ab_decision"):
+        assert key in h["benchmark"]
+    assert "benchmark_baseline_present" in h["production_gates"]

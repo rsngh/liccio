@@ -883,6 +883,13 @@ class AppService:
         vendor_n_solved = _report_field(
             "evals/reports/vendor_harness_live.json", "n_solved", default=0) or 0
         vendor_harness_live_passed = (vendor_passed is True and vendor_n_solved >= 1)
+        # Graded benchmark (Alpha 23): production requires a real difficulty-stratified
+        # baseline on disk — not the trivial single-fixture smoke. A discriminating
+        # baseline (overall < 1.0) means the platform can actually measure skill lift;
+        # whether a skill helps is reported but NOT gated (no-lift is an honest result).
+        bench_overall = _report_field(
+            "reports/live/benchmark_baseline.json", "overall_solve_rate", default=None)
+        benchmark_baseline_present = bench_overall is not None
 
         production_gates = {
             "artifact_manifest_valid": artifacts_ok,
@@ -895,6 +902,7 @@ class AppService:
             "measurement_not_contaminated": measurement_not_contaminated,
             "measurement_quality_trusted": measurement_quality_trusted,
             "vendor_harness_live_passed": vendor_harness_live_passed,
+            "benchmark_baseline_present": benchmark_baseline_present,
         }
         production_ready = all(production_gates.values())
         status = "ok"
@@ -937,6 +945,17 @@ class AppService:
                 "evals/reports/tool_activation_metrics.json", "by_adapter", default={}),
             "harness_benefit_by_adapter": harness_benefit,
         }
+        # Graded benchmark section (Alpha 23): capability by difficulty + any skill lift.
+        benchmark = {
+            "baseline_overall": bench_overall,
+            "baseline_by_difficulty": _report_field(
+                "reports/live/benchmark_baseline.json", "by_difficulty", default={}),
+            "discriminating": (bench_overall is not None and bench_overall < 1.0),
+            "skill_ab_decision": _report_field(
+                "reports/live/benchmark_skill_ab.json", "decision", default=None),
+            "skill_ab_overall": _report_field(
+                "reports/live/benchmark_skill_ab.json", "overall", default=None),
+        }
         return {
             "mode": mode,
             "status": status,
@@ -952,6 +971,7 @@ class AppService:
             "artifacts": artifact_summary,
             "measurement": measurement,
             "skills": skills_summary,
+            "benchmark": benchmark,
             "readiness": readiness,
         }
 
