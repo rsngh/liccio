@@ -90,6 +90,7 @@ evals/reports/*
 !evals/reports/nanogpt_style_agent_eval.json
 !evals/reports/algorithmic_progress_report.json
 !evals/reports/hard_best_of_k.json
+!evals/reports/compute_policy_bakeoff.json
 !reports/live/vendor_skill_canary.json
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json

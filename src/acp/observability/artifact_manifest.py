@@ -147,6 +147,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 25 test F — best-of-k on genuinely hard tasks
     "evals/reports/hard_best_of_k.json": [
         "experiment", "single_shot_rate", "best_of_k_rate", "ceiling_escaped"],
+    # Alpha 29 — compute-escalation policy bakeoff
+    "evals/reports/compute_policy_bakeoff.json": ["experiment", "arms", "per_task"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

@@ -1,0 +1,107 @@
+{
+  "experiment": "compute_policy_bakeoff",
+  "executor": "gpt-4o-mini",
+  "advisor": "gpt-4o",
+  "arms": {
+    "cheap_single": {
+      "arm": "cheap_single",
+      "n": 15,
+      "solve_rate": 1.0,
+      "mean_cost": 0.000215,
+      "marginal": {
+        "arm": "cheap_single",
+        "known": true,
+        "solve_lift": 0.0,
+        "extra_cost": 0.0,
+        "value_per_dollar": 0.0,
+        "positive": false
+      }
+    },
+    "cheap_best_of_k": {
+      "arm": "cheap_best_of_k",
+      "n": 5,
+      "solve_rate": 1.0,
+      "mean_cost": 0.001124,
+      "marginal": {
+        "arm": "cheap_best_of_k",
+        "known": true,
+        "solve_lift": 0.0,
+        "extra_cost": 0.000909,
+        "value_per_dollar": 0.0,
+        "positive": false
+      }
+    },
+    "cheap_advisor": {
+      "arm": "cheap_advisor",
+      "n": 5,
+      "solve_rate": 1.0,
+      "mean_cost": 0.000217,
+      "marginal": {
+        "arm": "cheap_advisor",
+        "known": true,
+        "solve_lift": 0.0,
+        "extra_cost": 2e-06,
+        "value_per_dollar": 0.0,
+        "positive": false
+      }
+    },
+    "frontier_single": {
+      "arm": "frontier_single",
+      "n": 0,
+      "solve_rate": 0.0,
+      "mean_cost": 0.0,
+      "marginal": {
+        "arm": "frontier_single",
+        "known": false,
+        "solve_lift": null,
+        "extra_cost": null,
+        "value_per_dollar": null,
+        "positive": null
+      }
+    }
+  },
+  "per_task": [
+    {
+      "task": "coin_change",
+      "single_shot_reliability": 1.0,
+      "best_of_k_solved": true,
+      "advisor_solved": true,
+      "policy_choice": "cheap_single",
+      "reason": "high single-shot reliability -> no escalation"
+    },
+    {
+      "task": "word_break",
+      "single_shot_reliability": 1.0,
+      "best_of_k_solved": true,
+      "advisor_solved": true,
+      "policy_choice": "cheap_single",
+      "reason": "high single-shot reliability -> no escalation"
+    },
+    {
+      "task": "lis",
+      "single_shot_reliability": 1.0,
+      "best_of_k_solved": true,
+      "advisor_solved": true,
+      "policy_choice": "cheap_single",
+      "reason": "high single-shot reliability -> no escalation"
+    },
+    {
+      "task": "max_product",
+      "single_shot_reliability": 1.0,
+      "best_of_k_solved": true,
+      "advisor_solved": true,
+      "policy_choice": "cheap_single",
+      "reason": "high single-shot reliability -> no escalation"
+    },
+    {
+      "task": "min_path_sum",
+      "single_shot_reliability": 1.0,
+      "best_of_k_solved": true,
+      "advisor_solved": true,
+      "policy_choice": "cheap_single",
+      "reason": "high single-shot reliability -> no escalation"
+    }
+  ],
+  "best_of_k_marginal_positive": false,
+  "advisor_marginal_positive": false
+}
