@@ -16,26 +16,26 @@ Substrate reused: `benchmark_suite` (execution-verified graded tasks), `vendor_n
 - [x] WS19 `live_vendor` marker + `acp eval vendor-harness-live`
 
 ## Tier 1 — live orchestration
-- [ ] 1. Layered advisor / metacognitive escalation
-- [ ] 2. Weak-model best-of-k candidates + execution comparator
-- [ ] 3. AutoTTS-style topology controller search
-- [ ] 4. Meta-Harness / harness optimization
-- [ ] 5. Synthetic task-corpus generator / active benchmark builder
+- [x] 1. Layered advisor / metacognitive escalation
+- [x] 2. Weak-model best-of-k candidates + execution comparator
+- [x] 3. AutoTTS-style topology controller search
+- [x] 4. Meta-Harness / harness optimization
+- [x] 5. Synthetic task-corpus generator / active benchmark builder
 
 ## Tier 2 — context, memory, abstention, training data, deterministic boundaries
-- [ ] 6. Context-strategy optimizer: grep vs embeddings vs hybrid
-- [ ] 7. Memory lifecycle / aging benchmark
-- [ ] 8. Stochastic–deterministic boundary (SDB) contracts
-- [ ] 9. Selective abstention / sufficient-context gate
-- [ ] 10. Workflow distillation / agentless training data
+- [x] 6. Context-strategy optimizer: grep vs embeddings vs hybrid
+- [x] 7. Memory lifecycle / aging benchmark
+- [x] 8. Stochastic–deterministic boundary (SDB) contracts
+- [x] 9. Selective abstention / sufficient-context gate
+- [x] 10. Workflow distillation / agentless training data
 
 ## Tier 3 — research frontier
-- [ ] 11. HeavySkill / internalized parallel-deliberation skill
-- [ ] 12. Tool-use RL / format-adherence training data
-- [ ] 13. DGM-style open-ended variant archive
-- [ ] 14. DeepConf / confidence-based trace pruning
-- [ ] 15. Research-engineering benchmark hardening (NanoGPT-style)
+- [x] 11. HeavySkill / internalized parallel-deliberation skill
+- [x] 12. Tool-use RL / format-adherence training data
+- [x] 13. DGM-style open-ended variant archive
+- [x] 14. DeepConf / confidence-based trace pruning
+- [x] 15. Research-engineering benchmark hardening (NanoGPT-style)
 
 ## Release
-- [ ] ALPHA24_REPORT.md + ALPHA24_CHECKLIST.md
-- [ ] full gate green; all artifacts valid; push
+- [x] ALPHA24_REPORT.md + ALPHA24_CHECKLIST.md
+- [x] full gate green; all artifacts valid; push
