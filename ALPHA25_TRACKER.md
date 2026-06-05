@@ -31,3 +31,11 @@ data, escape the easy-task ceiling, and turn expensive compute into a ledger-gat
 
 ## Alpha 28 — skill-library hardening
 - [x] skill_staleness: keep/revalidate/narrow_scope/retire from age/uses/recent-lift
+
+## Measurement-trust correction (Alpha 26)
+- [x] Vendor "negative transfer" exposed as activation/infra failure (claude_code degraded)
+- [x] run_vendor_corpus_live activation-aware + test_vendor_activation
+- [x] benchmark_runner activation-aware (activation_rate + activated_solve_rate) — generalized
+
+## Alpha 32 seed — evidence-gap analyzer
+- [x] evidence_gap: prioritized gaps + experiment plan; `acp evidence-gaps` CLI
