@@ -1,0 +1,6 @@
+{
+  "experiment": "memory_poisoning",
+  "n_samples": 4,
+  "n_blocked": 4,
+  "all_blocked": true
+}

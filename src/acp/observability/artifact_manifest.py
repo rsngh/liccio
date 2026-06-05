@@ -111,6 +111,10 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/grep_vs_embedding_bakeoff.json": ["experiment", "by_strategy"],
     "evals/reports/context_strategy_ope.json": ["experiment", "chosen", "scores"],
     "evals/reports/context_reuse_frontier.json": ["experiment", "embedding_amortization"],
+    # Alpha 24 area 7 — memory lifecycle / aging
+    "evals/reports/memory_aging_benchmark.json": ["experiment", "curves", "revision_repairs"],
+    "evals/reports/memory_lifecycle.json": ["experiment", "transitions", "private_memory_isolated"],
+    "evals/reports/memory_poisoning.json": ["experiment", "n_blocked", "all_blocked"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

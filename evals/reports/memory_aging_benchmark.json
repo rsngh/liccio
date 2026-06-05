@@ -1,0 +1,36 @@
+{
+  "experiment": "memory_aging_benchmark",
+  "half_life": 30.0,
+  "curves": [
+    {
+      "idle_gap": 0.0,
+      "recall_before_aging": 1.0,
+      "recall_after_aging": 1.0,
+      "recall_after_revision": 1.0,
+      "retired": 0
+    },
+    {
+      "idle_gap": 30.0,
+      "recall_before_aging": 1.0,
+      "recall_after_aging": 1.0,
+      "recall_after_revision": 1.0,
+      "retired": 0
+    },
+    {
+      "idle_gap": 60.0,
+      "recall_before_aging": 1.0,
+      "recall_after_aging": 1.0,
+      "recall_after_revision": 1.0,
+      "retired": 0
+    },
+    {
+      "idle_gap": 120.0,
+      "recall_before_aging": 1.0,
+      "recall_after_aging": 0.0,
+      "recall_after_revision": 0.5,
+      "retired": 12
+    }
+  ],
+  "degradation_monotonic": true,
+  "revision_repairs": true
+}

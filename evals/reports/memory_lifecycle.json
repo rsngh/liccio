@@ -1,0 +1,18 @@
+{
+  "experiment": "memory_lifecycle",
+  "transitions": {
+    "written": "written",
+    "deduped": "deduped",
+    "updated": "updated",
+    "cross_scope_isolated": true
+  },
+  "scopes": [
+    "repo",
+    "organization",
+    "skill",
+    "harness",
+    "failure_pattern",
+    "reviewer_pref"
+  ],
+  "private_memory_isolated": true
+}

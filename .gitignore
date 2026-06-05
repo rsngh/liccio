@@ -69,6 +69,9 @@ evals/reports/*
 !evals/reports/grep_vs_embedding_bakeoff.json
 !evals/reports/context_strategy_ope.json
 !evals/reports/context_reuse_frontier.json
+!evals/reports/memory_aging_benchmark.json
+!evals/reports/memory_lifecycle.json
+!evals/reports/memory_poisoning.json
 !reports/live/vendor_skill_canary.json
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json
