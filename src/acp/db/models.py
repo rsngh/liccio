@@ -236,6 +236,14 @@ class SkillProvenanceRunRow(_Row):
     skill_name: Mapped[str] = mapped_column(String, index=True)
 
 
+class SkillCanaryRunRow(_Row):
+    """Durable staged-canary run (Alpha 22 WS13)."""
+
+    __tablename__ = "skill_canary_runs"
+    scope_key: Mapped[str] = mapped_column(String, index=True)
+    status: Mapped[str] = mapped_column(String, index=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)

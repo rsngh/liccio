@@ -50,6 +50,7 @@ from acp.schemas.learning import PolicyState
 from acp.schemas.measurement import AttemptOutcomeRecord
 from acp.schemas.report import Report, ReportLineage
 from acp.schemas.skill import SkillDocument
+from acp.schemas.skill_canary_run import SkillCanaryRun
 from acp.schemas.skill_evolution import SkillEvolutionEvent
 from acp.schemas.skill_provenance import SkillProvenanceRun
 from acp.schemas.trace import AgentTrace
@@ -98,6 +99,7 @@ _REGISTRY: dict[type[ACPModel], type[m._Row]] = {
     SkillDocument: m.SkillDocumentRow,
     SkillEvolutionEvent: m.SkillEvolutionEventRow,
     SkillProvenanceRun: m.SkillProvenanceRunRow,
+    SkillCanaryRun: m.SkillCanaryRunRow,
 }
 
 
