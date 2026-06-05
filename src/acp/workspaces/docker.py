@@ -81,10 +81,17 @@ class DockerWorkspaceManager:
                          metadata={"source_repo": str(repo.local_path)})
 
     def docker_run_argv(self, workspace: Workspace, command: list[str]) -> list[str]:
-        """Build the ``docker run`` argv that executes ``command`` in the sandbox."""
+        """Build the ``docker run`` argv that executes ``command`` in the sandbox.
+
+        Each container gets a UNIQUE name and the ``acp.managed=true`` label so ACP can
+        identify + prune only its own resources under contention (WS3 hardening).
+        """
+        import uuid
         policy = workspace.spec.policy
         argv = [
             "docker", "run", "--rm",
+            "--name", f"acp-run-{uuid.uuid4().hex[:16]}",
+            "--label", "acp.managed=true",
             "--network", self.network if policy.allow_network else "none",
             "-m", f"{policy.memory_mb or self.memory_mb}m",
             "--cpus", str(policy.cpus or self.cpus),
@@ -96,6 +103,26 @@ class DockerWorkspaceManager:
             argv += ["-u", "1000:1000"]
         argv += [self.image, *command]
         return argv
+
+    @staticmethod
+    def prune_acp_resources(timeout: int = 30) -> int:
+        """Remove only ACP-labeled container stragglers (WS3). Returns count removed.
+
+        Scoped to ``label=acp.managed=true`` so it never touches non-ACP containers.
+        """
+        import subprocess
+        try:
+            ls = subprocess.run(
+                ["docker", "ps", "-aq", "--filter", "label=acp.managed=true"],
+                capture_output=True, text=True, timeout=timeout, check=False)
+        except Exception:  # noqa: BLE001
+            return 0
+        ids = [i for i in ls.stdout.split() if i]
+        if not ids:
+            return 0
+        subprocess.run(["docker", "rm", "-f", *ids], capture_output=True, text=True,
+                       timeout=timeout, check=False)
+        return len(ids)
 
     # ---- workspace observation -------------------------------------------
     # The worktree is a host directory mounted read-write into the container, so

@@ -44,8 +44,17 @@ CHECK_NAMES = [
 
 
 def _run(argv: list[str], timeout: int = 60) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(  # noqa: S603 - argv list, no shell
+    # One retry on a transient daemon error (contention hardening, WS3): under
+    # parallel docker load a `docker run` can fail to acquire the daemon; a single
+    # retry turns that flake into a pass without masking a real failure.
+    last = subprocess.run(  # noqa: S603 - argv list, no shell
         argv, capture_output=True, text=True, timeout=timeout, check=False)
+    transient = ("Cannot connect to the Docker daemon", "i/o timeout",
+                 "context deadline exceeded", "resource temporarily unavailable")
+    if last.returncode != 0 and any(t in (last.stderr or "") for t in transient):
+        last = subprocess.run(  # noqa: S603
+            argv, capture_output=True, text=True, timeout=timeout, check=False)
+    return last
 
 
 def _check(name: str, passed: bool, detail: str) -> dict[str, Any]:
@@ -89,6 +98,8 @@ def run_docker_security_live() -> dict[str, Any]:
     repo.index.add(["marker.txt"])
     repo.index.commit("init")
 
+    # Clear ACP-labeled stragglers from a prior contended run before starting (WS3).
+    DockerWorkspaceManager.prune_acp_resources()
     mgr = DockerWorkspaceManager(tmp / "ws", memory_mb=256, pids_limit=64)
     r = Repository(name="seclive", local_path=str(src), default_branch="master")
     snap = RepoSnapshot(repo_id=r.id, base_commit=repo.head.commit.hexsha)
