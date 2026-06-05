@@ -1,0 +1,15 @@
+{
+  "experiment": "advisor_cost_quality_frontier",
+  "points": [
+    {
+      "arm": "executor_only",
+      "solve_rate": 1.0,
+      "cost_per_solved": 0.000167
+    },
+    {
+      "arm": "executor_plus_advisor",
+      "solve_rate": 1.0,
+      "cost_per_solved": 0.000165
+    }
+  ]
+}

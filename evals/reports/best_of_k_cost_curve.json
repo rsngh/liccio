@@ -1,0 +1,73 @@
+{
+  "experiment": "best_of_k_cost_curve",
+  "model": "gpt-4o-mini",
+  "rows": [
+    {
+      "k": 1,
+      "n_tasks": 6,
+      "n_conclusive": 5,
+      "n_solved": 5,
+      "solve_rate": 1.0,
+      "total_cost": 0.000747,
+      "cost_per_conclusive_success": 0.000149,
+      "mean_diversity": 0.8333,
+      "cohort": "graded"
+    },
+    {
+      "k": 4,
+      "n_tasks": 6,
+      "n_conclusive": 6,
+      "n_solved": 6,
+      "solve_rate": 1.0,
+      "total_cost": 0.003344,
+      "cost_per_conclusive_success": 0.000557,
+      "mean_diversity": 0.6667,
+      "cohort": "graded"
+    },
+    {
+      "k": 8,
+      "n_tasks": 6,
+      "n_conclusive": 6,
+      "n_solved": 6,
+      "solve_rate": 1.0,
+      "total_cost": 0.006447,
+      "cost_per_conclusive_success": 0.001074,
+      "mean_diversity": 0.5,
+      "cohort": "graded"
+    },
+    {
+      "k": 1,
+      "n_tasks": 3,
+      "n_conclusive": 3,
+      "n_solved": 3,
+      "solve_rate": 1.0,
+      "total_cost": 0.000497,
+      "cost_per_conclusive_success": 0.000166,
+      "mean_diversity": 1.0,
+      "cohort": "underspecified"
+    },
+    {
+      "k": 4,
+      "n_tasks": 3,
+      "n_conclusive": 3,
+      "n_solved": 3,
+      "solve_rate": 1.0,
+      "total_cost": 0.00184,
+      "cost_per_conclusive_success": 0.000613,
+      "mean_diversity": 0.9167,
+      "cohort": "underspecified"
+    },
+    {
+      "k": 8,
+      "n_tasks": 3,
+      "n_conclusive": 3,
+      "n_solved": 3,
+      "solve_rate": 1.0,
+      "total_cost": 0.003826,
+      "cost_per_conclusive_success": 0.001275,
+      "mean_diversity": 0.9167,
+      "cohort": "underspecified"
+    }
+  ],
+  "underspecified_best_of_k_lift": 0.0
+}

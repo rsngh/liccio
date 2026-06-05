@@ -1,0 +1,157 @@
+{
+  "experiment": "advisor_bakeoff",
+  "executor": "gpt-4o-mini",
+  "advisor": "gpt-4o",
+  "executor_only": {
+    "n": 3,
+    "n_conclusive": 3,
+    "n_solved": 3,
+    "solve_rate": 1.0,
+    "advisor_calls": 0,
+    "total_cost": 0.0005,
+    "cost_per_solved": 0.000167
+  },
+  "executor_plus_advisor": {
+    "n": 3,
+    "n_conclusive": 3,
+    "n_solved": 3,
+    "solve_rate": 1.0,
+    "advisor_calls": 0,
+    "total_cost": 0.000494,
+    "cost_per_solved": 0.000165
+  },
+  "lift": 0.0,
+  "handicapped_executor_only": {
+    "n": 3,
+    "n_conclusive": 3,
+    "n_solved": 1,
+    "solve_rate": 0.3333,
+    "advisor_calls": 0,
+    "total_cost": 0.000526,
+    "cost_per_solved": 0.000526
+  },
+  "handicapped_executor_plus_advisor": {
+    "n": 3,
+    "n_conclusive": 3,
+    "n_solved": 3,
+    "solve_rate": 1.0,
+    "advisor_calls": 2,
+    "total_cost": 0.006223,
+    "cost_per_solved": 0.002074
+  },
+  "handicapped_lift": 0.6667,
+  "rows": {
+    "executor_only": [
+      {
+        "task": "stats",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000187,
+        "conclusive": true
+      },
+      {
+        "task": "textutil",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000149,
+        "conclusive": true
+      },
+      {
+        "task": "bank",
+        "difficulty": "hard",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000164,
+        "conclusive": true
+      }
+    ],
+    "executor_plus_advisor": [
+      {
+        "task": "stats",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000184,
+        "conclusive": true
+      },
+      {
+        "task": "textutil",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000146,
+        "conclusive": true
+      },
+      {
+        "task": "bank",
+        "difficulty": "hard",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000164,
+        "conclusive": true
+      }
+    ],
+    "handicapped_executor_only": [
+      {
+        "task": "stats",
+        "difficulty": "medium",
+        "solved": false,
+        "advisor_calls": 0,
+        "cost": 0.000173,
+        "conclusive": true
+      },
+      {
+        "task": "textutil",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000175,
+        "conclusive": true
+      },
+      {
+        "task": "bank",
+        "difficulty": "hard",
+        "solved": false,
+        "advisor_calls": 0,
+        "cost": 0.000178,
+        "conclusive": true
+      }
+    ],
+    "handicapped_executor_plus_advisor": [
+      {
+        "task": "stats",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 1,
+        "cost": 0.00307,
+        "conclusive": true
+      },
+      {
+        "task": "textutil",
+        "difficulty": "medium",
+        "solved": true,
+        "advisor_calls": 0,
+        "cost": 0.000175,
+        "conclusive": true
+      },
+      {
+        "task": "bank",
+        "difficulty": "hard",
+        "solved": true,
+        "advisor_calls": 1,
+        "cost": 0.002978,
+        "conclusive": true
+      }
+    ],
+    "easy": {
+      "task": "divide",
+      "difficulty": "easy",
+      "solved": true,
+      "advisor_calls": 0,
+      "cost": 9.1e-05,
+      "conclusive": true
+    }
+  }
+}

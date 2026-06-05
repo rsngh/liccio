@@ -58,6 +58,11 @@ evals/reports/*
 !evals/reports/measurement_quality.json
 !reports/live/skillopt_run.json
 !evals/reports/vendor_harness_live.json
+!evals/reports/advisor_policy.json
+!evals/reports/advisor_bakeoff.json
+!evals/reports/advisor_cost_quality_frontier.json
+!evals/reports/weak_model_candidate_bakeoff.json
+!evals/reports/best_of_k_cost_curve.json
 !reports/live/vendor_skill_canary.json
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json

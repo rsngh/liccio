@@ -1,0 +1,15 @@
+{
+  "experiment": "advisor_policy",
+  "executor": "gpt-4o-mini",
+  "advisor": "gpt-4o",
+  "advisor_not_called_on_easy": true,
+  "advisor_not_called_when_executor_succeeds": true,
+  "triggers": [
+    "repeated_test_failure",
+    "high_risk",
+    "low_confidence",
+    "verifier_disagreement",
+    "ambiguous_spec"
+  ],
+  "contract": "advisor cannot edit files or call tools; advice only"
+}
