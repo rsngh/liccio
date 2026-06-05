@@ -23,3 +23,11 @@ data, escape the easy-task ceiling, and turn expensive compute into a ledger-gat
 
 ## Release
 - [ ] ALPHA25_REPORT.md + checklist; full gate; push
+
+## Alpha 26 — vendor corpus (vendor proof depth)
+- [x] run_vendor_corpus_live: claude_code over full graded+hard corpus -> capability matrix
+- [x] LIVE: baseline 0.909; full-suite-discipline skill causes -0.636 NEGATIVE TRANSFER
+      (helped weak model in A23, hurts strong vendor harness) -> governance blocks deploy
+
+## Alpha 28 — skill-library hardening
+- [x] skill_staleness: keep/revalidate/narrow_scope/retire from age/uses/recent-lift

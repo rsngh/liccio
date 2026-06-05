@@ -6,9 +6,9 @@
 > managed retrieval/observability backends are optional and partially stubbed.
 
 Last updated: 2026-06-05 (Alpha 25 — production coherence & evidence truth). Tests: 1098 passing, 7 skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
-`ruff` + `mypy` clean across 281 source files; see `reports/coverage.txt`. Gate:
+`ruff` + `mypy` clean across 282 source files; see `reports/coverage.txt`. Gate:
 `uv run pytest -q && uv run ruff check . && uv run mypy src && uv run alembic
-upgrade head && acp reports validate` (86 artifacts valid).
+upgrade head && acp reports validate` (87 artifacts valid).
 
 **Round 12 — measurement-trust layer.** ACP now classifies every attempt into an
 `AttemptOutcome` (conclusive task signal vs infra/inconclusive noise) so infra

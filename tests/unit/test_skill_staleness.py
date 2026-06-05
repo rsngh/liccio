@@ -13,8 +13,9 @@ from acp.training.skill_staleness import (
 
 
 def _rec(**kw):
-    base = dict(skill_id="s1", last_validated_at=0.0, validated_gain=0.2,
-                uses_since_validation=10, recent_solve_rate=0.9, baseline_solve_rate=0.7)
+    base = {"skill_id": "s1", "last_validated_at": 0.0, "validated_gain": 0.2,
+            "uses_since_validation": 10, "recent_solve_rate": 0.9,
+            "baseline_solve_rate": 0.7}
     base.update(kw)
     return SkillUsageRecord(**base)
 
