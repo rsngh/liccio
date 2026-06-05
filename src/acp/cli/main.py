@@ -645,6 +645,22 @@ def health_snapshot(mode: str = "lab") -> None:
         raise typer.Exit(1)
 
 
+@app.command("evidence-gaps")
+def evidence_gaps(mode: str = "production", budget: int = 0) -> None:
+    """What evidence is missing + what ACP should test next (Alpha 32).
+
+    Reads the control-plane health snapshot, reports prioritized evidence gaps, and a
+    de-duplicated experiment plan. ``--budget N`` caps the plan to the top N experiments.
+    """
+    from acp.api.service import AppService
+    from acp.observability.evidence_gap import analyze_evidence_gaps, plan_experiments
+
+    health = AppService().control_plane_health(mode=mode)
+    gaps = analyze_evidence_gaps(health)
+    plan = plan_experiments(health, budget=(budget or None))
+    console.print_json(data={"gaps": [g.to_dict() for g in gaps], **plan.to_dict()})
+
+
 @train_app.command("schedule-run")
 def train_schedule_run() -> None:
     """Run the continuous-learning job batch once (idempotent, fault-tolerant)."""
