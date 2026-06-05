@@ -1,1 +1,1 @@
-1063 passed, 5 skipped, 8 infra-flaky (docker daemon intermittency + pytest-in-pytest contention; all pass isolated)
+1098 passed, 7 skipped, 1 warning in 1032.04s (live-openai-embedder transient blip, passes isolated)
