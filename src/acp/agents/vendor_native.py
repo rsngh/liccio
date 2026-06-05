@@ -116,6 +116,8 @@ class VendorRunResult:
     outcome: str = "inconclusive"
     skill_injected: bool = False
     skill_used_observed: str = "unknown"  # "true" | "false" | "unknown"
+    task_type: str = "bugfix"
+    task_name: str = "smoke"
 
     def to_dict(self) -> dict:
         return dict(self.__dict__)
@@ -123,7 +125,7 @@ class VendorRunResult:
     def to_cell(self) -> dict:
         """A measurement-trust attempt cell for classification / matrix eligibility (WS11)."""
         return {
-            "adapter": self.harness, "task_type": "bugfix", "is_harness": True,
+            "adapter": self.harness, "task_type": self.task_type, "is_harness": True,
             "success": self.no_patch_solve,
             "status": "timed_out" if self.timed_out else (
                 "succeeded" if self.no_patch_solve else "failed"),
@@ -157,16 +159,29 @@ class VendorNativeHarness:
         prompt is prefixed with it (WS10 skill injection), so the vendor harness can read
         and follow it; ``skill_used_observed`` records whether use was observed.
         """
+        return self.run_task(repo, _PROMPT, timeout_s=timeout_s,
+                             skill_content=skill_content)
+
+    def run_task(self, repo: Path, prompt: str, *, task_type: str = "bugfix",
+                 task_name: str = "smoke", timeout_s: int = 240,
+                 skill_content: str | None = None) -> VendorRunResult:
+        """Drive the harness on an arbitrary bugfix ``prompt`` in ``repo`` (Alpha 23 WS3).
+
+        Generalizes :meth:`run_smoke` to any task (e.g. the graded benchmark suite):
+        captures the same full contract — version/command/cwd/timeout/diff/pytest/secret-
+        scan — and classifies into an AttemptOutcome. ``skill_content`` injects SKILL.md
+        and prefixes the prompt exactly as the smoke path does.
+        """
         ver = self.version() or "unknown"
         res = VendorRunResult(harness=self.spec.name, version=ver, cwd=str(repo),
-                              timeout_s=timeout_s)
+                              timeout_s=timeout_s, task_type=task_type,
+                              task_name=task_name)
         if self.spec.argv_fn is None:
             res.error = "not a task runner (health-check only)"
             return res
-        prompt = _PROMPT
         if skill_content and skill_content.strip():
             (repo / "SKILL.md").write_text(skill_content)
-            prompt = (f"Follow this skill:\n{skill_content}\n\n{_PROMPT}")
+            prompt = (f"Follow this skill:\n{skill_content}\n\n{prompt}")
             res.skill_injected = True
         argv = self.spec.argv_fn(repo, prompt)
         res.command = argv
