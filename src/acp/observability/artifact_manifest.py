@@ -76,6 +76,10 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "reports/live/skill_transfer.json": ["experiment", "baseline_score", "transfer_gain"],
     # Round 17 — online A/B skill canary
     "reports/live/skill_canary.json": ["experiment", "control_rate", "canary_rate", "promote"],
+    # Alpha 22 WS16 — vendor + SkillOpt live canary
+    "reports/live/vendor_skill_canary.json": ["experiment", "harness", "decision"],
+    # Alpha 22 WS18 — cross-harness vendor transfer
+    "reports/live/cross_harness_vendor_transfer.json": ["experiment", "scope_recommendation", "verdicts"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

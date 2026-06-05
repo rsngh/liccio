@@ -58,3 +58,5 @@ evals/reports/*
 !evals/reports/measurement_quality.json
 !reports/live/skillopt_run.json
 !evals/reports/vendor_harness_live.json
+!reports/live/vendor_skill_canary.json
+!reports/live/cross_harness_vendor_transfer.json

@@ -1,0 +1,18 @@
+{
+  "experiment": "ws16_vendor_skill_canary",
+  "harness": "claude_code",
+  "skill": "# bugfix skill\n- After editing, run the project's tests and fix any failures before finishing.\n",
+  "control_rate": 1.0,
+  "canary_rate": 1.0,
+  "control_n": 3,
+  "canary_n": 3,
+  "lift": 0.0,
+  "p_value": 0.5,
+  "prob_canary_better": 0.5,
+  "contaminated": false,
+  "promote": false,
+  "decision": "hold",
+  "reasons": [
+    "not significant (p=0.5 >= alpha=0.05)"
+  ]
+}
