@@ -1,0 +1,31 @@
+{
+  "experiment": "ws5_benchmark_skill_ab",
+  "harness": "claude_code",
+  "skill": "# verify-and-edge-cases bugfix skill\n- Before finishing, run the FULL test suite with `python -m pytest -q`.\n- For EVERY failing test, fix the code and re-run until ALL tests pass.\n- Consider edge cases explicitly: empty input, boundaries/off-by-one, ordering,\n  and special forms (e.g. subtractive notation). Do not declare done early.\n",
+  "overall": {
+    "baseline": 1.0,
+    "with_skill": 1.0,
+    "lift": 0.0,
+    "p_value": 0.5,
+    "prob_better": 0.5
+  },
+  "by_difficulty": {
+    "easy": {
+      "baseline": 1.0,
+      "with_skill": 1.0
+    },
+    "medium": {
+      "baseline": 1.0,
+      "with_skill": 1.0
+    },
+    "hard": {
+      "baseline": 1.0,
+      "with_skill": 1.0
+    }
+  },
+  "promote": false,
+  "decision": "hold",
+  "reasons": [
+    "not significant (p=0.5 >= alpha=0.05)"
+  ]
+}
