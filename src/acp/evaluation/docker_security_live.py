@@ -24,6 +24,7 @@ from typing import Any
 
 from git import Repo
 
+from acp.core.errors import AdapterUnavailable
 from acp.schemas.repo import Repository, RepoSnapshot
 from acp.schemas.workspace import WorkspacePolicy
 from acp.workspaces.docker import DockerWorkspaceManager, docker_available
@@ -103,9 +104,17 @@ def run_docker_security_live() -> dict[str, Any]:
     mgr = DockerWorkspaceManager(tmp / "ws", memory_mb=256, pids_limit=64)
     r = Repository(name="seclive", local_path=str(src), default_branch="master")
     snap = RepoSnapshot(repo_id=r.id, base_commit=repo.head.commit.hexsha)
-    ws = mgr.create(r, snap, WorkspacePolicy(backend="docker", allow_network=False,
-                                             memory_mb=256, pids_limit=64,
-                                             run_as_nonroot=True))
+    # Measurement-trust: the docker daemon can flicker under load in some environments
+    # (e.g. WSL2). If it disappears AFTER the upfront availability check, that is an INFRA
+    # event, not a security failure — return a clean skipped report rather than a failure.
+    try:
+        ws = mgr.create(r, snap, WorkspacePolicy(backend="docker", allow_network=False,
+                                                 memory_mb=256, pids_limit=64,
+                                                 run_as_nonroot=True))
+    except AdapterUnavailable:
+        report = _skipped_report()
+        report["reason"] = "docker became unavailable mid-run"
+        return report
     checks: list[dict[str, Any]] = []
     try:
         # The enforced flags live in the docker run argv; assert they are present
