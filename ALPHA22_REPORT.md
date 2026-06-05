@@ -10,7 +10,7 @@ missing.
 
 | WS | Title | What shipped |
 |----|-------|--------------|
-| 1 | Release truth | `acp reports sync-status`; ALPHA21_CHECKLIST; counts agree (961/46/258). |
+| 1 | Release truth | `acp reports sync-status`; ALPHA21_CHECKLIST; counts agree (960/48/258). |
 | 3 | Docker contention hardening | unique `acp-run-<uuid>` names + `acp.managed=true` labels + ACP-only prune + transient retry. Docker tests pass repeatedly. |
 | 5 | Vendor health detector | `detect_vendor_health()` — codex/claude/openhands {available, version}; unavailable skip. |
 | 6 | No-patch smoke fixture | `build_smoke_fixture()` — a real failing-divide repo (verified fail→fix→pass). |
@@ -43,7 +43,7 @@ missing.
 ## Gate
 
 ```
-uv run pytest -q --timeout=300   # 961 passed, 5 skipped
+uv run pytest -q --timeout=300   # 960 passed, 5 skipped
 uv run ruff check . && uv run mypy src   # clean (258 src)
 uv run alembic upgrade head      # OK (skill_canary_runs migration)
 uv run acp reports validate      # artifacts valid
