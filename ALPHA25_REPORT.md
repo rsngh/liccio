@@ -44,6 +44,20 @@ correctly **withheld** escalation and reported best-of-k/advisor marginal value 
 positive — spending compute only where evidence justifies it (paired with `hard_best_of_k`'s
 5-rep 0.84 estimate showing where it would escalate).
 
+## Vendor corpus + a measurement-trust self-catch (Alpha 26)
+
+`run_vendor_corpus_live` runs Claude Code across the full corpus. An early run reported a
+dramatic -0.636 "negative transfer" of the discipline skill. A live re-check exposed it as a
+FALSE finding: a vendor no-op return (CLI degraded/rate-limited -> no diff) classifies as
+`HARNESS_ACTIVATION_FAILURE`, which is conclusive, so it dragged solve rate to 0 as if the
+model failed. The with-skill arm ran second (more cumulative calls -> rate limits), so its
+0/7 was activation failure, not the skill. The experiment is now activation-aware: it scores
+solve rate over ACTIVATED attempts only and refuses to report a lift unless both arms
+activated. The re-run confirmed the catch (baseline activation 0.0 -- claude_code fully
+degraded; on tasks that DID activate with the skill, solve was 1.0, so the skill does not
+hurt). `test_vendor_activation` proves the system distinguishes a no-diff activation failure
+from a real task failure -- measurement-trust catching a false finding, my own.
+
 ## Honest synthesis
 
 Alpha 24 found best-of-k withholds on easy tasks (k=1 optimal); Alpha 25 shows it lifts on
