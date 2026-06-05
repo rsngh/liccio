@@ -18,8 +18,9 @@ class _StubHarness:
                  skill_content=None):
         res = VendorRunResult(harness="stub", version="v", task_type=task_type,
                               task_name=task_name)
-        if task_name == "roman":          # a conclusive failure
+        if task_name == "roman":          # a conclusive failure (edited but wrong)
             res.no_patch_solve = False
+            res.diff_captured = True
             res.outcome = "task_failure"
         elif task_name == "merge_intervals":   # an infra timeout (inconclusive)
             res.timed_out = True
@@ -51,3 +52,29 @@ def test_skill_flag_recorded() -> None:
     assert result.skill_injected is True
     d = result.to_dict()
     assert d["by_difficulty"] and len(d["tasks"]) == len(BENCH_TASKS)
+
+
+class _NoOpHarness:
+    """A degraded harness that returns immediately without editing (activation failure)."""
+
+    spec = SimpleNamespace(name="degraded")
+
+    def run_task(self, repo, prompt, *, task_type, task_name, timeout_s, skill_content=None):
+        res = VendorRunResult(harness="degraded", version="v", task_type=task_type,
+                              task_name=task_name)
+        res.no_patch_solve = False
+        res.diff_captured = False   # no work done -> activation failure, not task failure
+        res.outcome = "task_failure"
+        return res
+
+
+def test_runner_is_activation_aware() -> None:
+    # A degraded harness (no diffs) must report low activation, and the activated solve rate
+    # must not read a no-op as a capability failure (Alpha 26 measurement-trust).
+    result = run_benchmark(_NoOpHarness(), timeout_s=5)
+    assert result.activation_rate == 0.0          # nothing activated
+    assert result.activated_solve_rate == 0.0     # no activated attempts to score
+    # a healthy stub activates on every solved/edited task
+    healthy = run_benchmark(_StubHarness(), timeout_s=5)
+    assert healthy.activation_rate > 0.0
+    assert "activation_rate" in healthy.to_dict()

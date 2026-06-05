@@ -27,6 +27,7 @@ class TaskResult:
     outcome: str
     wall_time_s: float
     secret_leak: bool
+    activated: bool = True       # harness actually edited/solved (vs a no-op return)
 
 
 @dataclass
@@ -39,11 +40,15 @@ class BenchmarkResult:
     contaminated: bool
     by_difficulty: dict = field(default_factory=dict)  # diff -> {solve_rate, n_*}
     tasks: list = field(default_factory=list)          # TaskResult dicts
+    activation_rate: float = 1.0                       # share of attempts that activated
+    activated_solve_rate: float = 0.0                  # solve rate over activated attempts
 
     def to_dict(self) -> dict:
         return {
             "harness": self.harness, "skill_injected": self.skill_injected,
             "overall_solve_rate": self.overall_solve_rate,
+            "activation_rate": self.activation_rate,
+            "activated_solve_rate": self.activated_solve_rate,
             "n_conclusive": self.n_conclusive, "n_attempts": self.n_attempts,
             "contaminated": self.contaminated, "by_difficulty": self.by_difficulty,
             "tasks": self.tasks,
@@ -82,11 +87,20 @@ def run_benchmark(harness: VendorNativeHarness, *, tasks: list[BenchTask] | None
                 name=task.name, difficulty=task.difficulty, solved=res.no_patch_solve,
                 conclusive=res.outcome in ("task_success", "task_failure"),
                 outcome=res.outcome, wall_time_s=res.wall_time_s,
-                secret_leak=res.secret_leak).__dict__)
+                secret_leak=res.secret_leak,
+                activated=bool(res.diff_captured or res.no_patch_solve)).__dict__)
     overall = _agg(all_cells)
     by_diff = {d: _agg(cells_by_diff[d]) for d in DIFFICULTIES if cells_by_diff[d]}
+    # Activation-aware view (Alpha 26): a vendor no-op (no diff, no solve) is an activation
+    # failure, not a capability failure. Report the share that activated and the solve rate
+    # over only those — so a degraded CLI can never look like a low-capability result.
+    activated = [t for t in task_results if t["activated"]]
+    activation_rate = round(len(activated) / len(task_results), 4) if task_results else 1.0
+    activated_solve = (round(sum(t["solved"] for t in activated) / len(activated), 4)
+                       if activated else 0.0)
     return BenchmarkResult(
         harness=harness.spec.name, skill_injected=bool(skill_content),
         overall_solve_rate=overall["solve_rate"], n_conclusive=overall["n_conclusive"],
         n_attempts=overall["n_attempts"], contaminated=overall["contaminated"],
-        by_difficulty=by_diff, tasks=task_results)
+        by_difficulty=by_diff, tasks=task_results, activation_rate=activation_rate,
+        activated_solve_rate=activated_solve)
