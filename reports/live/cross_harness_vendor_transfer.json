@@ -1,0 +1,24 @@
+{
+  "experiment": "ws18_cross_harness_vendor_transfer",
+  "skill": "# bugfix skill\n- After editing, run the project's tests and fix any failures before finishing.\n",
+  "source_harness": "openai_harness",
+  "source_lift": 0.5,
+  "targets": {
+    "claude_code": {
+      "available": true,
+      "baseline": 1.0,
+      "with_skill": 1.0,
+      "gain": 0.0
+    }
+  },
+  "scope_recommendation": "keep source-scoped: transfer not established",
+  "verdicts": [
+    {
+      "target": "claude_code",
+      "transfer_gain": 0.0,
+      "portable": false,
+      "negative_transfer": false,
+      "recommendation": "weak transfer to claude_code -> keep source-scoped"
+    }
+  ]
+}
