@@ -1,0 +1,85 @@
+{
+  "experiment": "ws4_benchmark_baseline",
+  "harness": "claude_code",
+  "skill_injected": false,
+  "overall_solve_rate": 0.6667,
+  "n_conclusive": 6,
+  "n_attempts": 6,
+  "contaminated": false,
+  "by_difficulty": {
+    "easy": {
+      "solve_rate": 1.0,
+      "n_conclusive": 2,
+      "n_attempts": 2,
+      "contaminated": false
+    },
+    "medium": {
+      "solve_rate": 0.5,
+      "n_conclusive": 2,
+      "n_attempts": 2,
+      "contaminated": false
+    },
+    "hard": {
+      "solve_rate": 0.5,
+      "n_conclusive": 2,
+      "n_attempts": 2,
+      "contaminated": false
+    }
+  },
+  "tasks": [
+    {
+      "name": "divide",
+      "difficulty": "easy",
+      "solved": true,
+      "conclusive": true,
+      "outcome": "task_success",
+      "wall_time_s": 11.8,
+      "secret_leak": "[REDACTED]"
+    },
+    {
+      "name": "factorial",
+      "difficulty": "easy",
+      "solved": true,
+      "conclusive": true,
+      "outcome": "task_success",
+      "wall_time_s": 11.24,
+      "secret_leak": "[REDACTED]"
+    },
+    {
+      "name": "slugify",
+      "difficulty": "medium",
+      "solved": false,
+      "conclusive": true,
+      "outcome": "task_failure",
+      "wall_time_s": 69.74,
+      "secret_leak": "[REDACTED]"
+    },
+    {
+      "name": "chunk",
+      "difficulty": "medium",
+      "solved": true,
+      "conclusive": true,
+      "outcome": "task_success",
+      "wall_time_s": 89.67,
+      "secret_leak": "[REDACTED]"
+    },
+    {
+      "name": "roman",
+      "difficulty": "hard",
+      "solved": false,
+      "conclusive": true,
+      "outcome": "task_failure",
+      "wall_time_s": 158.45,
+      "secret_leak": "[REDACTED]"
+    },
+    {
+      "name": "merge_intervals",
+      "difficulty": "hard",
+      "solved": true,
+      "conclusive": true,
+      "outcome": "task_success",
+      "wall_time_s": 13.59,
+      "secret_leak": "[REDACTED]"
+    }
+  ]
+}

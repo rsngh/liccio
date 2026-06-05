@@ -81,6 +81,12 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 22 WS18 — cross-harness vendor transfer
     "reports/live/cross_harness_vendor_transfer.json": [
         "experiment", "scope_recommendation", "verdicts"],
+    # Alpha 23 WS4 — graded benchmark baseline (capability by difficulty)
+    "reports/live/benchmark_baseline.json": [
+        "experiment", "harness", "overall_solve_rate", "by_difficulty"],
+    # Alpha 23 WS5 — benchmark skill A/B (lift by difficulty)
+    "reports/live/benchmark_skill_ab.json": [
+        "experiment", "harness", "overall", "by_difficulty", "decision"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
