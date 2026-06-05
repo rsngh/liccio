@@ -1,0 +1,12 @@
+{
+  "experiment": "topology_policy_canary",
+  "candidate_controller": "sp=1,sr=1,bp=0,lv=0",
+  "improved_offline": true,
+  "requires_canary_before_promotion": true,
+  "guardrails": [
+    "security never skips strict verify",
+    "ambiguous routes to advisor first",
+    "staged canary 5/25/50/100 with rollback"
+  ],
+  "auto_deployed": false
+}

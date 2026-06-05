@@ -1,0 +1,118 @@
+{
+  "experiment": "topology_ope",
+  "n_traces": 27,
+  "candidates": [
+    {
+      "key": "sp=1,sr=1,bp=0,lv=0",
+      "est_cost": 1.8519,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=1,bp=0,lv=0",
+      "est_cost": 2.1481,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=0,bp=0,lv=0",
+      "est_cost": 2.1481,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=1,bp=0,lv=1",
+      "est_cost": 2.2778,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=1,bp=1,lv=0",
+      "est_cost": 2.2963,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=0,bp=0,lv=0",
+      "est_cost": 2.4444,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=1,bp=0,lv=1",
+      "est_cost": 2.5741,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=0,bp=0,lv=1",
+      "est_cost": 2.5741,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=1,bp=1,lv=0",
+      "est_cost": 2.5926,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=0,bp=1,lv=0",
+      "est_cost": 2.5926,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=1,bp=1,lv=1",
+      "est_cost": 2.7222,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=0,bp=0,lv=1",
+      "est_cost": 2.8704,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=0,bp=1,lv=0",
+      "est_cost": 2.8889,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=1,bp=1,lv=1",
+      "est_cost": 3.0185,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=1,sr=0,bp=1,lv=1",
+      "est_cost": 3.0185,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    },
+    {
+      "key": "sp=0,sr=0,bp=1,lv=1",
+      "est_cost": 3.3148,
+      "est_success": 0.9259,
+      "safe": true,
+      "violations": []
+    }
+  ]
+}

@@ -103,6 +103,10 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/advisor_policy.json": ["experiment", "executor", "advisor"],
     "evals/reports/advisor_bakeoff.json": ["experiment", "executor_only", "executor_plus_advisor"],
     "evals/reports/advisor_cost_quality_frontier.json": ["experiment", "points"],
+    # Alpha 24 area 3 — topology controller search
+    "evals/reports/topology_controller_search.json": ["experiment", "baseline", "best", "improved"],
+    "evals/reports/topology_ope.json": ["experiment", "candidates"],
+    "evals/reports/topology_policy_canary.json": ["experiment", "requires_canary_before_promotion"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

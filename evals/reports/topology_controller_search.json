@@ -1,0 +1,21 @@
+{
+  "experiment": "topology_controller_search",
+  "n_traces": 27,
+  "baseline": {
+    "key": "sp=0,sr=0,bp=0,lv=1",
+    "est_cost": 2.8704,
+    "est_success": 0.9259,
+    "safe": true,
+    "violations": []
+  },
+  "best": {
+    "key": "sp=1,sr=1,bp=0,lv=0",
+    "est_cost": 1.8519,
+    "est_success": 0.9259,
+    "safe": true,
+    "violations": []
+  },
+  "improved": true,
+  "n_candidates": 16,
+  "n_safe": 16
+}

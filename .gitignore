@@ -63,6 +63,9 @@ evals/reports/*
 !evals/reports/advisor_cost_quality_frontier.json
 !evals/reports/weak_model_candidate_bakeoff.json
 !evals/reports/best_of_k_cost_curve.json
+!evals/reports/topology_controller_search.json
+!evals/reports/topology_ope.json
+!evals/reports/topology_policy_canary.json
 !reports/live/vendor_skill_canary.json
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json
