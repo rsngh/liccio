@@ -66,3 +66,27 @@ def test_specs_have_argv_for_task_runners() -> None:
     assert VENDOR_SPECS["codex_cli"].argv_fn is not None
     assert VENDOR_SPECS["claude_code"].argv_fn is not None
     assert VENDOR_SPECS["openhands"].argv_fn is None  # health-check only
+
+
+def test_vendor_cell_classifies_via_measurement_trust() -> None:
+    # WS11: a VendorRunResult maps to a measurement-trust cell that the real classifier
+    # agrees with (success conclusive; timeout infra/inconclusive).
+    from acp.evaluation.learning_gate import eligible_for_quality
+    from acp.evaluation.measurement_hygiene import classify_attempt
+
+    solved = VendorRunResult(harness="codex_cli", version="x", no_patch_solve=True,
+                             pytest_passed=True, diff_captured=True)
+    cell = solved.to_cell()
+    assert classify_attempt(cell).value == "task_success"
+    assert eligible_for_quality(cell)  # conclusive success updates quality
+
+    timed = VendorRunResult(harness="codex_cli", version="x", timed_out=True,
+                            error="timeout")
+    tcell = timed.to_cell()
+    assert classify_attempt(tcell).is_infra and not eligible_for_quality(tcell)
+
+
+def test_skill_injection_fields_default_and_set() -> None:
+    # WS10: skill injection writes SKILL.md + records injected/used.
+    r = VendorRunResult(harness="codex_cli", version="x")
+    assert r.skill_injected is False and r.skill_used_observed == "unknown"

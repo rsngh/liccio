@@ -114,9 +114,25 @@ class VendorRunResult:
     timed_out: bool = False
     error: str | None = None
     outcome: str = "inconclusive"
+    skill_injected: bool = False
+    skill_used_observed: str = "unknown"  # "true" | "false" | "unknown"
 
     def to_dict(self) -> dict:
         return dict(self.__dict__)
+
+    def to_cell(self) -> dict:
+        """A measurement-trust attempt cell for classification / matrix eligibility (WS11)."""
+        return {
+            "adapter": self.harness, "task_type": "bugfix", "is_harness": True,
+            "success": self.no_patch_solve,
+            "status": "timed_out" if self.timed_out else (
+                "succeeded" if self.no_patch_solve else "failed"),
+            "timed_out": self.timed_out, "error": self.error,
+            "tool_calls": 1 if (self.diff_captured or self.no_patch_solve) else 0,
+            "commands": 1 if self.pytest_passed else 0,
+            "file_reads": 1 if self.diff_captured else 0,
+            "cost_usd": 0.0,
+        }
 
 
 class VendorNativeHarness:
@@ -133,15 +149,26 @@ class VendorNativeHarness:
     def version(self) -> str | None:
         return detect_vendor_health().get(self.spec.name, {}).get("version")
 
-    def run_smoke(self, repo: Path, *, timeout_s: int = 240) -> VendorRunResult:
-        """Run the no-patch fix on ``repo`` and capture the full contract."""
+    def run_smoke(self, repo: Path, *, timeout_s: int = 240,
+                  skill_content: str | None = None) -> VendorRunResult:
+        """Run the no-patch fix on ``repo`` and capture the full contract.
+
+        If ``skill_content`` is given it is written as SKILL.md into the repo and the
+        prompt is prefixed with it (WS10 skill injection), so the vendor harness can read
+        and follow it; ``skill_used_observed`` records whether use was observed.
+        """
         ver = self.version() or "unknown"
         res = VendorRunResult(harness=self.spec.name, version=ver, cwd=str(repo),
                               timeout_s=timeout_s)
         if self.spec.argv_fn is None:
             res.error = "not a task runner (health-check only)"
             return res
-        argv = self.spec.argv_fn(repo, _PROMPT)
+        prompt = _PROMPT
+        if skill_content and skill_content.strip():
+            (repo / "SKILL.md").write_text(skill_content)
+            prompt = (f"Follow this skill:\n{skill_content}\n\n{_PROMPT}")
+            res.skill_injected = True
+        argv = self.spec.argv_fn(repo, prompt)
         res.command = argv
         out_text = ""
         t0 = time.monotonic()
@@ -165,6 +192,12 @@ class VendorNativeHarness:
         res.no_patch_solve = res.pytest_passed
         res.secret_leak = _secret_leak(out_text + diff + pt.stdout)
         res.outcome = _classify_vendor(res)
+        # WS10: did the harness appear to USE the injected skill? Heuristic — it
+        # referenced SKILL.md in its output, or it ran the tests (the skill's directive).
+        if res.skill_injected:
+            referenced = "SKILL.md" in out_text or "skill" in out_text.lower()
+            res.skill_used_observed = "true" if (referenced or res.pytest_passed) \
+                else "unknown"
         return res
 
 
