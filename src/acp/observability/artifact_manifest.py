@@ -144,6 +144,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
         "experiment", "mean_recovered", "tuning_penalized"],
     "evals/reports/algorithmic_progress_report.json": [
         "experiment", "rewards_algorithmic_over_tuning"],
+    # Alpha 25 test F — best-of-k on genuinely hard tasks
+    "evals/reports/hard_best_of_k.json": [
+        "experiment", "single_shot_rate", "best_of_k_rate", "ceiling_escaped"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
