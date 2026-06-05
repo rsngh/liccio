@@ -1,0 +1,16 @@
+{
+  "experiment": "ws10_underspecified_skill_ab",
+  "harness": "claude_code",
+  "skill": "# full-suite discipline skill\n- The task may mention ONE failing test, but other tests can also be broken.\n- Always run the FULL suite with `python -m pytest -q` and fix EVERY failing test,\n  not just the one named, before finishing.\n",
+  "baseline_rate": 0.4444,
+  "skill_rate": 1.0,
+  "control_n": 9,
+  "canary_n": 9,
+  "lift": 0.5556,
+  "p_value": 0.0043,
+  "prob_better": 0.9969,
+  "contaminated": false,
+  "promote": true,
+  "decision": "promote",
+  "reasons": []
+}

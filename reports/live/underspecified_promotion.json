@@ -1,0 +1,36 @@
+{
+  "experiment": "ws11_underspecified_promotion",
+  "harness": "claude_code",
+  "baseline_rate": 0.4444,
+  "skill_rate": 1.0,
+  "lift": 0.5556,
+  "prob_better": 0.9969,
+  "ab_decision": "promote",
+  "stages": [
+    {
+      "stage": 0.05,
+      "decision": "advance",
+      "breaches": []
+    },
+    {
+      "stage": 0.25,
+      "decision": "advance",
+      "breaches": []
+    },
+    {
+      "stage": 0.5,
+      "decision": "advance",
+      "breaches": []
+    },
+    {
+      "stage": 1.0,
+      "decision": "advance",
+      "breaches": []
+    }
+  ],
+  "promoted": true,
+  "deployed": true,
+  "active_skill": "full_suite_discipline",
+  "canary_run_status": "promoted",
+  "guardrails_clean": true
+}

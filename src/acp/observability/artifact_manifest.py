@@ -90,6 +90,12 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 23 WS8 — timeout-confound (apparent gap that closes when budget relaxed)
     "reports/live/timeout_confound.json": [
         "experiment", "harness", "low", "high", "verdict"],
+    # Alpha 23 WS10 — underspecified-task skill A/B (skill discipline, not timeout)
+    "reports/live/underspecified_skill_ab.json": [
+        "experiment", "harness", "baseline_rate", "skill_rate", "decision"],
+    # Alpha 23 WS11 — proven skill promoted via staged canary (loop closed live)
+    "reports/live/underspecified_promotion.json": [
+        "experiment", "promoted", "deployed", "active_skill", "stages"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

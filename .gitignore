@@ -63,3 +63,5 @@ evals/reports/*
 !reports/live/benchmark_baseline.json
 !reports/live/benchmark_skill_ab.json
 !reports/live/timeout_confound.json
+!reports/live/underspecified_skill_ab.json
+!reports/live/underspecified_promotion.json
