@@ -149,6 +149,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
         "experiment", "single_shot_rate", "best_of_k_rate", "ceiling_escaped"],
     # Alpha 29 — compute-escalation policy bakeoff
     "evals/reports/compute_policy_bakeoff.json": ["experiment", "arms", "per_task"],
+    # Alpha 26 — vendor-native corpus capability matrix
+    "evals/reports/vendor_capability_matrix.json": [
+        "experiment", "harness", "baseline", "with_skill"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
