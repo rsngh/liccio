@@ -1,0 +1,25 @@
+{
+  "experiment": "grep_vs_embedding_bakeoff",
+  "by_strategy": {
+    "grep": {
+      "hits": 6,
+      "tokens": 141,
+      "hit_rate": 1.0,
+      "mean_tokens": 23.5
+    },
+    "embedding": {
+      "hits": 6,
+      "tokens": 141,
+      "hit_rate": 1.0,
+      "mean_tokens": 23.5
+    },
+    "hybrid": {
+      "hits": 6,
+      "tokens": 141,
+      "hit_rate": 1.0,
+      "mean_tokens": 23.5
+    },
+    "n_tasks": 6
+  },
+  "note": "retrieval hit-rate as a downstream-context-quality proxy (free)"
+}

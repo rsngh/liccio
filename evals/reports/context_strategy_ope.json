@@ -1,0 +1,28 @@
+{
+  "experiment": "context_strategy_ope",
+  "chosen": "grep",
+  "reason": "grep: cost-adjusted reward 0.99977 (success 1.0 at cost 4.6e-05); embedding not chosen (reward 0.99477 <= 0.99977 at higher cost 0.001046)",
+  "scores": [
+    {
+      "strategy": "grep",
+      "downstream_success": 1.0,
+      "cost": 4.6e-05,
+      "cost_adjusted_reward": 0.99977,
+      "latency_s": 0.1
+    },
+    {
+      "strategy": "embedding",
+      "downstream_success": 1.0,
+      "cost": 0.001046,
+      "cost_adjusted_reward": 0.99477,
+      "latency_s": 0.5
+    },
+    {
+      "strategy": "hybrid",
+      "downstream_success": 1.0,
+      "cost": 4.6e-05,
+      "cost_adjusted_reward": 0.99977,
+      "latency_s": 0.4
+    }
+  ]
+}

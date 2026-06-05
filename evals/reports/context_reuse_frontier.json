@@ -1,0 +1,21 @@
+{
+  "experiment": "context_reuse_frontier",
+  "embedding_amortization": [
+    {
+      "reuse_count": 1,
+      "chosen": "grep"
+    },
+    {
+      "reuse_count": 10,
+      "chosen": "grep"
+    },
+    {
+      "reuse_count": 100,
+      "chosen": "grep"
+    },
+    {
+      "reuse_count": 1000,
+      "chosen": "grep"
+    }
+  ]
+}

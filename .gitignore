@@ -66,6 +66,9 @@ evals/reports/*
 !evals/reports/topology_controller_search.json
 !evals/reports/topology_ope.json
 !evals/reports/topology_policy_canary.json
+!evals/reports/grep_vs_embedding_bakeoff.json
+!evals/reports/context_strategy_ope.json
+!evals/reports/context_reuse_frontier.json
 !reports/live/vendor_skill_canary.json
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json

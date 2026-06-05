@@ -107,6 +107,10 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/topology_controller_search.json": ["experiment", "baseline", "best", "improved"],
     "evals/reports/topology_ope.json": ["experiment", "candidates"],
     "evals/reports/topology_policy_canary.json": ["experiment", "requires_canary_before_promotion"],
+    # Alpha 24 area 6 — context strategy (grep vs embedding vs hybrid)
+    "evals/reports/grep_vs_embedding_bakeoff.json": ["experiment", "by_strategy"],
+    "evals/reports/context_strategy_ope.json": ["experiment", "chosen", "scores"],
+    "evals/reports/context_reuse_frontier.json": ["experiment", "embedding_amortization"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
