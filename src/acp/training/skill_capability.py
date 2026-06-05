@@ -73,3 +73,25 @@ def best_skill_for(
     if not matching:
         return None
     return max(matching, key=lambda c: (c.success_rate, -c.cost))
+
+
+def skill_capability_table(cells: list[Any]) -> dict:
+    """Answer 'which skill works best for each (vendor harness, task type)?' (WS17).
+
+    Returns {harness: {task_type: {skill_id, success_rate, cost, har, hfr, pwl,
+    measurement_quality, n}}} from skill-tagged conclusive attempt cells — so the matrix
+    spans vendor-native harnesses (codex_cli / claude_code) the same as in-process ones.
+    """
+    caps = build_skill_capability(cells)
+    table: dict = {}
+    by_scope: dict[tuple[str, str], list[SkillCapabilityCell]] = {}
+    for c in caps:
+        by_scope.setdefault((c.harness, c.task_type), []).append(c)
+    for (harness, tt), group in by_scope.items():
+        best = max(group, key=lambda c: (c.success_rate, -c.cost))
+        table.setdefault(harness, {})[tt] = {
+            "skill_id": best.skill_id, "skill_family": best.skill_family,
+            "success_rate": best.success_rate, "cost": best.cost, "har": best.har,
+            "hfr": best.hfr, "pwl": best.pwl,
+            "measurement_quality": best.measurement_quality, "n": best.n}
+    return table

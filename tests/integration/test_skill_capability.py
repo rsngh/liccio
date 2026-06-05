@@ -41,3 +41,17 @@ def test_best_skill_for_picks_highest_success_then_cost() -> None:
     caps = build_skill_capability(cells)
     best = best_skill_for(caps, "bugfix", "openai_harness")
     assert best.skill_id == "cheap_good"
+
+
+def test_skill_capability_table_spans_vendor_harnesses() -> None:
+    # WS17: the matrix answers "which skill works best with Codex CLI on bugfix?".
+    from acp.training.skill_capability import skill_capability_table
+    cells = (
+        [_cell("verify", True, adapter="codex_cli", skill_family="verify") for _ in range(4)]
+        + [_cell("noop", i < 1, adapter="codex_cli", skill_family="noop") for i in range(4)]
+        + [_cell("verify", True, adapter="claude_code", skill_family="verify")
+           for _ in range(4)])
+    table = skill_capability_table(cells)
+    assert table["codex_cli"]["bugfix"]["skill_id"] == "verify"  # best on codex
+    assert table["codex_cli"]["bugfix"]["success_rate"] == 1.0
+    assert "claude_code" in table  # vendor harness present in the matrix
