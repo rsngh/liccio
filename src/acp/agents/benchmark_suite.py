@@ -212,6 +212,124 @@ BENCH_TASKS: list[BenchTask] = [
 ]
 
 
+# --- underspecified multi-bug tasks (Alpha 23 WS9) -----------------------------------
+# Each module has TWO independent bugs but the prompt names only ONE symptom. A harness
+# that fixes only what's asked leaves the second test failing; a "run the FULL suite and
+# fix EVERY failure" skill closes the gap. This isolates skill value (test discipline)
+# from raw capability and is NOT timeout-confounded — the second bug is genuinely there.
+_STATS_BUGGY = (
+    "def mean(xs):\n"
+    "    return sum(xs) // len(xs)  # bug: integer division\n\n"
+    "def median(xs):\n"
+    "    n = len(xs)\n"
+    "    return xs[n // 2]  # bug: unsorted + wrong for even length\n"
+)
+_STATS_FIXED = (
+    "def mean(xs):\n"
+    "    return sum(xs) / len(xs)\n\n"
+    "def median(xs):\n"
+    "    s = sorted(xs)\n"
+    "    n = len(s)\n"
+    "    if n % 2:\n"
+    "        return s[n // 2]\n"
+    "    return (s[n // 2 - 1] + s[n // 2]) / 2\n"
+)
+_STATS_TEST = (
+    "from stats import mean, median\n\n"
+    "def test_mean():\n"
+    "    assert mean([1, 2, 3, 4]) == 2.5\n"
+    "    assert mean([2, 4]) == 3\n\n"
+    "def test_median():\n"
+    "    assert median([3, 1, 2]) == 2\n"
+    "    assert median([1, 2, 3, 4]) == 2.5\n"
+    "    assert median([5]) == 5\n"
+)
+_STATS_PROMPT = (
+    "There is a bug in stats.py: mean([1, 2, 3, 4]) should be 2.5 but is not. Fix it so "
+    "test_mean passes, then run `python -m pytest -q`."
+)
+
+_TEXT_BUGGY = (
+    "def word_count(s):\n"
+    "    return len(s.split(' '))  # bug: counts empties from runs of spaces\n\n"
+    "def initials(names):\n"
+    "    return ''.join(n[0] for n in names)  # bug: not uppercased\n"
+)
+_TEXT_FIXED = (
+    "def word_count(s):\n"
+    "    return len(s.split())\n\n"
+    "def initials(names):\n"
+    "    return ''.join(n[0].upper() for n in names)\n"
+)
+_TEXT_TEST = (
+    "from textutil import word_count, initials\n\n"
+    "def test_word_count():\n"
+    "    assert word_count('a  b   c') == 3\n"
+    "    assert word_count('hello world') == 2\n\n"
+    "def test_initials():\n"
+    "    assert initials(['ada', 'lovelace']) == 'AL'\n"
+    "    assert initials(['grace', 'hopper']) == 'GH'\n"
+)
+_TEXT_PROMPT = (
+    "There is a bug in textutil.py: word_count('a  b   c') should be 3 but is not. Fix it "
+    "so test_word_count passes, then run `python -m pytest -q`."
+)
+
+_BANK_BUGGY = (
+    "class Account:\n"
+    "    def __init__(self, balance=0):\n"
+    "        self.balance = balance\n\n"
+    "    def deposit(self, amt):\n"
+    "        self.balance + amt  # bug: result discarded\n\n"
+    "    def withdraw(self, amt):\n"
+    "        self.balance -= amt  # bug: allows overdraft\n"
+)
+_BANK_FIXED = (
+    "class Account:\n"
+    "    def __init__(self, balance=0):\n"
+    "        self.balance = balance\n\n"
+    "    def deposit(self, amt):\n"
+    "        self.balance += amt\n\n"
+    "    def withdraw(self, amt):\n"
+    "        if amt > self.balance:\n"
+    "            raise ValueError('insufficient funds')\n"
+    "        self.balance -= amt\n"
+)
+_BANK_TEST = (
+    "import pytest\n"
+    "from bank import Account\n\n"
+    "def test_deposit():\n"
+    "    a = Account()\n"
+    "    a.deposit(100)\n"
+    "    assert a.balance == 100\n\n"
+    "def test_withdraw_overdraft():\n"
+    "    a = Account(50)\n"
+    "    with pytest.raises(ValueError):\n"
+    "        a.withdraw(100)\n"
+    "    assert a.balance == 50\n"
+)
+_BANK_PROMPT = (
+    "There is a bug in bank.py: Account.deposit does not increase the balance. Fix it so "
+    "test_deposit passes, then run `python -m pytest -q`."
+)
+
+
+def _us_task(name: str, difficulty: str, module_path: str, buggy: str, fixed: str,
+             test_src: str, prompt: str) -> BenchTask:
+    return BenchTask(name=name, difficulty=difficulty, module_path=module_path,
+                     buggy=buggy, fixed=fixed, test_src=test_src, prompt=prompt)
+
+
+UNDERSPECIFIED_TASKS: list[BenchTask] = [
+    _us_task("stats", "medium", "stats.py", _STATS_BUGGY, _STATS_FIXED, _STATS_TEST,
+             _STATS_PROMPT),
+    _us_task("textutil", "medium", "textutil.py", _TEXT_BUGGY, _TEXT_FIXED, _TEXT_TEST,
+             _TEXT_PROMPT),
+    _us_task("bank", "hard", "bank.py", _BANK_BUGGY, _BANK_FIXED, _BANK_TEST,
+             _BANK_PROMPT),
+]
+
+
 def _git_init(repo: Path) -> None:
     for argv in (["git", "init", "-q"], ["git", "config", "user.email", "t@e.com"],
                  ["git", "config", "user.name", "t"], ["git", "add", "-A"],

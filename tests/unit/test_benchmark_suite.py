@@ -12,6 +12,7 @@ import pytest
 from acp.agents.benchmark_suite import (
     BENCH_TASKS,
     DIFFICULTIES,
+    UNDERSPECIFIED_TASKS,
     apply_reference_fix,
     build_bench_repo,
     run_pytest,
@@ -40,3 +41,23 @@ def test_prompt_never_leaks_the_fix() -> None:
     for t in BENCH_TASKS:
         assert t.fixed not in t.prompt
         assert t.module_path in t.prompt
+
+
+@pytest.mark.parametrize("task", UNDERSPECIFIED_TASKS, ids=lambda t: t.name)
+def test_underspecified_buggy_fails_then_reference_fix_passes(task, tmp_path) -> None:
+    # Each underspecified task has TWO bugs; both must fail buggy and pass the fix.
+    repo = build_bench_repo(tmp_path, task)
+    assert not run_pytest(repo), f"{task.name}: buggy module unexpectedly passed"
+    apply_reference_fix(repo, task)
+    assert run_pytest(repo), f"{task.name}: reference fix did not pass"
+
+
+@pytest.mark.parametrize("task", UNDERSPECIFIED_TASKS, ids=lambda t: t.name)
+def test_underspecified_prompt_names_only_one_symptom(task) -> None:
+    # The prompt names the FIRST test only; the second failing test is unmentioned, so a
+    # "fix only what's asked" harness leaves it broken.
+    test_names = [ln.split("def ")[1].split("(")[0]
+                  for ln in task.test_src.splitlines() if ln.startswith("def test_")]
+    assert len(test_names) == 2  # exactly two independent tests
+    named = [t for t in test_names if t in task.prompt]
+    assert len(named) == 1, f"{task.name}: prompt should name exactly one test"
