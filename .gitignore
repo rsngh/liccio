@@ -62,3 +62,4 @@ evals/reports/*
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json
 !reports/live/benchmark_skill_ab.json
+!reports/live/timeout_confound.json

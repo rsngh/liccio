@@ -1,0 +1,41 @@
+{
+  "experiment": "ws8_timeout_confound",
+  "harness": "claude_code",
+  "low": {
+    "timeout_s": 180,
+    "solve_rate": 0.6667,
+    "by_difficulty": {
+      "easy": {
+        "solve_rate": 1.0,
+        "n_conclusive": 2,
+        "n_attempts": 2,
+        "contaminated": false
+      },
+      "medium": {
+        "solve_rate": 0.5,
+        "n_conclusive": 2,
+        "n_attempts": 2,
+        "contaminated": false
+      },
+      "hard": {
+        "solve_rate": 0.5,
+        "n_conclusive": 2,
+        "n_attempts": 2,
+        "contaminated": false
+      }
+    }
+  },
+  "high": {
+    "timeout_s": 240,
+    "solve_rate": 1.0
+  },
+  "verdict": {
+    "low_timeout_s": 180,
+    "high_timeout_s": 240,
+    "low_solve_rate": 0.6667,
+    "high_solve_rate": 1.0,
+    "gap": 0.3333,
+    "confounded": true,
+    "recommendation": "infra-confounded: the 67%->100% gap closes when the per-task budget is raised 180->240s; treat the 180s shortfall as infra/inconclusive, not capability."
+  }
+}

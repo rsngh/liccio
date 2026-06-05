@@ -87,6 +87,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 23 WS5 — benchmark skill A/B (lift by difficulty)
     "reports/live/benchmark_skill_ab.json": [
         "experiment", "harness", "overall", "by_difficulty", "decision"],
+    # Alpha 23 WS8 — timeout-confound (apparent gap that closes when budget relaxed)
+    "reports/live/timeout_confound.json": [
+        "experiment", "harness", "low", "high", "verdict"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
