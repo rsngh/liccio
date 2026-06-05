@@ -881,6 +881,27 @@ def eval_vendor_harness_live() -> None:
     console.print_json(data=run_vendor_harness_live())
 
 
+@eval_app.command("benchmark-baseline")
+def eval_benchmark_baseline(harness: str = "claude_code", timeout_s: int = 180,
+                            reps: int = 1) -> None:
+    """Run the graded bugfix benchmark live (capability by difficulty, no skill).
+
+    Drives the named vendor harness over the easy/medium/hard suite and prints the
+    honest solve rate overall and per difficulty (conclusive attempts only).
+    """
+    import shutil
+
+    from acp.agents.vendor_native import VENDOR_SPECS, VendorNativeHarness
+    from acp.evaluation.benchmark_runner import run_benchmark
+
+    spec = VENDOR_SPECS.get(harness)
+    if spec is None or shutil.which(spec.binary) is None:
+        console.print(f"[yellow]skip[/]: {harness} not available")
+        return
+    result = run_benchmark(VendorNativeHarness(harness), timeout_s=timeout_s, reps=reps)
+    console.print_json(data=result.to_dict())
+
+
 @eval_app.command("security-benchmark-v2")
 def eval_security_benchmark_v2() -> None:
     """Expanded security & prompt-injection benchmark (10 attack classes)."""
