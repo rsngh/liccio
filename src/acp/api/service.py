@@ -875,6 +875,14 @@ class AppService:
         mq_trusted = _report_field(
             "evals/reports/measurement_quality.json", "trusted", default=None)
         measurement_quality_trusted = mq_trusted is True
+        # Vendor-native harness gate (Alpha 22 WS12): a fresh vendor live report must
+        # show at least one native harness solving the no-patch task. Absent/stale
+        # artifact fails the gate in production.
+        vendor_passed = _report_field(
+            "evals/reports/vendor_harness_live.json", "passed", default=None)
+        vendor_n_solved = _report_field(
+            "evals/reports/vendor_harness_live.json", "n_solved", default=0) or 0
+        vendor_harness_live_passed = (vendor_passed is True and vendor_n_solved >= 1)
 
         production_gates = {
             "artifact_manifest_valid": artifacts_ok,
@@ -886,6 +894,7 @@ class AppService:
             "harness_availability_ok": harness_availability_ok,
             "measurement_not_contaminated": measurement_not_contaminated,
             "measurement_quality_trusted": measurement_quality_trusted,
+            "vendor_harness_live_passed": vendor_harness_live_passed,
         }
         production_ready = all(production_gates.values())
         status = "ok"

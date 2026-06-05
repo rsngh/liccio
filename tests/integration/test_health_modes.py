@@ -57,3 +57,9 @@ def test_health_has_skills_section(tmp_path) -> None:
     assert "skills" in h
     for k in ("active_skills", "n_active_skills", "evolution_by_action", "recent_events"):
         assert k in h["skills"]
+
+
+def test_production_gate_includes_vendor_harness(tmp_path) -> None:
+    # Alpha 22 WS12: vendor-native harness pass is a production gate.
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    assert "vendor_harness_live_passed" in h["production_gates"]
