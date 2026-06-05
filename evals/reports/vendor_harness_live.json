@@ -16,7 +16,7 @@
       "secret_leak": false,
       "timeout_enforced": true,
       "exit_code": 0,
-      "wall_time_s": 28.48
+      "wall_time_s": 24.63
     },
     "claude_code": {
       "available": true,
@@ -28,7 +28,7 @@
       "secret_leak": false,
       "timeout_enforced": true,
       "exit_code": 0,
-      "wall_time_s": 14.22
+      "wall_time_s": 14.72
     },
     "openhands": {
       "available": true,
