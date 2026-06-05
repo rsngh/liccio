@@ -147,40 +147,58 @@ def best_of_k(task: BenchTask, *, k: int, sampler: Sampler,
         outcome=_classify(n_conclusive, n_passed), candidates=verifs)
 
 
-def openai_sampler(*, model: str = DEFAULT_WEAK_MODEL, temperature: float = 0.7,
-                   timeout_s: float = 60.0) -> Sampler:
-    """Build a live sampler that calls a weak OpenAI model for a full corrected module."""
+def propose_module(task: BenchTask, *, index: int = 0, model: str = DEFAULT_WEAK_MODEL,
+                   temperature: float = 0.7, timeout_s: float = 60.0,
+                   extra_guidance: str = "") -> CandidatePatch:
+    """One live weak-model call returning a full corrected module (optionally guided).
+
+    ``extra_guidance`` lets an advisor inject diagnosis (e.g. "a second test is failing")
+    on a retry — the basis for the advisor-escalation loop (area 1).
+    """
     import json
 
     from acp.core.config import get_settings
     from acp.core.optional import try_import
 
+    openai = try_import("openai")
+    key = get_settings().openai_api_key
+    if openai is None or key is None:
+        return CandidatePatch(index=index, content=None, error="openai unavailable")
+    client = openai.OpenAI(api_key=key.get_secret_value(), max_retries=0)
+    # The generator works BLIND: it sees the buggy module + the task prompt but NOT the
+    # test file. The tests are the held-out execution proof signal the comparator uses to
+    # select among candidates — feeding them to the generator would be oracle leakage and
+    # would trivialize selection (the model would just hard-code expected outputs).
+    user = (f"Module path: {task.module_path}\n\n=== BUGGY MODULE ===\n{task.buggy}\n\n"
+            f"{task.prompt}")
+    if extra_guidance.strip():
+        user += f"\n\n=== ADVISOR GUIDANCE (follow this) ===\n{extra_guidance}"
+    try:
+        resp = client.chat.completions.create(
+            model=model, temperature=temperature, timeout=timeout_s,
+            response_format={"type": "json_object"},
+            messages=[{"role": "system", "content": _SYS},
+                      {"role": "user", "content": user}])
+    except Exception as exc:  # noqa: BLE001  (API error -> inconclusive candidate)
+        return CandidatePatch(index=index, content=None, error=str(exc)[:160])
+    usage = resp.usage
+    in_tok = getattr(usage, "prompt_tokens", 0) or 0
+    out_tok = getattr(usage, "completion_tokens", 0) or 0
+    try:
+        content = json.loads(resp.choices[0].message.content or "{}").get("module")
+    except Exception as exc:  # noqa: BLE001
+        return CandidatePatch(index=index, content=None, in_tokens=in_tok,
+                              out_tokens=out_tok, cost=cost_usd(model, in_tok, out_tok),
+                              error=f"unparseable: {str(exc)[:80]}")
+    return CandidatePatch(index=index, content=content, in_tokens=in_tok,
+                          out_tokens=out_tok, cost=cost_usd(model, in_tok, out_tok))
+
+
+def openai_sampler(*, model: str = DEFAULT_WEAK_MODEL, temperature: float = 0.7,
+                   timeout_s: float = 60.0) -> Sampler:
+    """Build a live sampler that calls a weak OpenAI model for a full corrected module."""
     def _sample(task: BenchTask, index: int) -> CandidatePatch:
-        openai = try_import("openai")
-        key = get_settings().openai_api_key
-        if openai is None or key is None:
-            return CandidatePatch(index=index, content=None, error="openai unavailable")
-        client = openai.OpenAI(api_key=key.get_secret_value(), max_retries=0)
-        user = (f"Module path: {task.module_path}\n\n=== BUGGY MODULE ===\n{task.buggy}\n\n"
-                f"=== TESTS ===\n{task.test_src}\n\n{task.prompt}")
-        try:
-            resp = client.chat.completions.create(
-                model=model, temperature=temperature, timeout=timeout_s,
-                response_format={"type": "json_object"},
-                messages=[{"role": "system", "content": _SYS},
-                          {"role": "user", "content": user}])
-        except Exception as exc:  # noqa: BLE001  (API error -> inconclusive candidate)
-            return CandidatePatch(index=index, content=None, error=str(exc)[:160])
-        usage = resp.usage
-        in_tok = getattr(usage, "prompt_tokens", 0) or 0
-        out_tok = getattr(usage, "completion_tokens", 0) or 0
-        try:
-            content = json.loads(resp.choices[0].message.content or "{}").get("module")
-        except Exception as exc:  # noqa: BLE001
-            return CandidatePatch(index=index, content=None, in_tokens=in_tok,
-                                  out_tokens=out_tok, cost=cost_usd(model, in_tok, out_tok),
-                                  error=f"unparseable: {str(exc)[:80]}")
-        return CandidatePatch(index=index, content=content, in_tokens=in_tok,
-                              out_tokens=out_tok, cost=cost_usd(model, in_tok, out_tok))
+        return propose_module(task, index=index, model=model, temperature=temperature,
+                              timeout_s=timeout_s)
 
     return _sample

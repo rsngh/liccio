@@ -96,6 +96,13 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 23 WS11 — proven skill promoted via staged canary (loop closed live)
     "reports/live/underspecified_promotion.json": [
         "experiment", "promoted", "deployed", "active_skill", "stages"],
+    # Alpha 24 area 2 — weak-model best-of-k bakeoff + cost curve
+    "evals/reports/weak_model_candidate_bakeoff.json": ["experiment", "model", "by_cohort"],
+    "evals/reports/best_of_k_cost_curve.json": ["experiment", "model", "rows"],
+    # Alpha 24 area 1 — advisor escalation
+    "evals/reports/advisor_policy.json": ["experiment", "executor", "advisor"],
+    "evals/reports/advisor_bakeoff.json": ["experiment", "executor_only", "executor_plus_advisor"],
+    "evals/reports/advisor_cost_quality_frontier.json": ["experiment", "points"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
