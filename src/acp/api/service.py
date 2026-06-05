@@ -890,6 +890,21 @@ class AppService:
         bench_overall = _report_field(
             "reports/live/benchmark_baseline.json", "overall_solve_rate", default=None)
         benchmark_baseline_present = bench_overall is not None
+        # Report truth (Alpha 25): production requires CURRENT_STATUS.md to agree with the
+        # canonical counts (source files / artifacts / test counts). Stale report counts
+        # fail the gate so the platform can never overclaim its own status.
+        report_truth_consistent = False
+        try:
+            from acp.observability.release_truth import (
+                check_status_consistency,
+                gather_truth,
+            )
+            _status = _PP("CURRENT_STATUS.md")
+            if _status.exists():
+                report_truth_consistent = not check_status_consistency(
+                    _status.read_text(), gather_truth("."))
+        except Exception:  # noqa: BLE001  (never let truth-check crash health)
+            report_truth_consistent = False
 
         production_gates = {
             "artifact_manifest_valid": artifacts_ok,
@@ -903,6 +918,7 @@ class AppService:
             "measurement_quality_trusted": measurement_quality_trusted,
             "vendor_harness_live_passed": vendor_harness_live_passed,
             "benchmark_baseline_present": benchmark_baseline_present,
+            "report_truth_consistent": report_truth_consistent,
         }
         production_ready = all(production_gates.values())
         status = "ok"

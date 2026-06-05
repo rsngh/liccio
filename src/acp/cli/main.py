@@ -392,31 +392,39 @@ def reports_diff(path: str, ingest_a: str, ingest_b: str) -> None:
 
 
 @reports_app.command("sync-status")
-def reports_sync_status() -> None:
-    """Sync the test count in CURRENT_STATUS.md to reports/pytest.txt (WS1).
+def reports_sync_status(strict: bool = False) -> None:
+    """Sync ALL canonical counts in CURRENT_STATUS.md to the release-truth manifest (Alpha 25).
 
-    The single source of truth is the committed pytest report; this rewrites the
-    'N passing/passed' figure in CURRENT_STATUS so no count mismatch can survive CI.
+    The single source of truth is computed from the authoritative sources (source-file
+    count, artifact manifest, committed pytest report). This rewrites the test/source/
+    artifact figures in CURRENT_STATUS so no count mismatch can survive CI. With
+    ``--strict`` it does NOT rewrite; it fails (exit 1) if the document already disagrees —
+    use it as the report-truth hard gate.
     """
-    import re as _re
     from pathlib import Path as _Path
 
-    pytest_txt = _Path("reports/pytest.txt")
+    from acp.observability.release_truth import (
+        check_status_consistency,
+        gather_truth,
+        sync_status_text,
+    )
+
     status = _Path("CURRENT_STATUS.md")
-    if not pytest_txt.exists() or not status.exists():
-        console.print("[red]missing reports/pytest.txt or CURRENT_STATUS.md[/red]")
+    if not status.exists():
+        console.print("[red]missing CURRENT_STATUS.md[/red]")
         raise typer.Exit(1)
-    m = _re.search(r"(\d+) passed, (\d+) skipped", pytest_txt.read_text())
-    if not m:
-        console.print("[red]no 'N passed, M skipped' line in reports/pytest.txt[/red]")
-        raise typer.Exit(1)
-    passed, skipped = m.group(1), m.group(2)
-    t = status.read_text()
-    t = _re.sub(r"\d+ passing, \d+ skipped", f"{passed} passing, {skipped} skipped", t)
-    t = _re.sub(r"\d+ passed, \d+ skipped", f"{passed} passed, {skipped} skipped", t)
-    status.write_text(t)
-    console.print_json(data={"synced": True, "passed": int(passed),
-                             "skipped": int(skipped)})
+    truth = gather_truth(".")
+    text = status.read_text()
+    if strict:
+        problems = check_status_consistency(text, truth)
+        if problems:
+            console.print_json(data={"consistent": False, "problems": problems,
+                                     "truth": truth.to_dict()})
+            raise typer.Exit(1)
+        console.print_json(data={"consistent": True, "truth": truth.to_dict()})
+        return
+    status.write_text(sync_status_text(text, truth))
+    console.print_json(data={"synced": True, **truth.to_dict()})
 
 
 @reports_app.command("validate")

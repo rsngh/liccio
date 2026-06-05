@@ -5,10 +5,10 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-03 (Round 12 — measurement-trust). Tests: 1063 passing, 5 skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
-`ruff` + `mypy` clean across 258 source files; see `reports/coverage.txt`. Gate:
+Last updated: 2026-06-05 (Alpha 25 — production coherence & evidence truth). Tests: 1063 passing, 5 skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
+`ruff` + `mypy` clean across 279 source files; see `reports/coverage.txt`. Gate:
 `uv run pytest -q && uv run ruff check . && uv run mypy src && uv run alembic
-upgrade head && acp reports validate` (46 artifacts valid).
+upgrade head && acp reports validate` (84 artifacts valid).
 
 **Round 12 — measurement-trust layer.** ACP now classifies every attempt into an
 `AttemptOutcome` (conclusive task signal vs infra/inconclusive noise) so infra

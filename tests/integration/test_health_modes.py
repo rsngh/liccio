@@ -74,3 +74,25 @@ def test_health_has_benchmark_section_and_gate(tmp_path) -> None:
                 "skill_ab_decision"):
         assert key in h["benchmark"]
     assert "benchmark_baseline_present" in h["production_gates"]
+
+
+def test_production_gates_are_explicit_and_fail_closed(tmp_path) -> None:
+    # Alpha 25 (test H): production health must fail for EXPLICIT reasons only — every
+    # critical gate is named, and an empty lab is not production-ready.
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    required_gates = {
+        "artifact_manifest_valid", "docker_live_security_passed", "ope_overlap_sufficient",
+        "vendor_harness_live_passed", "measurement_quality_trusted",
+        "benchmark_baseline_present", "report_truth_consistent",
+    }
+    assert required_gates <= set(h["production_gates"])
+    # an empty lab is not production-ready, and every failure is a named gate
+    assert not h["production_ready"]
+    assert h["failed_production_gates"]
+    assert all(g in h["production_gates"] for g in h["failed_production_gates"])
+
+
+def test_report_truth_is_a_production_gate(tmp_path) -> None:
+    # Alpha 25: stale CURRENT_STATUS counts must be able to fail production health.
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    assert "report_truth_consistent" in h["production_gates"]
