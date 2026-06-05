@@ -3,153 +3,197 @@
   "harness": "claude_code",
   "n_tasks": 11,
   "baseline": {
-    "overall": 0.9091,
-    "by_difficulty": {
-      "easy": {
-        "solve_rate": 1.0,
-        "n_conclusive": 2,
-        "n_attempts": 2,
-        "contaminated": false
-      },
-      "medium": {
-        "solve_rate": 1.0,
-        "n_conclusive": 2,
-        "n_attempts": 2,
-        "contaminated": false
-      },
-      "hard": {
-        "solve_rate": 0.8571,
-        "n_conclusive": 7,
-        "n_attempts": 7,
-        "contaminated": false
-      }
-    },
-    "n_conclusive": 11,
-    "tasks": [
+    "rows": [
       {
-        "name": "divide",
+        "task": "divide",
         "difficulty": "easy",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 11.75,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.6
       },
       {
-        "name": "factorial",
+        "task": "factorial",
         "difficulty": "easy",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 14.38,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.45
       },
       {
-        "name": "slugify",
+        "task": "slugify",
         "difficulty": "medium",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 18.45,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.57
       },
       {
-        "name": "chunk",
+        "task": "chunk",
         "difficulty": "medium",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 78.91,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.51
       },
       {
-        "name": "roman",
+        "task": "roman",
         "difficulty": "hard",
         "solved": false,
-        "conclusive": true,
+        "activated": false,
         "outcome": "task_failure",
-        "wall_time_s": 12.56,
-        "secret_leak": "[REDACTED]"
+        "wall_time_s": 2.07
       },
       {
-        "name": "merge_intervals",
+        "task": "merge_intervals",
         "difficulty": "hard",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 135.29,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.76
       },
       {
-        "name": "coin_change",
+        "task": "coin_change",
         "difficulty": "hard",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 16.23,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.76
       },
       {
-        "name": "word_break",
+        "task": "word_break",
         "difficulty": "hard",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 25.69,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 2.02
       },
       {
-        "name": "lis",
+        "task": "lis",
         "difficulty": "hard",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 15.68,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.45
       },
       {
-        "name": "max_product",
+        "task": "max_product",
         "difficulty": "hard",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 23.29,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.62
       },
       {
-        "name": "min_path_sum",
+        "task": "min_path_sum",
         "difficulty": "hard",
-        "solved": true,
-        "conclusive": true,
-        "outcome": "task_success",
-        "wall_time_s": 25.47,
-        "secret_leak": "[REDACTED]"
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.47
       }
-    ]
+    ],
+    "activation_rate": 0.0,
+    "solve_rate": 0.0,
+    "n_activated": 0
   },
   "with_skill": {
-    "overall": 0.2727,
-    "by_difficulty": {
-      "easy": {
-        "solve_rate": 0.5,
-        "n_conclusive": 2,
-        "n_attempts": 2,
-        "contaminated": false
+    "rows": [
+      {
+        "task": "divide",
+        "difficulty": "easy",
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 2.4
       },
-      "medium": {
-        "solve_rate": 1.0,
-        "n_conclusive": 2,
-        "n_attempts": 2,
-        "contaminated": false
+      {
+        "task": "factorial",
+        "difficulty": "easy",
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.66
       },
-      "hard": {
-        "solve_rate": 0.0,
-        "n_conclusive": 7,
-        "n_attempts": 7,
-        "contaminated": false
+      {
+        "task": "slugify",
+        "difficulty": "medium",
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.45
+      },
+      {
+        "task": "chunk",
+        "difficulty": "medium",
+        "solved": false,
+        "activated": false,
+        "outcome": "task_failure",
+        "wall_time_s": 1.56
+      },
+      {
+        "task": "roman",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 143.65
+      },
+      {
+        "task": "merge_intervals",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 13.37
+      },
+      {
+        "task": "coin_change",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 11.64
+      },
+      {
+        "task": "word_break",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 79.3
+      },
+      {
+        "task": "lis",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 75.24
+      },
+      {
+        "task": "max_product",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 13.98
+      },
+      {
+        "task": "min_path_sum",
+        "difficulty": "hard",
+        "solved": true,
+        "activated": true,
+        "outcome": "task_success",
+        "wall_time_s": 75.3
       }
-    },
-    "n_conclusive": 11
+    ],
+    "activation_rate": 0.6364,
+    "solve_rate": 1.0,
+    "n_activated": 7
   },
-  "skill_lift": -0.6364
+  "skill_lift_active_only": 1.0,
+  "both_arms_activated": false,
+  "skill_lift_trusted": false,
+  "caveat": "low activation in >=1 arm (CLI degraded/rate-limited) -> lift untrusted, treated as infra/inconclusive, NOT negative transfer"
 }
