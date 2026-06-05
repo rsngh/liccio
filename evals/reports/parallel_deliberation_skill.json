@@ -1,0 +1,13 @@
+{
+  "experiment": "parallel_deliberation_skill",
+  "k": 5,
+  "mean_verify_savings": 0.6,
+  "engages_on": [
+    "medium",
+    "hard",
+    "high_risk"
+  ],
+  "single_shot_on": [
+    "easy_low_risk"
+  ]
+}

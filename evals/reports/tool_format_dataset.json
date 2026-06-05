@@ -1,0 +1,19 @@
+{
+  "experiment": "tool_format_dataset",
+  "n_examples": 32,
+  "n_malformed": 3,
+  "malformed_rate": 0.0938,
+  "secret_clean": true,
+  "by_adapter": {
+    "openai_harness": {
+      "n": 20,
+      "malformed": 3,
+      "functional": 11
+    },
+    "claude_code": {
+      "n": 12,
+      "malformed": 0,
+      "functional": 9
+    }
+  }
+}

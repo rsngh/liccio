@@ -115,6 +115,16 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/memory_aging_benchmark.json": ["experiment", "curves", "revision_repairs"],
     "evals/reports/memory_lifecycle.json": ["experiment", "transitions", "private_memory_isolated"],
     "evals/reports/memory_poisoning.json": ["experiment", "n_blocked", "all_blocked"],
+    # Alpha 24 area 11 — HeavySkill parallel deliberation
+    "evals/reports/heavyskill_bugfix.json": ["experiment", "model", "rows"],
+    "evals/reports/parallel_deliberation_skill.json": ["experiment", "mean_verify_savings"],
+    # Alpha 24 area 12 — tool-format RL dataset
+    "evals/reports/tool_format_dataset.json": ["experiment", "n_examples", "malformed_rate"],
+    "evals/reports/harness_activation_training.json": ["experiment", "by_adapter"],
+    # Alpha 24 area 10 — workflow distillation
+    "evals/reports/workflow_distillation_dataset.json": ["experiment", "n_train", "leakage_clean"],
+    "evals/reports/small_model_training_smoke.json": ["experiment", "trained"],
+    "evals/reports/memorization_audit.json": ["experiment", "memorization_overlap", "leakage_clean"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

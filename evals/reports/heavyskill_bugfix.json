@@ -1,0 +1,78 @@
+{
+  "experiment": "heavyskill_bugfix",
+  "model": "gpt-4o-mini",
+  "k": 5,
+  "rows": [
+    {
+      "task_name": "divide",
+      "engaged": false,
+      "n_sampled": 1,
+      "n_verified": 1,
+      "solved": true,
+      "best_index": 0,
+      "total_cost": 9.1e-05,
+      "verify_savings_fraction": 0.0,
+      "candidates": []
+    },
+    {
+      "task_name": "factorial",
+      "engaged": false,
+      "n_sampled": 1,
+      "n_verified": 1,
+      "solved": true,
+      "best_index": 0,
+      "total_cost": 0.000124,
+      "verify_savings_fraction": 0.0,
+      "candidates": []
+    },
+    {
+      "task_name": "slugify",
+      "engaged": true,
+      "n_sampled": 5,
+      "n_verified": 3,
+      "solved": true,
+      "best_index": 2,
+      "total_cost": 0.000696,
+      "verify_savings_fraction": 0.4,
+      "candidates": []
+    },
+    {
+      "task_name": "chunk",
+      "engaged": true,
+      "n_sampled": 5,
+      "n_verified": 1,
+      "solved": true,
+      "best_index": 0,
+      "total_cost": 0.000678,
+      "verify_savings_fraction": 0.8,
+      "candidates": []
+    },
+    {
+      "task_name": "roman",
+      "engaged": true,
+      "n_sampled": 5,
+      "n_verified": 3,
+      "solved": true,
+      "best_index": 0,
+      "total_cost": 0.001057,
+      "verify_savings_fraction": 0.4,
+      "candidates": []
+    },
+    {
+      "task_name": "merge_intervals",
+      "engaged": true,
+      "n_sampled": 5,
+      "n_verified": 1,
+      "solved": true,
+      "best_index": 0,
+      "total_cost": 0.000943,
+      "verify_savings_fraction": 0.8,
+      "candidates": []
+    }
+  ],
+  "engaged_solve_rate": 1.0,
+  "single_shot_tasks": [
+    "divide",
+    "factorial"
+  ]
+}

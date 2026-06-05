@@ -1,0 +1,19 @@
+{
+  "experiment": "harness_activation_training",
+  "by_adapter": {
+    "openai_harness": {
+      "calls": 20,
+      "well_formed": 17,
+      "functional": 11,
+      "har": 0.85,
+      "hfr": 0.55
+    },
+    "claude_code": {
+      "calls": 12,
+      "well_formed": 12,
+      "functional": 9,
+      "har": 1.0,
+      "hfr": 0.75
+    }
+  }
+}

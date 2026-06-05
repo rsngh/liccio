@@ -1,0 +1,10 @@
+{
+  "experiment": "workflow_distillation_dataset",
+  "target": "context_selector",
+  "n_train": 24,
+  "n_test": 8,
+  "secret_dropped": 0,
+  "memorization_overlap": 0,
+  "repo_disjoint": true,
+  "leakage_clean": true
+}

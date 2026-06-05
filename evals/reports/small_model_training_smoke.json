@@ -1,0 +1,7 @@
+{
+  "experiment": "small_model_training_smoke",
+  "trained": true,
+  "majority_class": "grep",
+  "test_accuracy": 0.625,
+  "n_test": 8
+}

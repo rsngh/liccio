@@ -1,0 +1,6 @@
+{
+  "experiment": "memorization_audit",
+  "memorization_overlap": 0,
+  "repo_disjoint": true,
+  "leakage_clean": true
+}
