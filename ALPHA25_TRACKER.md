@@ -19,7 +19,7 @@ data, escape the easy-task ceiling, and turn expensive compute into a ledger-gat
 ## Alpha 29 — compute-escalation policy
 - [x] compute_policy: choose arm by reliability + risk/value; ComputeSpendLedger marginal value
 - [x] Escalate to expensive arms only where marginal value positive
-- [ ] LIVE compute-policy bakeoff (cheap / best-of-k / advisor arms on hard tasks) — running
+- [x] LIVE compute-policy bakeoff: policy withholds escalation when single-shot suffices (variance-honest)
 
 ## Release
 - [ ] ALPHA25_REPORT.md + checklist; full gate; push
