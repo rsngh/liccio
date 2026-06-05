@@ -124,7 +124,26 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 24 area 10 — workflow distillation
     "evals/reports/workflow_distillation_dataset.json": ["experiment", "n_train", "leakage_clean"],
     "evals/reports/small_model_training_smoke.json": ["experiment", "trained"],
-    "evals/reports/memorization_audit.json": ["experiment", "memorization_overlap", "leakage_clean"],
+    "evals/reports/memorization_audit.json": [
+        "experiment", "memorization_overlap", "leakage_clean"],
+    # Alpha 24 area 4 — meta-harness optimization
+    "evals/reports/meta_harness_patch.json": ["experiment", "best_patch", "n_accepted"],
+    "evals/reports/harness_regression_suite.json": ["experiment", "negative_transfer_bounded"],
+    "evals/reports/harness_canary.json": ["experiment", "requires_canary_before_deploy"],
+    # Alpha 24 area 13 — DGM variant archive
+    "evals/reports/agent_variant_archive.json": ["experiment", "n_archived", "all_archived_safe"],
+    "evals/reports/open_ended_harness_evolution.json": [
+        "experiment", "improved", "rejected_unsafe"],
+    # Alpha 24 area 14 — confidence pruning
+    "evals/reports/confidence_pruning.json": ["experiment", "kept", "estimated_verify_savings"],
+    "evals/reports/advisor_confidence_trigger.json": [
+        "experiment", "low_confidence_triggers_advisor"],
+    # Alpha 24 area 15 — research-engineering benchmark
+    "evals/reports/research_engineering_benchmark.json": ["experiment", "mean_recovered", "rows"],
+    "evals/reports/nanogpt_style_agent_eval.json": [
+        "experiment", "mean_recovered", "tuning_penalized"],
+    "evals/reports/algorithmic_progress_report.json": [
+        "experiment", "rewards_algorithmic_over_tuning"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

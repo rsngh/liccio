@@ -1,0 +1,5 @@
+{
+  "experiment": "advisor_confidence_trigger",
+  "low_confidence_triggers_advisor": true,
+  "early_stop_on_high_confidence": true
+}

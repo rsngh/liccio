@@ -1,0 +1,12 @@
+{
+  "experiment": "agent_variant_archive",
+  "n_archived": 28,
+  "n_rejected": 1,
+  "best_score": -5,
+  "best_params": {
+    "sandbox": true,
+    "retry_budget": 3,
+    "ctx_tokens": 3
+  },
+  "all_archived_safe": true
+}

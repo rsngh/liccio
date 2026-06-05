@@ -1,0 +1,10 @@
+{
+  "experiment": "harness_regression_suite",
+  "tasks": [
+    "t1",
+    "t2",
+    "t3"
+  ],
+  "max_regression": 0.1,
+  "negative_transfer_bounded": true
+}

@@ -1,0 +1,7 @@
+{
+  "experiment": "algorithmic_progress_report",
+  "n_substantive": 3,
+  "n_tuning_only": 1,
+  "rewards_algorithmic_over_tuning": true,
+  "routes_research_differently": true
+}

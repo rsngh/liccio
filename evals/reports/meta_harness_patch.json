@@ -1,0 +1,127 @@
+{
+  "experiment": "meta_harness_patch",
+  "best_patch": {
+    "trace_summary_level": 1
+  },
+  "best_result": {
+    "accepted": true,
+    "safe": true,
+    "improved": true,
+    "regression_clean": true,
+    "baseline_score": 0.65,
+    "patched_score": 0.7333,
+    "worst_task_delta": -0.05,
+    "per_task": {
+      "t1": {
+        "base": 0.5,
+        "patched": 0.65,
+        "delta": 0.15
+      },
+      "t2": {
+        "base": 0.6,
+        "patched": 0.75,
+        "delta": 0.15
+      },
+      "t3": {
+        "base": 0.85,
+        "patched": 0.8,
+        "delta": -0.05
+      }
+    },
+    "reject_reason": null
+  },
+  "n_candidates": 3,
+  "n_accepted": 1,
+  "all": [
+    {
+      "changes": {
+        "trace_summary_level": 1
+      },
+      "accepted": true,
+      "safe": true,
+      "improved": true,
+      "regression_clean": true,
+      "baseline_score": 0.65,
+      "patched_score": 0.7333,
+      "worst_task_delta": -0.05,
+      "per_task": {
+        "t1": {
+          "base": 0.5,
+          "patched": 0.65,
+          "delta": 0.15
+        },
+        "t2": {
+          "base": 0.6,
+          "patched": 0.75,
+          "delta": 0.15
+        },
+        "t3": {
+          "base": 0.85,
+          "patched": 0.8,
+          "delta": -0.05
+        }
+      },
+      "reject_reason": null
+    },
+    {
+      "changes": {
+        "trace_summary_level": 4
+      },
+      "accepted": false,
+      "safe": true,
+      "improved": true,
+      "regression_clean": false,
+      "baseline_score": 0.65,
+      "patched_score": 0.8833,
+      "worst_task_delta": -0.2,
+      "per_task": {
+        "t1": {
+          "base": 0.5,
+          "patched": 1.0,
+          "delta": 0.5
+        },
+        "t2": {
+          "base": 0.6,
+          "patched": 1.0,
+          "delta": 0.4
+        },
+        "t3": {
+          "base": 0.85,
+          "patched": 0.65,
+          "delta": -0.2
+        }
+      },
+      "reject_reason": "negative transfer"
+    },
+    {
+      "changes": {
+        "trace_summary_level": 1
+      },
+      "accepted": false,
+      "safe": false,
+      "improved": true,
+      "regression_clean": true,
+      "baseline_score": 0.65,
+      "patched_score": 0.7333,
+      "worst_task_delta": -0.05,
+      "per_task": {
+        "t1": {
+          "base": 0.5,
+          "patched": 0.65,
+          "delta": 0.15
+        },
+        "t2": {
+          "base": 0.6,
+          "patched": 0.75,
+          "delta": 0.15
+        },
+        "t3": {
+          "base": 0.85,
+          "patched": 0.8,
+          "delta": -0.05
+        }
+      },
+      "reject_reason": "patch weakens measurement/verification gate"
+    }
+  ]
+}

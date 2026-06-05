@@ -1,0 +1,7 @@
+{
+  "experiment": "nanogpt_style_agent_eval",
+  "mean_recovered": 0.7375,
+  "mean_reward": 0.5625,
+  "tuning_penalized": true,
+  "n_tasks": 4
+}

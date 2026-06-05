@@ -1,0 +1,47 @@
+{
+  "experiment": "research_engineering_benchmark",
+  "n_tasks": 4,
+  "mean_recovered": 0.7375,
+  "mean_reward": 0.5625,
+  "n_substantive": 3,
+  "n_tuning_only": 1,
+  "routes_research_differently": true,
+  "rows": [
+    {
+      "task_id": "t1",
+      "recovered_fraction": 0.8,
+      "substantive": true,
+      "change_type": "algorithmic",
+      "reward": 0.8,
+      "kind": "improve_architecture",
+      "routed_to_advisor": true
+    },
+    {
+      "task_id": "t2",
+      "recovered_fraction": 0.9,
+      "substantive": false,
+      "change_type": "hyperparameter_tuning",
+      "reward": 0.2,
+      "kind": "ablate_idea",
+      "routed_to_advisor": true
+    },
+    {
+      "task_id": "t3",
+      "recovered_fraction": 0.3,
+      "substantive": true,
+      "change_type": "algorithmic",
+      "reward": 0.3,
+      "kind": "alphazero_loop",
+      "routed_to_advisor": true
+    },
+    {
+      "task_id": "t4",
+      "recovered_fraction": 0.95,
+      "substantive": true,
+      "change_type": "algorithmic",
+      "reward": 0.95,
+      "kind": "reproduce_baseline",
+      "routed_to_advisor": true
+    }
+  ]
+}

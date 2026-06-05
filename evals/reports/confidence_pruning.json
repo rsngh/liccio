@@ -1,0 +1,17 @@
+{
+  "experiment": "confidence_pruning",
+  "kept": [
+    0,
+    1
+  ],
+  "pruned": [
+    2,
+    3,
+    4
+  ],
+  "keep_fraction": 0.4,
+  "estimated_verify_savings": 0.03,
+  "rationale": "kept 2/5 at conf>=0.5 (risk=low, floor=1)",
+  "vote": "ans0",
+  "high_risk_keeps_more": true
+}

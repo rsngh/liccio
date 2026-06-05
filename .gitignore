@@ -79,6 +79,16 @@ evals/reports/*
 !evals/reports/workflow_distillation_dataset.json
 !evals/reports/small_model_training_smoke.json
 !evals/reports/memorization_audit.json
+!evals/reports/meta_harness_patch.json
+!evals/reports/harness_regression_suite.json
+!evals/reports/harness_canary.json
+!evals/reports/agent_variant_archive.json
+!evals/reports/open_ended_harness_evolution.json
+!evals/reports/confidence_pruning.json
+!evals/reports/advisor_confidence_trigger.json
+!evals/reports/research_engineering_benchmark.json
+!evals/reports/nanogpt_style_agent_eval.json
+!evals/reports/algorithmic_progress_report.json
 !reports/live/vendor_skill_canary.json
 !reports/live/cross_harness_vendor_transfer.json
 !reports/live/benchmark_baseline.json

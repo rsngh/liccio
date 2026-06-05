@@ -1,0 +1,14 @@
+{
+  "experiment": "harness_canary",
+  "candidate_patch": {
+    "trace_summary_level": 1
+  },
+  "requires_canary_before_deploy": true,
+  "auto_deployed": false,
+  "guardrails": [
+    "no eval-script edits",
+    "no gate weakening",
+    "negative transfer bounded",
+    "staged canary + rollback"
+  ]
+}

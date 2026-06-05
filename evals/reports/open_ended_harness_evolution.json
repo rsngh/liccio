@@ -1,0 +1,7 @@
+{
+  "experiment": "open_ended_harness_evolution",
+  "generations": 5,
+  "improved": true,
+  "rejected_unsafe": 1,
+  "requires_canary_before_promotion": true
+}
