@@ -53,3 +53,21 @@ Response to the honest gap list. Each item verified against the current branch.
 The live-evidence gaps (WS14, WS18, WS19, WS6) are closed or verified, the report warehouse
 was already built, and the small-sample caveat is addressed with proper confidence intervals.
 Remaining out-of-scope: local LoRA (no GPU) and a web operator UI.
+
+## Update — priority list fully worked (WS19 → WS18 → WS14 → samples)
+
+- **WS19 — FULLY GREEN.** `live_proven: true` added (>=1 vendor harness actually solved live,
+  distinct from a vacuous `passed`). `tests/live/test_vendor_harness_live.py -m live_vendor`:
+  2 passed in 124s (codex_cli + claude_code solve). Manifest requires `live_proven`.
+- **#4 grow samples — DELIVERED, measurable.** Larger reps=5 bakeoff: 130 conclusive attempts
+  (was 52), OPE log over 260 observed runs (was 104). Sample adequacy improved:
+  - reps=2: 0% robust, 28 insufficient, mean Wilson-CI width 0.61
+  - reps=5: 12.5% robust, 0 insufficient, mean CI width 0.38
+  bugfix cells reach n=25 with CI [0.87, 1.0] (robust). `sample_adequacy.json` (new, auto-
+  written by the bakeoff) classifies every observed cell robust/directional/insufficient.
+
+The five priority items are addressed: WS19 ✓, WS18 ✓ (9/9 when up), WS14 ✓ (observed
+behavior in matrix + OPE), grow-samples ✓ (robust cells + adequacy report). Item 5 (operator
+web UI / human-review backend) remains the deprioritized surface; the CLI cockpit
+(`acp health`, `evidence-gaps`, `reports list/show/diff`, `skill dashboard`, `policy
+dossier`) already covers operator needs in this environment.
