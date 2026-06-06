@@ -96,3 +96,12 @@ def test_report_truth_is_a_production_gate(tmp_path) -> None:
     # Alpha 25: stale CURRENT_STATUS counts must be able to fail production health.
     h = _svc(tmp_path).control_plane_health(mode="production")
     assert "report_truth_consistent" in h["production_gates"]
+
+
+def test_health_has_evidence_tier_and_activation_denominators(tmp_path) -> None:
+    # Round 25 (feedback #2/#3/#6): health surfaces the evidence tier + activation-aware
+    # solve-rate denominators, and gates production on tier >= live_api.
+    h = _svc(tmp_path).control_plane_health(mode="production")
+    for key in ("evidence_tier", "solve_rate_activated", "solve_rate_trusted_activated"):
+        assert key in h["measurement"]
+    assert "evidence_tier_sufficient" in h["production_gates"]

@@ -905,6 +905,15 @@ class AppService:
                     _status.read_text(), gather_truth("."))
         except Exception:  # noqa: BLE001  (never let truth-check crash health)
             report_truth_consistent = False
+        # Evidence tier (Round 25): production claims must rest on at least live-API
+        # evidence, not synthetic/fixture. The evidence_quality artifact carries the tier.
+        _tier = _report_field("evals/reports/evidence_quality.json", "evidence_tier")
+        try:
+            from acp.evaluation.evidence_quality import TIER_RANK, EvidenceTier
+            evidence_tier_sufficient = (_tier is not None and TIER_RANK[EvidenceTier(_tier)]
+                                        >= TIER_RANK[EvidenceTier.LIVE_API])
+        except Exception:  # noqa: BLE001
+            evidence_tier_sufficient = False
 
         production_gates = {
             "artifact_manifest_valid": artifacts_ok,
@@ -919,6 +928,7 @@ class AppService:
             "vendor_harness_live_passed": vendor_harness_live_passed,
             "benchmark_baseline_present": benchmark_baseline_present,
             "report_truth_consistent": report_truth_consistent,
+            "evidence_tier_sufficient": evidence_tier_sufficient,
         }
         production_ready = all(production_gates.values())
         status = "ok"
@@ -960,6 +970,14 @@ class AppService:
             "tool_activation_by_adapter": _report_field(
                 "evals/reports/tool_activation_metrics.json", "by_adapter", default={}),
             "harness_benefit_by_adapter": harness_benefit,
+            # Round 25: activation-aware solve-rate denominators + evidence tier, so health
+            # surfaces WHICH denominator a solve rate rests on (no hidden denominator).
+            "evidence_tier": _report_field(
+                "evals/reports/evidence_quality.json", "evidence_tier"),
+            "solve_rate_activated": _report_field(
+                "evals/reports/evidence_quality.json", "solve_rate_activated"),
+            "solve_rate_trusted_activated": _report_field(
+                "evals/reports/evidence_quality.json", "solve_rate_trusted_activated"),
         }
         # Graded benchmark section (Alpha 23): capability by difficulty + any skill lift.
         benchmark = {
