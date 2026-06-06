@@ -1,0 +1,149 @@
+{
+  "experiment": "live_corpus_broadening",
+  "source": "REAL observed claude_harness tool loops, verified by each repo's pytest",
+  "model_harness": "claude_harness",
+  "n_tasks": 9,
+  "n_solved": 7,
+  "benefit_metrics": {
+    "har": 1.0,
+    "hfr": 0.8889,
+    "pwl": 0.7778,
+    "by_task_type": {
+      "bugfix": {
+        "har": 1.0,
+        "hfr": 0.8889,
+        "pwl": 0.7778
+      }
+    },
+    "by_model": {
+      "unknown": {
+        "har": 1.0,
+        "hfr": 0.8889,
+        "pwl": 0.7778
+      }
+    },
+    "sample_size": 9
+  },
+  "measurement_hygiene": {
+    "n_conclusive": 9,
+    "n_inconclusive": 0,
+    "contaminated": false,
+    "contamination_reasons": [],
+    "solve_rate_conclusive": 0.7778
+  },
+  "cost": {
+    "total_usd": 0.332912,
+    "cost_per_conclusive_success": 0.047559
+  },
+  "live_cells_persisted": 9,
+  "by_group": {
+    "easy": {
+      "n": 2,
+      "solved": 1
+    },
+    "medium": {
+      "n": 2,
+      "solved": 2
+    },
+    "hard": {
+      "n": 2,
+      "solved": 2
+    },
+    "underspecified": {
+      "n": 3,
+      "solved": 2
+    }
+  },
+  "rows": [
+    {
+      "group": "easy",
+      "task": "divide",
+      "activated": true,
+      "followed": false,
+      "solved": false,
+      "tool_calls": 6,
+      "cost_usd": 0.031316,
+      "latency_s": 6.55
+    },
+    {
+      "group": "easy",
+      "task": "factorial",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 7,
+      "cost_usd": 0.036788,
+      "latency_s": 6.39
+    },
+    {
+      "group": "medium",
+      "task": "slugify",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 6,
+      "cost_usd": 0.04,
+      "latency_s": 8.23
+    },
+    {
+      "group": "medium",
+      "task": "chunk",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 6,
+      "cost_usd": 0.035308,
+      "latency_s": 5.96
+    },
+    {
+      "group": "hard",
+      "task": "roman",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 7,
+      "cost_usd": 0.042052,
+      "latency_s": 9.22
+    },
+    {
+      "group": "hard",
+      "task": "merge_intervals",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 5,
+      "cost_usd": 0.03946,
+      "latency_s": 8.9
+    },
+    {
+      "group": "underspecified",
+      "task": "stats",
+      "activated": true,
+      "followed": true,
+      "solved": false,
+      "tool_calls": 6,
+      "cost_usd": 0.035012,
+      "latency_s": 5.94
+    },
+    {
+      "group": "underspecified",
+      "task": "textutil",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 6,
+      "cost_usd": 0.035836,
+      "latency_s": 6.25
+    },
+    {
+      "group": "underspecified",
+      "task": "bank",
+      "activated": true,
+      "followed": true,
+      "solved": true,
+      "tool_calls": 6,
+      "cost_usd": 0.03714,
+      "latency_s": 8.94
+    }
+  ]
+}

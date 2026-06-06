@@ -24,19 +24,9 @@
         "pwl": 1.0
       }
     },
-    "sample_size": 4
+    "sample_size": 2
   },
   "per_attempt": [
-    {
-      "adapter": "openai_harness",
-      "task_type": "bugfix",
-      "activated": true,
-      "followed": true,
-      "phase_adherence": 0.6667,
-      "solved": true,
-      "tool_calls": 1,
-      "latency_s": 4.11
-    },
     {
       "adapter": "claude_harness",
       "task_type": "bugfix",
@@ -44,28 +34,18 @@
       "followed": true,
       "phase_adherence": 1.0,
       "solved": true,
-      "tool_calls": 2,
-      "latency_s": 3.86
-    },
-    {
-      "adapter": "openai_harness",
-      "task_type": "feature",
-      "activated": true,
-      "followed": true,
-      "phase_adherence": 0.6667,
-      "solved": true,
-      "tool_calls": 1,
-      "latency_s": 3.16
+      "tool_calls": 3,
+      "latency_s": 5.54
     },
     {
       "adapter": "claude_harness",
       "task_type": "feature",
       "activated": true,
       "followed": true,
-      "phase_adherence": 0.6667,
+      "phase_adherence": 1.0,
       "solved": true,
-      "tool_calls": 1,
-      "latency_s": 3.58
+      "tool_calls": 3,
+      "latency_s": 4.84
     }
   ]
 }
