@@ -1,0 +1,137 @@
+{
+  "experiment": "claude_control_plane_live",
+  "what": "real Claude driven end-to-end by the acp control-plane loop on real-world-shaped bugs; execution-verified + generalization-tested",
+  "model": "claude-sonnet-4-6",
+  "evidence_tier": "fixture (real-world-shaped, not scraped repo history)",
+  "n_tasks": 3,
+  "n_solved_verified_and_generalized": 3,
+  "solve_rate": 1.0,
+  "rows": [
+    {
+      "task": "semver_compare",
+      "module": "semver.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "changed_files": [
+        "semver.py"
+      ],
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "test_adequacy": 0.4,
+        "confidence": 1.0
+      },
+      "reward": 4.718919,
+      "tokens": {
+        "in": 957,
+        "out": 88
+      },
+      "provenance": {
+        "run_id": "run_26548cde910e4bb8aa331e0e7006cb25",
+        "snapshot_id": "snap_4804764e9a404288bf97b6deff2b6921",
+        "context_pack_id": "pack_4ff0fcddecff4a44a0d1c0a89685b4c2",
+        "routing_decision_id": "route_707b0338368040f9a41c1bd8e09ef2ad",
+        "attempt_id": "attempt_ce757983f36f4a1aa07c943feda8ecb6",
+        "evaluation_result_id": "eval_86945133011741369ecc0e6fb60bde46",
+        "reward_event_id": "reward_4f1ee6f574e840b49bc098ac2d9c29f6",
+        "trace_id": "4be4923692cb4cac85a6ba7d714882df"
+      },
+      "produced_diff": "diff --git a/semver.py b/semver.py\nindex f536821..368e810 100644\n--- a/semver.py\n+++ b/semver.py\n@@ -1,2 +1,4 @@\n def compare_versions(a, b):\n-    return (a > b) - (a < b)  # bug: lexicographic string compare\n+    a_parts = [int(x) for x in a.split('.')]\n+    b_parts = [int(x) for x in b.split('.')]\n+    return (a_parts > b_parts) - (a_parts < b_parts)"
+    },
+    {
+      "task": "deep_merge",
+      "module": "config.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "changed_files": [
+        "config.py"
+      ],
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "test_adequacy": 0.4,
+        "confidence": 1.0
+      },
+      "reward": 4.718986,
+      "tokens": {
+        "in": 1078,
+        "out": 103
+      },
+      "provenance": {
+        "run_id": "run_9c52cf655f5f4bcd8d65a243e2d9f746",
+        "snapshot_id": "snap_775aa436066f4711bde51d5a57970207",
+        "context_pack_id": "pack_9bc49f002e5e49369a6dee65f7caff6b",
+        "routing_decision_id": "route_aca8c80ce630472aaca8532d25f493d1",
+        "attempt_id": "attempt_aa4ad06b9d0d41d1bbc89425f03636aa",
+        "evaluation_result_id": "eval_6231f72cfeff4173861ffda664781b3a",
+        "reward_event_id": "reward_d39f33519a0a4f7bbe3321f7d69f9c29",
+        "trace_id": "15289182620f4a1c8792030face8e175"
+      },
+      "produced_diff": "diff --git a/config.py b/config.py\nindex 2bbf21b..62a94da 100644\n--- a/config.py\n+++ b/config.py\n@@ -1,4 +1,8 @@\n def deep_merge(base, override):\n     result = dict(base)\n-    result.update(override)  # bug: nested dicts overwritten, not merged\n+    for key, value in override.items():\n+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):\n+            result[key] = deep_merge(result[key], value)\n+        else:\n+            result[key] = value\n     return result"
+    },
+    {
+      "task": "lru_cache",
+      "module": "cache.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "changed_files": [
+        "cache.py"
+      ],
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "test_adequacy": 0.4,
+        "confidence": 1.0
+      },
+      "reward": 4.718554,
+      "tokens": {
+        "in": 1202,
+        "out": 178
+      },
+      "provenance": {
+        "run_id": "run_54a04c3eb3f549588816831204c74b9f",
+        "snapshot_id": "snap_d5722eb492a445fda01937eecc482b8a",
+        "context_pack_id": "pack_0be1adcaac924fffa2756b91600b96b5",
+        "routing_decision_id": "route_b2f8377d2c394ad2a5c76981c48dfb2e",
+        "attempt_id": "attempt_b2ca985b829b4b96aaa04cb5d878a216",
+        "evaluation_result_id": "eval_d4f5eab304894b7b8e06edfb37c35a19",
+        "reward_event_id": "reward_e9aeaf992e134e6681c48b4cae49cf62",
+        "trace_id": "fdd5eac6519147189f4b938544f8f6fa"
+      },
+      "produced_diff": "diff --git a/cache.py b/cache.py\nindex aa44d59..1b2a8d6 100644\n--- a/cache.py\n+++ b/cache.py\n@@ -4,9 +4,15 @@ class LRUCache:\n         self.store = {}\n \n     def get(self, key):\n-        return self.store.get(key)  # bug: does not update recency\n+        if key not in self.store:\n+            return None\n+        value = self.store.pop(key)\n+        self.store[key] = value\n+        return value\n \n     def put(self, key, value):\n-        if key not in self.store and len(self.store) >= self.capacity:\n+        if key in self.store:\n+            self.store.pop(key)\n+        elif len(self.store) >= self.capacity:\n             self.store.pop(next(iter(self.store)))\n         self.store[key] = value"
+    }
+  ]
+}

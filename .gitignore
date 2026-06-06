@@ -99,3 +99,6 @@ evals/reports/*
 !reports/live/timeout_confound.json
 !reports/live/underspecified_skill_ab.json
 !reports/live/underspecified_promotion.json
+
+# Live control-plane demo — real Claude end-to-end (committed, redacted)
+!evals/reports/claude_control_plane_live.json
