@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from acp.evaluation.evaluator_trust import (
     RISK_LEVELS,
     EvaluatorDisagreementModel,
@@ -51,6 +53,7 @@ def test_threshold_policy_stricter_for_high_risk():
 
 
 def test_low_risk_threshold_cuts_review_without_more_false_approves():
+    pytest.importorskip("sklearn")  # learned trust model needs scikit-learn (data/learning extra)
     cases = default_trust_dataset()
     report = evaluate_trust(cases)
 

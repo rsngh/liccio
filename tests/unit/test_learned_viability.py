@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from acp.core.classifier import classify
 from acp.core.enums import RiskLevel
 from acp.core.viability_learned import (
@@ -39,6 +41,7 @@ def _rows(cases):
 
 
 def test_learned_assessor_predicts_in_range_and_separates() -> None:
+    pytest.importorskip("sklearn")  # learned assessor needs scikit-learn (data/learning extra)
     cases = _dataset()
     a = LearnedViabilityAssessor()
     a.fit(_rows(cases))

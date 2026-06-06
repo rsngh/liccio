@@ -249,3 +249,28 @@ uv pip install scikit-learn joblib                          # -> the 4 ML tests 
 Artifacts produced/updated by this evaluation:
 `evals/reports/eval_unseen_live.json`, `evals/reports/claude_control_plane_live.json`,
 `evals/reports/repo_replay_live.json` (now contamination-flagged).
+
+---
+
+## Addendum — P0 reproducibility fixes applied (2026-06-06)
+
+The P0 item ("make 'green' reproducible") was addressed so the suite passes on a clean
+checkout. Test hygiene only — no production logic changed:
+
+- **Optional-dependency tests now skip instead of assert-fail.** `pytest.importorskip("sklearn")`
+  on the 4 learned-ML acceptance tests; availability-skips on the OpenHands and Docker-daemon
+  tests (matching the discipline the live tests already use for API keys). A missing
+  extra/daemon now *skips*, never *fails*.
+- **`test_docs_consistency` is now git-ignore-aware.** It requires on-disk existence only for
+  **committed** artifacts and tolerates absent **git-ignored generated** artifacts (produced by
+  eval runs, deliberately not version-controlled). It still catches the things that matter — a
+  dangling reference to a supposed-to-be-committed file, or a present-but-malformed report.
+
+**Verified result.** In a fresh `dev`-only environment (no extras: no scikit-learn, Docker,
+OpenHands, OpenAI), the full suite is now **1187 passed, 22 skipped, 0 failed** (previously 14
+failed). With `uv sync --all-extras`, the skipped ML tests run and pass (confirmed: 8 passed).
+So the suite is green on a clean clone *and* under the documented full-extras setup.
+
+Still open from §6 (not in this pass): P1 (refresh the stale "1226 passed" / coverage claims —
+note `test_current_status_matches_committed_test_count` still pins CURRENT_STATUS to a
+`reports/pytest.txt` count that no longer matches a fresh run), P2–P5.

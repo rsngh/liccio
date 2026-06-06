@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from acp.core.enums import AgentKind
 from acp.routing.bandit import SimulatedBanditPolicy
 from acp.routing.ope import OPESample, evaluate_policy
@@ -68,6 +70,7 @@ def test_cold_start_is_uniform() -> None:
 
 
 def test_fitted_policy_prefers_the_good_agent() -> None:
+    pytest.importorskip("sklearn")  # learned predictor needs scikit-learn (data/learning extra)
     pol = SupervisedRoutingPolicy()
     pol.fit(_training_rows())
     assert pol.predicted_reward(CTX, GOOD.key()) > pol.predicted_reward(CTX, BAD.key())
@@ -86,6 +89,7 @@ def test_choose_action_returns_valid_propensity() -> None:
 def test_supervised_beats_random_and_ties_bandit_under_ope() -> None:
     """WS4 acceptance: on the logged data, OPE values supervised >= random,
     and supervised is at least as good as the bandit."""
+    pytest.importorskip("sklearn")  # learned predictor needs scikit-learn (data/learning extra)
     log = _uniform_log()
 
     supervised = SupervisedRoutingPolicy()

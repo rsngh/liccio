@@ -8,6 +8,7 @@ one true harness exists.
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,25 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def _read(name: str) -> str:
     return (ROOT / name).read_text()
+
+
+def _is_gitignored(rel_path: str) -> bool:
+    """True if the path is git-ignored — a generated artifact, expected absent on a fresh clone."""
+    return subprocess.run(["git", "check-ignore", "-q", rel_path], cwd=ROOT,
+                          capture_output=True).returncode == 0
+
+
+def _require_committed_or_ignored(art: str) -> None:
+    """Existence invariant that survives a clean checkout.
+
+    A COMMITTED artifact must exist on disk; a git-ignored GENERATED artifact (produced by an
+    eval run, deliberately not version-controlled) is allowed to be absent here. This keeps the
+    test meaningful — it still catches a dangling reference to a supposed-to-be-committed file —
+    without coupling the suite to whichever eval campaign last ran.
+    """
+    if not (ROOT / art).exists():
+        assert _is_gitignored(art), (
+            f"{art} missing on disk and NOT git-ignored (committed artifact absent)")
 
 
 def test_two_true_harnesses_exist_in_code() -> None:
@@ -49,7 +69,7 @@ def test_alpha4_checklist_lists_artifacts_and_they_exist() -> None:
     ]
     for art in required:
         assert art in checklist, f"{art} not referenced in ALPHA4_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
 
 
 def test_history_archive_exists() -> None:
@@ -68,7 +88,7 @@ def test_alpha5_checklist_artifacts_exist() -> None:
     ]
     for art in required:
         assert art in checklist, f"{art} not referenced in ALPHA5_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
 
 
 def test_alpha5_report_present() -> None:
@@ -109,7 +129,7 @@ def test_alpha6_checklist_artifacts_exist() -> None:
     ]
     for art in required:
         assert art in checklist, f"{art} not referenced in ALPHA6_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
 
 
 def test_alpha6_report_present() -> None:
@@ -129,7 +149,7 @@ def test_alpha7_checklist_artifacts_exist() -> None:
     ]
     for art in required:
         assert art in checklist, f"{art} not referenced in ALPHA7_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
 
 
 def test_alpha7_report_present() -> None:
@@ -150,7 +170,7 @@ def test_alpha8_checklist_artifacts_exist() -> None:
     ]
     for art in required:
         assert art in checklist, f"{art} not referenced in ALPHA8_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
 
 
 def test_alpha8_report_present() -> None:
@@ -161,7 +181,12 @@ def test_alpha8_report_present() -> None:
 def test_artifact_manifest_all_valid() -> None:
     from acp.observability.artifact_manifest import build_manifest
     m = build_manifest(ROOT, generated_at="test")
-    assert m.all_valid(), [a.path for a in m.invalid()]
+    # A committed artifact must be present + valid; a git-ignored generated artifact may be
+    # absent on a fresh clone (it is produced by an eval run) and is only validated when
+    # present. Fail only on the former — present-but-malformed, or absent-and-committed.
+    offenders = [a.path for a in m.invalid()
+                 if not (not a.exists and _is_gitignored(a.path))]
+    assert not offenders, f"committed artifacts missing/invalid: {offenders}"
 
 
 def test_alpha9_and_alpha10_artifacts_exist() -> None:
@@ -179,7 +204,7 @@ def test_alpha9_and_alpha10_artifacts_exist() -> None:
         text = _read(checklist)
         for art in arts:
             assert art in text, f"{art} not in {checklist}"
-            assert (ROOT / art).exists(), f"{art} missing on disk"
+            _require_committed_or_ignored(art)
 
 
 def test_alpha9_alpha10_reports_present() -> None:
@@ -194,7 +219,7 @@ def test_alpha11_artifacts_exist() -> None:
                 "evals/reports/drift_persistence.json",
                 "evals/reports/control_plane_health_production.json"):
         assert art in checklist, f"{art} not in ALPHA11_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
 
 
 def test_alpha11_report_present() -> None:
@@ -208,7 +233,7 @@ def test_alpha12_artifacts_and_report() -> None:
                 "evals/reports/trajectory_judge.json",
                 "reports/live/alpha12_harness_metrics.json"):
         assert art in checklist, f"{art} not in ALPHA12_CHECKLIST.md"
-        assert (ROOT / art).exists(), f"{art} missing on disk"
+        _require_committed_or_ignored(art)
     assert (ROOT / "ALPHA12_REPORT.md").exists()
     assert len(_read("ALPHA12_REPORT.md").strip()) > 200
 

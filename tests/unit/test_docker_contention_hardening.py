@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 from acp.schemas.repo import Repository, RepoSnapshot
 from acp.schemas.workspace import WorkspacePolicy
-from acp.workspaces.docker import DockerWorkspaceManager
+from acp.workspaces.docker import DockerWorkspaceManager, docker_available
 
 
 def _ws(tmp_path):
@@ -25,6 +27,8 @@ def _ws(tmp_path):
 
 
 def test_run_argv_has_unique_name_and_acp_label(tmp_path) -> None:
+    if not docker_available():
+        pytest.skip("docker daemon not available")
     mgr, ws = _ws(tmp_path)
     a1 = mgr.docker_run_argv(ws, ["true"])
     a2 = mgr.docker_run_argv(ws, ["true"])
