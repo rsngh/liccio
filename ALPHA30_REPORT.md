@@ -35,6 +35,14 @@ Larger reps=8 bakeoff: 208 conclusive attempts (was 130), **OPE log over 416 obs
 [0.91, 1.0]. Honest finding: more reps tightens CIs and grows the OPE log, but the robust-cell
 COUNT is bounded by task DIVERSITY (few tasks per non-bugfix type), not reps.
 
+## Alpha 27 — shadow-decision store + human feedback -> training data
+
+ShadowDecisionRecord is now DB-persisted (schema + ORM + migration). shadow_store provides the
+operator inbox (save/query), record_human_feedback (accepted/rejected/overridden + outcome),
+and feedback_to_training: an ACCEPTED recommendation is a positive label; a REJECTED/OVERRIDDEN
+one is a corrective label pointing at the human's choice. inbox_summary reports acceptance rate
++ a zero-write audit. Every human override now becomes training data.
+
 ## Gate
 
 ```
