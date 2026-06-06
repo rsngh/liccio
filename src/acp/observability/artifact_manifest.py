@@ -169,6 +169,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 29/30 — advisor rescues systematic failures best-of-k can't
     "evals/reports/repo_replay_advisor.json": [
         "experiment", "solve_rate_by_arm", "advisor_rescues_systematic"],
+    # Alpha 30 — guarded execution (draft patches, zero writes)
+    "evals/reports/guarded_execution_live.json": [
+        "experiment", "no_autonomous_writes", "nothing_applied", "working_tree_unchanged"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

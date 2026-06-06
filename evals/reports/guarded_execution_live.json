@@ -1,0 +1,63 @@
+{
+  "experiment": "guarded_execution_live",
+  "model": "gpt-4o-mini",
+  "n_tasks": 5,
+  "n_drafts_produced": 5,
+  "n_verified_in_sandbox": 3,
+  "no_autonomous_writes": true,
+  "nothing_applied": true,
+  "working_tree_unchanged": true,
+  "rows": [
+    {
+      "task": "semver_compare",
+      "allowed_mode": "draft_pr",
+      "autonomous_write": false,
+      "draft_produced": true,
+      "verified_in_sandbox": true,
+      "applied": false,
+      "merged": false,
+      "diff_lines": 4
+    },
+    {
+      "task": "paginate",
+      "allowed_mode": "draft_pr",
+      "autonomous_write": false,
+      "draft_produced": true,
+      "verified_in_sandbox": false,
+      "applied": false,
+      "merged": false,
+      "diff_lines": 4
+    },
+    {
+      "task": "deep_merge",
+      "allowed_mode": "draft_pr",
+      "autonomous_write": false,
+      "draft_produced": true,
+      "verified_in_sandbox": true,
+      "applied": false,
+      "merged": false,
+      "diff_lines": 6
+    },
+    {
+      "task": "lru_cache",
+      "allowed_mode": "draft_pr",
+      "autonomous_write": false,
+      "draft_produced": true,
+      "verified_in_sandbox": false,
+      "applied": false,
+      "merged": false,
+      "diff_lines": 20
+    },
+    {
+      "task": "normalize_path",
+      "allowed_mode": "draft_pr",
+      "autonomous_write": false,
+      "draft_produced": true,
+      "verified_in_sandbox": true,
+      "applied": false,
+      "merged": false,
+      "diff_lines": 13
+    }
+  ],
+  "evidence_tier": "fixture"
+}
