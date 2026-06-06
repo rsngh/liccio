@@ -111,6 +111,26 @@ def build_draft_pr(repo: Path, *, task_id: str, issue_text: str, module_path: st
 
 
 @dataclass
+class ReviewerAssignmentPolicy:
+    """Assign reviewers to a draft PR by risk/scope (Alpha 32).
+
+    Higher risk demands more reviewers + a security/senior reviewer; an unverified draft always
+    blocks until reviewed. Returns the reviewer roles required and whether it blocks.
+    """
+    base_reviewers: int = 1
+
+    def assign(self, *, risk: str, verified: bool, security_relevant: bool = False) -> dict:
+        roles = ["engineer"] * (self.base_reviewers + (1 if risk == "high" else 0))
+        if risk == "high" or security_relevant:
+            roles.append("security")
+        if risk == "high":
+            roles.append("senior")
+        return {"n_required": len(set(roles)), "roles": sorted(set(roles)),
+                "blocks_until_reviewed": (not verified) or risk == "high",
+                "rationale": f"risk={risk} verified={verified} security={security_relevant}"}
+
+
+@dataclass
 class GuardedPRReport:
     n_tasks: int = 0
     n_draft_prs: int = 0
