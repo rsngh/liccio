@@ -1,0 +1,50 @@
+{
+  "experiment": "kubernetes_sandbox_live",
+  "live_cluster": true,
+  "k8s_version": "v1.30.4",
+  "passed": true,
+  "n_checks": 8,
+  "checks": [
+    {
+      "name": "non_root",
+      "status": "pass",
+      "detail": "uid='1000'"
+    },
+    {
+      "name": "non_root_enforced",
+      "status": "pass",
+      "detail": "phase=Rejected:CreateContainerConfigError"
+    },
+    {
+      "name": "readonly_root",
+      "status": "pass",
+      "detail": "touch: /probe: Read-only file system\nrc=1"
+    },
+    {
+      "name": "memory_cap",
+      "status": "pass",
+      "detail": "phase=Failed"
+    },
+    {
+      "name": "no_sa_token",
+      "status": "pass",
+      "detail": "ar/run/secrets/kubernetes.io: No such file or directory\nrc=1"
+    },
+    {
+      "name": "resource_quota_applied",
+      "status": "pass",
+      "detail": "resourcequota/acp-sandbox-quota"
+    },
+    {
+      "name": "network_policy_applied",
+      "status": "pass",
+      "detail": "networkpolicy.networking.k8s.io/acp-deny-all"
+    },
+    {
+      "name": "cleanup_initiated",
+      "status": "pass",
+      "detail": "namespace delete issued"
+    }
+  ],
+  "network_enforcement_caveat": "kindnet does not enforce NetworkPolicy; policy applied, not enforced here"
+}

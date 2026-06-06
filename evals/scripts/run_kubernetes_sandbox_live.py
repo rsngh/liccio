@@ -33,10 +33,15 @@ def _apply(obj: dict) -> bool:
     return _kubectl("apply", "-f", "-", stdin=json.dumps(obj)).returncode == 0
 
 
-def _probe(name, command, *, run_as=1000, ro_root=True, mem="64Mi"):
-    """Run a busybox probe; return (phase, logs). Polls up to ~45s; detects rejection."""
+def _probe(name, command, *, run_as=1000, ro_root=True, mem="64Mi", enforce_nonroot=None):
+    """Run a busybox probe; return (phase, logs). Polls up to ~45s; detects rejection.
+
+    ``enforce_nonroot`` overrides the runAsNonRoot flag: set True with run_as=0 to test that
+    k8s REJECTS a root container under a runAsNonRoot policy.
+    """
+    nonroot = (run_as != 0) if enforce_nonroot is None else enforce_nonroot
     overrides = {"spec": {"automountServiceAccountToken": False,
-                          "securityContext": {"runAsNonRoot": run_as != 0, "runAsUser": run_as},
+                          "securityContext": {"runAsNonRoot": nonroot, "runAsUser": run_as},
                           "containers": [{"name": name, "image": IMG, "command": command,
                                           "securityContext": {"readOnlyRootFilesystem": ro_root,
                                                               "allowPrivilegeEscalation": False},
@@ -90,7 +95,8 @@ def main() -> int:
     phase, logs = _probe("p-nonroot", ["id", "-u"])
     checks.append(_check("non_root", logs.isdigit() and logs != "0", f"uid={logs!r}"))
 
-    phase, _ = _probe("p-rootreject", ["id", "-u"], run_as=0)
+    # request uid 0 while the policy demands runAsNonRoot=True -> k8s must reject the container
+    phase, _ = _probe("p-rootreject", ["id", "-u"], run_as=0, enforce_nonroot=True)
     checks.append(_check("non_root_enforced", phase != "Succeeded", f"phase={phase}"))
 
     phase, logs = _probe("p-roroot", ["sh", "-c", "touch /probe 2>&1; echo rc=$?"])
