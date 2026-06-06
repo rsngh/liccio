@@ -46,6 +46,25 @@ def test_unverified_draft_is_blocked(tmp_path) -> None:
     assert "NOT verified" in pr.description
 
 
+def test_failed_sandbox_commit_is_detected_not_silent(tmp_path) -> None:
+    """P2: a no-op/failed commit must surface an explicit blocked_reason and leave the
+    protected branch untouched — never a silent applied_to_branch=False with reason=None."""
+    repo = build_bench_repo(tmp_path, DIVIDE)
+    base = _git(repo, "rev-parse", "HEAD")
+    # patch_content == the existing buggy module -> `git add -A` stages nothing ->
+    # `git commit` fails with "nothing to commit": a deterministic commit failure.
+    pr = build_draft_pr(repo, task_id="divide", issue_text="x",
+                        module_path=DIVIDE.module_path, patch_content=DIVIDE.buggy,
+                        verified=True, base_branch="master")
+    assert not pr.applied_to_branch
+    assert pr.blocked_reason and "sandbox commit failed" in pr.blocked_reason
+    assert pr.head_commit is None
+    assert not pr.targeted_protected_branch
+    assert _git(repo, "rev-parse", "master") == base  # protected branch untouched
+    # the half-created feature branch was cleaned up
+    assert "acp/draft-divide" not in _git(repo, "branch", "--list", "acp/draft-divide")
+
+
 def test_pr_description_has_issue_and_status(tmp_path) -> None:
     repo = build_bench_repo(tmp_path, DIVIDE)
     pr = build_draft_pr(repo, task_id="divide", issue_text="the divide bug",

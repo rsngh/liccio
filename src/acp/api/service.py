@@ -11,8 +11,6 @@ import asyncio
 from pathlib import Path
 from typing import Any
 
-from acp.agents.fake import FakeAgentAdapter
-from acp.agents.patch_agent import PatchAgentAdapter
 from acp.agents.registry import AgentRegistry
 from acp.core.artifacts import LocalArtifactStore
 from acp.core.config import ACPSettings, get_settings
@@ -62,10 +60,14 @@ class AppService:
 
     @staticmethod
     def _default_registry() -> AgentRegistry:
-        reg = AgentRegistry()
-        reg.register(PatchAgentAdapter())
-        reg.register(FakeAgentAdapter())
-        return reg
+        # Register the real adapters (Claude/Codex/OpenHands + the OpenAI/Claude tool-loop
+        # harnesses) alongside fake/patch. They self-report UNAVAILABLE without their SDK+keys,
+        # so they show up in `acp agents list` (with the reason they're down) but are never
+        # routed to until available — making the real capability discoverable instead of
+        # something a caller must wire by hand (evaluation report P4). Routing filters on
+        # healthcheck, so default no-key behavior (fake/patch only) is unchanged.
+        from acp.agents import build_default_registry
+        return build_default_registry(include_external=True)
 
     # ---- persistence helpers ---------------------------------------------
 

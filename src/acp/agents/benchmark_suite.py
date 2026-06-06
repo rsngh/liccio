@@ -361,9 +361,22 @@ def apply_reference_fix(repo: Path, task: BenchTask) -> None:
 
 
 def run_pytest(repo: Path, timeout_s: int = 120) -> bool:
-    """Return True iff the repo's test suite passes."""
-    proc = subprocess.run(["python", "-m", "pytest", "-q"], cwd=repo,
-                          capture_output=True, text=True, timeout=timeout_s, check=False)
+    """Return True iff the repo's test suite passes.
+
+    Hermetic by construction: when this runs *inside* a parent pytest (especially under
+    ``-n`` xdist), the nested process must not inherit the parent's ``PYTEST_ADDOPTS`` /
+    xdist worker env, its rootdir, or its plugins — otherwise the inner run can pick up
+    foreign options/config and flake (e.g. report a pass it shouldn't). We strip all
+    ``PYTEST_*`` env vars, pin ``rootdir`` to the repo, and disable cache/xdist plugins.
+    """
+    import os
+
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
+    env["PYTEST_ADDOPTS"] = ""  # ensure no inherited addopts even via a child shell
+    proc = subprocess.run(
+        ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:xdist",
+         "-o", "addopts=", "--rootdir", str(repo), str(repo)],
+        cwd=repo, capture_output=True, text=True, timeout=timeout_s, check=False, env=env)
     return proc.returncode == 0
 
 

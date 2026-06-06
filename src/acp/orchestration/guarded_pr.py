@@ -59,6 +59,11 @@ def _git(repo: Path, *args: str) -> str:
                           check=False).stdout.strip()
 
 
+def _git_run(repo: Path, *args: str) -> subprocess.CompletedProcess:
+    """Like :func:`_git` but returns the full result so callers can inspect returncode/stderr."""
+    return subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=False)
+
+
 def generate_pr_description(task_id: str, issue_text: str, diff: str, verified: bool) -> str:
     n_changed = sum(1 for ln in diff.splitlines()
                     if ln[:1] in "+-" and not ln.startswith(("+++", "---")))
@@ -97,8 +102,22 @@ def build_draft_pr(repo: Path, *, task_id: str, issue_text: str, module_path: st
     # ACP draft artifacts on a disposable feature branch, not user-authored commits. In
     # environments that ENFORCE commit signing, an unconfigured signer makes `git commit`
     # fail, which would silently leave the draft unapplied (applied_to_branch=False).
-    _git(repo, "-c", "commit.gpgsign=false", "commit", "-m", f"ACP draft fix: {task_id}")
+    commit = _git_run(repo, "-c", "commit.gpgsign=false", "commit", "-m",
+                      f"ACP draft fix: {task_id}")
     head = _git(repo, "rev-parse", "HEAD")
+    # DETECT a failed/no-op commit instead of silently reporting applied_to_branch=False with
+    # no reason: a non-zero commit (enforced signing, a pre-commit hook reject) or an unchanged
+    # HEAD (empty diff -> "nothing to commit") means the draft was NOT applied. Surface why, and
+    # roll the sandbox back onto the base branch so no half-applied feature branch lingers.
+    if commit.returncode != 0 or head == base_commit:
+        _git(repo, "checkout", base_branch)
+        _git(repo, "branch", "-D", branch)
+        reason = (commit.stderr or commit.stdout or "HEAD unchanged (nothing to commit)").strip()
+        return DraftPR(task_id=task_id, branch=branch, applied_to_branch=False,
+                       targeted_protected_branch=False, verified=verified,
+                       base_commit=base_commit, head_commit=None,
+                       description=generate_pr_description(task_id, issue_text, "", verified),
+                       blocked_reason=f"sandbox commit failed: {reason[:200]}")
     diff = _git(repo, "diff", f"{base_commit}..{head}")
     rollback = RollbackPlan(
         branch=branch, base_commit=base_commit,

@@ -16,6 +16,7 @@ from acp.agents.repo_replay import REPLAY_TASKS
 from acp.agents.weak_model_candidates import DEFAULT_WEAK_MODEL, best_of_k, openai_sampler
 from acp.core.config import get_settings
 from acp.evaluation.evidence_quality import EvidenceTier, solve_rate_breakdown, stamp_evidence
+from acp.evaluation.measurement_hygiene import build_hygiene_report
 from acp.observability.live_report import redact_report
 
 REPS = 5
@@ -54,17 +55,20 @@ def main() -> int:
                      "best_of_k_solved": bok.solved})
         print(f"{task.name:16s} single_shot={ss_solved}/{REPS} best_of_{K}={bok.solved}")
     b = solve_rate_breakdown(cells)
+    # Single source of truth for contamination: the canonical measurement-hygiene report (the
+    # same classifier the capability matrix + acp health use). When too many attempts are
+    # inconclusive/infra (e.g. an unreachable provider), it flags `contaminated` so the raw
+    # solve_rate is not mistaken for a model verdict.
+    hygiene = build_hygiene_report(cells)
     ss_rate = round(ss_pass / ss_total, 4) if ss_total else 0.0
     bok_rate = round(bok_solved / len(REPLAY_TASKS), 4) if REPLAY_TASKS else 0.0
-    n_inconclusive = ss_total - b.n_conclusive
-    # No conclusive measurement was obtained -> the raw rate is meaningless; flag it loudly
-    # instead of publishing a contaminated "0.0 solve rate" that looks like a model verdict.
-    measurement_contaminated = b.n_conclusive == 0 and ss_total > 0
     report = {"experiment": "repo_replay_live", "model": DEFAULT_WEAK_MODEL,
               "n_tasks": len(REPLAY_TASKS), "single_shot_rate": ss_rate,
               "single_shot_rate_conclusive": b.solve_rate_conclusive,
-              "n_conclusive": b.n_conclusive, "n_inconclusive": n_inconclusive,
-              "measurement_contaminated": measurement_contaminated,
+              "n_conclusive": hygiene.n_conclusive,
+              "n_inconclusive": hygiene.n_attempts - hygiene.n_conclusive,
+              "measurement_contaminated": hygiene.contaminated,
+              "contamination_reasons": hygiene.contamination_reasons,
               "best_of_k_rate": bok_rate, "best_of_k_lift": round(bok_rate - ss_rate, 4),
               "ceiling_escaped": ss_rate < 1.0,
               "solve_rate_breakdown": b.to_dict(), "rows": rows}

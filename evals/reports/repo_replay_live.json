@@ -7,6 +7,10 @@
   "n_conclusive": 0,
   "n_inconclusive": 25,
   "measurement_contaminated": true,
+  "contamination_reasons": [
+    "25/25 attempts inconclusive/infra (100% > 30%)",
+    "no conclusive attempts"
+  ],
   "best_of_k_rate": 0.0,
   "best_of_k_lift": 0.0,
   "ceiling_escaped": true,
