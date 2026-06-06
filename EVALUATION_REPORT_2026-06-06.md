@@ -274,3 +274,38 @@ So the suite is green on a clean clone *and* under the documented full-extras se
 Still open from §6 (not in this pass): P1 (refresh the stale "1226 passed" / coverage claims —
 note `test_current_status_matches_committed_test_count` still pins CURRENT_STATUS to a
 `reports/pytest.txt` count that no longer matches a fresh run), P2–P5.
+
+---
+
+## Addendum 2 — P1–P5 applied (2026-06-06)
+
+All remaining prioritized items from §6 are now done and verified.
+
+- **P1 (reconcile stale test-count claims).** The advertised *"1226 passed"* did not reproduce.
+  `reports/pytest.txt` and `CURRENT_STATUS.md` now cite the reproducible figure with its
+  environment: **1194 passed / 18 skipped / 0 failed** with the `learning` extra (and
+  **1190 / 22 / 0** on a bare `dev`-only checkout). The 18/22 skips are optional deps/daemons
+  that self-skip. `test_current_status_matches_committed_test_count` keeps the two files in sync.
+- **P2 (deploy rung detects failure).** `guarded_pr.build_draft_pr` now inspects the sandbox
+  commit's returncode + whether HEAD advanced; a failed/no-op commit returns an explicit
+  `blocked_reason` and rolls the sandbox back, instead of a silent `applied_to_branch=False`.
+  New negative-path test.
+- **P3 (contamination-proof measurement).** `run_repo_replay_live` derives its verdict from the
+  canonical `build_hygiene_report` (the classifier the capability matrix + `acp health` share),
+  emitting `measurement_contaminated` + `contamination_reasons`. The matrix already excludes
+  inconclusive cells (`_row_inconclusive`).
+- **P4 (real adapters discoverable).** `AppService` uses `build_default_registry`, so
+  `acp agents list` now shows Claude/Codex/OpenHands + the OpenAI/Claude harnesses with the
+  reason each is down. They self-report unavailable without SDK+keys and routing filters on
+  healthcheck, so default no-key behavior (fake/patch only) is unchanged.
+- **P5 (no-op contract).** New test asserts an empty-diff no-op on already-correct code is not
+  reported as a false "succeeded" (routes to review), with a positive control proving a real fix
+  still reaches success.
+
+Plus a **flaky-test fix** surfaced during P1: `benchmark_suite.run_pytest` is now hermetic
+(strips inherited `PYTEST_*` env, pins rootdir, disables cache/xdist plugins) so the nested
+pytest can't inherit the parent run's config under `-n` — the root cause of a rare
+"buggy module unexpectedly passed" flake. Verified 4/4 stable under `-n 2`.
+
+**Net:** the suite is green and reproducible on a fresh clone, the deploy/measurement/registry
+gaps the evaluation found are closed, and the headline claims now match reality.
