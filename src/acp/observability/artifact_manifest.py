@@ -157,6 +157,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Round 25 — evidence tier + activation-aware solve-rate denominators
     "evals/reports/evidence_quality.json": [
         "experiment", "evidence_tier", "solve_rate_activated", "solve_rate_conclusive"],
+    # Alpha 26 — production shadow mode (recommend-only, no autonomous write)
+    "evals/reports/production_shadow.json": [
+        "experiment", "no_autonomous_writes", "every_recommendation_has_dossier"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

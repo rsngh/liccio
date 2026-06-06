@@ -1,0 +1,410 @@
+{
+  "experiment": "production_shadow",
+  "n_runs": 11,
+  "n_accepted": 0,
+  "n_rejected": 0,
+  "n_abstained": 0,
+  "acceptance_rate": 0.0,
+  "every_recommendation_has_dossier": true,
+  "no_autonomous_writes": true,
+  "runs": [
+    {
+      "decision": {
+        "task_id": "divide",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_single",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=high single-shot reliability -> no escalation; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "low",
+          "difficulty": "easy",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_single",
+            "reason": "high single-shot reliability -> no escalation",
+            "escalated": false
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "factorial",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_single",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=high single-shot reliability -> no escalation; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "low",
+          "difficulty": "easy",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_single",
+            "reason": "high single-shot reliability -> no escalation",
+            "escalated": false
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "slugify",
+        "action": "answer",
+        "recommended_adapter": "openai_harness",
+        "recommended_compute_arm": "cheap_single",
+        "adapter_ci": [
+          0.8668,
+          1.0
+        ],
+        "rationale": "selected_from_4_trustworthy_of_4_confident_of_4; compute=high single-shot reliability -> no escalation; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "medium",
+          "difficulty": "medium",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": "openai_harness",
+            "ci": [
+              0.8668,
+              1.0
+            ],
+            "reason": "selected_from_4_trustworthy_of_4_confident_of_4"
+          },
+          "compute_arm": {
+            "arm": "cheap_single",
+            "reason": "high single-shot reliability -> no escalation",
+            "escalated": false
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "chunk",
+        "action": "answer",
+        "recommended_adapter": "openai_harness",
+        "recommended_compute_arm": "cheap_single",
+        "adapter_ci": [
+          0.8668,
+          1.0
+        ],
+        "rationale": "selected_from_4_trustworthy_of_4_confident_of_4; compute=high single-shot reliability -> no escalation; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "medium",
+          "difficulty": "medium",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": "openai_harness",
+            "ci": [
+              0.8668,
+              1.0
+            ],
+            "reason": "selected_from_4_trustworthy_of_4_confident_of_4"
+          },
+          "compute_arm": {
+            "arm": "cheap_single",
+            "reason": "high single-shot reliability -> no escalation",
+            "escalated": false
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "roman",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_single",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=high single-shot reliability -> no escalation; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_single",
+            "reason": "high single-shot reliability -> no escalation",
+            "escalated": false
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "merge_intervals",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_single",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=high single-shot reliability -> no escalation; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_single",
+            "reason": "high single-shot reliability -> no escalation",
+            "escalated": false
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "coin_change",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_best_of_k",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=medium reliability -> sample k + verify; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_best_of_k",
+            "reason": "medium reliability -> sample k + verify",
+            "escalated": true
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "word_break",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_best_of_k",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=medium reliability -> sample k + verify; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_best_of_k",
+            "reason": "medium reliability -> sample k + verify",
+            "escalated": true
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "lis",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_best_of_k",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=medium reliability -> sample k + verify; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_best_of_k",
+            "reason": "medium reliability -> sample k + verify",
+            "escalated": true
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "max_product",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_best_of_k",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=medium reliability -> sample k + verify; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_best_of_k",
+            "reason": "medium reliability -> sample k + verify",
+            "escalated": true
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    },
+    {
+      "decision": {
+        "task_id": "min_path_sum",
+        "action": "answer",
+        "recommended_adapter": null,
+        "recommended_compute_arm": "cheap_best_of_k",
+        "adapter_ci": [],
+        "rationale": "no_matching_cells; compute=medium reliability -> sample k + verify; gate=evidence adequate",
+        "dossier": {
+          "task_type": "bugfix",
+          "risk": "high",
+          "difficulty": "hard",
+          "abstention": {
+            "action": "answer",
+            "reason": "evidence adequate",
+            "evidence_adequacy": 1.0,
+            "sufficient_context": true
+          },
+          "adapter_choice": {
+            "adapter": null,
+            "ci": [],
+            "reason": "no_matching_cells"
+          },
+          "compute_arm": {
+            "arm": "cheap_best_of_k",
+            "reason": "medium reliability -> sample k + verify",
+            "escalated": true
+          },
+          "evidence_sufficient": true
+        },
+        "autonomous_write": false
+      },
+      "human_verdict": null,
+      "observed_outcome": null
+    }
+  ],
+  "evidence_tier": "live_api"
+}
