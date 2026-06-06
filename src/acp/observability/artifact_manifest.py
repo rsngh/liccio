@@ -56,7 +56,7 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     "evals/reports/mixed_empirical_corpus.json": ["n_sufficient", "n_preference_pairs"],
     "evals/reports/control_plane_health_production.json": ["production_gates"],
     "evals/reports/vendor_harness_live.json": ["experiment", "available", "passed",
-                                               "harnesses"],
+                                               "live_proven", "harnesses"],
     "evals/reports/local_lora_pilot.json": ["available", "status"],
     # Alpha 11 WS14 — REAL observed live bakeoff
     "evals/reports/live_bakeoff_capability_matrix.json": ["n_cells"],

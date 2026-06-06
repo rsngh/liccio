@@ -2,6 +2,7 @@
   "experiment": "ws19_vendor_harness_live",
   "available": true,
   "passed": true,
+  "live_proven": true,
   "n_solved": 2,
   "n_inconclusive": 0,
   "conclusive_failures": [],
@@ -16,7 +17,7 @@
       "secret_leak": false,
       "timeout_enforced": true,
       "exit_code": 0,
-      "wall_time_s": 24.63
+      "wall_time_s": 24.12
     },
     "claude_code": {
       "available": true,
@@ -28,7 +29,7 @@
       "secret_leak": false,
       "timeout_enforced": true,
       "exit_code": 0,
-      "wall_time_s": 14.72
+      "wall_time_s": 28.84
     },
     "openhands": {
       "available": true,

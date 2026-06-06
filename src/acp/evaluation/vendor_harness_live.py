@@ -158,7 +158,11 @@ def run_vendor_harness_live() -> dict:
     passed = bool(any_available and not conclusive_failures
                   and (n_solved >= 1 or not ran))
     report = {"experiment": "ws19_vendor_harness_live", "available": any_available,
-              "passed": passed, "n_solved": n_solved, "n_inconclusive": n_inconclusive,
+              "passed": passed,
+              # live_proven (WS19 spec): a vendor harness ACTUALLY solved the no-patch task
+              # live — distinct from `passed`, which can hold vacuously when nothing ran.
+              "live_proven": n_solved >= 1,
+              "n_solved": n_solved, "n_inconclusive": n_inconclusive,
               "conclusive_failures": conclusive_failures, "harnesses": harnesses,
               "versions": {k: v for k, v in versions.items() if v}}
 
