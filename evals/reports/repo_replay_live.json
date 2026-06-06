@@ -1,0 +1,47 @@
+{
+  "experiment": "repo_replay_live",
+  "model": "gpt-4o-mini",
+  "n_tasks": 5,
+  "single_shot_rate": 0.6,
+  "best_of_k_rate": 0.6,
+  "best_of_k_lift": 0.0,
+  "ceiling_escaped": true,
+  "solve_rate_breakdown": {
+    "n_all": 25,
+    "n_conclusive": 25,
+    "n_activated": 25,
+    "n_trusted_activated": 25,
+    "solve_rate_all": 0.6,
+    "solve_rate_conclusive": 0.6,
+    "solve_rate_activated": 0.6,
+    "solve_rate_trusted_activated": 0.6
+  },
+  "rows": [
+    {
+      "task": "semver_compare",
+      "single_shot": "5/5",
+      "best_of_k_solved": true
+    },
+    {
+      "task": "paginate",
+      "single_shot": "0/5",
+      "best_of_k_solved": false
+    },
+    {
+      "task": "deep_merge",
+      "single_shot": "5/5",
+      "best_of_k_solved": true
+    },
+    {
+      "task": "lru_cache",
+      "single_shot": "0/5",
+      "best_of_k_solved": false
+    },
+    {
+      "task": "normalize_path",
+      "single_shot": "5/5",
+      "best_of_k_solved": true
+    }
+  ],
+  "evidence_tier": "fixture"
+}

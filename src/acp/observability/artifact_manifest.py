@@ -163,6 +163,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Round 25 test C / Alpha 29 — compute escalation benchmark
     "evals/reports/compute_escalation_benchmark.json": [
         "experiment", "decision_table", "policy_validated"],
+    # Alpha 29 — repo-replay realistic bug tasks (live)
+    "evals/reports/repo_replay_live.json": [
+        "experiment", "evidence_tier", "single_shot_rate", "best_of_k_rate"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
