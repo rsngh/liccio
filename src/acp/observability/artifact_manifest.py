@@ -166,6 +166,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 29 — repo-replay realistic bug tasks (live)
     "evals/reports/repo_replay_live.json": [
         "experiment", "evidence_tier", "single_shot_rate", "best_of_k_rate"],
+    # Alpha 29/30 — advisor rescues systematic failures best-of-k can't
+    "evals/reports/repo_replay_advisor.json": [
+        "experiment", "solve_rate_by_arm", "advisor_rescues_systematic"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

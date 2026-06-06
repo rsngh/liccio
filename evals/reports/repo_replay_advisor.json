@@ -1,0 +1,18 @@
+{
+  "experiment": "repo_replay_advisor",
+  "targets": [
+    "paginate",
+    "lru_cache"
+  ],
+  "reps": 3,
+  "executor": "gpt-4o-mini",
+  "frontier": "gpt-4o",
+  "solve_rate_by_arm": {
+    "executor_only": 0.0,
+    "executor_advisor": 0.5,
+    "frontier_single": 0.5
+  },
+  "advisor_rescues_systematic": true,
+  "frontier_rescues_systematic": true,
+  "evidence_tier": "fixture"
+}
