@@ -108,6 +108,12 @@ class CapabilityCell:
     sample_size: int = 0
     # number of post-merge outcomes folded in (denominator for failure rate)
     post_merge_sample_size: int = 0
+    # Wilson score interval on the conclusive solve rate (Alpha 25+ statistical robustness):
+    # a small-sample cell (e.g. 3/3) reports a WIDE interval so it is never mistaken for the
+    # same evidence as a well-sampled cell. ``success_rate_ci_low`` is the conservative
+    # estimate a robust selector / promotion gate should rank on.
+    success_rate_ci_low: float = 0.0
+    success_rate_ci_high: float = 1.0
     last_updated: datetime = field(default_factory=utcnow)
     sufficient_data: bool = False
     flags: list[str] = field(default_factory=list)
@@ -140,6 +146,12 @@ class CapabilityCell:
         self.calibration_confidence = round(
             self.sample_size / (self.sample_size + MIN_SAMPLE), 3
         )
+        # Wilson interval on the conclusive solve rate — robust at small n.
+        from acp.routing.cell_statistics import wilson_interval
+        n = self.conclusive_sample_size or self.sample_size
+        iv = wilson_interval(round(self.success_rate * n), n)
+        self.success_rate_ci_low = round(iv.low, 4)
+        self.success_rate_ci_high = round(iv.high, 4)
 
     def to_dict(self) -> dict:
         """JSON-serializable view (``last_updated`` as an ISO string)."""

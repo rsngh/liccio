@@ -332,3 +332,19 @@ def test_no_skill_cell_has_none_attribution() -> None:
              "file_reads": 1, "cost_usd": 0.001} for _ in range(5)]
     cell = CapabilityMatrix.from_bakeoff_report({"cells": rows}).cells()[0]
     assert cell.skill_id is None and cell.skill_version is None
+
+
+def test_cell_reports_wilson_ci_robust_at_small_n() -> None:
+    # Statistical robustness (Alpha 25+): a 3/3 cell must report a WIDE interval, not 1.0,
+    # so a lucky small sample is never mistaken for a well-sampled cell.
+    from acp.routing.capability_matrix import CapabilityCell
+    small = CapabilityCell("bugfix", "low", "x", "openai_harness", "hybrid", "standard",
+                           success_rate=1.0, conclusive_sample_size=3, sample_size=3)
+    small.recompute_flags()
+    assert small.success_rate_ci_low < 0.5 and small.success_rate_ci_high == 1.0
+    assert not small.sufficient_data
+    big = CapabilityCell("bugfix", "low", "x", "openai_harness", "hybrid", "standard",
+                         success_rate=0.95, conclusive_sample_size=200, sample_size=200)
+    big.recompute_flags()
+    assert big.success_rate_ci_high - big.success_rate_ci_low < 0.1   # tight at large n
+    assert big.success_rate_ci_low > small.success_rate_ci_low        # better evidence
