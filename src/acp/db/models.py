@@ -244,6 +244,14 @@ class SkillCanaryRunRow(_Row):
     status: Mapped[str] = mapped_column(String, index=True)
 
 
+class ShadowDecisionRow(_Row):
+    """Durable shadow/guarded decision (Alpha 27): queryable inbox + training labels."""
+
+    __tablename__ = "shadow_decisions"
+    task_id: Mapped[str] = mapped_column(String, index=True)
+    human_verdict: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+
+
 class EvalRun(_Row):
     __tablename__ = "eval_runs"
     kind: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
