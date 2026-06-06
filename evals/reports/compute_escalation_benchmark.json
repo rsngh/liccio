@@ -1,0 +1,35 @@
+{
+  "experiment": "compute_escalation_benchmark",
+  "summary": "spend compute only where measured marginal value is positive",
+  "decision_table": [
+    {
+      "regime": "high_reliability (>=0.9)",
+      "single_shot_reliability": 0.95,
+      "recommended_arm": "cheap_single",
+      "evidence": "best_of_k withheld: single-shot already solves -> k=1 Pareto-optimal",
+      "source": "best_of_k_cost_curve.json"
+    },
+    {
+      "regime": "medium_reliability (0.5-0.9)",
+      "single_shot_reliability": 0.84,
+      "recommended_arm": "cheap_best_of_k",
+      "evidence": "hard tasks single-shot 0.84 -> best-of-8 1.0 (lift 0.16); best-of-k buys solve rate",
+      "cost_per_marginal_solved": 0.015577,
+      "source": "hard_best_of_k.json"
+    },
+    {
+      "regime": "low_reliability (<0.5) + stakes",
+      "single_shot_reliability": 0.2,
+      "recommended_arm": "cheap_advisor",
+      "evidence": "handicapped executor 0.33 -> 1.0 with advisor (lift 0.6667); parallel sampling alone insufficient -> advisor/frontier",
+      "source": "advisor_bakeoff.json"
+    }
+  ],
+  "measured": {
+    "hard_single_shot_rate": 0.84,
+    "hard_best_of_k_rate": 1.0,
+    "advisor_handicapped_lift": 0.6667
+  },
+  "policy_validated": true,
+  "evidence_tier": "live_api"
+}

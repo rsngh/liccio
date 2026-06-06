@@ -160,6 +160,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 26 — production shadow mode (recommend-only, no autonomous write)
     "evals/reports/production_shadow.json": [
         "experiment", "no_autonomous_writes", "every_recommendation_has_dossier"],
+    # Round 25 test C / Alpha 29 — compute escalation benchmark
+    "evals/reports/compute_escalation_benchmark.json": [
+        "experiment", "decision_table", "policy_validated"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
