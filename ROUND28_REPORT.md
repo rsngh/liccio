@@ -10,7 +10,7 @@ Per the directive: do/test everything feasible; report the delta honestly.
 | Alpha 32 | **Guarded PR pipeline** — verified draft → `acp/draft-*` feature branch, PR description, rollback plan, **zero protected-branch writes** (live-proven 3/5); ReviewerAssignmentPolicy | ✅ + live |
 | Alpha 34 | **Operator inbox** `acp shadow inbox/show/label`; human override → training data | ✅ |
 | Alpha 36 | **Deployment governance** — RBAC (viewer/operator/admin), AuditLog (every write-capable action), tenant isolation | ✅ |
-| Alpha 37 | **Kubernetes sandbox** — hardened pod/NetworkPolicy/ResourceQuota manifests + 9-check static validation; **live gauntlet on a real kind cluster** | ✅ + live* |
+| Alpha 37 | **Kubernetes sandbox** — manifests + static validation AND a **LIVE gauntlet 8/8 on a real kind cluster** (root rejected, OOM kill, RO root, no SA token, quota/netpol applied, cleanup) | ✅ + LIVE 8/8 |
 | Alpha 38 | **Compute policy v2** — 8 arms; variance→best_of_k vs systematic→advisor/frontier; MarginalValueReport | ✅ |
 | Alpha 39 | **Skill economy v3** — SkillMarket (compete per scope, cost-adjusted lift, robust + activation-aware), SkillValueLedger | ✅ |
 | Alpha 40 | **Harness-benefit loop** — HAR/HFR/PWL report, activation + adherence datasets, adherence-decay benchmark | ✅ |
@@ -33,7 +33,7 @@ cgroup-v1 via an older node image) ran the sandbox gauntlet against real pods.
 - **Alpha 31 real GitHub issue ingestion**: env-blocked (no network/auth). Built the ingestor
   CONTRACT (GitHubIssueIngestor) + the offline verification components; real-history ingest
   is the remaining piece.
-- **Alpha 35/37 NetworkPolicy ENFORCEMENT**: kind's default kindnet does not enforce
+- **NetworkPolicy ENFORCEMENT (Alpha 35/37)**: kind's default kindnet does not enforce
   NetworkPolicy, so the policy is applied + validated but egress isn't blocked live (would
   need a calico CNI). Recorded honestly in the artifact.
 - **Alpha 36 live Postgres/object-store/worker-queue deploy**: the SQLAlchemy layer already

@@ -125,7 +125,8 @@ def main() -> int:
               "passed": passed, "n_checks": len(checks), "checks": checks,
               "network_enforcement_caveat":
                   "kindnet does not enforce NetworkPolicy; policy applied, not enforced here"}
-    Path("evals/reports/kubernetes_sandbox_live.json").write_text(json.dumps(report, indent=2) + "\n")
+    Path("evals/reports/kubernetes_sandbox_live.json").write_text(
+        json.dumps(report, indent=2) + "\n")
     print(f"k8s sandbox LIVE: passed={passed} "
           f"({sum(c['status'] == 'pass' for c in checks)}/{len(checks)})")
     for c in checks:
