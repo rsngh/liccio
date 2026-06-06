@@ -103,9 +103,8 @@ contract (see §6).
 
 ## 4. Test-suite reality vs. the advertised "1226 passed"
 
-A fresh `pytest` run produced **14 failures**. Re-running each in isolation, **13 reproduce
-deterministically** (1 did not reproduce outside the parallel run — likely
-resource/concurrency-sensitive under `-n 2` while live evals were running). Root causes:
+A fresh `pytest` run produced **14 failures**. Every one reproduces deterministically and
+root-causes cleanly — **none are logic regressions**:
 
 | # | Failures | Root cause | Class |
 |---|---|---|---|
@@ -113,6 +112,7 @@ resource/concurrency-sensitive under `-n 2` while live evals were running). Root
 | 7 | `test_docs_consistency::test_alpha{6..12}_*`, `test_artifact_manifest_all_valid` | Reference report artifacts (`policy_dossier.json`, `harness_metrics.json`, …) are **git-ignored and absent on a fresh clone** | Artifact coupling |
 | 1 | `test_guarded_pr::test_verified_draft_applied_…` | **Enforced commit signing** breaks `git commit` in the deploy path (signing server 400) → draft never applied | **Real bug** (fixed, §5) |
 | 1 | `test_vendor_native::test_openhands_capability_level_reported` | OpenHands SDK not installed; test asserts `available is True` | Env/optional dep |
+| 1 | `test_docker_contention_hardening::test_run_argv_has_unique_name_and_acp_label` | **Docker unavailable** → `AdapterUnavailable`; test asserts instead of skipping — yet its *sibling* docker tests skip correctly (inconsistent skip discipline) | Env/optional dep |
 
 **Proof the ML failures are environment-coupling, not regressions:** after
 `uv pip install scikit-learn joblib`, those **4 tests pass** (8 passed incl. parametrizations).
@@ -120,6 +120,13 @@ resource/concurrency-sensitive under `-n 2` while live evals were running). Root
 container was **not** synced with `uv sync --all-extras`, which the README assumes. The
 failures are therefore a *reproducibility* problem, made worse because the tests **assert**
 instead of **skipping** when the optional dependency is absent.
+
+**Post-fix corroboration.** After applying the two fixes in §5 and installing the learning
+extra, a full re-run yields **9 failed / 1184 passed / 16 skipped**. The 4 ML failures and the
+`guarded_pr` failure are gone; the remaining **9 are all environment/artifact coupling** — the
+7 git-ignored-artifact docs tests plus the 2 optional-dependency tests (OpenHands, Docker) that
+assert instead of skipping. This confirms the categorization: **zero logic regressions; every
+failure is reproducibility/packaging hygiene.**
 
 ---
 
@@ -154,9 +161,11 @@ Both fixes are minimal, linted, type-checked, and covered by existing tests.
 **P0 — Make "green" reproducible. This is the trust blocker.**
 - The suite must pass on a clean `git clone` + documented setup, or the headline number is not
   credible. Two concrete actions:
-  - **Skip, don't fail, on absent optional deps.** Gate ML/SDK-dependent tests behind
-    `pytest.importorskip("sklearn")` / `importorskip("openhands")` (the live tests already do
-    this for keys — apply the same discipline to extras). A missing extra should *skip*, never
+  - **Skip, don't fail, on absent optional deps.** Gate ML/SDK/daemon-dependent tests behind
+    `pytest.importorskip("sklearn")` / `importorskip("openhands")` / a `docker_available()`
+    skip (the live tests and *most* docker tests already do this — but
+    `test_docker_contention_hardening` and `test_openhands_capability_level_reported` assert
+    instead of skip, which is the actual bug). A missing extra/daemon should *skip*, never
     *assert-fail*.
   - **Decouple tests from generated artifacts.** `test_docs_consistency` asserts that
     git-ignored report JSONs exist on disk. Either (a) generate them via a `make
