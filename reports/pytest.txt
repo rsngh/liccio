@@ -1,1 +1,1 @@
-1182 passed, 5 skipped, 1 warning in 584.16s (divide pytest-in-pytest contention flake; passes isolated)
+1186 passed, 5 skipped, 2 warnings in 349.02s (xdist -n 2; divide pytest-in-pytest contention flake passes isolated)
