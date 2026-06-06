@@ -443,6 +443,64 @@ def reports_validate() -> None:
     console.print(f"[green]all {len(manifest.artifacts)} artifacts valid[/green]")
 
 
+shadow_app = typer.Typer(help="Shadow/guarded decision inbox (Alpha 34 operator surface).")
+app.add_typer(shadow_app, name="shadow")
+
+
+@shadow_app.command("inbox")
+def shadow_inbox() -> None:
+    """Operator inbox: shadow-decision counts, acceptance rate, zero-write audit."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.orchestration.shadow_store import inbox_summary
+    from acp.schemas.shadow_decision import ShadowDecisionRecord
+
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        rows = EntityStore(s).list_by(ShadowDecisionRecord)
+        console.print_json(data=inbox_summary(rows))
+
+
+@shadow_app.command("show")
+def shadow_show(decision_id: str) -> None:
+    """Show one shadow decision (recommendation + policy dossier + verdict)."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.schemas.shadow_decision import ShadowDecisionRecord
+
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        rec = EntityStore(s).get(ShadowDecisionRecord, decision_id)
+    if rec is None:
+        console.print(f"[yellow]no decision {decision_id}[/]")
+        raise typer.Exit(1)
+    console.print_json(data=rec.model_dump(mode="json"))
+
+
+@shadow_app.command("label")
+def shadow_label(decision_id: str, decision: str = "accept", choice: str = "",
+                 outcome: str = "") -> None:
+    """Label a decision accept|reject|override (override needs --choice); becomes training data."""
+    from acp.api.service import AppService
+    from acp.db.repositories import EntityStore
+    from acp.db.session import session_scope
+    from acp.orchestration.shadow_store import record_human_feedback
+
+    verdict = {"accept": "accepted", "reject": "rejected",
+               "override": "overridden"}.get(decision, decision)
+    svc = AppService()
+    with session_scope(svc.sessions) as s:
+        rec = record_human_feedback(EntityStore(s), decision_id, verdict=verdict,
+                                    human_choice=choice or None, observed_outcome=outcome or None)
+    if rec is None:
+        console.print(f"[yellow]no decision {decision_id}[/]")
+        raise typer.Exit(1)
+    console.print_json(data={"labeled": decision_id, "verdict": verdict,
+                             "human_choice": rec.human_choice})
+
+
 skill_app = typer.Typer(help="Skill registry + SkillOpt optimization (Alpha 15).")
 app.add_typer(skill_app, name="skill")
 
