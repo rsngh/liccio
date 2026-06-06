@@ -1,0 +1,14 @@
+{
+  "experiment": "evidence_quality",
+  "source": "REAL observed harness runs",
+  "n_harness_attempts": 130,
+  "n_all": 130,
+  "n_conclusive": 130,
+  "n_activated": 130,
+  "n_trusted_activated": 130,
+  "solve_rate_all": 0.9846,
+  "solve_rate_conclusive": 0.9846,
+  "solve_rate_activated": 0.9846,
+  "solve_rate_trusted_activated": 0.9846,
+  "evidence_tier": "live_api"
+}

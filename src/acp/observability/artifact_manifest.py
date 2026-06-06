@@ -154,6 +154,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
         "experiment", "harness", "baseline", "with_skill"],
     # Item 4 — sample adequacy (statistical robustness of observed cells)
     "evals/reports/sample_adequacy.json": ["experiment", "by_tier", "robust_fraction"],
+    # Round 25 — evidence tier + activation-aware solve-rate denominators
+    "evals/reports/evidence_quality.json": [
+        "experiment", "evidence_tier", "solve_rate_activated", "solve_rate_conclusive"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
