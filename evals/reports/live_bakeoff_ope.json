@@ -1,42 +1,42 @@
 {
   "experiment": "alpha11_live_bakeoff_ope",
   "source": "REAL observed agent runs",
-  "n": 260,
-  "logged_mean_reward": 0.5308,
+  "n": 416,
+  "logged_mean_reward": 0.5264,
   "greedy_dr": {
     "value": 1.0,
     "ci_low": 1.0,
     "ci_high": 1.0
   },
   "random_dr": {
-    "value": 0.530769,
-    "ci_low": 0.513846,
-    "ci_high": 0.548462
+    "value": 0.526442,
+    "ci_low": 0.510216,
+    "ci_high": 0.542368
   },
   "cost_aware_greedy_dr": {
-    "value": 0.99467,
-    "ci_low": 0.993403,
-    "ci_high": 0.99617
+    "value": 0.988049,
+    "ci_low": 0.985208,
+    "ci_high": 0.990077
   },
   "cost_lambda": 2.0,
   "best_adapter_per_task_type": {
-    "bugfix": "openai_harness",
-    "feature": "openai_harness",
-    "security_fix": "openai_harness",
+    "bugfix": "claude_harness",
+    "feature": "claude_harness",
+    "security_fix": "claude_harness",
     "test_generation": "claude_harness",
-    "refactor": "openai_harness",
-    "ci_fix": "openai_harness",
-    "migration": "openai_harness",
-    "docs": "openai_harness"
+    "refactor": "fake",
+    "ci_fix": "claude_harness",
+    "migration": "claude_harness",
+    "docs": "claude_harness"
   },
   "cost_aware_best_adapter_per_task_type": {
     "bugfix": "openai_harness",
     "feature": "openai_harness",
-    "security_fix": "openai_harness",
+    "security_fix": "claude_harness",
     "test_generation": "claude_harness",
     "refactor": "fake",
     "ci_fix": "openai_harness",
-    "migration": "openai_harness",
+    "migration": "claude_harness",
     "docs": "openai_harness"
   }
 }

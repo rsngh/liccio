@@ -7,298 +7,298 @@
     "directional": 28
   },
   "robust_fraction": 0.125,
-  "mean_ci_width": 0.384,
+  "mean_ci_width": 0.2935,
   "thresholds": {
     "robust_max_ci_width": 0.25,
     "robust_min_n": 20
   },
   "cells": [
     {
-      "cell_key": "openai_harness/test_generation/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.6,
-      "ci_low": 0.2307,
-      "ci_high": 0.8824,
-      "ci_width": 0.6517,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "fake/security_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "patch/security_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
       "cell_key": "openai_harness/security_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
+      "n_conclusive": 8,
+      "solve_rate": 0.625,
+      "ci_low": 0.3057,
+      "ci_high": 0.8632,
+      "ci_width": 0.5574,
       "tier": "directional"
     },
     {
-      "cell_key": "claude_harness/security_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "fake/test_generation/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "patch/test_generation/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "claude_harness/test_generation/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "fake/refactor/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "patch/refactor/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "openai_harness/refactor/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "claude_harness/refactor/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "fake/ci_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "patch/ci_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "openai_harness/ci_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "claude_harness/ci_fix/medium",
-      "n_conclusive": 5,
-      "solve_rate": 1.0,
-      "ci_low": 0.5655,
-      "ci_high": 1.0,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "fake/migration/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
-      "tier": "directional"
-    },
-    {
-      "cell_key": "patch/migration/medium",
-      "n_conclusive": 5,
-      "solve_rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
+      "cell_key": "openai_harness/test_generation/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.875,
+      "ci_low": 0.5291,
+      "ci_high": 0.9776,
+      "ci_width": 0.4485,
       "tier": "directional"
     },
     {
       "cell_key": "openai_harness/migration/medium",
-      "n_conclusive": 5,
+      "n_conclusive": 8,
+      "solve_rate": 0.875,
+      "ci_low": 0.5291,
+      "ci_high": 0.9776,
+      "ci_width": 0.4485,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "fake/security_fix/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "patch/security_fix/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "claude_harness/security_fix/medium",
+      "n_conclusive": 8,
       "solve_rate": 1.0,
-      "ci_low": 0.5655,
+      "ci_low": 0.6756,
       "ci_high": 1.0,
-      "ci_width": 0.4345,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "fake/test_generation/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "patch/test_generation/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "claude_harness/test_generation/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "fake/refactor/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "patch/refactor/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "openai_harness/refactor/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "claude_harness/refactor/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "fake/ci_fix/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "patch/ci_fix/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "openai_harness/ci_fix/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "claude_harness/ci_fix/medium",
+      "n_conclusive": 8,
+      "solve_rate": 1.0,
+      "ci_low": 0.6756,
+      "ci_high": 1.0,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "fake/migration/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
+      "tier": "directional"
+    },
+    {
+      "cell_key": "patch/migration/medium",
+      "n_conclusive": 8,
+      "solve_rate": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
       "tier": "directional"
     },
     {
       "cell_key": "claude_harness/migration/medium",
-      "n_conclusive": 5,
+      "n_conclusive": 8,
       "solve_rate": 1.0,
-      "ci_low": 0.5655,
+      "ci_low": 0.6756,
       "ci_high": 1.0,
-      "ci_width": 0.4345,
+      "ci_width": 0.3244,
       "tier": "directional"
     },
     {
       "cell_key": "fake/docs/medium",
-      "n_conclusive": 5,
+      "n_conclusive": 8,
       "solve_rate": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
       "tier": "directional"
     },
     {
       "cell_key": "patch/docs/medium",
-      "n_conclusive": 5,
+      "n_conclusive": 8,
       "solve_rate": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.4345,
-      "ci_width": 0.4345,
+      "ci_high": 0.3244,
+      "ci_width": 0.3244,
       "tier": "directional"
     },
     {
       "cell_key": "openai_harness/docs/medium",
-      "n_conclusive": 5,
+      "n_conclusive": 8,
       "solve_rate": 1.0,
-      "ci_low": 0.5655,
+      "ci_low": 0.6756,
       "ci_high": 1.0,
-      "ci_width": 0.4345,
+      "ci_width": 0.3244,
       "tier": "directional"
     },
     {
       "cell_key": "claude_harness/docs/medium",
-      "n_conclusive": 5,
+      "n_conclusive": 8,
       "solve_rate": 1.0,
-      "ci_low": 0.5655,
+      "ci_low": 0.6756,
       "ci_high": 1.0,
-      "ci_width": 0.4345,
+      "ci_width": 0.3244,
       "tier": "directional"
     },
     {
       "cell_key": "fake/feature/medium",
-      "n_conclusive": 10,
+      "n_conclusive": 16,
       "solve_rate": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.2775,
-      "ci_width": 0.2775,
+      "ci_high": 0.1936,
+      "ci_width": 0.1936,
       "tier": "directional"
     },
     {
       "cell_key": "patch/feature/medium",
-      "n_conclusive": 10,
+      "n_conclusive": 16,
       "solve_rate": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.2775,
-      "ci_width": 0.2775,
+      "ci_high": 0.1936,
+      "ci_width": 0.1936,
       "tier": "directional"
     },
     {
       "cell_key": "openai_harness/feature/medium",
-      "n_conclusive": 10,
+      "n_conclusive": 16,
       "solve_rate": 1.0,
-      "ci_low": 0.7225,
+      "ci_low": 0.8064,
       "ci_high": 1.0,
-      "ci_width": 0.2775,
+      "ci_width": 0.1936,
       "tier": "directional"
     },
     {
       "cell_key": "claude_harness/feature/medium",
-      "n_conclusive": 10,
+      "n_conclusive": 16,
       "solve_rate": 1.0,
-      "ci_low": 0.7225,
+      "ci_low": 0.8064,
       "ci_high": 1.0,
-      "ci_width": 0.2775,
+      "ci_width": 0.1936,
       "tier": "directional"
     },
     {
       "cell_key": "fake/bugfix/medium",
-      "n_conclusive": 25,
+      "n_conclusive": 40,
       "solve_rate": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.1332,
-      "ci_width": 0.1332,
+      "ci_high": 0.0876,
+      "ci_width": 0.0876,
       "tier": "robust"
     },
     {
       "cell_key": "patch/bugfix/medium",
-      "n_conclusive": 25,
+      "n_conclusive": 40,
       "solve_rate": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.1332,
-      "ci_width": 0.1332,
+      "ci_high": 0.0876,
+      "ci_width": 0.0876,
       "tier": "robust"
     },
     {
       "cell_key": "openai_harness/bugfix/medium",
-      "n_conclusive": 25,
+      "n_conclusive": 40,
       "solve_rate": 1.0,
-      "ci_low": 0.8668,
+      "ci_low": 0.9124,
       "ci_high": 1.0,
-      "ci_width": 0.1332,
+      "ci_width": 0.0876,
       "tier": "robust"
     },
     {
       "cell_key": "claude_harness/bugfix/medium",
-      "n_conclusive": 25,
+      "n_conclusive": 40,
       "solve_rate": 1.0,
-      "ci_low": 0.8668,
+      "ci_low": 0.9124,
       "ci_high": 1.0,
-      "ci_width": 0.1332,
+      "ci_width": 0.0876,
       "tier": "robust"
     }
   ]
