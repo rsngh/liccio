@@ -93,7 +93,11 @@ def build_draft_pr(repo: Path, *, task_id: str, issue_text: str, module_path: st
     _git(repo, "checkout", "-b", branch)
     (repo / module_path).write_text(patch_content)
     _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", f"ACP draft fix: {task_id}")
+    # Disable commit signing for this sandbox-internal draft commit: these are throwaway
+    # ACP draft artifacts on a disposable feature branch, not user-authored commits. In
+    # environments that ENFORCE commit signing, an unconfigured signer makes `git commit`
+    # fail, which would silently leave the draft unapplied (applied_to_branch=False).
+    _git(repo, "-c", "commit.gpgsign=false", "commit", "-m", f"ACP draft fix: {task_id}")
     head = _git(repo, "rev-parse", "HEAD")
     diff = _git(repo, "diff", f"{base_commit}..{head}")
     rollback = RollbackPlan(

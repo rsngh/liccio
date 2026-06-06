@@ -331,8 +331,12 @@ UNDERSPECIFIED_TASKS: list[BenchTask] = [
 
 
 def _git_init(repo: Path) -> None:
+    # commit.gpgsign=false: these are throwaway benchmark repos; in environments that ENFORCE
+    # commit signing an unconfigured signer would make the init commit fail (no HEAD), breaking
+    # every bench-repo-based test/eval. Local config keeps the fixture self-contained.
     for argv in (["git", "init", "-q"], ["git", "config", "user.email", "t@e.com"],
-                 ["git", "config", "user.name", "t"], ["git", "add", "-A"],
+                 ["git", "config", "user.name", "t"],
+                 ["git", "config", "commit.gpgsign", "false"], ["git", "add", "-A"],
                  ["git", "commit", "-qm", "init"]):
         subprocess.run(argv, cwd=repo, check=False)
 

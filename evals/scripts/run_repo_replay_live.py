@@ -38,11 +38,16 @@ def main() -> int:
         ss_total += REPS
         ss_pass += ss_solved
         for r in ss:
+            # Propagate the attempt's own outcome so an INCONCLUSIVE candidate (e.g. the
+            # provider SDK/endpoint was unavailable -> n_conclusive == 0) is NOT silently
+            # counted as a conclusive task failure. Without this, an unreachable provider
+            # contaminates solve_rate_conclusive and reads as "the model failed every task".
             cells.append({"success": r.solved, "is_harness": False,
                           "tool_calls": 1 if r.n_conclusive else 0,
                           "diff_captured": r.n_conclusive > 0,
+                          "_outcome": r.outcome,
                           "status": "succeeded" if r.solved else "failed",
-                          "measurement_quality": 1.0})
+                          "measurement_quality": 1.0 if r.n_conclusive else 0.0})
         bok = best_of_k(bench, k=K, sampler=sampler, model=DEFAULT_WEAK_MODEL)
         bok_solved += int(bok.solved)
         rows.append({"task": task.name, "single_shot": f"{ss_solved}/{REPS}",
@@ -51,8 +56,15 @@ def main() -> int:
     b = solve_rate_breakdown(cells)
     ss_rate = round(ss_pass / ss_total, 4) if ss_total else 0.0
     bok_rate = round(bok_solved / len(REPLAY_TASKS), 4) if REPLAY_TASKS else 0.0
+    n_inconclusive = ss_total - b.n_conclusive
+    # No conclusive measurement was obtained -> the raw rate is meaningless; flag it loudly
+    # instead of publishing a contaminated "0.0 solve rate" that looks like a model verdict.
+    measurement_contaminated = b.n_conclusive == 0 and ss_total > 0
     report = {"experiment": "repo_replay_live", "model": DEFAULT_WEAK_MODEL,
               "n_tasks": len(REPLAY_TASKS), "single_shot_rate": ss_rate,
+              "single_shot_rate_conclusive": b.solve_rate_conclusive,
+              "n_conclusive": b.n_conclusive, "n_inconclusive": n_inconclusive,
+              "measurement_contaminated": measurement_contaminated,
               "best_of_k_rate": bok_rate, "best_of_k_lift": round(bok_rate - ss_rate, 4),
               "ceiling_escaped": ss_rate < 1.0,
               "solve_rate_breakdown": b.to_dict(), "rows": rows}

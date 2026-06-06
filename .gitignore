@@ -102,3 +102,6 @@ evals/reports/*
 
 # Live control-plane demo — real Claude end-to-end (committed, redacted)
 !evals/reports/claude_control_plane_live.json
+
+# Independent evaluation (2026-06-06) — live unseen-input acceptance test (committed, redacted)
+!evals/reports/eval_unseen_live.json

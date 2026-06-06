@@ -1,0 +1,159 @@
+{
+  "experiment": "eval_unseen_live",
+  "what": "independent acceptance test: real Claude driven end-to-end by the acp control plane on bugs AUTHORED FRESH for this evaluation (not in the repo)",
+  "model": "claude-sonnet-4-6",
+  "evidence_tier": "fixture-unseen (authored for this eval; absent from src/ and tests/)",
+  "n_bugs": 5,
+  "n_solved_verified_and_generalized": 5,
+  "solve_rate": 1.0,
+  "all_offline_fair": true,
+  "provenance_complete_all": true,
+  "noop_probe": {
+    "probe": "noop_already_correct",
+    "started_green": true,
+    "status": "waiting_for_human",
+    "still_green_after_loop": true
+  },
+  "rows": [
+    {
+      "bug": "retry_backoff",
+      "module": "backoff.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "confidence": 1.0
+      },
+      "reward": 4.71911,
+      "tokens": {
+        "in": 899,
+        "out": 37
+      },
+      "provenance_complete": true
+    },
+    {
+      "bug": "parse_duration",
+      "module": "duration.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "confidence": 1.0
+      },
+      "reward": 4.718829,
+      "tokens": {
+        "in": 943,
+        "out": 115
+      },
+      "provenance_complete": true
+    },
+    {
+      "bug": "token_bucket",
+      "module": "bucket.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "confidence": 1.0
+      },
+      "reward": 4.718791,
+      "tokens": {
+        "in": 977,
+        "out": 117
+      },
+      "provenance_complete": true
+    },
+    {
+      "bug": "csv_escape",
+      "module": "csvfmt.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "confidence": 1.0
+      },
+      "reward": 4.718183,
+      "tokens": {
+        "in": 874,
+        "out": 72
+      },
+      "provenance_complete": true
+    },
+    {
+      "bug": "jump_search",
+      "module": "search.py",
+      "offline_fair": {
+        "buggy_fails": true,
+        "reference_fix_passes": true
+      },
+      "routed_to": "claude",
+      "context_strategy": "test_focused",
+      "action_probability": 0.3333333333333333,
+      "status": "succeeded",
+      "verified_green_by_execution": true,
+      "generalizes_to_holdout": true,
+      "evidence": [
+        "unit_test:pytest -> pass",
+        "coverage:coverage -> pass"
+      ],
+      "evaluation": {
+        "spec_compliance": 1.0,
+        "confidence": 1.0
+      },
+      "reward": 4.718907,
+      "tokens": {
+        "in": 1138,
+        "out": 115
+      },
+      "provenance_complete": true
+    }
+  ]
+}
