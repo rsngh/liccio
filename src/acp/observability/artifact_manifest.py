@@ -172,6 +172,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 30 — guarded execution (draft patches, zero writes)
     "evals/reports/guarded_execution_live.json": [
         "experiment", "no_autonomous_writes", "nothing_applied", "working_tree_unchanged"],
+    # Alpha 32 — guarded PR pipeline (draft PRs on sandbox branches)
+    "evals/reports/guarded_pr_live.json": [
+        "experiment", "zero_protected_branch_writes", "all_protected_branches_unchanged"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
