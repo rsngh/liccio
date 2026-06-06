@@ -152,6 +152,8 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 26 — vendor-native corpus capability matrix
     "evals/reports/vendor_capability_matrix.json": [
         "experiment", "harness", "baseline", "with_skill"],
+    # Item 4 — sample adequacy (statistical robustness of observed cells)
+    "evals/reports/sample_adequacy.json": ["experiment", "by_tier", "robust_fraction"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }

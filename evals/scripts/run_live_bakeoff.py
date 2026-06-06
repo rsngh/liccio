@@ -514,7 +514,13 @@ def main() -> int:
     LIVE_OUT.parent.mkdir(parents=True, exist_ok=True)
     LIVE_OUT.write_text(json.dumps(redact_report(report), indent=2) + "\n")
     MATRIX_OUT.parent.mkdir(parents=True, exist_ok=True)
-    MATRIX_OUT.write_text(json.dumps(matrix.to_dict(), indent=2, default=str) + "\n")
+    matrix_dict = matrix.to_dict()
+    MATRIX_OUT.write_text(json.dumps(matrix_dict, indent=2, default=str) + "\n")
+    # Sample adequacy (item 4): which observed cells are statistically robust vs directional.
+    from acp.routing.sample_adequacy import matrix_adequacy
+    Path("evals/reports/sample_adequacy.json").write_text(json.dumps(
+        {"experiment": "sample_adequacy", "source": "REAL observed agent runs",
+         **matrix_adequacy(matrix_dict["cells"])}, indent=2, default=str) + "\n")
     OPE_OUT.write_text(json.dumps({"experiment": "alpha11_live_bakeoff_ope",
                                    "source": "REAL observed agent runs", **ope},
                                   indent=2, default=str) + "\n")
