@@ -52,3 +52,15 @@ def test_pr_description_has_issue_and_status(tmp_path) -> None:
                         module_path=DIVIDE.module_path, patch_content=DIVIDE.fixed,
                         verified=True)
     assert "the divide bug" in pr.description and "Draft fix: divide" in pr.description
+
+
+def test_reviewer_assignment_scales_with_risk() -> None:
+    from acp.orchestration.guarded_pr import ReviewerAssignmentPolicy
+    p = ReviewerAssignmentPolicy()
+    low = p.assign(risk="low", verified=True)
+    assert "security" not in low["roles"] and not low["blocks_until_reviewed"]
+    high = p.assign(risk="high", verified=True)
+    assert "security" in high["roles"] and "senior" in high["roles"]
+    assert high["blocks_until_reviewed"] and high["n_required"] >= low["n_required"]
+    # unverified always blocks
+    assert p.assign(risk="low", verified=False)["blocks_until_reviewed"]

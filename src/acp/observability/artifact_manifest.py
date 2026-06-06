@@ -175,6 +175,9 @@ REPORT_SCHEMA_REGISTRY: dict[str, list[str]] = {
     # Alpha 32 — guarded PR pipeline (draft PRs on sandbox branches)
     "evals/reports/guarded_pr_live.json": [
         "experiment", "zero_protected_branch_writes", "all_protected_branches_unchanged"],
+    # Alpha 37 — live Kubernetes sandbox gauntlet (real kind cluster)
+    "evals/reports/kubernetes_sandbox_live.json": [
+        "experiment", "live_cluster", "passed", "checks"],
     # Round 19 — end-to-end live autonomous self-improvement cycle
     "reports/live/autonomous_cycle.json": ["experiment", "cycle", "dashboard"],
 }
