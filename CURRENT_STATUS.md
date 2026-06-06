@@ -6,7 +6,7 @@
 > managed retrieval/observability backends are optional and partially stubbed.
 
 Last updated: 2026-06-05 (Alpha 25 — production coherence & evidence truth). Tests: 1121 passing, 5 skipped (docker/pgvector/live-codex unavailable) — see `reports/pytest.txt`;
-`ruff` + `mypy` clean across 283 source files; see `reports/coverage.txt`. Gate:
+`ruff` + `mypy` clean across 284 source files; see `reports/coverage.txt`. Gate:
 `uv run pytest -q && uv run ruff check . && uv run mypy src && uv run alembic
 upgrade head && acp reports validate` (87 artifacts valid).
 
