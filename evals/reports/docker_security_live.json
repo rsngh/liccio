@@ -1,0 +1,54 @@
+{
+  "available": true,
+  "skipped": false,
+  "passed": true,
+  "passed_count": 9,
+  "total": 9,
+  "checks": [
+    {
+      "name": "no_network",
+      "status": "pass",
+      "detail": "argv has --network none=True"
+    },
+    {
+      "name": "non_root",
+      "status": "pass",
+      "detail": "flag=True uid='1000'"
+    },
+    {
+      "name": "memory_cap",
+      "status": "pass",
+      "detail": "flag=True rc=137"
+    },
+    {
+      "name": "pid_cap",
+      "status": "pass",
+      "detail": "flag=True out='LIMITED 63 RuntimeError'"
+    },
+    {
+      "name": "timeout",
+      "status": "pass",
+      "detail": "host timeout enforced=True"
+    },
+    {
+      "name": "workspace_containment",
+      "status": "pass",
+      "detail": "reflected_on_bind_mount=True"
+    },
+    {
+      "name": "secret_scrub",
+      "status": "pass",
+      "detail": "secret_visible=False"
+    },
+    {
+      "name": "massive_stdout",
+      "status": "pass",
+      "detail": "rc=0 bytes=100001"
+    },
+    {
+      "name": "cleanup",
+      "status": "pass",
+      "detail": "still_exists=False"
+    }
+  ]
+}
