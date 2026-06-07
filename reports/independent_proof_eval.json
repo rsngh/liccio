@@ -1,0 +1,132 @@
+{
+  "experiment": "independent_proof",
+  "question": "does an independent proxy verifier beat public-only candidate selection per dollar?",
+  "n_tasks": 14,
+  "k_candidates": 5,
+  "roster": [
+    "gemini_flash_lite",
+    "gemini_flash_lite",
+    "haiku",
+    "haiku",
+    "gemini_flash"
+  ],
+  "elapsed_s": 638.1,
+  "selectors": {
+    "public_only": {
+      "solved": 11,
+      "n": 14,
+      "rate": 0.7857,
+      "ci": [
+        0.5241,
+        0.9243
+      ],
+      "total_cost_usd": 0.119004,
+      "cost_per_verified_success": 0.010819
+    },
+    "proxy": {
+      "solved": 14,
+      "n": 14,
+      "rate": 1.0,
+      "ci": [
+        0.7847,
+        1.0
+      ],
+      "total_cost_usd": 0.161712,
+      "cost_per_verified_success": 0.011551
+    },
+    "oracle": {
+      "solved": 14,
+      "n": 14,
+      "rate": 1.0,
+      "ci": [
+        0.7847,
+        1.0
+      ],
+      "total_cost_usd": 0.119004,
+      "cost_per_verified_success": 0.0085
+    }
+  },
+  "proxy_vs_hidden_oracle": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 63,
+    "fp": 0,
+    "tn": 7,
+    "fn": 0,
+    "note": "pred=proxy_pass, truth=hidden_pass over all candidates"
+  },
+  "proxy_check_gen_cost_usd": 0.042708,
+  "per_task": {
+    "cap_lengthOfLIS": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_editdist": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_calc": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_json": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_atoi": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_valid_number": {
+      "public_only": 0,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_wildcard": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_decode": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_calc_unary": {
+      "public_only": 0,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_circular_max": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_simplify_path": {
+      "public_only": 0,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_excel_title": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_vm": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    },
+    "cap_regex": {
+      "public_only": 1,
+      "proxy": 1,
+      "oracle": 1
+    }
+  },
+  "evidence_tier": "live; candidates from a weak/strong model mix; proxy never sees the hidden test"
+}
