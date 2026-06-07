@@ -111,8 +111,14 @@ def policy_oracle(spec: ArenaTaskSpec, root: Path, **_) -> ArenaAttempt:
 # --- live single-shot context strategies ----------------------------------------------
 
 def _single_shot(adapter, spec: ArenaTaskSpec, root: Path, *, strategy: str, policy_name: str,
-                 guidance: str = "", temperature: float | None = None) -> ArenaAttempt:
-    """Run the single-shot Claude adapter with a context pack built per `strategy`."""
+                 guidance: str = "", temperature: float | None = None,
+                 cost_fn=None) -> ArenaAttempt:
+    """Run the single-shot Claude adapter with a context pack built per `strategy`.
+
+    `cost_fn(in_tok, out_tok) -> usd` overrides the default sonnet-blended pricing — the
+    heterogeneity arena passes a tier-specific price so cheap/strong models are costed honestly.
+    """
+    price = cost_fn or _cost
     # unique per call so a policy that calls this twice (e.g. advisor retry) never collides
     call_root = root / policy_name / f"c{time.time_ns()}"
     ws = build_workspace(spec, call_root)
@@ -147,7 +153,7 @@ def _single_shot(adapter, spec: ArenaTaskSpec, root: Path, *, strategy: str, pol
                             public_solved=False, conclusive=False, cost_usd=0.0,
                             latency_s=time.time() - t0, detail=str(exc)[:120])
     solved, public = verify(Path(wsx.path), spec, call_root)
-    cost = _cost(res.input_token_count, res.output_token_count)
+    cost = price(res.input_token_count, res.output_token_count)
     changed = res.diff.changed_files if res.diff else []
     return ArenaAttempt(task=spec.name, policy=policy_name,
                         adapter_status=AdapterStatus.LIVE_CONCLUSIVE.value, solved=solved,
