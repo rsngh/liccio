@@ -1,0 +1,95 @@
+{
+  "experiment": "vendor_native_live_gate",
+  "required_adapters": [
+    "claude_harness",
+    "openai_harness",
+    "codex_cli",
+    "openhands",
+    "fake",
+    "patch"
+  ],
+  "live_capable": [
+    "claude_harness",
+    "fake",
+    "patch"
+  ],
+  "unavailable": [
+    "openai_harness",
+    "codex_cli",
+    "openhands"
+  ],
+  "availability_separated_from_capability": true,
+  "no_unavailable_adapter_routed_by_default": true,
+  "activation_matrix": {
+    "claude_harness": {
+      "n": 5,
+      "HAR": 1.0,
+      "HFR": 1.0,
+      "PWL": 1.0,
+      "source": "arena live tool-loop traces"
+    }
+  },
+  "adapters": [
+    {
+      "adapter": "claude_harness",
+      "available": true,
+      "is_harness": true,
+      "status": "live_conclusive",
+      "reason": "ok",
+      "activation": {
+        "n": 5,
+        "HAR": 1.0,
+        "HFR": 1.0,
+        "PWL": 1.0,
+        "source": "arena live tool-loop traces"
+      },
+      "routed_by_default": true
+    },
+    {
+      "adapter": "openai_harness",
+      "available": false,
+      "is_harness": true,
+      "status": "unavailable",
+      "reason": "openai SDK or ACP_OPENAI_API_KEY missing",
+      "activation": null,
+      "routed_by_default": false
+    },
+    {
+      "adapter": "codex_cli",
+      "available": false,
+      "is_harness": true,
+      "status": "unavailable",
+      "reason": "codex binary missing",
+      "activation": null,
+      "routed_by_default": false
+    },
+    {
+      "adapter": "openhands",
+      "available": false,
+      "is_harness": false,
+      "status": "unavailable",
+      "reason": "openhands SDK / server URL not configured",
+      "activation": null,
+      "routed_by_default": false
+    },
+    {
+      "adapter": "fake",
+      "available": true,
+      "is_harness": false,
+      "status": "live_available_no_cells",
+      "reason": "mode=success_noop",
+      "activation": null,
+      "routed_by_default": true
+    },
+    {
+      "adapter": "patch",
+      "available": true,
+      "is_harness": false,
+      "status": "live_available_no_cells",
+      "reason": "",
+      "activation": null,
+      "routed_by_default": true
+    }
+  ],
+  "note": "openai/codex/openhands self-skip as unavailable with reasons; ranking claims need >=30 conclusive cells per adapter (smoke here)."
+}
