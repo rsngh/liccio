@@ -1,0 +1,273 @@
+{
+  "experiment": "topology_live_ablation",
+  "n_tasks": 24,
+  "controller_verified": 1.0,
+  "cheap_single_verified": 0.1667,
+  "controller_beats_cheap_single": true,
+  "controller_cost_per_verified": 0.003042,
+  "cheap_cost_per_verified": 0.011537,
+  "marginal_value_of_escalation": 0.8333,
+  "rows": [
+    {
+      "task": "xfileNG_scale_0",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003507
+    },
+    {
+      "task": "xfileNG_offset_1",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003984
+    },
+    {
+      "task": "xfileNG_blend_2",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.004224
+    },
+    {
+      "task": "xfileNG_scale_3",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.001287
+    },
+    {
+      "task": "xfileNG_offset_4",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003594
+    },
+    {
+      "task": "xfileNG_blend_5",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.004224
+    },
+    {
+      "task": "xfileNG_scale_6",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.007722
+    },
+    {
+      "task": "xfileNG_offset_7",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003879
+    },
+    {
+      "task": "xfileNG_blend_8",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003441
+    },
+    {
+      "task": "xfileNG_scale_9",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003657
+    },
+    {
+      "task": "multiwire_0",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.005016
+    },
+    {
+      "task": "multiwire_1",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.004386
+    },
+    {
+      "task": "multiwire_2",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.001497
+    },
+    {
+      "task": "multiwire_3",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.001497
+    },
+    {
+      "task": "multiwire_4",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.003468
+    },
+    {
+      "task": "multiwire_5",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.004596
+    },
+    {
+      "task": "decoy_0",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.00228
+    },
+    {
+      "task": "decoy_1",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.00222
+    },
+    {
+      "task": "decoy_2",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.002283
+    },
+    {
+      "task": "decoy_3",
+      "controller_solved": true,
+      "cheap_single_solved": false,
+      "action_path": [
+        "cheap_single",
+        "retry_with_grep",
+        "commit_success"
+      ],
+      "controller_cost": 0.002283
+    },
+    {
+      "task": "memrep_0",
+      "controller_solved": true,
+      "cheap_single_solved": true,
+      "action_path": [
+        "cheap_single",
+        "commit_success"
+      ],
+      "controller_cost": 0.000993
+    },
+    {
+      "task": "memrep_1",
+      "controller_solved": true,
+      "cheap_single_solved": true,
+      "action_path": [
+        "cheap_single",
+        "commit_success"
+      ],
+      "controller_cost": 0.000993
+    },
+    {
+      "task": "memrep_2",
+      "controller_solved": true,
+      "cheap_single_solved": true,
+      "action_path": [
+        "cheap_single",
+        "commit_success"
+      ],
+      "controller_cost": 0.000993
+    },
+    {
+      "task": "memrep_3",
+      "controller_solved": true,
+      "cheap_single_solved": true,
+      "action_path": [
+        "cheap_single",
+        "commit_success"
+      ],
+      "controller_cost": 0.000993
+    }
+  ],
+  "note": "executable controller LIVE; escalation rescues hard tasks cheap_single fails"
+}
