@@ -1,0 +1,147 @@
+{
+  "experiment": "hard_realism_policy_compare",
+  "global_ranking": [
+    "oracle",
+    "repo_map_router",
+    "abstain_router",
+    "grep_router",
+    "cheap_single",
+    "cheap_static"
+  ],
+  "global_scores": [
+    {
+      "policy": "oracle",
+      "n_tasks": 109,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 109,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "repo_map_router",
+      "n_tasks": 109,
+      "verified_success_rate": 0.8807,
+      "hidden_test_pass_rate": 0.8807,
+      "public_pass_rate": 0.8716,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 96,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.225885,
+      "cost_per_verified_success": 0.002353,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.787
+    },
+    {
+      "policy": "abstain_router",
+      "n_tasks": 109,
+      "verified_success_rate": 0.8716,
+      "hidden_test_pass_rate": 0.8716,
+      "public_pass_rate": 0.8624,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 95,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.22143,
+      "cost_per_verified_success": 0.002331,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.627
+    },
+    {
+      "policy": "grep_router",
+      "n_tasks": 109,
+      "verified_success_rate": 0.8716,
+      "hidden_test_pass_rate": 0.8716,
+      "public_pass_rate": 0.8624,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 95,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.196956,
+      "cost_per_verified_success": 0.002073,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.289
+    },
+    {
+      "policy": "cheap_single",
+      "n_tasks": 109,
+      "verified_success_rate": 0.3853,
+      "hidden_test_pass_rate": 0.3853,
+      "public_pass_rate": 0.3853,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 42,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.247986,
+      "cost_per_verified_success": 0.005904,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 4.394
+    },
+    {
+      "policy": "cheap_static",
+      "n_tasks": 109,
+      "verified_success_rate": 0.1101,
+      "hidden_test_pass_rate": 0.1101,
+      "public_pass_rate": 0.2202,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 12,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    }
+  ],
+  "bucket_level_promotions": [
+    {
+      "bucket": "broad_repo_map",
+      "policy": "abstain_router",
+      "verified": 0.8333,
+      "incumbent_verified": 0.0
+    },
+    {
+      "bucket": "broad_repo_map",
+      "policy": "grep_router",
+      "verified": 0.8333,
+      "incumbent_verified": 0.0
+    },
+    {
+      "bucket": "broad_repo_map",
+      "policy": "repo_map_router",
+      "verified": 0.8333,
+      "incumbent_verified": 0.0
+    },
+    {
+      "bucket": "cross_file_api",
+      "policy": "abstain_router",
+      "verified": 0.9796,
+      "incumbent_verified": 0.102
+    },
+    {
+      "bucket": "cross_file_api",
+      "policy": "grep_router",
+      "verified": 1.0,
+      "incumbent_verified": 0.102
+    },
+    {
+      "bucket": "cross_file_api",
+      "policy": "repo_map_router",
+      "verified": 1.0,
+      "incumbent_verified": 0.102
+    }
+  ]
+}

@@ -1,7 +1,9 @@
 {
   "experiment": "provider_marketplace_scorecard",
   "by_evidence_class": {
-    "live_conclusive": [],
+    "live_conclusive": [
+      "anthropic"
+    ],
     "replay_imported": [],
     "mock_contract_only": [
       "openai",
@@ -9,18 +11,16 @@
       "codex",
       "openhands"
     ],
-    "unavailable": [
-      "anthropic"
-    ]
+    "unavailable": []
   },
   "rows": [
     {
       "provider": "anthropic",
-      "evidence_class": "unavailable",
+      "evidence_class": "live_conclusive",
       "available": true,
       "contract_passed": true,
-      "conclusive_cells": 0,
-      "verified_success_rate": null,
+      "conclusive_cells": 654,
+      "verified_success_rate": 0.8716,
       "cost_per_verified_success": null,
       "reason": "ok"
     },
@@ -66,10 +66,11 @@
     }
   ],
   "mix_recommendation": {
-    "recommended_primary": null,
-    "feasible_providers": [],
+    "recommended_primary": "anthropic",
+    "feasible_providers": [
+      "anthropic"
+    ],
     "not_ranked": {
-      "anthropic": "ok",
       "openai": "openai SDK not installed and ACP_OPENAI_API_KEY not set",
       "gemini": "google.generativeai SDK not installed and ACP_GEMINI_API_KEY not set",
       "codex": "codex not found on PATH",

@@ -1,0 +1,526 @@
+{
+  "experiment": "hard_realism_arena",
+  "round": "Alpha 44 \u2014 Hard-Realism MetaRouter",
+  "live_claude": true,
+  "n_tasks": 109,
+  "n_families": 16,
+  "task_types": [
+    "bugfix",
+    "ci_fix",
+    "feature",
+    "flaky_fix",
+    "performance",
+    "refactor",
+    "security_fix",
+    "test_generation"
+  ],
+  "context_needs": [
+    "broad_repo_map",
+    "cross_file_api",
+    "exact_symbol",
+    "memory_required",
+    "none"
+  ],
+  "by_task_type": {
+    "bugfix": 66,
+    "feature": 12,
+    "security_fix": 8,
+    "flaky_fix": 6,
+    "ci_fix": 5,
+    "performance": 4,
+    "refactor": 4,
+    "test_generation": 4
+  },
+  "policies": [
+    "cheap_static",
+    "oracle",
+    "abstain_router",
+    "cheap_single",
+    "grep_router",
+    "repo_map_router"
+  ],
+  "n_cells": 654,
+  "n_conclusive_cells": 654,
+  "conclusive_rate": 1.0,
+  "global_confidence_intervals": {
+    "cheap_static": {
+      "point": 0.1101,
+      "lo": 0.0641,
+      "hi": 0.1826
+    },
+    "oracle": {
+      "point": 1.0,
+      "lo": 0.966,
+      "hi": 1.0
+    },
+    "abstain_router": {
+      "point": 0.8716,
+      "lo": 0.7959,
+      "hi": 0.9219
+    },
+    "cheap_single": {
+      "point": 0.3853,
+      "lo": 0.2993,
+      "hi": 0.4791
+    },
+    "grep_router": {
+      "point": 0.8716,
+      "lo": 0.7959,
+      "hi": 0.9219
+    },
+    "repo_map_router": {
+      "point": 0.8807,
+      "lo": 0.8066,
+      "hi": 0.929
+    }
+  },
+  "global_scores": [
+    {
+      "policy": "cheap_static",
+      "n_tasks": 109,
+      "verified_success_rate": 0.1101,
+      "hidden_test_pass_rate": 0.1101,
+      "public_pass_rate": 0.2202,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 12,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "oracle",
+      "n_tasks": 109,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 109,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "abstain_router",
+      "n_tasks": 109,
+      "verified_success_rate": 0.8716,
+      "hidden_test_pass_rate": 0.8716,
+      "public_pass_rate": 0.8624,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 95,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.22143,
+      "cost_per_verified_success": 0.002331,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.627
+    },
+    {
+      "policy": "cheap_single",
+      "n_tasks": 109,
+      "verified_success_rate": 0.3853,
+      "hidden_test_pass_rate": 0.3853,
+      "public_pass_rate": 0.3853,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 42,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.247986,
+      "cost_per_verified_success": 0.005904,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 4.394
+    },
+    {
+      "policy": "grep_router",
+      "n_tasks": 109,
+      "verified_success_rate": 0.8716,
+      "hidden_test_pass_rate": 0.8716,
+      "public_pass_rate": 0.8624,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 95,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.196956,
+      "cost_per_verified_success": 0.002073,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.289
+    },
+    {
+      "policy": "repo_map_router",
+      "n_tasks": 109,
+      "verified_success_rate": 0.8807,
+      "hidden_test_pass_rate": 0.8807,
+      "public_pass_rate": 0.8716,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 96,
+      "n_conclusive": 109,
+      "total_cost_usd": 0.225885,
+      "cost_per_verified_success": 0.002353,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.787
+    }
+  ],
+  "cheap_single_failures": 67,
+  "bucket_confidence_intervals": {
+    "broad_repo_map": {
+      "abstain_router": {
+        "verified": 0.8333,
+        "ci": {
+          "point": 0.8333,
+          "lo": 0.552,
+          "hi": 0.953
+        },
+        "n": 12
+      },
+      "cheap_single": {
+        "verified": 0.0,
+        "ci": {
+          "point": 0.0,
+          "lo": 0.0,
+          "hi": 0.2425
+        },
+        "n": 12
+      },
+      "cheap_static": {
+        "verified": 0.0,
+        "ci": {
+          "point": 0.0,
+          "lo": 0.0,
+          "hi": 0.2425
+        },
+        "n": 12
+      },
+      "grep_router": {
+        "verified": 0.8333,
+        "ci": {
+          "point": 0.8333,
+          "lo": 0.552,
+          "hi": 0.953
+        },
+        "n": 12
+      },
+      "oracle": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.7575,
+          "hi": 1.0
+        },
+        "n": 12
+      },
+      "repo_map_router": {
+        "verified": 0.8333,
+        "ci": {
+          "point": 0.8333,
+          "lo": 0.552,
+          "hi": 0.953
+        },
+        "n": 12
+      }
+    },
+    "cross_file_api": {
+      "abstain_router": {
+        "verified": 0.9796,
+        "ci": {
+          "point": 0.9796,
+          "lo": 0.8931,
+          "hi": 0.9964
+        },
+        "n": 49
+      },
+      "cheap_single": {
+        "verified": 0.102,
+        "ci": {
+          "point": 0.102,
+          "lo": 0.0444,
+          "hi": 0.2176
+        },
+        "n": 49
+      },
+      "cheap_static": {
+        "verified": 0.0,
+        "ci": {
+          "point": 0.0,
+          "lo": 0.0,
+          "hi": 0.0727
+        },
+        "n": 49
+      },
+      "grep_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.9273,
+          "hi": 1.0
+        },
+        "n": 49
+      },
+      "oracle": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.9273,
+          "hi": 1.0
+        },
+        "n": 49
+      },
+      "repo_map_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.9273,
+          "hi": 1.0
+        },
+        "n": 49
+      }
+    },
+    "exact_symbol": {
+      "abstain_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.8513,
+          "hi": 1.0
+        },
+        "n": 22
+      },
+      "cheap_single": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.8513,
+          "hi": 1.0
+        },
+        "n": 22
+      },
+      "cheap_static": {
+        "verified": 0.0,
+        "ci": {
+          "point": 0.0,
+          "lo": 0.0,
+          "hi": 0.1487
+        },
+        "n": 22
+      },
+      "grep_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.8513,
+          "hi": 1.0
+        },
+        "n": 22
+      },
+      "oracle": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.8513,
+          "hi": 1.0
+        },
+        "n": 22
+      },
+      "repo_map_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.8513,
+          "hi": 1.0
+        },
+        "n": 22
+      }
+    },
+    "memory_required": {
+      "abstain_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.7225,
+          "hi": 1.0
+        },
+        "n": 10
+      },
+      "cheap_single": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.7225,
+          "hi": 1.0
+        },
+        "n": 10
+      },
+      "cheap_static": {
+        "verified": 0.0,
+        "ci": {
+          "point": 0.0,
+          "lo": 0.0,
+          "hi": 0.2775
+        },
+        "n": 10
+      },
+      "grep_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.7225,
+          "hi": 1.0
+        },
+        "n": 10
+      },
+      "oracle": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.7225,
+          "hi": 1.0
+        },
+        "n": 10
+      },
+      "repo_map_router": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.7225,
+          "hi": 1.0
+        },
+        "n": 10
+      }
+    },
+    "none": {
+      "abstain_router": {
+        "verified": 0.3125,
+        "ci": {
+          "point": 0.3125,
+          "lo": 0.1416,
+          "hi": 0.556
+        },
+        "n": 16
+      },
+      "cheap_single": {
+        "verified": 0.3125,
+        "ci": {
+          "point": 0.3125,
+          "lo": 0.1416,
+          "hi": 0.556
+        },
+        "n": 16
+      },
+      "cheap_static": {
+        "verified": 0.75,
+        "ci": {
+          "point": 0.75,
+          "lo": 0.505,
+          "hi": 0.8982
+        },
+        "n": 16
+      },
+      "grep_router": {
+        "verified": 0.25,
+        "ci": {
+          "point": 0.25,
+          "lo": 0.1018,
+          "hi": 0.495
+        },
+        "n": 16
+      },
+      "oracle": {
+        "verified": 1.0,
+        "ci": {
+          "point": 1.0,
+          "lo": 0.8064,
+          "hi": 1.0
+        },
+        "n": 16
+      },
+      "repo_map_router": {
+        "verified": 0.3125,
+        "ci": {
+          "point": 0.3125,
+          "lo": 0.1416,
+          "hi": 0.556
+        },
+        "n": 16
+      }
+    }
+  },
+  "bucket_level_promotions": [
+    {
+      "bucket": "broad_repo_map",
+      "policy": "abstain_router",
+      "verified": 0.8333,
+      "incumbent_verified": 0.0
+    },
+    {
+      "bucket": "broad_repo_map",
+      "policy": "grep_router",
+      "verified": 0.8333,
+      "incumbent_verified": 0.0
+    },
+    {
+      "bucket": "broad_repo_map",
+      "policy": "repo_map_router",
+      "verified": 0.8333,
+      "incumbent_verified": 0.0
+    },
+    {
+      "bucket": "cross_file_api",
+      "policy": "abstain_router",
+      "verified": 0.9796,
+      "incumbent_verified": 0.102
+    },
+    {
+      "bucket": "cross_file_api",
+      "policy": "grep_router",
+      "verified": 1.0,
+      "incumbent_verified": 0.102
+    },
+    {
+      "bucket": "cross_file_api",
+      "policy": "repo_map_router",
+      "verified": 1.0,
+      "incumbent_verified": 0.102
+    }
+  ],
+  "acceptance_gate": {
+    "ge_600_conclusive_cells": true,
+    "ge_100_tasks": true,
+    "ge_10_task_families": true,
+    "ge_5_context_needs": true,
+    "ge_25_cheap_single_failures": true,
+    "high_risk_false_auto_approve": 0,
+    "bucket_level_ci_separated_win": true
+  },
+  "all_gates_pass": true,
+  "failure_taxonomy": {
+    "cheap_single:bugfix": 55,
+    "cheap_static:bugfix": 54,
+    "abstain_router:bugfix": 12,
+    "cheap_static:feature": 12,
+    "cheap_single:feature": 12,
+    "grep_router:bugfix": 12,
+    "repo_map_router:bugfix": 11,
+    "cheap_static:security_fix": 8,
+    "cheap_static:flaky_fix": 6,
+    "cheap_static:ci_fix": 5,
+    "cheap_static:performance": 4,
+    "cheap_static:refactor": 4,
+    "cheap_static:test_generation": 4,
+    "abstain_router:feature": 2,
+    "grep_router:feature": 2,
+    "repo_map_router:feature": 2
+  },
+  "evidence_tier": "fixture-hard-unseen (authored to defeat the ceiling); live Claude",
+  "elapsed_s": 1906.4
+}

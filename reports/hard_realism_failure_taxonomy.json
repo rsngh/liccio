@@ -1,0 +1,18 @@
+{
+  "cheap_single:bugfix": 55,
+  "cheap_static:bugfix": 54,
+  "abstain_router:bugfix": 12,
+  "cheap_static:feature": 12,
+  "cheap_single:feature": 12,
+  "grep_router:bugfix": 12,
+  "repo_map_router:bugfix": 11,
+  "cheap_static:security_fix": 8,
+  "cheap_static:flaky_fix": 6,
+  "cheap_static:ci_fix": 5,
+  "cheap_static:performance": 4,
+  "cheap_static:refactor": 4,
+  "cheap_static:test_generation": 4,
+  "abstain_router:feature": 2,
+  "grep_router:feature": 2,
+  "repo_map_router:feature": 2
+}
