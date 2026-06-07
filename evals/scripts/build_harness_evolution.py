@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Build the harness-evolution guarded-PR report (GOALS Alpha 44 P7).
 
 Clusters the hard-arena conclusive failures, proposes bounded harness patches, and gates each
@@ -36,16 +37,19 @@ def main() -> int:
     clusters = clusters[:3]
     proposals = [propose_patch(c) for c in clusters]
     # SIMULATED canary outcomes (labeled): promote / negative-transfer / no-lift
-    sims = [dict(static_ok=True, regression_ok=True, negative_transfer=False, canary_lift=0.12),
-            dict(static_ok=True, regression_ok=True, negative_transfer=True, canary_lift=0.20),
-            dict(static_ok=True, regression_ok=True, negative_transfer=False, canary_lift=0.01)]
+    sims = [{"static_ok": True, "regression_ok": True, "negative_transfer": False, "canary_lift": 0.12},
+            {"static_ok": True, "regression_ok": True, "negative_transfer": True, "canary_lift": 0.20},
+            {"static_ok": True, "regression_ok": True, "negative_transfer": False, "canary_lift": 0.01}]
     results = [evaluate_proposal(p, **s).to_dict() for p, s in zip(proposals, sims, strict=False)]
     report = {
         "experiment": "harness_evolution_guarded_pr",
         "n_proposals": len(results),
         "n_promoted": sum(1 for r in results if r["promoted"]),
-        "rejected_negative_transfer": sum(1 for r in results if "negative transfer" in r["decision"]),
-        "rejected_no_lift": sum(1 for r in results if "canary lift" in r["decision"]),
+        "rejected_negative_transfer": sum(
+            1 for r in results if "negative transfer" in r["decision"]),
+        "rejected_no_lift": sum(
+            1 for r in results
+            if r["decision"].startswith("rejected") and "canary lift" in r["decision"]),
         "no_protected_branch_writes": all(not r["protected_branch_write"] for r in results),
         "all_have_rollback": all(r["proposal"]["rollback"] for r in results),
         "canary_signals": "SIMULATED (labeled) to demonstrate governance gates",

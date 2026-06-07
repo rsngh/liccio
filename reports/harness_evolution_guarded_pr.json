@@ -3,7 +3,7 @@
   "n_proposals": 3,
   "n_promoted": 1,
   "rejected_negative_transfer": 1,
-  "rejected_no_lift": 2,
+  "rejected_no_lift": 1,
   "no_protected_branch_writes": true,
   "all_have_rollback": true,
   "canary_signals": "SIMULATED (labeled) to demonstrate governance gates",
