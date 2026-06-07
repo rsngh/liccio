@@ -1,0 +1,94 @@
+{
+  "experiment": "unified_router_longitudinal",
+  "sessions": 5,
+  "n_tasks": 10,
+  "question": "does memory make cost-per-verified-success decline over sessions vs a memoryless router?",
+  "per_session": {
+    "memory": [
+      {
+        "session": 0,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.009279,
+        "cost_per_verified_success": 0.000928
+      },
+      {
+        "session": 1,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.008584,
+        "cost_per_verified_success": 0.000858
+      },
+      {
+        "session": 2,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.008819,
+        "cost_per_verified_success": 0.000882
+      },
+      {
+        "session": 3,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.008819,
+        "cost_per_verified_success": 0.000882
+      },
+      {
+        "session": 4,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.008764,
+        "cost_per_verified_success": 0.000876
+      }
+    ],
+    "memoryless": [
+      {
+        "session": 0,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.011617,
+        "cost_per_verified_success": 0.001162
+      },
+      {
+        "session": 1,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.011857,
+        "cost_per_verified_success": 0.001186
+      },
+      {
+        "session": 2,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.012402,
+        "cost_per_verified_success": 0.00124
+      },
+      {
+        "session": 3,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.012502,
+        "cost_per_verified_success": 0.00125
+      },
+      {
+        "session": 4,
+        "solved": 10,
+        "n": 10,
+        "total_cost_usd": 0.011902,
+        "cost_per_verified_success": 0.00119
+      }
+    ]
+  },
+  "memory_cps_first_vs_last": [
+    0.000928,
+    0.000876
+  ],
+  "memoryless_cps_first_vs_last": [
+    0.001162,
+    0.00119
+  ],
+  "memory_compounds": true,
+  "memoryless_flat": false,
+  "elapsed_s": 365.2,
+  "stop_signal": "held-out hidden test"
+}
