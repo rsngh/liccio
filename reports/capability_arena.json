@@ -1,0 +1,150 @@
+{
+  "experiment": "capability_arena",
+  "question": "does a verifier-gated ensemble of cheap diverse agents match a strong single agent by capturing the union?",
+  "arms": [
+    "gemini_flash_lite",
+    "haiku",
+    "gemini_flash"
+  ],
+  "strong_reference": "opus",
+  "n_tasks": 12,
+  "ensemble": {
+    "rate": 1.0,
+    "ci": [
+      0.7575,
+      1.0
+    ],
+    "solved": 12,
+    "n": 12,
+    "total_cost_usd": 0.041681,
+    "cost_per_verified_success": 0.003473
+  },
+  "single_arms": {
+    "gemini_flash_lite": {
+      "rate": 0.75,
+      "ci": [
+        0.4677,
+        0.9111
+      ],
+      "solved": 9,
+      "n": 12
+    },
+    "haiku": {
+      "rate": 1.0,
+      "ci": [
+        0.7575,
+        1.0
+      ],
+      "solved": 12,
+      "n": 12
+    },
+    "gemini_flash": {
+      "rate": 1.0,
+      "ci": [
+        0.7575,
+        1.0
+      ],
+      "solved": 12,
+      "n": 12
+    }
+  },
+  "best_single_cheap_arm": {
+    "arm": "haiku",
+    "rate": 1.0,
+    "ci": [
+      0.7575,
+      1.0
+    ],
+    "solved": 12,
+    "n": 12
+  },
+  "strong_single": {
+    "rate": 1.0,
+    "ci": [
+      0.7575,
+      1.0
+    ],
+    "solved": 12,
+    "n": 12,
+    "total_cost_usd": 0.26688,
+    "cost_per_verified_success": 0.02224
+  },
+  "oracle_capture": {
+    "n": 12,
+    "verified_solved": 12,
+    "any_correct_ceiling": 12,
+    "verifier_capture_rate": 1.0,
+    "headroom_left": 0
+  },
+  "weak_self_ensemble": {
+    "arm": "gemini_flash_lite",
+    "k": 3,
+    "temperature": 0.8,
+    "n": 12,
+    "single_attempt": {
+      "rate": 0.8333,
+      "ci": [
+        0.552,
+        0.953
+      ],
+      "solved": 10,
+      "n": 12
+    },
+    "ensemble_best_of_k": {
+      "rate": 0.8333,
+      "ci": [
+        0.552,
+        0.953
+      ],
+      "solved": 10,
+      "n": 12
+    },
+    "any_correct_ceiling": {
+      "rate": 0.8333,
+      "ci": [
+        0.552,
+        0.953
+      ],
+      "solved": 10,
+      "n": 12
+    },
+    "capability_headroom_captured": false,
+    "total_cost_usd": 0.040716
+  },
+  "reflective_repair": {
+    "arm": "gemini_flash_lite",
+    "feedback": "generated independent tests (production signal)",
+    "n": 12,
+    "single_attempt": {
+      "rate": 0.75,
+      "ci": [
+        0.4677,
+        0.9111
+      ],
+      "solved": 9,
+      "n": 12
+    },
+    "with_reflection": {
+      "rate": 1.0,
+      "ci": [
+        0.7575,
+        1.0
+      ],
+      "solved": 12,
+      "n": 12
+    },
+    "repair_triggered_on": 3,
+    "rescued_by_repair": 3,
+    "information_feedback_beats_single": true,
+    "total_cost_usd": 0.009807
+  },
+  "proxy_precision_recall": {
+    "precision": 1.0,
+    "recall": 0.9697,
+    "tp": 32,
+    "fp": 0,
+    "fn": 1
+  },
+  "elapsed_s": 788.9,
+  "honest_note": "cheap-diverse-arm ensemble demonstrating the mechanism (2605.14163). If the best single arm already solves all tasks, headroom is 0 and the capability gain needs harder / real tasks (network-blocked here)."
+}
