@@ -1,9 +1,9 @@
-1201 passed, 18 skipped, 2 warnings in 369.92s (xdist -n 2; clean, no flakes)
+1235 passed, 18 skipped, 2 warnings in 405.07s (xdist -n 2; clean, no flakes)
 
 Environment: a fresh checkout with the `learning` extra installed (`uv pip install scikit-learn
 joblib`, i.e. `uv sync --all-extras` minus services unavailable here). The 18 skips are optional
 dependencies/daemons that self-skip when absent: Docker, OpenHands, the OpenAI SDK (network-gated
 here), pgvector, qdrant, and skillopt. A bare `dev`-only checkout (no extras) yields
-1197 passed / 22 skipped / 0 failed — the four learned-ML acceptance tests skip via
+1231 passed / 22 skipped / 0 failed — the four learned-ML acceptance tests skip via
 `importorskip("sklearn")` rather than failing. Reproduce:
     uv run pytest tests/unit tests/integration tests/e2e -n 2 --timeout=300
