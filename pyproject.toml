@@ -98,6 +98,7 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+pythonpath = ["."]  # make the top-level `evals` namespace package importable in tests
 norecursedirs = ["tests/fixtures", "tests/live", "evals", ".git", ".venv"]
 addopts = "-ra --ignore=tests/fixtures --ignore=tests/live"
 markers = [

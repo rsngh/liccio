@@ -1,0 +1,616 @@
+{
+  "experiment": "metarouter_arena",
+  "round": "Alpha 42 \u2014 Evidence-Driven MetaRouter",
+  "n_tasks": 5,
+  "policies": [
+    "cheap_static",
+    "oracle",
+    "cheap_single",
+    "repo_map_router",
+    "claude_harness"
+  ],
+  "live_claude_single": true,
+  "live_claude_harness": true,
+  "adapter_status_legend": [
+    "live_conclusive",
+    "live_inconclusive",
+    "unavailable",
+    "mock_contract_only",
+    "fixture_only"
+  ],
+  "policy_scores": [
+    {
+      "policy": "cheap_static",
+      "n_tasks": 5,
+      "verified_success_rate": 0.0,
+      "hidden_test_pass_rate": 0.0,
+      "public_pass_rate": 0.2,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 0,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": null,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "oracle",
+      "n_tasks": 5,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 5,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "cheap_single",
+      "n_tasks": 5,
+      "verified_success_rate": 0.6,
+      "hidden_test_pass_rate": 0.6,
+      "public_pass_rate": 0.6,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 3,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.008583,
+      "cost_per_verified_success": 0.002861,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.304
+    },
+    {
+      "policy": "repo_map_router",
+      "n_tasks": 5,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 5,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.007746,
+      "cost_per_verified_success": 0.001549,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 2.814
+    },
+    {
+      "policy": "claude_harness",
+      "n_tasks": 5,
+      "verified_success_rate": 0.8,
+      "hidden_test_pass_rate": 0.8,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 4,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.115119,
+      "cost_per_verified_success": 0.02878,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 6.634
+    }
+  ],
+  "routing_signal": {
+    "oracle_solvable": 5,
+    "repo_map_wins_over_cheap": [
+      "checkout_discount",
+      "pipeline_wire"
+    ],
+    "repo_map_reproduced_in_n_families": 2,
+    "cheap_wins_over_repo_map": []
+  },
+  "per_task_solved": {
+    "retry_backoff": {
+      "cheap_static": false,
+      "oracle": true,
+      "cheap_single": true,
+      "repo_map_router": true,
+      "claude_harness": true
+    },
+    "slug_trim": {
+      "cheap_static": false,
+      "oracle": true,
+      "cheap_single": true,
+      "repo_map_router": true,
+      "claude_harness": false
+    },
+    "checkout_discount": {
+      "cheap_static": false,
+      "oracle": true,
+      "cheap_single": false,
+      "repo_map_router": true,
+      "claude_harness": true
+    },
+    "pipeline_wire": {
+      "cheap_static": false,
+      "oracle": true,
+      "cheap_single": false,
+      "repo_map_router": true,
+      "claude_harness": true
+    },
+    "stats_two_bug": {
+      "cheap_static": false,
+      "oracle": true,
+      "cheap_single": true,
+      "repo_map_router": true,
+      "claude_harness": true
+    }
+  },
+  "attempts": [
+    {
+      "task": "retry_backoff",
+      "policy": "cheap_static",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "no-op baseline"
+    },
+    {
+      "task": "retry_backoff",
+      "policy": "oracle",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [
+        "backoff.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "reference fix (oracle)"
+    },
+    {
+      "task": "retry_backoff",
+      "policy": "cheap_single",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.000963,
+      "latency_s": 2.78,
+      "changed_files": [
+        "backoff.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "retry_backoff",
+      "policy": "repo_map_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001071,
+      "latency_s": 2.47,
+      "changed_files": [
+        "backoff.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "retry_backoff",
+      "policy": "claude_harness",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.018279,
+      "latency_s": 5.17,
+      "changed_files": [
+        "backoff.py"
+      ],
+      "tool_calls": 3,
+      "activated": true,
+      "followed": true,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "slug_trim",
+      "policy": "cheap_static",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "no-op baseline"
+    },
+    {
+      "task": "slug_trim",
+      "policy": "oracle",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [
+        "slug.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "reference fix (oracle)"
+    },
+    {
+      "task": "slug_trim",
+      "policy": "cheap_single",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001482,
+      "latency_s": 2.68,
+      "changed_files": [
+        "slug.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "slug_trim",
+      "policy": "repo_map_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001578,
+      "latency_s": 2.83,
+      "changed_files": [
+        "slug.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "slug_trim",
+      "policy": "claude_harness",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.00834,
+      "latency_s": 2.61,
+      "changed_files": [],
+      "tool_calls": 1,
+      "activated": true,
+      "followed": false,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "cheap_static",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "no-op baseline"
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "oracle",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [
+        "checkout.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "reference fix (oracle)"
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "cheap_single",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.001875,
+      "latency_s": 3.72,
+      "changed_files": [
+        "checkout.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "repo_map_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001275,
+      "latency_s": 2.7,
+      "changed_files": [
+        "checkout.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "claude_harness",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.019944,
+      "latency_s": 5.56,
+      "changed_files": [
+        "checkout.py"
+      ],
+      "tool_calls": 4,
+      "activated": true,
+      "followed": true,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "cheap_static",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "no-op baseline"
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "oracle",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [
+        "pipeline.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "reference fix (oracle)"
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "cheap_single",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.002184,
+      "latency_s": 4.24,
+      "changed_files": [
+        "pipeline.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "repo_map_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001554,
+      "latency_s": 2.81,
+      "changed_files": [
+        "pipeline.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "claude_harness",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.033858,
+      "latency_s": 7.93,
+      "changed_files": [
+        "pipeline.py"
+      ],
+      "tool_calls": 8,
+      "activated": true,
+      "followed": true,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "cheap_static",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "no-op baseline"
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "oracle",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.0,
+      "latency_s": 0.0,
+      "changed_files": [
+        "stats.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": "reference fix (oracle)"
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "cheap_single",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.002079,
+      "latency_s": 3.1,
+      "changed_files": [
+        "stats.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "repo_map_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.002268,
+      "latency_s": 3.26,
+      "changed_files": [
+        "stats.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "claude_harness",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.034698,
+      "latency_s": 11.9,
+      "changed_files": [
+        "stats.py"
+      ],
+      "tool_calls": 6,
+      "activated": true,
+      "followed": true,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    }
+  ],
+  "evidence_tier": "fixture-unseen (authored for the arena); live Claude where available",
+  "note": "smoke-scale conclusive cells; the >=300-cell acceptance gate needs a larger live budget. Availability is separated from capability per Alpha-42 P0."
+}
