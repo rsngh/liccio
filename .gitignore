@@ -108,3 +108,4 @@ evals/reports/*
 
 # repo-map coverage benchmark (deterministic, committed)
 !evals/reports/repo_map_coverage.json
+reports/_*.log

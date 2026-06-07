@@ -1,0 +1,341 @@
+{
+  "kind": "capability_probe",
+  "trials": 3,
+  "n_tasks": 8,
+  "elapsed_s": 251.6,
+  "per_tier": {
+    "haiku": {
+      "n": 24,
+      "solved": 24,
+      "rate": 1.0,
+      "ci": [
+        0.862,
+        1.0
+      ]
+    },
+    "sonnet": {
+      "n": 24,
+      "solved": 21,
+      "rate": 0.875,
+      "ci": [
+        0.69,
+        0.9566
+      ]
+    },
+    "opus": {
+      "n": 24,
+      "solved": 21,
+      "rate": 0.875,
+      "ci": [
+        0.69,
+        0.9566
+      ]
+    }
+  },
+  "per_tier_total_cost_usd": {
+    "haiku": 0.023316,
+    "sonnet": 0.062238,
+    "opus": 0.415575
+  },
+  "per_tier_by_difficulty": {
+    "haiku/easy": {
+      "n": 6,
+      "solved": 6,
+      "rate": 1.0,
+      "ci": [
+        0.6097,
+        1.0
+      ]
+    },
+    "haiku/medium": {
+      "n": 6,
+      "solved": 6,
+      "rate": 1.0,
+      "ci": [
+        0.6097,
+        1.0
+      ]
+    },
+    "haiku/hard": {
+      "n": 12,
+      "solved": 12,
+      "rate": 1.0,
+      "ci": [
+        0.7575,
+        1.0
+      ]
+    },
+    "sonnet/easy": {
+      "n": 6,
+      "solved": 6,
+      "rate": 1.0,
+      "ci": [
+        0.6097,
+        1.0
+      ]
+    },
+    "sonnet/medium": {
+      "n": 6,
+      "solved": 3,
+      "rate": 0.5,
+      "ci": [
+        0.1876,
+        0.8124
+      ]
+    },
+    "sonnet/hard": {
+      "n": 12,
+      "solved": 12,
+      "rate": 1.0,
+      "ci": [
+        0.7575,
+        1.0
+      ]
+    },
+    "opus/easy": {
+      "n": 6,
+      "solved": 6,
+      "rate": 1.0,
+      "ci": [
+        0.6097,
+        1.0
+      ]
+    },
+    "opus/medium": {
+      "n": 6,
+      "solved": 3,
+      "rate": 0.5,
+      "ci": [
+        0.1876,
+        0.8124
+      ]
+    },
+    "opus/hard": {
+      "n": 12,
+      "solved": 12,
+      "rate": 1.0,
+      "ci": [
+        0.7575,
+        1.0
+      ]
+    }
+  },
+  "per_task": {
+    "haiku/cap_reverse": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_fizz": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_roman": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_intervals": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_lengthOfLIS": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_editdist": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_calc": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "haiku/cap_json": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_reverse": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_fizz": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_roman": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_intervals": {
+      "n": 3,
+      "solved": 0,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.5615
+      ]
+    },
+    "sonnet/cap_lengthOfLIS": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_editdist": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_calc": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "sonnet/cap_json": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_reverse": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_fizz": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_roman": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_intervals": {
+      "n": 3,
+      "solved": 0,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.5615
+      ]
+    },
+    "opus/cap_lengthOfLIS": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_editdist": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_calc": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    },
+    "opus/cap_json": {
+      "n": 3,
+      "solved": 3,
+      "rate": 1.0,
+      "ci": [
+        0.4385,
+        1.0
+      ]
+    }
+  }
+}
