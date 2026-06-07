@@ -1,0 +1,16 @@
+{
+  "experiment": "memory_privacy_redteam",
+  "cross_tenant_blocked": true,
+  "same_tenant_allowed": true,
+  "all_leaks_blocked": true,
+  "attempts": [
+    {
+      "attack": "cross_tenant_read",
+      "blocked": true
+    },
+    {
+      "attack": "same_tenant_read_ok",
+      "blocked": true
+    }
+  ]
+}

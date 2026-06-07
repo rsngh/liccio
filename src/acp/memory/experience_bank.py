@@ -23,15 +23,20 @@ class ExperienceEpisode:
     failure_signature: str          # e.g. "AssertionError:median" — the recurring symptom
     context_strategy: str
     agent: str
+    repo_id: str = ""               # v2: specific repo (for same-repo vs repo-family retrieval)
+    context_need: str = ""          # v2
     topology: str = "cheap_single"
+    advisor_used: bool = False      # v2
     changed_symbols: tuple[str, ...] = ()
     tests_run: bool = True
     verifier_outcome: str = "solved"   # solved | failed | inconclusive
+    human_review_outcome: str = "none"  # v2: approved | rejected | none
     post_merge_outcome: str = "unknown"
     reward: float = 0.0
     cost: float = 0.0
     skill_version: str = "v1"
     privacy_scope: str = "tenant_a"    # tenant/owner; cross-tenant reads are blocked
+    trust_score: float = 1.0           # v2: lowered for unverified/uncertain episodes
     created_at: float = 0.0
     decay_score: float = 1.0
     quarantined: bool = False

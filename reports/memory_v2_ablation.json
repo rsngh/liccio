@@ -1,0 +1,14 @@
+{
+  "experiment": "memory_v2_ablation",
+  "n_sessions": 30,
+  "memory_solved": 25,
+  "baseline_solved": 11,
+  "cost_per_verified_success_memory": 0.00344,
+  "cost_per_verified_success_baseline": 0.007909,
+  "memory_reduces_cost_per_success": true,
+  "learned_good_strategy": {
+    "sig_a": "repo_map",
+    "sig_b": "grep",
+    "sig_c": null
+  }
+}

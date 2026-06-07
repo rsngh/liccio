@@ -1,0 +1,6 @@
+{
+  "experiment": "memory_revision_audit",
+  "recommended_before_revert": "repo_map",
+  "repo_map_now_avoided_after_revert": true,
+  "revision_applied": true
+}
