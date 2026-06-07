@@ -28,6 +28,7 @@ class Candidate:
     test_gaming_suspected: bool = False     # e.g. weakened/deleted tests
     strategy: str = "same_model_different_prompt"
     cost: float = 0.0
+    proxy_pass: bool | None = None          # independent-proof verdict (online; not the oracle)
 
 
 @dataclass
@@ -69,6 +70,49 @@ def select_best(candidates: list[Candidate]) -> ComparatorResult:
     return ComparatorResult(
         selected=chosen.id if chosen else None,
         selected_verified=chosen is not None,
+        n_candidates=n, n_rejected=len(reject), reject_reasons=reject,
+        waste_rate=round((n - used) / n, 4) if n else 0.0,
+        diversity=round(distinct / n, 4) if n else 0.0)
+
+
+def _eligible_online(c: Candidate) -> tuple[bool, str]:
+    """Eligibility using the PROXY verdict (independent_proof) instead of the oracle hidden test."""
+    if c.forbidden_file_touched:
+        return False, "forbidden_file_touched"
+    if c.test_gaming_suspected:
+        return False, "test_gaming_suspected"
+    if c.public_pass and c.proxy_pass is False:
+        return False, "public_pass_proxy_fail"      # the over-fit reject, caught WITHOUT the oracle
+    return True, "ok"
+
+
+def select_best_online(candidates: list[Candidate]) -> ComparatorResult:
+    """Online selection: pick the minimal-diff PROXY-verified candidate (no held-out test used).
+
+    Degrades safely: if no candidate is proxy-verified, fall back to the first public-passing one
+    (i.e. never worse than the public-only baseline). The realized correctness of the choice is
+    measured by the caller against the true hidden oracle.
+    """
+    reject: dict[str, str] = {}
+    eligible: list[Candidate] = []
+    for c in candidates:
+        ok, reason = _eligible_online(c)
+        if ok:
+            eligible.append(c)
+        else:
+            reject[c.id] = reason
+    verified = [c for c in eligible if c.proxy_pass]
+    if verified:
+        chosen: Candidate | None = min(verified, key=lambda c: (c.diff_lines, c.id))
+    else:
+        chosen = next((c for c in candidates if c.public_pass),
+                      candidates[0] if candidates else None)
+    n = len(candidates)
+    distinct = len({(c.strategy, c.diff_lines, c.proxy_pass) for c in candidates})
+    used = 1 if chosen else 0
+    return ComparatorResult(
+        selected=chosen.id if chosen else None,
+        selected_verified=bool(chosen and chosen.proxy_pass),
         n_candidates=n, n_rejected=len(reject), reject_reasons=reject,
         waste_rate=round((n - used) / n, 4) if n else 0.0,
         diversity=round(distinct / n, 4) if n else 0.0)
