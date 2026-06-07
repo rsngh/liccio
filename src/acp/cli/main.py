@@ -1213,6 +1213,24 @@ def _show_json(rel: str, hint: str) -> None:
     console.print_json(data=json.loads(p.read_text()))
 
 
+provider_app = typer.Typer(help="Provider abstraction — availability/capability/cost (Alpha 43).")
+app.add_typer(provider_app, name="provider")
+
+
+@provider_app.command("health")
+def provider_health_cmd(show_unavailable: bool = True) -> None:
+    """Explain every provider: available/unavailable + reason, capability, cost, budget."""
+    import json as _json
+
+    from acp.providers import all_providers, provider_contract_gate, provider_health
+
+    health = provider_health()
+    gate = provider_contract_gate(all_providers())
+    Path("reports/provider_contract_gate.json").parent.mkdir(parents=True, exist_ok=True)
+    Path("reports/provider_contract_gate.json").write_text(_json.dumps(gate, indent=2) + "\n")
+    console.print_json(data={**health, "all_contracts_pass": gate["all_contracts_pass"]})
+
+
 arena_app = typer.Typer(help="MetaRouter Arena — evidence-driven policy comparison (Alpha 42).")
 app.add_typer(arena_app, name="arena")
 

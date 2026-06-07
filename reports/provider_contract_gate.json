@@ -1,0 +1,92 @@
+{
+  "experiment": "provider_contract_gate",
+  "n_providers": 5,
+  "n_contract_passed": 5,
+  "all_contracts_pass": true,
+  "available": [],
+  "unavailable": [
+    "anthropic",
+    "openai",
+    "gemini",
+    "codex",
+    "openhands"
+  ],
+  "providers": [
+    {
+      "provider": "anthropic",
+      "available": false,
+      "reason": "ACP_ANTHROPIC_API_KEY not set",
+      "checks": {
+        "health_reports_reason": true,
+        "unavailable_has_actionable_reason": true,
+        "failure_is_infra_not_capability": true,
+        "cost_model_present_or_unknown": true,
+        "budget_retries_safe_default": true,
+        "budget_timeout_declared": true,
+        "trace_capability_declared": true
+      },
+      "contract_passed": true
+    },
+    {
+      "provider": "openai",
+      "available": false,
+      "reason": "openai SDK not installed and ACP_OPENAI_API_KEY not set",
+      "checks": {
+        "health_reports_reason": true,
+        "unavailable_has_actionable_reason": true,
+        "failure_is_infra_not_capability": true,
+        "cost_model_present_or_unknown": true,
+        "budget_retries_safe_default": true,
+        "budget_timeout_declared": true,
+        "trace_capability_declared": true
+      },
+      "contract_passed": true
+    },
+    {
+      "provider": "gemini",
+      "available": false,
+      "reason": "google.generativeai SDK not installed and ACP_GEMINI_API_KEY not set",
+      "checks": {
+        "health_reports_reason": true,
+        "unavailable_has_actionable_reason": true,
+        "failure_is_infra_not_capability": true,
+        "cost_model_present_or_unknown": true,
+        "budget_retries_safe_default": true,
+        "budget_timeout_declared": true,
+        "trace_capability_declared": true
+      },
+      "contract_passed": true
+    },
+    {
+      "provider": "codex",
+      "available": false,
+      "reason": "codex not found on PATH",
+      "checks": {
+        "health_reports_reason": true,
+        "unavailable_has_actionable_reason": true,
+        "failure_is_infra_not_capability": true,
+        "cost_model_present_or_unknown": true,
+        "budget_retries_safe_default": true,
+        "budget_timeout_declared": true,
+        "trace_capability_declared": true
+      },
+      "contract_passed": true
+    },
+    {
+      "provider": "openhands",
+      "available": false,
+      "reason": "openhands SDK not installed and OPENHANDS_SERVER_URL not set",
+      "checks": {
+        "health_reports_reason": true,
+        "unavailable_has_actionable_reason": true,
+        "failure_is_infra_not_capability": true,
+        "cost_model_present_or_unknown": true,
+        "budget_retries_safe_default": true,
+        "budget_timeout_declared": true,
+        "trace_capability_declared": true
+      },
+      "contract_passed": true
+    }
+  ],
+  "note": "OpenAI/Gemini are hooks: contract-tested without network; live-skipped here."
+}
