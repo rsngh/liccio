@@ -1,0 +1,64 @@
+{
+  "experiment": "unified_router_mixed",
+  "n_tasks": 10,
+  "question": "does the unified router beat every fixed policy on verified success per dollar?",
+  "results": {
+    "always_cheap": {
+      "verified": 0.4,
+      "ci": [
+        0.1682,
+        0.6873
+      ],
+      "solved": 4,
+      "n": 10,
+      "total_cost_usd": 0.009339,
+      "cost_per_verified_success": 0.002335
+    },
+    "fixed_context": {
+      "verified": 1.0,
+      "ci": [
+        0.7225,
+        1.0
+      ],
+      "solved": 10,
+      "n": 10,
+      "total_cost_usd": 0.008378,
+      "cost_per_verified_success": 0.000838
+    },
+    "always_harness": {
+      "verified": 0.8,
+      "ci": [
+        0.4902,
+        0.9433
+      ],
+      "solved": 8,
+      "n": 10,
+      "total_cost_usd": 0.358281,
+      "cost_per_verified_success": 0.044785
+    },
+    "always_opus": {
+      "verified": 1.0,
+      "ci": [
+        0.7225,
+        1.0
+      ],
+      "solved": 10,
+      "n": 10,
+      "total_cost_usd": 0.163155,
+      "cost_per_verified_success": 0.016316
+    },
+    "unified_router": {
+      "verified": 1.0,
+      "ci": [
+        0.7225,
+        1.0
+      ],
+      "solved": 10,
+      "n": 10,
+      "total_cost_usd": 0.014587,
+      "cost_per_verified_success": 0.001459
+    }
+  },
+  "elapsed_s": 262.5,
+  "stop_signal": "held-out hidden test (proxy is the production stand-in)"
+}
