@@ -335,6 +335,23 @@ reports_app = typer.Typer(help="Artifact truth infrastructure (Alpha 8).")
 app.add_typer(reports_app, name="reports")
 
 
+@reports_app.command("claim-check")
+def reports_claim_check(write: bool = True) -> None:
+    """Verify every headline claim maps to fresh, uncontaminated evidence (Alpha 43 P13)."""
+    import json as _json
+
+    from acp.reports import check_all
+
+    result = check_all(".")
+    if write:
+        out_p = Path("reports/claim_evidence_map.json")
+        out_p.parent.mkdir(parents=True, exist_ok=True)
+        out_p.write_text(_json.dumps(result, indent=2) + "\n")
+    console.print_json(data=result)
+    if not result["all_supported"]:
+        raise typer.Exit(1)
+
+
 @reports_app.command("manifest")
 def reports_manifest(out: str = "evals/reports/artifact_manifest.json") -> None:
     """Build + write the artifact manifest over all committed reports."""

@@ -126,6 +126,10 @@ def _single_shot(adapter, spec: ArenaTaskSpec, root: Path, *, strategy: str, pol
         if rmap.text:
             items.insert(1, ContextItem(kind="repo_map_chunk", path="__repo_map__",
                                         content=rmap.text, source="repo_map"))
+    elif strategy == "grep":
+        # grep-style: surface the raw content of the other repo files (full text, not signatures)
+        for p, c in spec.extra_files.items():
+            items.append(ContextItem(kind="file_chunk", path=p, content=c))
     pack = ContextPack(repo_id="r", task_id="t", snapshot_id="s", strategy=strategy, items=items)
     repo = Repository(name=spec.name, local_path=str(ws), default_branch="master")
     from git import Repo
@@ -162,6 +166,33 @@ def policy_repo_map_router(spec, root, *, claude_single=None, **_) -> ArenaAttem
         return _unavailable(spec, "repo_map_router", "claude adapter unavailable")
     return _single_shot(claude_single, spec, root, strategy="repo_map",
                         policy_name="repo_map_router")
+
+
+def policy_grep_router(spec, root, *, claude_single=None, **_) -> ArenaAttempt:
+    if claude_single is None:
+        return _unavailable(spec, "grep_router", "claude adapter unavailable")
+    return _single_shot(claude_single, spec, root, strategy="grep", policy_name="grep_router")
+
+
+def policy_abstain_router(spec, root, *, claude_single=None, **_) -> ArenaAttempt:
+    """Sufficiency-gated: abstain (safe, not solved) when context is insufficient; else proceed."""
+    from acp.evaluation.context_sufficiency import extract_signals
+    from acp.routing.answer_or_abstain_gate import answer_or_abstain
+    ctx = spec.buggy + "".join(spec.extra_files.values())
+    sig = extract_signals(issue_text=spec.issue_text, acceptance_criteria=["hidden tests pass"],
+                          context_text=ctx, has_tests=True)
+    verdict = answer_or_abstain(sig, risk_level=spec.risk_level)
+    if not verdict.proceed and verdict.action in ("ask_user_spec", "abstain", "human_review"):
+        return ArenaAttempt(task=spec.name, policy="abstain_router",
+                            adapter_status=AdapterStatus.LIVE_CONCLUSIVE.value, solved=False,
+                            public_solved=False, conclusive=True, cost_usd=0.0, latency_s=0.0,
+                            detail=f"abstained: {verdict.action}")
+    if claude_single is None:
+        return _unavailable(spec, "abstain_router", "claude adapter unavailable")
+    # gate says proceed (or fetch more context) -> route with repo_map
+    att = _single_shot(claude_single, spec, root, strategy="repo_map", policy_name="abstain_router")
+    att.policy = "abstain_router"
+    return att
 
 
 # --- live tool-loop harness ------------------------------------------------------------
@@ -275,7 +306,9 @@ ALL_POLICIES = {
     "cheap_static": policy_cheap_static,
     "oracle": policy_oracle,
     "cheap_single": policy_cheap_single,
+    "grep_router": policy_grep_router,
     "repo_map_router": policy_repo_map_router,
+    "abstain_router": policy_abstain_router,
     "claude_harness": policy_claude_harness,
     "advisor_router": policy_advisor_router,
     "best_of_k_router": policy_best_of_k,
