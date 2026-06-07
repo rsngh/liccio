@@ -1,0 +1,529 @@
+{
+  "experiment": "hetero_arena",
+  "corpus": "ceiling",
+  "round": "Model-tier heterogeneity \u2014 route cheap->strong by difficulty/context",
+  "tiers": {
+    "haiku": {
+      "model": "claude-haiku-4-5",
+      "in_per_mtok": 1.0,
+      "out_per_mtok": 5.0
+    },
+    "sonnet": {
+      "model": "claude-sonnet-4-6",
+      "in_per_mtok": 3.0,
+      "out_per_mtok": 15.0
+    },
+    "opus": {
+      "model": "claude-opus-4-8",
+      "in_per_mtok": 15.0,
+      "out_per_mtok": 75.0
+    }
+  },
+  "trials": 2,
+  "n_tasks": 18,
+  "policies": [
+    "haiku_single",
+    "opus_single",
+    "cost_aware_escalation",
+    "context_first_escalation"
+  ],
+  "n_cells": 144,
+  "elapsed_s": 829.7,
+  "global_economics": {
+    "haiku_single": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.0964
+      },
+      "total_cost_usd": 0.017873,
+      "cost_per_verified_success": null,
+      "n_conclusive": 36,
+      "matches_or_beats_opus_capability": true,
+      "cheaper_than_opus_per_success": false,
+      "x_cheaper_than_opus": null
+    },
+    "opus_single": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.0964
+      },
+      "total_cost_usd": 0.43953,
+      "cost_per_verified_success": null,
+      "n_conclusive": 36,
+      "matches_or_beats_opus_capability": true,
+      "cheaper_than_opus_per_success": false,
+      "x_cheaper_than_opus": null
+    },
+    "cost_aware_escalation": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.0964
+      },
+      "total_cost_usd": 0.545642,
+      "cost_per_verified_success": null,
+      "n_conclusive": 36,
+      "matches_or_beats_opus_capability": true,
+      "cheaper_than_opus_per_success": false,
+      "x_cheaper_than_opus": null
+    },
+    "context_first_escalation": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.9036,
+        "hi": 1.0
+      },
+      "total_cost_usd": 0.036636,
+      "cost_per_verified_success": 0.001018,
+      "n_conclusive": 36,
+      "matches_or_beats_opus_capability": true,
+      "cheaper_than_opus_per_success": false,
+      "x_cheaper_than_opus": null
+    }
+  },
+  "thesis": {
+    "corpus": "ceiling",
+    "cost_aware_escalation_matches_opus": true,
+    "cost_aware_escalation_x_cheaper": null,
+    "context_first_matches_opus": true,
+    "verdict": "CONTEXT, NOT TIER, IS THE LEVER: on cross-file tasks the cheap model fails from minimal context; the pure TIER ladder (all minimal) verifies 0.00 because a bigger model still can't see the file, while CONTEXT-FIRST escalation rescues to 1.00 \u2014 adding context on the cheap model beats paying for a stronger one."
+  },
+  "by_difficulty": {
+    "context_first_escalation/hard": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.9036,
+        "hi": 1.0
+      },
+      "n": 36
+    },
+    "cost_aware_escalation/hard": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.0964
+      },
+      "n": 36
+    },
+    "haiku_single/hard": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.0964
+      },
+      "n": 36
+    },
+    "opus_single/hard": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.0964
+      },
+      "n": 36
+    }
+  },
+  "per_task": {
+    "xfileNG_scale_0": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_offset_1": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_blend_2": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_scale_3": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_offset_4": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_blend_5": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_scale_6": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_offset_7": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_blend_8": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_scale_9": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_offset_10": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_blend_11": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_scale_12": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_offset_13": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_blend_14": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_scale_15": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_offset_16": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    },
+    "xfileNG_blend_17": {
+      "haiku_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "opus_single": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "cost_aware_escalation": {
+        "verified": 0.0,
+        "n": 2
+      },
+      "context_first_escalation": {
+        "verified": 1.0,
+        "n": 2
+      }
+    }
+  },
+  "global_scores": [
+    {
+      "policy": "haiku_single",
+      "n_tasks": 36,
+      "verified_success_rate": 0.0,
+      "hidden_test_pass_rate": 0.0,
+      "public_pass_rate": 0.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 0,
+      "n_conclusive": 36,
+      "total_cost_usd": 0.017873,
+      "cost_per_verified_success": null,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 2.462
+    },
+    {
+      "policy": "opus_single",
+      "n_tasks": 36,
+      "verified_success_rate": 0.0,
+      "hidden_test_pass_rate": 0.0,
+      "public_pass_rate": 0.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 0,
+      "n_conclusive": 36,
+      "total_cost_usd": 0.43953,
+      "cost_per_verified_success": null,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.606
+    },
+    {
+      "policy": "cost_aware_escalation",
+      "n_tasks": 36,
+      "verified_success_rate": 0.0,
+      "hidden_test_pass_rate": 0.0,
+      "public_pass_rate": 0.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 0,
+      "n_conclusive": 36,
+      "total_cost_usd": 0.545642,
+      "cost_per_verified_success": null,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 12.154
+    },
+    {
+      "policy": "context_first_escalation",
+      "n_tasks": 36,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 36,
+      "n_conclusive": 36,
+      "total_cost_usd": 0.036636,
+      "cost_per_verified_success": 0.001018,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 4.748
+    }
+  ],
+  "evidence_tier": "cross-file ceiling-breakers (answer in unseen file)",
+  "gemini_status": "network-unreachable here (hook present, no live claim)"
+}
