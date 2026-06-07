@@ -1,0 +1,35 @@
+{
+  "experiment": "topology_controller_search",
+  "actions": [
+    "cheap_single",
+    "retry_with_repo_map",
+    "ask_advisor",
+    "best_of_k",
+    "strong_single",
+    "strict_verify",
+    "human_review",
+    "abstain"
+  ],
+  "learned_controller_by_context_need": {
+    "none": "cheap_single",
+    "exact_symbol": "cheap_single",
+    "cross_file_api": "retry_with_repo_map",
+    "broad_repo_map": "retry_with_repo_map"
+  },
+  "offline_eval": {
+    "controller": {
+      "none": "cheap_single",
+      "exact_symbol": "cheap_single",
+      "cross_file_api": "retry_with_repo_map",
+      "broad_repo_map": "retry_with_repo_map"
+    },
+    "n_cells": 25,
+    "replayed_without_live_calls": true,
+    "controller_objective": 0.198511,
+    "baseline_objective": 0.118253,
+    "provider_unavailable_actions_never_selected": []
+  },
+  "controller_gain_over_static_baseline": 0.080258,
+  "promotable": true,
+  "safety": "high-risk never skips strict verification; unavailable providers excluded"
+}
