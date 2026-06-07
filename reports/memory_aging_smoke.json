@@ -1,0 +1,21 @@
+{
+  "experiment": "memory_aging_smoke",
+  "n_sessions": 30,
+  "failure_signatures": [
+    "AssertionError:median",
+    "ImportError:helper",
+    "Timeout:io"
+  ],
+  "memory_first_attempt_success": 0.6333,
+  "baseline_first_attempt_success": 0.4667,
+  "memory_lift": 0.1666,
+  "memory_late_phase_success": 0.6667,
+  "memory_helps": true,
+  "learned_good_strategy_per_signature": {
+    "AssertionError:median": "repo_map",
+    "ImportError:helper": "grep",
+    "Timeout:io": null
+  },
+  "decay_min": 0.187288,
+  "note": "deterministic simulation; live repeated-failure-family proof is future work"
+}
