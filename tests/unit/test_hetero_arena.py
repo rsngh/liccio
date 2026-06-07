@@ -63,3 +63,19 @@ def test_capability_corpus_integrity() -> None:
 def test_difficulty_bands_span_easy_to_hard() -> None:
     bands = {t.difficulty_band for t in all_capability_tasks()}
     assert {"easy", "medium", "hard"} <= bands
+
+
+def test_cross_provider_ladder_is_cheapest_first_across_vendors() -> None:
+    from evals.hetero_arena.xprovider import (
+        LADDER,
+        policy_best_of_providers,
+        policy_cross_provider_escalation,
+    )
+    # ladder must be sorted ascending by output price (cheapest-first), spanning both providers
+    prices = [t.out_per_tok for t in LADDER]
+    assert prices == sorted(prices)
+    assert {t.provider for t in LADDER} == {"anthropic", "gemini"}
+    assert LADDER[0].provider == "gemini"      # gemini-flash-lite is globally cheapest
+    assert LADDER[-1].name == "opus"           # opus is the last, dearest resort
+    assert callable(policy_cross_provider_escalation)
+    assert callable(policy_best_of_providers)

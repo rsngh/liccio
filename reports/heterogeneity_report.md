@@ -97,32 +97,77 @@ the pure-tier ladder even *wastes* $0.55 climbing to opus for zero gain. Adding 
 
 ## Experiment 4 — Cross-provider arena: Gemini 3.x + Claude (the real heterogeneity)
 
-<!-- XPROV_PLACEHOLDER -->
-_Running live; results filled in on completion. The setup: six tiers across two vendor families on
-the 20-task capability corpus, plus a cross-provider cheapest-first escalation
-(flash-lite→flash→haiku→sonnet→pro→opus) and a provider-diversity best-of (gemini-flash-lite +
-haiku). The smoke test already surfaced the first **genuine capability gap**: gemini-3.1-flash-lite
-(~150× cheaper than opus) fails the unary-minus calculator that every other tier solves — so here,
-finally, "route cheap→strong" has a real gap to exploit._
+Six tiers across **two vendor families** on the 20-task capability corpus (2 trials, ~320 live
+cells), ranked by **cost per verified success**:
+
+| Policy / tier | provider | verified | 95% CI | cost/success |
+|---|---|---|---|---|
+| gemini_flash_lite | Google | 0.80 | [0.65, 0.90] | **$0.00008** |
+| cross_provider_escalation | both | 0.85 | [0.71, 0.93] | $0.00036 |
+| haiku | Anthropic | 0.97 | [0.87, 1.00] | $0.00140 |
+| best_of_providers (flash-lite+haiku) | both | 0.85 | [0.71, 0.93] | $0.00163 |
+| sonnet | Anthropic | 0.95 | [0.83, 0.99] | $0.00334 |
+| **gemini_flash** | **Google** | **1.00** | **[0.91, 1.00]** | **$0.00468** |
+| gemini_pro | Google | 0.95 | [0.83, 0.99] | $0.01881 |
+| opus | Anthropic | 0.95 | [0.83, 0.99] | $0.02134 |
+
+**Finally, a real capability gradient — and four honest findings:**
+
+1. **A genuine weak tier exists.** gemini-3.1-flash-lite (no-thinking, ~250× cheaper than opus per
+   success) verifies **0.80** — it actually fails 4 tasks (`cap_intervals`, `cap_valid_number`,
+   `cap_calc_unary`, `cap_simplify_path`). This is the first tier in the whole round that is *not*
+   at ceiling, so "route cheap→strong" has something real to exploit.
+2. **The best model per dollar is *not* Anthropic.** **gemini-3.5-flash scores a clean 1.00 —
+   beating opus (0.95) — at 4.5× lower cost per success.** A router that knew this would pick
+   gemini-flash over opus on both axes. Frontier ≠ best; *measure, don't assume.*
+3. **Escalation is only as good as its stop signal.** `cross_provider_escalation` starts at
+   flash-lite and climbs the cheapest-first ladder (flash-lite→flash→haiku→pro→sonnet→opus) on
+   public-test failure. It **rescued `cap_intervals`** (where flash-lite
+   also failed the public test) — but **did *not* rescue** `valid_number`/`calc_unary`/
+   `simplify_path`, because there flash-lite **overfit the public test** (passed it, failed the
+   hidden one) and the router stopped early. Net 0.80→0.85. **The cap on routing gains is the
+   *verifier*, not the model ladder** — exactly the project's "measurement trust is the moat" thesis,
+   now demonstrated as a failure mode.
+4. **Naïve provider diversity can *hurt*.** `best_of_providers` (flash-lite + haiku, pick by public
+   test) scored **0.85 — *worse* than haiku alone (0.97)** — because the comparator sometimes
+   picks flash-lite's public-passing/hidden-failing candidate over haiku's correct one. Same root
+   cause as #3: a weak proof signal poisons selection. Consistent with the capability arena's
+   best-of-k result.
+
+**Verdict (cross-provider): heterogeneity is real and worth routing on — the cheapest *capable*
+model spans vendors (here a Google flash tier dominates Anthropic's opus on cost *and* quality) —
+but the gains from cheap→strong escalation are bounded by verifier quality, not by having more
+tiers.**
 
 ---
 
-## Synthesis (so far)
+## Synthesis
 
-The metarouter's economic thesis, tested with real tiers, resolves into a precise and honest claim:
+The metarouter's economic thesis, tested with **two real vendor families and six tiers**, resolves
+into a precise, honest, and somewhat un-hyped claim:
 
-- **Model tier rarely matters on small, well-specified tasks.** Cheap models (haiku, and Gemini
-  flash) are at ceiling; opus is *dominated* — more expensive and no better. Use the cheap tier.
-- **When the cheap model fails, the cause is usually *context*, not *capability*.** Upgrading the
-  model buys nothing; routing the right context on the cheap model fixes it for ~$0.001.
-- **`cost_aware_escalation` captures both truths automatically:** it stays cheap when cheap suffices
-  and (in the context-first form) escalates the cheapest effective lever first. It never blindly
-  pays for the frontier model.
+1. **Frontier ≠ best ≠ worth-it.** Among the strong tiers, the winner on cost *and* quality is
+   **gemini-3.5-flash (1.00 at 4.5× lower cost than opus)** — a non-Anthropic model. Opus is
+   dominated everywhere it was measured. The only way to know this is to *measure across providers*,
+   which is exactly what a metarouter is for.
+2. **Model tier rarely matters on small, well-specified tasks** — most tiers sit at ceiling, so the
+   cost-optimal move is the cheapest *capable* model (capability arena: haiku 1.00 vs opus 0.93 at
+   16.5× the cost).
+3. **A genuinely weak tier does exist (gemini-flash-lite, 0.80),** so cheap→strong routing has a
+   real gap to exploit — *but the gain is capped by the verifier.* Escalation rescued failures only
+   when the weak model also failed the public test; where it overfit the public test, the router
+   stopped early. **Verifier quality, not the model ladder, is the binding constraint.**
+4. **When the cheap model fails on cross-file tasks, the cause is *context*, not *capability*.**
+   Upgrading the tier buys nothing (opus-minimal = haiku-minimal = 0.00); routing the right context
+   on the cheap model fixes it for ~$0.001 (ceiling arena: context-first 1.00 vs tier-only 0.00).
 
-This is the un-hyped version of the product claim: **the control plane's value is routing the
-cheapest *effective* lever — usually context, occasionally a stronger model — not defaulting to an
-expensive one.** Measurement, not marketing: every number above is reproducible, CI-bounded, and
-hidden-test-verified.
+Put together, the control plane's value is **routing the cheapest *effective* lever — usually
+context, sometimes a cheaper *vendor*, occasionally a stronger model — and never blindly defaulting
+to the expensive frontier one.** The headline the prior evaluation asked for is now measured, not
+asserted: *the moat is the measurement (knowing which lever pays, across providers), not raw
+task-solving.* Every number here is reproducible, CI-bounded, and hidden-test-verified, and the
+biggest honest limitation it surfaces — escalation is bounded by proof-signal quality — points
+straight back at that moat.
 
 ## Honest limitations
 

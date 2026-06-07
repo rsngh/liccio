@@ -34,9 +34,9 @@ from evals.metarouter_arena.policies import _single_shot
 from evals.metarouter_arena.schema import AdapterStatus, ArenaAttempt
 from evals.metarouter_arena.statistics import wilson_ci
 
-# cheapest-first across BOTH provider families (by output price):
-# gemini-flash-lite < gemini-flash < haiku < sonnet < gemini-pro < opus
-LADDER = [GEMINI_FLASH_LITE, GEMINI_FLASH, HAIKU, SONNET, GEMINI_PRO, OPUS]
+# cheapest-first across BOTH provider families (ascending output price):
+# gemini-flash-lite($0.40) < gemini-flash($2.50) < haiku($5) < gemini-pro($12) < sonnet($15) < opus($75)
+LADDER = [GEMINI_FLASH_LITE, GEMINI_FLASH, HAIKU, GEMINI_PRO, SONNET, OPUS]
 SINGLE_TIERS = [GEMINI_FLASH_LITE, GEMINI_FLASH, HAIKU, SONNET, GEMINI_PRO, OPUS]
 
 
