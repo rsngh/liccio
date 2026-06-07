@@ -5,7 +5,9 @@
   "ranking_by_verified_success_per_dollar": [
     "oracle",
     "repo_map_router",
+    "advisor_router",
     "cheap_single",
+    "best_of_k_router",
     "claude_harness",
     "cheap_static"
   ],
@@ -29,31 +31,49 @@
       "best_of_k_wasted_candidate_rate": 0.0
     },
     "cheap_single": {
-      "total_cost_usd": 0.008583,
-      "cost_per_verified_success": 0.002861,
-      "executor_cost_usd": 0.008583,
+      "total_cost_usd": 0.008733,
+      "cost_per_verified_success": 0.002911,
+      "executor_cost_usd": 0.008733,
       "advisor_cost_usd": 0,
       "advisor_cost_share": 0.0,
       "candidates_sampled": 0,
       "best_of_k_wasted_candidate_rate": 0.0
     },
     "repo_map_router": {
-      "total_cost_usd": 0.007746,
-      "cost_per_verified_success": 0.001549,
-      "executor_cost_usd": 0.007746,
+      "total_cost_usd": 0.007896,
+      "cost_per_verified_success": 0.001579,
+      "executor_cost_usd": 0.007896,
       "advisor_cost_usd": 0,
       "advisor_cost_share": 0.0,
       "candidates_sampled": 0,
       "best_of_k_wasted_candidate_rate": 0.0
     },
     "claude_harness": {
-      "total_cost_usd": 0.115119,
-      "cost_per_verified_success": 0.02878,
-      "executor_cost_usd": 0.115119,
+      "total_cost_usd": 0.137511,
+      "cost_per_verified_success": 0.027502,
+      "executor_cost_usd": 0.137511,
       "advisor_cost_usd": 0,
       "advisor_cost_share": 0.0,
       "candidates_sampled": 0,
       "best_of_k_wasted_candidate_rate": 0.0
+    },
+    "advisor_router": {
+      "total_cost_usd": 0.013491,
+      "cost_per_verified_success": 0.003373,
+      "executor_cost_usd": 0.007565,
+      "advisor_cost_usd": 0.005926,
+      "advisor_cost_share": 0.4393,
+      "candidates_sampled": 0,
+      "best_of_k_wasted_candidate_rate": 0.0
+    },
+    "best_of_k_router": {
+      "total_cost_usd": 0.018981,
+      "cost_per_verified_success": 0.006327,
+      "executor_cost_usd": 0.018981,
+      "advisor_cost_usd": 0,
+      "advisor_cost_share": 0.0,
+      "candidates_sampled": 10,
+      "best_of_k_wasted_candidate_rate": 0.7
     }
   },
   "promotions": [
@@ -61,19 +81,31 @@
       "candidate": "cheap_static",
       "incumbent": "cheap_single",
       "promotable": false,
-      "reason": "no Pareto improvement over incumbent (verified 0.0 vs 0.6, cost None vs 0.002861)"
+      "reason": "no Pareto improvement over incumbent (verified 0.0 vs 0.6, cost None vs 0.002911)"
     },
     {
       "candidate": "repo_map_router",
       "incumbent": "cheap_single",
       "promotable": true,
-      "reason": "verified 0.6->1.0 at cost/success 0.002861->0.001549 (no cost regression)"
+      "reason": "verified 0.6->1.0 at cost/success 0.002911->0.001579 (no cost regression)"
     },
     {
       "candidate": "claude_harness",
       "incumbent": "cheap_single",
       "promotable": false,
-      "reason": "no Pareto improvement over incumbent (verified 0.8 vs 0.6, cost 0.02878 vs 0.002861)"
+      "reason": "no Pareto improvement over incumbent (verified 1.0 vs 0.6, cost 0.027502 vs 0.002911)"
+    },
+    {
+      "candidate": "advisor_router",
+      "incumbent": "cheap_single",
+      "promotable": false,
+      "reason": "no Pareto improvement over incumbent (verified 0.8 vs 0.6, cost 0.003373 vs 0.002911)"
+    },
+    {
+      "candidate": "best_of_k_router",
+      "incumbent": "cheap_single",
+      "promotable": false,
+      "reason": "no Pareto improvement over incumbent (verified 0.6 vs 0.6, cost 0.006327 vs 0.002911)"
     }
   ],
   "promotable_policies": [
@@ -123,10 +155,10 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 3,
       "n_conclusive": 5,
-      "total_cost_usd": 0.008583,
-      "cost_per_verified_success": 0.002861,
+      "total_cost_usd": 0.008733,
+      "cost_per_verified_success": 0.002911,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 3.304
+      "avg_latency_s": 3.822
     },
     {
       "policy": "repo_map_router",
@@ -139,13 +171,29 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 5,
       "n_conclusive": 5,
-      "total_cost_usd": 0.007746,
-      "cost_per_verified_success": 0.001549,
+      "total_cost_usd": 0.007896,
+      "cost_per_verified_success": 0.001579,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 2.814
+      "avg_latency_s": 3.376
     },
     {
       "policy": "claude_harness",
+      "n_tasks": 5,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 5,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.137511,
+      "cost_per_verified_success": 0.027502,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 7.128
+    },
+    {
+      "policy": "advisor_router",
       "n_tasks": 5,
       "verified_success_rate": 0.8,
       "hidden_test_pass_rate": 0.8,
@@ -155,10 +203,26 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 4,
       "n_conclusive": 5,
-      "total_cost_usd": 0.115119,
-      "cost_per_verified_success": 0.02878,
+      "total_cost_usd": 0.013491,
+      "cost_per_verified_success": 0.003373,
+      "advisor_call_rate": 0.4,
+      "avg_latency_s": 4.806
+    },
+    {
+      "policy": "best_of_k_router",
+      "n_tasks": 5,
+      "verified_success_rate": 0.6,
+      "hidden_test_pass_rate": 0.6,
+      "public_pass_rate": 0.6,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 3,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.018981,
+      "cost_per_verified_success": 0.006327,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 6.634
+      "avg_latency_s": 7.416
     }
   ]
 }

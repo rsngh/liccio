@@ -113,7 +113,9 @@ def policy_oracle(spec: ArenaTaskSpec, root: Path, **_) -> ArenaAttempt:
 def _single_shot(adapter, spec: ArenaTaskSpec, root: Path, *, strategy: str, policy_name: str,
                  guidance: str = "", temperature: float | None = None) -> ArenaAttempt:
     """Run the single-shot Claude adapter with a context pack built per `strategy`."""
-    ws = build_workspace(spec, root / policy_name)
+    # unique per call so a policy that calls this twice (e.g. advisor retry) never collides
+    call_root = root / policy_name / f"c{time.time_ns()}"
+    ws = build_workspace(spec, call_root)
     body = spec.issue_text + ("\n\nADVISOR:\n" + guidance if guidance else "")
     items = [ContextItem(kind="instruction_chunk", path="__task_spec__", content=body,
                          source="task"),
@@ -128,7 +130,7 @@ def _single_shot(adapter, spec: ArenaTaskSpec, root: Path, *, strategy: str, pol
     repo = Repository(name=spec.name, local_path=str(ws), default_branch="master")
     from git import Repo
     base = Repo(ws).head.commit.hexsha
-    wsx = LocalWorkspaceManager(root / policy_name / f"work_{spec.name}_{time.time_ns()}").create(
+    wsx = LocalWorkspaceManager(call_root / "work").create(
         repo, RepoSnapshot(repo_id=repo.id, base_commit=base), default_policy())
     task = Task(repo_id=repo.id, title=f"Fix {spec.module_path}", body=spec.issue_text)
     t0 = time.time()
@@ -140,7 +142,7 @@ def _single_shot(adapter, spec: ArenaTaskSpec, root: Path, *, strategy: str, pol
                             adapter_status=AdapterStatus.LIVE_INCONCLUSIVE.value, solved=False,
                             public_solved=False, conclusive=False, cost_usd=0.0,
                             latency_s=time.time() - t0, detail=str(exc)[:120])
-    solved, public = verify(Path(wsx.path), spec, root / policy_name)
+    solved, public = verify(Path(wsx.path), spec, call_root)
     cost = _cost(res.input_token_count, res.output_token_count)
     changed = res.diff.changed_files if res.diff else []
     return ArenaAttempt(task=spec.name, policy=policy_name,

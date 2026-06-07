@@ -12,10 +12,26 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 5,
       "n_conclusive": 5,
-      "total_cost_usd": 0.007746,
-      "cost_per_verified_success": 0.001549,
+      "total_cost_usd": 0.007896,
+      "cost_per_verified_success": 0.001579,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 2.814
+      "avg_latency_s": 3.376
+    },
+    {
+      "policy": "claude_harness",
+      "n_tasks": 5,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 5,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.137511,
+      "cost_per_verified_success": 0.027502,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 7.128
     },
     {
       "policy": "oracle",
@@ -34,7 +50,7 @@
       "avg_latency_s": 0.0
     },
     {
-      "policy": "claude_harness",
+      "policy": "advisor_router",
       "n_tasks": 5,
       "verified_success_rate": 0.8,
       "hidden_test_pass_rate": 0.8,
@@ -44,10 +60,10 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 4,
       "n_conclusive": 5,
-      "total_cost_usd": 0.115119,
-      "cost_per_verified_success": 0.02878,
-      "advisor_call_rate": 0.0,
-      "avg_latency_s": 6.634
+      "total_cost_usd": 0.013491,
+      "cost_per_verified_success": 0.003373,
+      "advisor_call_rate": 0.4,
+      "avg_latency_s": 4.806
     },
     {
       "policy": "cheap_single",
@@ -60,10 +76,26 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 3,
       "n_conclusive": 5,
-      "total_cost_usd": 0.008583,
-      "cost_per_verified_success": 0.002861,
+      "total_cost_usd": 0.008733,
+      "cost_per_verified_success": 0.002911,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 3.304
+      "avg_latency_s": 3.822
+    },
+    {
+      "policy": "best_of_k_router",
+      "n_tasks": 5,
+      "verified_success_rate": 0.6,
+      "hidden_test_pass_rate": 0.6,
+      "public_pass_rate": 0.6,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 3,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.018981,
+      "cost_per_verified_success": 0.006327,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 7.416
     },
     {
       "policy": "cheap_static",

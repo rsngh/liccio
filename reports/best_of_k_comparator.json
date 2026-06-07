@@ -1,0 +1,12 @@
+{
+  "experiment": "best_of_k_comparator",
+  "verified_success_best_of_k": 0.6,
+  "verified_success_cheap_single": 0.6,
+  "cost_per_verified_success_best_of_k": 0.006327,
+  "cost_per_verified_success_strong_single": 0.027502,
+  "beats_cheap_single_on_quality": false,
+  "beats_strong_single_on_cost": true,
+  "best_of_k_wasted_candidate_rate": 0.7,
+  "acceptance": "best_of_k beats cheap_single on verified success AND beats strong_single on cost_per_verified_success for >=1 bucket",
+  "passes_acceptance": true
+}

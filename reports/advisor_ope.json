@@ -1,0 +1,15 @@
+{
+  "experiment": "advisor_ope",
+  "executor": "cheap_single",
+  "advisor_policy": "advisor_router",
+  "advisor_call_rate": 0.4,
+  "verified_success_executor": 0.6,
+  "verified_success_with_advisor": 0.8,
+  "verified_success_lift": 0.2,
+  "cost_per_verified_success_executor": 0.002911,
+  "cost_per_verified_success_with_advisor": 0.003373,
+  "cost_regression_fraction": 0.1587,
+  "advisor_improves_or_holds": true,
+  "acceptance": "advisor improves verified success OR cost/verified-success does not regress by >10%",
+  "passes_acceptance": true
+}

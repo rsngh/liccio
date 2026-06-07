@@ -29,22 +29,22 @@
       "context_need": "cross_file_api",
       "recommended": "repo_map",
       "solve_rate": 1.0,
-      "value_per_dollar": 784.31,
+      "value_per_dollar": 740.74,
       "candidates": [
         {
           "context_need": "cross_file_api",
           "strategy": "repo_map",
           "n": 1,
           "solve_rate": 1.0,
-          "mean_cost": 0.001275,
-          "value_per_dollar": 784.31
+          "mean_cost": 0.00135,
+          "value_per_dollar": 740.74
         },
         {
           "context_need": "cross_file_api",
           "strategy": "minimal",
           "n": 1,
           "solve_rate": 0.0,
-          "mean_cost": 0.001875,
+          "mean_cost": 0.00201,
           "value_per_dollar": 0.0
         }
       ]
@@ -68,8 +68,8 @@
           "strategy": "repo_map",
           "n": 1,
           "solve_rate": 1.0,
-          "mean_cost": 0.001578,
-          "value_per_dollar": 633.71
+          "mean_cost": 0.001653,
+          "value_per_dollar": 604.96
         }
       ]
     },
@@ -77,15 +77,15 @@
       "context_need": "none",
       "recommended": "minimal",
       "solve_rate": 1.0,
-      "value_per_dollar": 657.46,
+      "value_per_dollar": 654.45,
       "candidates": [
         {
           "context_need": "none",
           "strategy": "minimal",
           "n": 2,
           "solve_rate": 1.0,
-          "mean_cost": 0.001521,
-          "value_per_dollar": 657.46
+          "mean_cost": 0.001528,
+          "value_per_dollar": 654.45
         },
         {
           "context_need": "none",

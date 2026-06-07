@@ -7,7 +7,9 @@
     "oracle",
     "cheap_single",
     "repo_map_router",
-    "claude_harness"
+    "claude_harness",
+    "advisor_router",
+    "best_of_k_router"
   ],
   "live_claude_single": true,
   "live_claude_harness": true,
@@ -62,10 +64,10 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 3,
       "n_conclusive": 5,
-      "total_cost_usd": 0.008583,
-      "cost_per_verified_success": 0.002861,
+      "total_cost_usd": 0.008733,
+      "cost_per_verified_success": 0.002911,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 3.304
+      "avg_latency_s": 3.822
     },
     {
       "policy": "repo_map_router",
@@ -78,13 +80,29 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 5,
       "n_conclusive": 5,
-      "total_cost_usd": 0.007746,
-      "cost_per_verified_success": 0.001549,
+      "total_cost_usd": 0.007896,
+      "cost_per_verified_success": 0.001579,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 2.814
+      "avg_latency_s": 3.376
     },
     {
       "policy": "claude_harness",
+      "n_tasks": 5,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 5,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.137511,
+      "cost_per_verified_success": 0.027502,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 7.128
+    },
+    {
+      "policy": "advisor_router",
       "n_tasks": 5,
       "verified_success_rate": 0.8,
       "hidden_test_pass_rate": 0.8,
@@ -94,10 +112,26 @@
       "adapter_unavailable_rate": 0.0,
       "n_solved": 4,
       "n_conclusive": 5,
-      "total_cost_usd": 0.115119,
-      "cost_per_verified_success": 0.02878,
+      "total_cost_usd": 0.013491,
+      "cost_per_verified_success": 0.003373,
+      "advisor_call_rate": 0.4,
+      "avg_latency_s": 4.806
+    },
+    {
+      "policy": "best_of_k_router",
+      "n_tasks": 5,
+      "verified_success_rate": 0.6,
+      "hidden_test_pass_rate": 0.6,
+      "public_pass_rate": 0.6,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 3,
+      "n_conclusive": 5,
+      "total_cost_usd": 0.018981,
+      "cost_per_verified_success": 0.006327,
       "advisor_call_rate": 0.0,
-      "avg_latency_s": 6.634
+      "avg_latency_s": 7.416
     }
   ],
   "routing_signal": {
@@ -115,35 +149,45 @@
       "oracle": true,
       "cheap_single": true,
       "repo_map_router": true,
-      "claude_harness": true
+      "claude_harness": true,
+      "advisor_router": true,
+      "best_of_k_router": true
     },
     "slug_trim": {
       "cheap_static": false,
       "oracle": true,
       "cheap_single": true,
       "repo_map_router": true,
-      "claude_harness": false
+      "claude_harness": true,
+      "advisor_router": true,
+      "best_of_k_router": true
     },
     "checkout_discount": {
       "cheap_static": false,
       "oracle": true,
       "cheap_single": false,
       "repo_map_router": true,
-      "claude_harness": true
+      "claude_harness": true,
+      "advisor_router": true,
+      "best_of_k_router": false
     },
     "pipeline_wire": {
       "cheap_static": false,
       "oracle": true,
       "cheap_single": false,
       "repo_map_router": true,
-      "claude_harness": true
+      "claude_harness": true,
+      "advisor_router": false,
+      "best_of_k_router": false
     },
     "stats_two_bug": {
       "cheap_static": false,
       "oracle": true,
       "cheap_single": true,
       "repo_map_router": true,
-      "claude_harness": true
+      "claude_harness": true,
+      "advisor_router": true,
+      "best_of_k_router": true
     }
   },
   "attempts": [
@@ -191,7 +235,7 @@
       "public_solved": true,
       "conclusive": true,
       "cost_usd": 0.000963,
-      "latency_s": 2.78,
+      "latency_s": 3.59,
       "changed_files": [
         "backoff.py"
       ],
@@ -210,7 +254,7 @@
       "public_solved": true,
       "conclusive": true,
       "cost_usd": 0.001071,
-      "latency_s": 2.47,
+      "latency_s": 4.08,
       "changed_files": [
         "backoff.py"
       ],
@@ -228,8 +272,8 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.018279,
-      "latency_s": 5.17,
+      "cost_usd": 0.018354,
+      "latency_s": 5.3,
       "changed_files": [
         "backoff.py"
       ],
@@ -239,6 +283,44 @@
       "advisor_calls": 0,
       "candidates_sampled": 0,
       "detail": ""
+    },
+    {
+      "task": "retry_backoff",
+      "policy": "advisor_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.000963,
+      "latency_s": 2.66,
+      "changed_files": [
+        "backoff.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "retry_backoff",
+      "policy": "best_of_k_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001926,
+      "latency_s": 5.9,
+      "changed_files": [
+        "backoff.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 2,
+      "detail": "best-of-2 by public proof"
     },
     {
       "task": "slug_trim",
@@ -284,7 +366,7 @@
       "public_solved": true,
       "conclusive": true,
       "cost_usd": 0.001482,
-      "latency_s": 2.68,
+      "latency_s": 2.99,
       "changed_files": [
         "slug.py"
       ],
@@ -302,8 +384,8 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.001578,
-      "latency_s": 2.83,
+      "cost_usd": 0.001653,
+      "latency_s": 3.26,
       "changed_files": [
         "slug.py"
       ],
@@ -318,18 +400,58 @@
       "task": "slug_trim",
       "policy": "claude_harness",
       "adapter_status": "live_conclusive",
-      "solved": false,
+      "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.00834,
-      "latency_s": 2.61,
-      "changed_files": [],
-      "tool_calls": 1,
+      "cost_usd": 0.01893,
+      "latency_s": 5.43,
+      "changed_files": [
+        "slug.py"
+      ],
+      "tool_calls": 3,
       "activated": true,
-      "followed": false,
+      "followed": true,
       "advisor_calls": 0,
       "candidates_sampled": 0,
       "detail": ""
+    },
+    {
+      "task": "slug_trim",
+      "policy": "advisor_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.001482,
+      "latency_s": 2.77,
+      "changed_files": [
+        "slug.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "slug_trim",
+      "policy": "best_of_k_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.002964,
+      "latency_s": 5.4,
+      "changed_files": [
+        "slug.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 2,
+      "detail": "best-of-2 by public proof"
     },
     {
       "task": "checkout_discount",
@@ -374,8 +496,8 @@
       "solved": false,
       "public_solved": false,
       "conclusive": true,
-      "cost_usd": 0.001875,
-      "latency_s": 3.72,
+      "cost_usd": 0.00201,
+      "latency_s": 5.08,
       "changed_files": [
         "checkout.py"
       ],
@@ -393,8 +515,8 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.001275,
-      "latency_s": 2.7,
+      "cost_usd": 0.00135,
+      "latency_s": 2.87,
       "changed_files": [
         "checkout.py"
       ],
@@ -412,17 +534,56 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.019944,
-      "latency_s": 5.56,
+      "cost_usd": 0.031818,
+      "latency_s": 8.75,
       "changed_files": [
         "checkout.py"
       ],
-      "tool_calls": 4,
+      "tool_calls": 7,
       "activated": true,
       "followed": true,
       "advisor_calls": 0,
       "candidates_sampled": 0,
       "detail": ""
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "advisor_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.004488,
+      "latency_s": 7.41,
+      "changed_files": [
+        "checkout.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 1,
+      "candidates_sampled": 0,
+      "detail": "escalated to advisor"
+    },
+    {
+      "task": "checkout_discount",
+      "policy": "best_of_k_router",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.005265,
+      "latency_s": 10.03,
+      "changed_files": [
+        "checkout.py",
+        "discounts.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 2,
+      "detail": "best-of-2 by public proof"
     },
     {
       "task": "pipeline_wire",
@@ -468,7 +629,7 @@
       "public_solved": false,
       "conclusive": true,
       "cost_usd": 0.002184,
-      "latency_s": 4.24,
+      "latency_s": 4.35,
       "changed_files": [
         "pipeline.py"
       ],
@@ -487,7 +648,7 @@
       "public_solved": true,
       "conclusive": true,
       "cost_usd": 0.001554,
-      "latency_s": 2.81,
+      "latency_s": 3.38,
       "changed_files": [
         "pipeline.py"
       ],
@@ -505,8 +666,8 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.033858,
-      "latency_s": 7.93,
+      "cost_usd": 0.034842,
+      "latency_s": 7.57,
       "changed_files": [
         "pipeline.py"
       ],
@@ -516,6 +677,44 @@
       "advisor_calls": 0,
       "candidates_sampled": 0,
       "detail": ""
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "advisor_router",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.004464,
+      "latency_s": 7.6,
+      "changed_files": [
+        "pipeline.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 1,
+      "candidates_sampled": 0,
+      "detail": "escalated to advisor"
+    },
+    {
+      "task": "pipeline_wire",
+      "policy": "best_of_k_router",
+      "adapter_status": "live_conclusive",
+      "solved": false,
+      "public_solved": false,
+      "conclusive": true,
+      "cost_usd": 0.004653,
+      "latency_s": 8.71,
+      "changed_files": [
+        "pipeline.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 2,
+      "detail": "best-of-2 by public proof"
     },
     {
       "task": "stats_two_bug",
@@ -560,7 +759,7 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.002079,
+      "cost_usd": 0.002094,
       "latency_s": 3.1,
       "changed_files": [
         "stats.py"
@@ -580,7 +779,7 @@
       "public_solved": true,
       "conclusive": true,
       "cost_usd": 0.002268,
-      "latency_s": 3.26,
+      "latency_s": 3.29,
       "changed_files": [
         "stats.py"
       ],
@@ -598,17 +797,55 @@
       "solved": true,
       "public_solved": true,
       "conclusive": true,
-      "cost_usd": 0.034698,
-      "latency_s": 11.9,
+      "cost_usd": 0.033567,
+      "latency_s": 8.59,
       "changed_files": [
         "stats.py"
       ],
-      "tool_calls": 6,
+      "tool_calls": 7,
       "activated": true,
       "followed": true,
       "advisor_calls": 0,
       "candidates_sampled": 0,
       "detail": ""
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "advisor_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.002094,
+      "latency_s": 3.59,
+      "changed_files": [
+        "stats.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 0,
+      "detail": ""
+    },
+    {
+      "task": "stats_two_bug",
+      "policy": "best_of_k_router",
+      "adapter_status": "live_conclusive",
+      "solved": true,
+      "public_solved": true,
+      "conclusive": true,
+      "cost_usd": 0.004173,
+      "latency_s": 7.04,
+      "changed_files": [
+        "stats.py"
+      ],
+      "tool_calls": 0,
+      "activated": null,
+      "followed": null,
+      "advisor_calls": 0,
+      "candidates_sampled": 2,
+      "detail": "best-of-2 by public proof"
     }
   ],
   "evidence_tier": "fixture-unseen (authored for the arena); live Claude where available",
