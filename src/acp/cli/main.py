@@ -1172,6 +1172,75 @@ def _root(
     ctx.ensure_object(dict)
 
 
+# --- Alpha 42: MetaRouter Arena + FinOps + context-strategy OPE command surface ----------
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _run_script(rel: str, *args: str) -> None:
+    import subprocess
+    import sys
+
+    code = subprocess.run([sys.executable, str(_REPO_ROOT / rel), *args],
+                          cwd=str(_REPO_ROOT)).returncode
+    if code != 0:
+        raise typer.Exit(code)
+
+
+def _show_json(rel: str, hint: str) -> None:
+    import json
+
+    p = _REPO_ROOT / rel
+    if not p.exists():
+        console.print(hint)
+        raise typer.Exit(1)
+    console.print_json(data=json.loads(p.read_text()))
+
+
+arena_app = typer.Typer(help="MetaRouter Arena — evidence-driven policy comparison (Alpha 42).")
+app.add_typer(arena_app, name="arena")
+
+
+@arena_app.command("run")
+def arena_run(full: bool = False) -> None:
+    """Run the arena across policies (live Claude where available); writes reports."""
+    _run_script("evals/metarouter_arena/run_arena.py", *(["--full"] if full else []))
+
+
+@arena_app.command("compare")
+def arena_compare() -> None:
+    """Show the latest arena policy ranking (verified success per dollar)."""
+    _show_json("reports/metarouter_policy_compare.json", "run `acp arena run` first")
+
+
+finops_app = typer.Typer(help="Meta-agent FinOps — cost per verified success (Alpha 42).")
+app.add_typer(finops_app, name="finops")
+
+
+@finops_app.command("report")
+def finops_report_cmd() -> None:
+    """Build + show the FinOps report (cost attribution + Pareto promotion) from the arena."""
+    _run_script("evals/scripts/build_finops_report.py")
+    _show_json("reports/finops_cost_per_verified_success.json", "no finops report")
+
+
+context_app = typer.Typer(help="Context-strategy routing/OPE (Alpha 42).")
+app.add_typer(context_app, name="context")
+
+
+@context_app.command("strategy-ope")
+def context_strategy_ope_cmd() -> None:
+    """Build + show the context-strategy OPE (which strategy to route per context need)."""
+    _run_script("evals/scripts/build_context_strategy_ope.py")
+    _show_json("reports/context_strategy_ope.json", "no context-strategy OPE report")
+
+
+@context_app.command("topology-search")
+def context_topology_search_cmd() -> None:
+    """Build + show the offline topology-controller search over arena traces."""
+    _run_script("evals/scripts/build_topology_controller_search.py")
+    _show_json("reports/topology_controller_search.json", "no topology search report")
+
+
 def main() -> None:  # pragma: no cover - thin entrypoint
     app()
 
