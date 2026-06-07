@@ -1,0 +1,17 @@
+{
+  "experiment": "repo_map_ab_live",
+  "what": "single-shot Claude on a cross-file task; arms differ ONLY by the repo-map chunk",
+  "model": "claude-sonnet-4-6",
+  "reps": 3,
+  "solved_by_arm": {
+    "baseline": 0,
+    "repo_map": 3
+  },
+  "solve_rate_by_arm": {
+    "baseline": 0.0,
+    "repo_map": 1.0
+  },
+  "repo_map_lift": 1.0,
+  "repo_map_helps": true,
+  "evidence_tier": "fixture-unseen (authored for this eval)"
+}
