@@ -1,0 +1,75 @@
+{
+  "experiment": "harness_evolution_guarded_pr",
+  "n_proposals": 3,
+  "n_promoted": 1,
+  "rejected_negative_transfer": 1,
+  "rejected_no_lift": 2,
+  "no_protected_branch_writes": true,
+  "all_have_rollback": true,
+  "canary_signals": "SIMULATED (labeled) to demonstrate governance gates",
+  "results": [
+    {
+      "proposal": {
+        "component": "repo_map_presentation",
+        "cluster_mode": "cheap_single:cross_file",
+        "rationale": "12 conclusive failures clustered under cheap_single:cross_file",
+        "expected_effect": "raise pass-when-loaded on the cheap_single:cross_file bucket",
+        "diff_summary": "adjust repo_map_presentation for cheap_single:cross_file",
+        "rollback": {
+          "action": "revert component",
+          "component": "repo_map_presentation",
+          "restore": "previous harness version"
+        }
+      },
+      "static_scan_passed": true,
+      "regression_passed": true,
+      "negative_transfer": false,
+      "canary_lift": 0.12,
+      "promoted": true,
+      "decision": "promoted via guarded PR (canary lift 0.12)",
+      "protected_branch_write": false
+    },
+    {
+      "proposal": {
+        "component": "finish_discipline",
+        "cluster_mode": "grep_router:security_fix",
+        "rationale": "4 conclusive failures clustered under grep_router:security_fix",
+        "expected_effect": "raise pass-when-loaded on the grep_router:security_fix bucket",
+        "diff_summary": "adjust finish_discipline for grep_router:security_fix",
+        "rollback": {
+          "action": "revert component",
+          "component": "finish_discipline",
+          "restore": "previous harness version"
+        }
+      },
+      "static_scan_passed": true,
+      "regression_passed": true,
+      "negative_transfer": true,
+      "canary_lift": 0.2,
+      "promoted": false,
+      "decision": "rejected: negative transfer on other buckets",
+      "protected_branch_write": false
+    },
+    {
+      "proposal": {
+        "component": "advisor_trigger",
+        "cluster_mode": "cheap_single:underspec",
+        "rationale": "6 conclusive failures clustered under cheap_single:underspec",
+        "expected_effect": "raise pass-when-loaded on the cheap_single:underspec bucket",
+        "diff_summary": "adjust advisor_trigger for cheap_single:underspec",
+        "rollback": {
+          "action": "revert component",
+          "component": "advisor_trigger",
+          "restore": "previous harness version"
+        }
+      },
+      "static_scan_passed": true,
+      "regression_passed": true,
+      "negative_transfer": false,
+      "canary_lift": 0.01,
+      "promoted": false,
+      "decision": "rejected: canary lift 0.01 < 0.05",
+      "protected_branch_write": false
+    }
+  ]
+}
