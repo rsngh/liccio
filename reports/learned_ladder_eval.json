@@ -1,0 +1,31 @@
+{
+  "experiment": "learned_ladder",
+  "question": "does an offline-learned per-signature ladder beat hand-tuned global escalation per dollar?",
+  "learned_ladders": {
+    "sigA": [
+      "cheap"
+    ],
+    "sigB": [
+      "ctx"
+    ],
+    "sigC": [
+      "strong"
+    ]
+  },
+  "global": {
+    "solved": 12,
+    "n": 12,
+    "total_cost_usd": 0.124,
+    "cost_per_verified_success": 0.010333
+  },
+  "learned": {
+    "solved": 12,
+    "n": 12,
+    "total_cost_usd": 0.1,
+    "cost_per_verified_success": 0.008333
+  },
+  "both_solve_all": true,
+  "learned_cheaper": true,
+  "cost_reduction_pct": 19.4,
+  "evidence_tier": "deterministic ladder-policy benchmark (offline-learned vs hand-tuned)"
+}

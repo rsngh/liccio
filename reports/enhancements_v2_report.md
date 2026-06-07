@@ -73,7 +73,25 @@ old failures age out and the again-good lever is re-used. **Naive "ever-failed" 
 longitudinal win needs to survive an evolving repo.
 
 ## Increment 3 — Self-tuning ladder learned offline from traces
-<!-- INC3 -->
+
+*Papers: AutoTTS / LLMs-Improving-LLMs (2605.08083); GEPA (2507.19457); Meta-Harness (2603.28052).*
+
+The hand-tuned lever priors are a guess. `src/acp/routing/learned_ladder.py` learns, per
+failure-signature, the lever order that minimizes expected cost-to-verified-success from logged
+`(signature, lever, solved, cost)` traces (AutoTTS controller search — no RL training). Unlike online
+memory (which warms up per deployment), this is batch-learned and fixed/auditable at deploy.
+
+**Benchmark** — three families needing different levers (sigA→cheap, sigB→ctx, sigC→strong); learn
+offline, evaluate on held-out tasks vs the hand-tuned global ladder:
+
+| Router | solved | cost/verified-success |
+|---|---|---|
+| hand-tuned global (escalate from scratch) | 12/12 | $0.01033 |
+| **offline-learned per-signature ladder** | 12/12 | **$0.00833** |
+
+Learned ladders: `sigA→[cheap]`, `sigB→[ctx]`, `sigC→[strong]`. Same 100% success, **19.4% cheaper**
+— it starts at the historically-best rung and skips the escalation warm-up (the residual cost is the
+strong lever's own price on the genuinely-hard family, which any router must pay).
 
 ## Increment 4 — Self-evolving context + verification for non-test tasks
 <!-- INC4 -->
