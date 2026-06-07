@@ -93,7 +93,8 @@ class GeminiAgentAdapter:
             text = "".join(p.get("text", "") for p in parts)
             usage = data.get("usageMetadata", {})
             in_tok = usage.get("promptTokenCount", 0)
-            out_tok = usage.get("candidatesTokenCount", 0)
+            # thinking models billed for reasoning ("thought") tokens AS output — count them
+            out_tok = usage.get("candidatesTokenCount", 0) + usage.get("thoughtsTokenCount", 0)
             if not text:
                 # thinking models can exhaust the budget on reasoning with no emitted code
                 return AgentAttemptResult(

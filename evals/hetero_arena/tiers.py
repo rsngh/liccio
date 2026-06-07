@@ -39,14 +39,21 @@ class Tier:
 HAIKU = Tier("haiku", "claude-haiku-4-5", 1.0 / 1e6, 5.0 / 1e6)
 SONNET = Tier("sonnet", "claude-sonnet-4-6", 3.0 / 1e6, 15.0 / 1e6)
 OPUS = Tier("opus", "claude-opus-4-8", 15.0 / 1e6, 75.0 / 1e6)
-# Google: gemini-2.5-flash $0.30/$2.50, gemini-2.5-pro $1.25/$10 — a genuinely DIFFERENT provider.
-GEMINI_FLASH = Tier("gemini_flash", "gemini-2.5-flash", 0.30 / 1e6, 2.50 / 1e6, provider="gemini")
-GEMINI_PRO = Tier("gemini_pro", "gemini-2.5-pro", 1.25 / 1e6, 10.0 / 1e6, provider="gemini")
+# Google Gemini 3.x (genuinely DIFFERENT provider family). Prices for these preview models are
+# ESTIMATES from the published flash-lite/flash/pro tiering (labelled as such in the report); the
+# RELATIVE ordering flash_lite < flash < pro and "all cheaper than opus" is the load-bearing fact.
+# gemini_flash_lite: no-thinking, cheapest/fastest tier
+GEMINI_FLASH_LITE = Tier("gemini_flash_lite", "gemini-3.1-flash-lite",
+                         0.10 / 1e6, 0.40 / 1e6, provider="gemini")
+GEMINI_FLASH = Tier("gemini_flash", "gemini-3.5-flash", 0.30 / 1e6, 2.50 / 1e6, provider="gemini")
+GEMINI_PRO = Tier("gemini_pro", "gemini-3.1-pro-preview", 2.0 / 1e6, 12.0 / 1e6, provider="gemini")
 
 TIERS = {t.name: t for t in (HAIKU, SONNET, OPUS)}
-ALL_TIERS = {t.name: t for t in (GEMINI_FLASH, HAIKU, GEMINI_PRO, SONNET, OPUS)}
+ALL_TIERS = {t.name: t for t in
+             (GEMINI_FLASH_LITE, GEMINI_FLASH, HAIKU, SONNET, GEMINI_PRO, OPUS)}
 
-# Ratio facts for the report: opus output costs 15x haiku output, 5x sonnet output, 30x flash.
+# Ratio facts for the report: opus output costs 15x haiku, 5x sonnet, ~30x flash, ~190x flash-lite.
 OPUS_OVER_HAIKU = OPUS.out_per_tok / HAIKU.out_per_tok  # 15.0
 OPUS_OVER_SONNET = OPUS.out_per_tok / SONNET.out_per_tok  # 5.0
 OPUS_OVER_GEMINI_FLASH = OPUS.out_per_tok / GEMINI_FLASH.out_per_tok  # 30.0
+OPUS_OVER_GEMINI_FLASH_LITE = OPUS.out_per_tok / GEMINI_FLASH_LITE.out_per_tok  # ~187.5

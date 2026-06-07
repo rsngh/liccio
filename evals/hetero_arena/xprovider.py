@@ -22,14 +22,22 @@ from collections import defaultdict
 from pathlib import Path
 
 from evals.hetero_arena.tier_tasks import all_capability_tasks
-from evals.hetero_arena.tiers import GEMINI_FLASH, GEMINI_PRO, HAIKU, OPUS, SONNET
+from evals.hetero_arena.tiers import (
+    GEMINI_FLASH,
+    GEMINI_FLASH_LITE,
+    GEMINI_PRO,
+    HAIKU,
+    OPUS,
+    SONNET,
+)
 from evals.metarouter_arena.policies import _single_shot
 from evals.metarouter_arena.schema import AdapterStatus, ArenaAttempt
 from evals.metarouter_arena.statistics import wilson_ci
 
-# cheapest-first across BOTH providers (by output price): flash < haiku < pro < sonnet < opus
-LADDER = [GEMINI_FLASH, HAIKU, GEMINI_PRO, SONNET, OPUS]
-SINGLE_TIERS = [GEMINI_FLASH, HAIKU, GEMINI_PRO, SONNET, OPUS]
+# cheapest-first across BOTH provider families (by output price):
+# gemini-flash-lite < gemini-flash < haiku < sonnet < gemini-pro < opus
+LADDER = [GEMINI_FLASH_LITE, GEMINI_FLASH, HAIKU, SONNET, GEMINI_PRO, OPUS]
+SINGLE_TIERS = [GEMINI_FLASH_LITE, GEMINI_FLASH, HAIKU, SONNET, GEMINI_PRO, OPUS]
 
 
 def _ci(s, n):
@@ -64,10 +72,10 @@ def policy_cross_provider_escalation(spec, root) -> ArenaAttempt:
 
 
 def policy_best_of_providers(spec, root) -> ArenaAttempt:
-    """Provider diversity: one gemini-flash + one haiku (two cheapest, different families); select
-    by public-test signal. Tests whether cross-family diversity rescues what one family fails."""
+    """Provider diversity: one gemini-flash-lite + one haiku (cheapest of each family); select by
+    public-test signal. Tests whether cross-family diversity rescues what one family fails."""
     t0 = time.time()
-    cands = [_single(GEMINI_FLASH, spec, root), _single(HAIKU, spec, root)]
+    cands = [_single(GEMINI_FLASH_LITE, spec, root), _single(HAIKU, spec, root)]
     cost = round(sum(c.cost_usd for c in cands), 6)
     conclusive = any(c.conclusive for c in cands)
     chosen = next((c for c in cands if c.public_solved),
@@ -109,7 +117,8 @@ def run(trials: int) -> dict:
     ranked = sorted(rows.items(), key=lambda kv: (kv[1]["cost_per_verified_success"] or 9e9))
     return {
         "experiment": "hetero_arena_xprovider",
-        "providers": {"anthropic": ["haiku", "sonnet", "opus"], "gemini": ["gemini_flash", "gemini_pro"]},
+        "providers": {"anthropic": ["haiku", "sonnet", "opus"],
+                      "gemini": ["gemini_flash_lite", "gemini_flash", "gemini_pro"]},
         "tiers_priced": {t.name: {"model": t.model, "provider": t.provider,
                                   "in_per_mtok": round(t.in_per_tok * 1e6, 4),
                                   "out_per_mtok": round(t.out_per_tok * 1e6, 4)}
