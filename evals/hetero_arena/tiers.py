@@ -15,21 +15,38 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Tier:
     name: str            # short label used in reports
-    model: str           # Anthropic model id
+    model: str           # provider model id
     in_per_tok: float    # USD per input token
     out_per_tok: float   # USD per output token
+    provider: str = "anthropic"   # anthropic | gemini
 
     def cost(self, in_tok: int, out_tok: int) -> float:
         return round((in_tok or 0) * self.in_per_tok + (out_tok or 0) * self.out_per_tok, 6)
 
+    def adapter(self):
+        """Return a fresh single-shot adapter for this tier's provider/model."""
+        if self.provider == "gemini":
+            from acp.agents.gemini_agent import GeminiAgentAdapter
+            # pro is a thinking model -> needs a larger emit budget to leave room for code
+            mt = 16384 if "pro" in self.model else 8192
+            return GeminiAgentAdapter(name=self.name, model=self.model, max_output_tokens=mt)
+        from acp.agents.claude_agent import ClaudeAgentAdapter
+        return ClaudeAgentAdapter(name=self.name, model=self.model)
 
-# Published per-1M blended pricing (USD): haiku $1/$5, sonnet $3/$15, opus $15/$75.
-HAIKU = Tier("haiku", "claude-haiku-4-5", 1.0 / 1_000_000, 5.0 / 1_000_000)
-SONNET = Tier("sonnet", "claude-sonnet-4-6", 3.0 / 1_000_000, 15.0 / 1_000_000)
-OPUS = Tier("opus", "claude-opus-4-8", 15.0 / 1_000_000, 75.0 / 1_000_000)
+
+# Published per-1M blended pricing (USD).
+# Anthropic: haiku $1/$5, sonnet $3/$15, opus $15/$75.
+HAIKU = Tier("haiku", "claude-haiku-4-5", 1.0 / 1e6, 5.0 / 1e6)
+SONNET = Tier("sonnet", "claude-sonnet-4-6", 3.0 / 1e6, 15.0 / 1e6)
+OPUS = Tier("opus", "claude-opus-4-8", 15.0 / 1e6, 75.0 / 1e6)
+# Google: gemini-2.5-flash $0.30/$2.50, gemini-2.5-pro $1.25/$10 — a genuinely DIFFERENT provider.
+GEMINI_FLASH = Tier("gemini_flash", "gemini-2.5-flash", 0.30 / 1e6, 2.50 / 1e6, provider="gemini")
+GEMINI_PRO = Tier("gemini_pro", "gemini-2.5-pro", 1.25 / 1e6, 10.0 / 1e6, provider="gemini")
 
 TIERS = {t.name: t for t in (HAIKU, SONNET, OPUS)}
+ALL_TIERS = {t.name: t for t in (GEMINI_FLASH, HAIKU, GEMINI_PRO, SONNET, OPUS)}
 
-# Ratio facts for the report: opus output costs 15x haiku output, 5x sonnet output.
+# Ratio facts for the report: opus output costs 15x haiku output, 5x sonnet output, 30x flash.
 OPUS_OVER_HAIKU = OPUS.out_per_tok / HAIKU.out_per_tok  # 15.0
 OPUS_OVER_SONNET = OPUS.out_per_tok / SONNET.out_per_tok  # 5.0
+OPUS_OVER_GEMINI_FLASH = OPUS.out_per_tok / GEMINI_FLASH.out_per_tok  # 30.0

@@ -145,6 +145,7 @@ class AgentKind(str, Enum):
     FAKE = "fake"
     PATCH = "patch"
     CLAUDE = "claude"
+    GEMINI = "gemini"
     CODEX = "codex"
     OPENHANDS = "openhands"
     SIMPLE_LLM = "simple_llm"
