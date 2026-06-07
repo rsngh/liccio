@@ -1,0 +1,80 @@
+{
+  "experiment": "provider_marketplace_scorecard",
+  "by_evidence_class": {
+    "live_conclusive": [],
+    "replay_imported": [],
+    "mock_contract_only": [
+      "openai",
+      "gemini",
+      "codex",
+      "openhands"
+    ],
+    "unavailable": [
+      "anthropic"
+    ]
+  },
+  "rows": [
+    {
+      "provider": "anthropic",
+      "evidence_class": "unavailable",
+      "available": true,
+      "contract_passed": true,
+      "conclusive_cells": 0,
+      "verified_success_rate": null,
+      "cost_per_verified_success": null,
+      "reason": "ok"
+    },
+    {
+      "provider": "openai",
+      "evidence_class": "mock_contract_only",
+      "available": false,
+      "contract_passed": true,
+      "conclusive_cells": 0,
+      "verified_success_rate": null,
+      "cost_per_verified_success": null,
+      "reason": "openai SDK not installed and ACP_OPENAI_API_KEY not set"
+    },
+    {
+      "provider": "gemini",
+      "evidence_class": "mock_contract_only",
+      "available": false,
+      "contract_passed": true,
+      "conclusive_cells": 0,
+      "verified_success_rate": null,
+      "cost_per_verified_success": null,
+      "reason": "google.generativeai SDK not installed and ACP_GEMINI_API_KEY not set"
+    },
+    {
+      "provider": "codex",
+      "evidence_class": "mock_contract_only",
+      "available": false,
+      "contract_passed": true,
+      "conclusive_cells": 0,
+      "verified_success_rate": null,
+      "cost_per_verified_success": null,
+      "reason": "codex not found on PATH"
+    },
+    {
+      "provider": "openhands",
+      "evidence_class": "mock_contract_only",
+      "available": false,
+      "contract_passed": true,
+      "conclusive_cells": 0,
+      "verified_success_rate": null,
+      "cost_per_verified_success": null,
+      "reason": "openhands SDK not installed and OPENHANDS_SERVER_URL not set"
+    }
+  ],
+  "mix_recommendation": {
+    "recommended_primary": null,
+    "feasible_providers": [],
+    "not_ranked": {
+      "anthropic": "ok",
+      "openai": "openai SDK not installed and ACP_OPENAI_API_KEY not set",
+      "gemini": "google.generativeai SDK not installed and ACP_GEMINI_API_KEY not set",
+      "codex": "codex not found on PATH",
+      "openhands": "openhands SDK not installed and OPENHANDS_SERVER_URL not set"
+    },
+    "note": "OpenAI/Gemini pluggable later via replay import; no live claim here"
+  }
+}
