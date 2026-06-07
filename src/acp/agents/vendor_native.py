@@ -39,10 +39,17 @@ def _claude_argv(repo: Path, prompt: str) -> list[str]:
     return ["claude", "-p", prompt, "--dangerously-skip-permissions"]
 
 
+def _gemini_argv(repo: Path, prompt: str) -> list[str]:
+    # headless, auto-approve all tools; --skip-trust so a fresh workspace runs unattended
+    return ["gemini", "-m", "gemini-2.5-flash", "--skip-trust", "--yolo", "-p", prompt]
+
+
 VENDOR_SPECS: dict[str, VendorSpec] = {
     "codex_cli": VendorSpec("codex_cli", "codex", ["--version"], _codex_argv),
     "claude_code": VendorSpec("claude_code", "claude", ["--version"], _claude_argv,
                               needs_cwd=True),
+    "gemini_cli": VendorSpec("gemini_cli", "gemini", ["--version"], _gemini_argv,
+                             needs_cwd=True),
     "openhands": VendorSpec("openhands", "openhands", ["--version"], None),
 }
 
