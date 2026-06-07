@@ -1,0 +1,50 @@
+{
+  "experiment": "best_of_k_v3",
+  "diversity_arms": [
+    "grep_context",
+    "repo_map_context",
+    "memory_context",
+    "test_first_prompt",
+    "minimal_patch_prompt",
+    "security_hardened_prompt",
+    "advisor_seeded_prompt",
+    "cheap_then_strong_repair"
+  ],
+  "k3": {
+    "naive": {
+      "k": 3,
+      "solved": false,
+      "diversity_score": 0.3333,
+      "n_solving_candidates": 0,
+      "waste_rate": 1.0,
+      "rescued_by_diversity": false,
+      "total_cost": 0.006,
+      "cost_per_verified": null
+    },
+    "diverse": {
+      "k": 3,
+      "solved": true,
+      "diversity_score": 1.0,
+      "n_solving_candidates": 2,
+      "waste_rate": 0.6667,
+      "rescued_by_diversity": true,
+      "total_cost": 0.008,
+      "cost_per_verified": 0.008
+    },
+    "diversity_improves_success": true,
+    "diversity_score_naive": 0.3333,
+    "diversity_score_diverse": 1.0
+  },
+  "k5": {
+    "k": 5,
+    "solved": true,
+    "diversity_score": 1.0,
+    "n_solving_candidates": 3,
+    "waste_rate": 0.8,
+    "rescued_by_diversity": true,
+    "total_cost": 0.014,
+    "cost_per_verified": 0.014
+  },
+  "diversity_improves_over_naive": true,
+  "note": "diverse arms (context/prompt/repair) beat naive same-prompt k; proof-selected by hidden tests"
+}

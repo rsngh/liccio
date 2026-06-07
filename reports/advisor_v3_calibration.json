@@ -1,0 +1,27 @@
+{
+  "experiment": "advisor_v3_calibration",
+  "cross_file": {
+    "bucket": "cross_file",
+    "should_consult": true,
+    "base_rate": 0.0,
+    "p_with_advisor": 1.0,
+    "expected_marginal_value": 1.998,
+    "reason": "marginal value 1.998 > 0",
+    "triggers": []
+  },
+  "easy": {
+    "bucket": "easy",
+    "should_consult": false,
+    "base_rate": 1.0,
+    "p_with_advisor": 1.0,
+    "expected_marginal_value": -0.002,
+    "reason": "marginal value -0.002 <= 0 (uplift 0.000 x $0.2)",
+    "triggers": []
+  },
+  "trigger_quality": {
+    "n_advised": 8,
+    "advisor_precision": 1.0,
+    "waste_rate": 0.0
+  },
+  "consults_only_when_valuable": true
+}
