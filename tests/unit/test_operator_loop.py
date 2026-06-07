@@ -23,9 +23,12 @@ def test_active_learner_prioritizes_uncertain_risky_recurring() -> None:
 
 def test_label_quality_tracks_agreement_and_near_miss() -> None:
     labels = [
-        {"bucket": "x", "reviewers": ["reject", "reject"], "system_verdict": "approve"},  # near miss
-        {"bucket": "x", "reviewers": ["approve", "reject"], "system_verdict": "approve"},  # disagree
-        {"bucket": "y", "reviewers": ["approve", "approve"], "system_verdict": "approve"},  # agree
+        {"bucket": "x", "reviewers": ["reject", "reject"],
+         "system_verdict": "approve"},  # near miss
+        {"bucket": "x", "reviewers": ["approve", "reject"],
+         "system_verdict": "approve"},  # disagree
+        {"bucket": "y", "reviewers": ["approve", "approve"],
+         "system_verdict": "approve"},  # agree
     ]
     q = label_quality(labels)
     assert q.n_labels == 3

@@ -1,0 +1,16 @@
+{
+  "experiment": "productionish_deploy_gate",
+  "n_jobs": 100,
+  "n_workers_concurrent": 4,
+  "p95_latency_s": 2e-06,
+  "checks": {
+    "all_jobs_completed": true,
+    "no_duplicate_run_ids": true,
+    "no_orphan_workspaces": true,
+    "all_jobs_ok": true,
+    "deployment_fresh": true,
+    "no_secret_leak": true
+  },
+  "production_ready": true,
+  "note": "in-process API+queue+worker+artifact simulation; k8s/compose deferred"
+}
