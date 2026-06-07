@@ -18,6 +18,7 @@ from acp.routing.supervised import TrainResult, predict, train_predictor
 STRATEGIES = [
     "hybrid_keyword_embedding", "minimal", "test_focused",
     "bug_reproduction", "architecture", "recent_changes",
+    "repo_map",  # graph-ranked whole-repo signature map (Aider research) — breadth per token
 ]
 
 
