@@ -1,4 +1,4 @@
-1306 passed, 18 skipped, 2 warnings in 600.58s (xdist -n 2; clean, no flakes)
+1315 passed, 18 skipped, 2 warnings in 497.37s (xdist -n 2; clean, no flakes)
 
 Environment: a fresh checkout with the `learning` extra installed (`uv pip install scikit-learn
 joblib`, i.e. `uv sync --all-extras` minus services unavailable here). The 18 skips are optional
