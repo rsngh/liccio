@@ -1,0 +1,89 @@
+{
+  "experiment": "issue_replay_bundles",
+  "n_bundles": 6,
+  "evidence_tier": "frozen_synthetic (network-free; not scraped real_issue_replay)",
+  "all_offline_fair": true,
+  "by_source": {
+    "frozen_synthetic": 6
+  },
+  "by_task_type": {
+    "bugfix": 5,
+    "security_fix": 1
+  },
+  "gold_patch_withheld_from_agent": true,
+  "bundles": [
+    {
+      "repo": "acme/dates",
+      "module": "dates.py",
+      "task_type": "bugfix",
+      "context_need": "exact_symbol",
+      "source": "frozen_synthetic",
+      "gold_patch_hash": "7e6abe6b574817b4",
+      "buggy_fails_hidden": true,
+      "gold_passes_public": true,
+      "gold_passes_hidden": true,
+      "fair": true
+    },
+    {
+      "repo": "acme/cache",
+      "module": "lru.py",
+      "task_type": "bugfix",
+      "context_need": "exact_symbol",
+      "source": "frozen_synthetic",
+      "gold_patch_hash": "ee2b65f2ffdac72c",
+      "buggy_fails_hidden": true,
+      "gold_passes_public": true,
+      "gold_passes_hidden": true,
+      "fair": true
+    },
+    {
+      "repo": "acme/billing",
+      "module": "invoice.py",
+      "task_type": "bugfix",
+      "context_need": "cross_file_api",
+      "source": "frozen_synthetic",
+      "gold_patch_hash": "8a1648e7de5cdb96",
+      "buggy_fails_hidden": true,
+      "gold_passes_public": true,
+      "gold_passes_hidden": true,
+      "fair": true
+    },
+    {
+      "repo": "acme/web",
+      "module": "redir.py",
+      "task_type": "security_fix",
+      "context_need": "exact_symbol",
+      "source": "frozen_synthetic",
+      "gold_patch_hash": "02087baeb7b7f4ad",
+      "buggy_fails_hidden": true,
+      "gold_passes_public": true,
+      "gold_passes_hidden": true,
+      "fair": true
+    },
+    {
+      "repo": "acme/pager",
+      "module": "paginate.py",
+      "task_type": "bugfix",
+      "context_need": "exact_symbol",
+      "source": "frozen_synthetic",
+      "gold_patch_hash": "79dfbc2ff25f6b77",
+      "buggy_fails_hidden": true,
+      "gold_passes_public": true,
+      "gold_passes_hidden": true,
+      "fair": true
+    },
+    {
+      "repo": "acme/ranges",
+      "module": "clamp.py",
+      "task_type": "bugfix",
+      "context_need": "exact_symbol",
+      "source": "frozen_synthetic",
+      "gold_patch_hash": "d2eeac529fc13c5b",
+      "buggy_fails_hidden": true,
+      "gold_passes_public": true,
+      "gold_passes_hidden": true,
+      "fair": true
+    }
+  ],
+  "note": "framework supports online_ingest/offline_freeze/replay_only; online ingest is a network-gated stub here, so bundles are synthetic-realistic and labeled."
+}
