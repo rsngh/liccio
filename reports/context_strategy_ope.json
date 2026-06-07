@@ -1,0 +1,110 @@
+{
+  "experiment": "context_strategy_ope",
+  "recommendations": {
+    "broad_repo_map": {
+      "context_need": "broad_repo_map",
+      "recommended": "repo_map",
+      "solve_rate": 1.0,
+      "value_per_dollar": 643.5,
+      "candidates": [
+        {
+          "context_need": "broad_repo_map",
+          "strategy": "repo_map",
+          "n": 1,
+          "solve_rate": 1.0,
+          "mean_cost": 0.001554,
+          "value_per_dollar": 643.5
+        },
+        {
+          "context_need": "broad_repo_map",
+          "strategy": "minimal",
+          "n": 1,
+          "solve_rate": 0.0,
+          "mean_cost": 0.002184,
+          "value_per_dollar": 0.0
+        }
+      ]
+    },
+    "cross_file_api": {
+      "context_need": "cross_file_api",
+      "recommended": "repo_map",
+      "solve_rate": 1.0,
+      "value_per_dollar": 784.31,
+      "candidates": [
+        {
+          "context_need": "cross_file_api",
+          "strategy": "repo_map",
+          "n": 1,
+          "solve_rate": 1.0,
+          "mean_cost": 0.001275,
+          "value_per_dollar": 784.31
+        },
+        {
+          "context_need": "cross_file_api",
+          "strategy": "minimal",
+          "n": 1,
+          "solve_rate": 0.0,
+          "mean_cost": 0.001875,
+          "value_per_dollar": 0.0
+        }
+      ]
+    },
+    "exact_symbol": {
+      "context_need": "exact_symbol",
+      "recommended": "minimal",
+      "solve_rate": 1.0,
+      "value_per_dollar": 674.76,
+      "candidates": [
+        {
+          "context_need": "exact_symbol",
+          "strategy": "minimal",
+          "n": 1,
+          "solve_rate": 1.0,
+          "mean_cost": 0.001482,
+          "value_per_dollar": 674.76
+        },
+        {
+          "context_need": "exact_symbol",
+          "strategy": "repo_map",
+          "n": 1,
+          "solve_rate": 1.0,
+          "mean_cost": 0.001578,
+          "value_per_dollar": 633.71
+        }
+      ]
+    },
+    "none": {
+      "context_need": "none",
+      "recommended": "minimal",
+      "solve_rate": 1.0,
+      "value_per_dollar": 657.46,
+      "candidates": [
+        {
+          "context_need": "none",
+          "strategy": "minimal",
+          "n": 2,
+          "solve_rate": 1.0,
+          "mean_cost": 0.001521,
+          "value_per_dollar": 657.46
+        },
+        {
+          "context_need": "none",
+          "strategy": "repo_map",
+          "n": 2,
+          "solve_rate": 1.0,
+          "mean_cost": 0.001669,
+          "value_per_dollar": 599.16
+        }
+      ]
+    }
+  },
+  "grep_vs_embedding": {
+    "grep_n": 0,
+    "grep_solve_rate": 0.0,
+    "embedding_n": 0,
+    "embedding_solve_rate": 0.0,
+    "verdict": "insufficient_evidence",
+    "note": "null/insufficient results are reported honestly, not hidden"
+  },
+  "n_buckets": 4
+}
