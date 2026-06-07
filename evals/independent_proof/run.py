@@ -51,8 +51,11 @@ from acp.workspaces.policies import default_policy
 ROSTER = [GEMINI_FLASH_LITE, GEMINI_FLASH_LITE, HAIKU, HAIKU, GEMINI_FLASH]
 
 
-def _make_candidate(tier, spec, root, idx):
-    """Run one model on the task; return (workspace, public_pass, hidden_pass, diff, cost)."""
+def _make_candidate(tier, spec, root, idx, adapter=None):
+    """Run one model on the task; return (workspace, public_pass, hidden_pass, diff, cost).
+
+    `adapter` overrides `tier.adapter()` — e.g. a temperature-sampling adapter for a self-ensemble.
+    """
     call_root = root / f"cand_{idx}_{time.time_ns()}"
     ws = build_workspace(spec, call_root)
     items = [ContextItem(kind="instruction_chunk", path="__task_spec__", content=spec.issue_text, source="task"),
@@ -64,7 +67,7 @@ def _make_candidate(tier, spec, root, idx):
     wsx = LocalWorkspaceManager(call_root / "work").create(
         repo, RepoSnapshot(repo_id=repo.id, base_commit=base), default_policy())
     task = Task(repo_id=repo.id, title=f"Fix {spec.module_path}", body=spec.issue_text)
-    adapter = tier.adapter()
+    adapter = adapter or tier.adapter()
     try:
         res = asyncio.run(adapter.execute(task, pack, wsx, Budget(max_cost_usd=0.3, max_wall_time_s=60)))
     except Exception:  # noqa: BLE001

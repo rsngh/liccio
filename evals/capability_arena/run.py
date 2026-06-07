@@ -36,6 +36,37 @@ from acp.verification.independent_proof import generate_checks, proxy_evaluate
 
 ARMS = [GEMINI_FLASH_LITE, HAIKU, GEMINI_FLASH]   # cheap, diverse (cross-provider), cheapest-first
 STRONG = OPUS
+WEAK = GEMINI_FLASH_LITE   # weakest tier, for the self-ensemble (sampling-diverse) condition
+
+
+def _weak_self_ensemble(spec, root, client, *, k: int = 3, temp: float = 0.8) -> dict | None:
+    """2605.14163: sample the WEAKEST arm k times (temperature-diverse) and verifier-gate.
+
+    Shows capability HEADROOM CAPTURE — a single weak attempt fails a fraction; the verifier-gated
+    best-of-k rescues the borderline ones. Returns single-attempt vs ensemble verdicts (+ oracle).
+    """
+    from acp.agents.gemini_agent import GeminiAgentAdapter
+    cands = []
+    for i in range(k):
+        ad = GeminiAgentAdapter(name=WEAK.name, model=WEAK.model, temperature=temp)
+        c = _make_candidate(WEAK, spec, root, 200 + i, adapter=ad)
+        if c:
+            cands.append(c)
+    if len(cands) < 2:
+        return None
+    gen = generate_checks(spec, client=client, n=6)
+    verdicts = proxy_evaluate(spec, [{"id": f"w{i}", "workspace": c["workspace"],
+                                      "public_pass": c["public_pass"], "diff": c["diff"]}
+                                     for i, c in enumerate(cands)], root, checks=gen.checks)
+    ens = {f"w{i}": Candidate(arm=f"w{i}", public_pass=c["public_pass"], hidden_pass=c["hidden_pass"],
+                              cost=c["cost"], workspace=c["workspace"], diff=c["diff"])
+           for i, c in enumerate(cands)}
+    order = list(ens)
+    r = solve_ensemble(arms=order, run_arm_fn=lambda a, _e=ens: _e[a],
+                       verify_fn=lambda ran, _v=verdicts: {c.arm: _v[c.arm].proxy_pass for c in ran},
+                       budget=0.30)
+    return {"single": cands[0]["hidden_pass"], "ensemble": r.solved, "any_correct": r.any_correct,
+            "cost": round(sum(c["cost"] for c in cands) + gen.cost_usd, 6)}
 
 
 def _ci(s, n):
@@ -52,6 +83,8 @@ def run(n_tasks: int) -> dict:
     ens_results = []
     ens_cost = strong_cost = 0.0
     tp = fp = fn = tn = 0
+    wse_single = wse_ens = wse_ceiling = wse_n = 0
+    wse_cost = 0.0
     n = 0
     t0 = time.time()
     with tempfile.TemporaryDirectory(prefix="capability_") as d:
@@ -94,8 +127,16 @@ def run(n_tasks: int) -> dict:
                                budget=0.30)
             ens_results.append(r)
             ens_cost += r.total_cost + gen.cost_usd
-            print(f"[{spec.name:18}] ensemble={r.solved} any_correct={r.any_correct} sel={r.selected_arm} "
-                  f"opus={sc['hidden_pass'] if sc else '?'} ({time.time()-t0:.0f}s)", flush=True)
+            # weak-model self-ensemble (sampling-diverse) — the headroom-capture demonstration
+            wse = _weak_self_ensemble(spec, root, client)
+            if wse:
+                wse_n += 1
+                wse_single += int(wse["single"])
+                wse_ens += int(wse["ensemble"])
+                wse_ceiling += int(wse["any_correct"])
+                wse_cost += wse["cost"]
+            print(f"[{spec.name:18}] ens={r.solved} opus={sc['hidden_pass'] if sc else '?'} "
+                  f"weak1={wse['single'] if wse else '?'} weakK={wse['ensemble'] if wse else '?'} ({time.time()-t0:.0f}s)", flush=True)
 
     ens_solved = sum(int(r.solved) for r in ens_results)
     best_arm = max(arm_solved, key=lambda k: arm_solved[k]) if arm_solved else None
@@ -112,6 +153,14 @@ def run(n_tasks: int) -> dict:
         "strong_single": {**_ci(strong_solved, n), "total_cost_usd": round(strong_cost, 6),
                           "cost_per_verified_success": round(strong_cost / strong_solved, 6) if strong_solved else None},
         "oracle_capture": oracle_capture_rate(ens_results),
+        "weak_self_ensemble": {
+            "arm": WEAK.name, "k": 3, "temperature": 0.8, "n": wse_n,
+            "single_attempt": _ci(wse_single, wse_n),
+            "ensemble_best_of_k": _ci(wse_ens, wse_n),
+            "any_correct_ceiling": _ci(wse_ceiling, wse_n),
+            "capability_headroom_captured": wse_ens > wse_single,
+            "total_cost_usd": round(wse_cost, 6),
+        },
         "proxy_precision_recall": {"precision": precision, "recall": recall, "tp": tp, "fp": fp, "fn": fn},
         "elapsed_s": round(time.time() - t0, 1),
         "honest_note": "cheap-diverse-arm ensemble demonstrating the mechanism (2605.14163). If the best single arm already solves all tasks, headroom is 0 and the capability gain needs harder / real tasks (network-blocked here).",
@@ -140,6 +189,9 @@ def main() -> int:
     print(f"best single cheap arm    : {b['arm']} {b['rate']:.2f} CI[{b['ci'][0]:.2f},{b['ci'][1]:.2f}]")
     print(f"strong single (opus)     : {s['rate']:.2f} CI[{s['ci'][0]:.2f},{s['ci'][1]:.2f}] cost/succ ${s['cost_per_verified_success']}")
     print(f"oracle capture           : {rep['oracle_capture']}")
+    w = rep["weak_self_ensemble"]
+    print(f"weak self-ensemble (flash-lite x3): single {w['single_attempt']['rate']:.2f} -> best-of-k {w['ensemble_best_of_k']['rate']:.2f} "
+          f"(ceiling {w['any_correct_ceiling']['rate']:.2f}); headroom captured: {w['capability_headroom_captured']}")
     print(f"proxy precision/recall   : {rep['proxy_precision_recall']['precision']}/{rep['proxy_precision_recall']['recall']}")
     print(f"wrote {out}")
     return 0
