@@ -1,0 +1,67 @@
+{
+  "experiment": "context_experiment_matrix",
+  "strategies": [
+    "minimal",
+    "grep",
+    "embedding",
+    "hybrid",
+    "repo_map"
+  ],
+  "token_budget": 400,
+  "broad_api_coverage": {
+    "minimal": {
+      "covered": 3,
+      "of": 30,
+      "pack_tokens": 372
+    },
+    "grep": {
+      "covered": 3,
+      "of": 30,
+      "pack_tokens": 362
+    },
+    "embedding": {
+      "covered": 3,
+      "of": 30,
+      "pack_tokens": 372
+    },
+    "hybrid": {
+      "covered": 3,
+      "of": 30,
+      "pack_tokens": 372
+    },
+    "repo_map": {
+      "covered": 25,
+      "of": 30,
+      "pack_tokens": 381
+    }
+  },
+  "decoy_false_positive": {
+    "minimal": {
+      "real_hit": 4,
+      "decoy_hit": 0
+    },
+    "grep": {
+      "real_hit": 0,
+      "decoy_hit": 18
+    },
+    "embedding": {
+      "real_hit": 20,
+      "decoy_hit": 6
+    },
+    "hybrid": {
+      "real_hit": 20,
+      "decoy_hit": 6
+    },
+    "repo_map": {
+      "real_hit": 10,
+      "decoy_hit": 20
+    }
+  },
+  "grep_vs_embedding_verdict": "tie",
+  "best_coverage_strategy": "repo_map_wins",
+  "grep_covered": 3,
+  "embedding_covered": 3,
+  "repo_map_covered": 25,
+  "embedding_tested_honestly": true,
+  "note": "deterministic retrieval mechanism; embedding sampled with the hashing embedder"
+}
