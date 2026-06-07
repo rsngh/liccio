@@ -33,9 +33,11 @@ class ClaudeAgentAdapter:
     kind = AgentKind.CLAUDE
     is_harness = False  # simple model adapter, not a full tool-loop harness
 
-    def __init__(self, name: str = "claude", model: str = "claude-sonnet-4-6") -> None:
+    def __init__(self, name: str = "claude", model: str = "claude-sonnet-4-6",
+                 thinking_budget: int = 0) -> None:
         self.name = name
         self.model_name = model
+        self.thinking_budget = thinking_budget  # extended-thinking token budget (0 = off)
 
     def _client(self):
         anthropic = try_import("anthropic")
@@ -76,11 +78,15 @@ class ClaudeAgentAdapter:
             f"{context_pack.render_markdown()[:12000]}"
         )
         try:
-            msg = client.messages.create(
-                model=self.model_name,
-                max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}],
-            )
+            kwargs: dict = {"model": self.model_name,
+                            "messages": [{"role": "user", "content": prompt}]}
+            if self.thinking_budget > 0:
+                # extended thinking: max_tokens must exceed the thinking budget; temperature unset
+                kwargs["max_tokens"] = self.thinking_budget + 4096
+                kwargs["thinking"] = {"type": "enabled", "budget_tokens": self.thinking_budget}
+            else:
+                kwargs["max_tokens"] = 4096
+            msg = client.messages.create(**kwargs)
             text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
             payload = json.loads(_extract_json(text))
             root = Path(workspace.path)

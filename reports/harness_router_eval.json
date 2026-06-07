@@ -1,0 +1,64 @@
+{
+  "experiment": "harness_router",
+  "question": "route across models x thinking levels x harnesses; reach autonomous CLI only when needed",
+  "lever_matrix_dims": [
+    "model_family/size",
+    "thinking_level",
+    "harness_aware_context",
+    "harness"
+  ],
+  "lever_availability": {
+    "gemini_cli": {
+      "available": true,
+      "reason": "ok"
+    },
+    "openhands": {
+      "available": true,
+      "reason": "ok (local runtime)"
+    },
+    "codex_cli": {
+      "available": false,
+      "reason": "codex binary not installed"
+    },
+    "claude_code": {
+      "available": false,
+      "reason": "claude not runnable as sandbox user: env: \u2018claude\u2019: Permission denied"
+    }
+  },
+  "n_tasks": 8,
+  "router": {
+    "verified": 1.0,
+    "ci": [
+      0.6756,
+      1.0
+    ],
+    "solved": 8,
+    "n": 8,
+    "total_cost_usd": 0.016749,
+    "cost_per_verified_success": 0.002094
+  },
+  "lever_usage_counts": {
+    "gflash_lite_min": 8,
+    "haiku_min": 5,
+    "gflash_think_min": 4,
+    "haiku_repomap": 4
+  },
+  "lever_paths": [
+    "gflash_lite_min->commit_success",
+    "gflash_lite_min->commit_success",
+    "gflash_lite_min->commit_success",
+    "gflash_lite_min->haiku_min->commit_success",
+    "gflash_lite_min->haiku_min->gflash_think_min->haiku_repomap->commit_success",
+    "gflash_lite_min->haiku_min->gflash_think_min->haiku_repomap->commit_success",
+    "gflash_lite_min->haiku_min->gflash_think_min->haiku_repomap->commit_success",
+    "gflash_lite_min->haiku_min->gflash_think_min->haiku_repomap->commit_success"
+  ],
+  "elapsed_s": 74.4,
+  "measurement": {
+    "wilson_ci": true,
+    "availability_separated_from_capability": true,
+    "thinking_and_verifier_tokens_charged": true,
+    "cli_token_cost": "not attributed (CLIs don't emit usage); latency carries their comparison"
+  },
+  "evidence_tier": "live; Anthropic + Google; codex/claude_code registered but unavailable here (env-gated)"
+}

@@ -118,6 +118,30 @@ def select_best_online(candidates: list[Candidate]) -> ComparatorResult:
         diversity=round(distinct / n, 4) if n else 0.0)
 
 
+def deepconf_select(candidates: list[Candidate], confidences: list[float], *,
+                    threshold: float = 0.5, risk: str = "low") -> tuple[ComparatorResult, dict]:
+    """DeepConf-style selection (2508.15260): prune LOW-confidence candidates BEFORE the (expensive)
+    proxy verification, then select among survivors — keeping the selection quality at lower cost.
+
+    ``confidences[i]`` is an intrinsic confidence for candidate i (e.g. self-consistency agreement).
+    Returns (selection over survivors, savings dict). Never drops below the risk floor.
+    """
+    from acp.orchestration.confidence_pruning import (
+        ScoredCandidate,
+        confidence_weighted_vote,
+        prune_by_confidence,
+    )
+    scored = [ScoredCandidate(index=i, confidence=confidences[i] if i < len(confidences) else 0.0,
+                              answer_key=str(c.diff_lines)) for i, c in enumerate(candidates)]
+    pr = prune_by_confidence(scored, threshold=threshold, min_keep=1, risk=risk)
+    survivors = [candidates[i] for i in pr.kept]
+    res = select_best_online(survivors)
+    savings = {"pruned_before_verify": len(pr.pruned), "kept": len(pr.kept),
+               "keep_fraction": pr.keep_fraction,
+               "consensus_answer_key": confidence_weighted_vote(scored)}
+    return res, savings
+
+
 def early_stop_savings(candidates: list[Candidate]) -> dict:
     """If the first candidate is already hidden-verified, the rest are avoidable cost."""
     if candidates and candidates[0].hidden_pass and _eligible(candidates[0])[0]:

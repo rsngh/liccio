@@ -37,10 +37,12 @@ class GeminiAgentAdapter:
     is_harness = False
 
     def __init__(self, name: str = "gemini", model: str = "gemini-2.5-flash",
-                 max_output_tokens: int = 8192) -> None:
+                 max_output_tokens: int = 8192, thinking_budget: int | None = None) -> None:
         self.name = name
         self.model_name = model
         self.max_output_tokens = max_output_tokens
+        # gemini 2.5+ thinking: None = model default, 0 = off, >0 = explicit budget tokens
+        self.thinking_budget = thinking_budget
 
     def _api_key(self) -> str | None:
         return os.environ.get("GEMINI_API_KEY") or os.environ.get("ACP_GEMINI_API_KEY")
@@ -75,9 +77,13 @@ class GeminiAgentAdapter:
             "No prose, no markdown fences.\n\n"
             f"{context_pack.render_markdown()[:12000]}"
         )
+        gen_cfg: dict = {"maxOutputTokens": self.max_output_tokens, "temperature": 0.0}
+        if self.thinking_budget is not None:
+            # explicit thinking budget (0 disables thinking on 2.5-flash; >0 sets the budget)
+            gen_cfg["thinkingConfig"] = {"thinkingBudget": self.thinking_budget}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": self.max_output_tokens, "temperature": 0.0},
+            "generationConfig": gen_cfg,
         }
         try:
             timeout = min(float(getattr(budget, "max_wall_time_s", 60) or 60), 120)
