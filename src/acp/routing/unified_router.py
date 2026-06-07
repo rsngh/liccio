@@ -60,12 +60,20 @@ class UnifiedResult:
 
 
 def _memory_reorder(ladder: list[Lever], *, memory: ExperienceBank | None, tenant: str,
-                    failure_signature: str) -> tuple[list[Lever], list[str], bool]:
-    """Drop rungs known to FAIL this signature (cheapest-first order otherwise preserved)."""
+                    failure_signature: str, recommend_fn=None, avoid_fn=None
+                    ) -> tuple[list[Lever], list[str], bool]:
+    """Drop rungs known to FAIL this signature (cheapest-first order otherwise preserved).
+
+    `recommend_fn(bank, tenant=, failure_signature=)` / `avoid_fn(...)` override the bank's default
+    "ever-failed" logic — e.g. aging-aware recency scoring (memory_revision) so a rung can be
+    re-used after old failures age out.
+    """
     if memory is None:
         return ladder, [], False
-    avoid = memory.avoid_strategies(tenant=tenant, failure_signature=failure_signature)
-    rec = memory.recommend_strategy(tenant=tenant, failure_signature=failure_signature)
+    _avoid = avoid_fn or (lambda bank, **kw: bank.avoid_strategies(**kw))
+    _rec = recommend_fn or (lambda bank, **kw: bank.recommend_strategy(**kw))
+    avoid = _avoid(memory, tenant=tenant, failure_signature=failure_signature)
+    rec = _rec(memory, tenant=tenant, failure_signature=failure_signature)
     kept = [lev for lev in ladder if lev.name not in avoid or lev.name == rec]
     if not kept:  # everything avoided -> keep the recommended, else the full ladder (no worse off)
         kept = [lev for lev in ladder if lev.name == rec] or ladder
@@ -99,10 +107,12 @@ def _winning_and_failed(action_path: list[str], solved: bool) -> tuple[str | Non
 def route_and_solve(*, task_id: str, failure_signature: str, repo_family: str, tenant: str,
                     task_type: str, risk_level: str, budget_class: str, ladder: list[Lever],
                     attempt_fn: AttemptFn, memory: ExperienceBank | None = None,
-                    memory_policy: MemoryPolicy | None = None, now: float = 0.0) -> UnifiedResult:
+                    memory_policy: MemoryPolicy | None = None, now: float = 0.0,
+                    recommend_fn=None, avoid_fn=None) -> UnifiedResult:
     """Route one task through memory-seeded, FinOps-gated, safety-bounded escalation; then learn."""
     ordered, avoided, seeded = _memory_reorder(
-        ladder, memory=memory, tenant=tenant, failure_signature=failure_signature)
+        ladder, memory=memory, tenant=tenant, failure_signature=failure_signature,
+        recommend_fn=recommend_fn, avoid_fn=avoid_fn)
     trimmed = _finops_trim(ordered, budget_class=budget_class)
     res = run_controller(task_id, attempt_fn, risk_level=risk_level,
                          budget=budget_for(budget_class),

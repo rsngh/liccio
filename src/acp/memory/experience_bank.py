@@ -40,6 +40,7 @@ class ExperienceEpisode:
     created_at: float = 0.0
     decay_score: float = 1.0
     quarantined: bool = False
+    recipe: tuple[str, ...] = ()       # procedural memory: the winning lever SEQUENCE (Memp)
 
     @property
     def is_conclusive(self) -> bool:

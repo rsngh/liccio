@@ -1,0 +1,386 @@
+{
+  "experiment": "memory_longitudinal_aging",
+  "question": "does aging-aware memory recover after a repo migration AND back, where ever-failed memory gets stuck?",
+  "sessions": 12,
+  "migration_at": 4,
+  "back_migration_at": 8,
+  "per_session": {
+    "memoryless": [
+      {
+        "session": 0,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 1,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 2,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 3,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 4,
+        "solved": true,
+        "cost": 0.024,
+        "path": [
+          "cheap",
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 5,
+        "solved": true,
+        "cost": 0.024,
+        "path": [
+          "cheap",
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 6,
+        "solved": true,
+        "cost": 0.024,
+        "path": [
+          "cheap",
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 7,
+        "solved": true,
+        "cost": 0.024,
+        "path": [
+          "cheap",
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 8,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 9,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 10,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 11,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      }
+    ],
+    "memory": [
+      {
+        "session": 0,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 1,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 2,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 3,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 4,
+        "solved": true,
+        "cost": 0.023,
+        "path": [
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 5,
+        "solved": true,
+        "cost": 0.02,
+        "path": [
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 6,
+        "solved": true,
+        "cost": 0.02,
+        "path": [
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 7,
+        "solved": true,
+        "cost": 0.02,
+        "path": [
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 8,
+        "solved": false,
+        "cost": 0.02,
+        "path": [
+          "strong",
+          "abstain"
+        ]
+      },
+      {
+        "session": 9,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 10,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 11,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      }
+    ],
+    "memory_aging": [
+      {
+        "session": 0,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 1,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 2,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 3,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 4,
+        "solved": true,
+        "cost": 0.023,
+        "path": [
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 5,
+        "solved": true,
+        "cost": 0.023,
+        "path": [
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 6,
+        "solved": true,
+        "cost": 0.023,
+        "path": [
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 7,
+        "solved": true,
+        "cost": 0.023,
+        "path": [
+          "ctx",
+          "strong",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 8,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 9,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 10,
+        "solved": true,
+        "cost": 0.004,
+        "path": [
+          "cheap",
+          "ctx",
+          "commit_success"
+        ]
+      },
+      {
+        "session": 11,
+        "solved": true,
+        "cost": 0.003,
+        "path": [
+          "ctx",
+          "commit_success"
+        ]
+      }
+    ]
+  },
+  "post_back_migration": {
+    "memoryless": {
+      "solved": 4,
+      "n": 4,
+      "avg_cost": 0.004
+    },
+    "memory": {
+      "solved": 3,
+      "n": 4,
+      "avg_cost": 0.008
+    },
+    "memory_aging": {
+      "solved": 4,
+      "n": 4,
+      "avg_cost": 0.00325
+    }
+  },
+  "aging_recovers": true,
+  "ever_failed_memory_regresses": true,
+  "evidence_tier": "deterministic memory-policy benchmark (controlled ground-truth migration)"
+}

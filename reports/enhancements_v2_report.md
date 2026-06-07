@@ -46,7 +46,31 @@ levels — with Codex/Claude Code as honest, availability-gated options.*
 ---
 
 ## Increment 2 — Memory that survives repo evolution + reusable procedures
-<!-- INC2 -->
+
+*Papers: AgingBench (2605.26302); Learning to Forget (2603.14517); Memp procedural memory
+(2508.06433); Remember-Me-Refine-Me (2512.10696).*
+
+Today's `avoid_strategies` is "ever-failed" — once a lever fails a signature it's banned forever, and
+decay is never applied. After a repo evolves *back* (or a failure was transient), the again-good
+lever can never be re-used (revision aging). `src/acp/memory/memory_revision.py` adds: **recency/
+decay-aware** recommend+avoid (decide from the *net decayed reward*, so old failures age out), a
+**sleep-style consolidation** pass (dedup conflicting episodes), and **procedural memory** (store the
+winning lever *sequence*, not one strategy). `route_and_solve` accepts `recommend_fn`/`avoid_fn` to
+plug these in.
+
+**Deterministic migration benchmark** (one signature; good lever = `ctx` → migrates to `strong` at
+session 4 → back to `ctx` at session 8). Post-back-migration (sessions 8+):
+
+| Router | solved | avg cost/session |
+|---|---|---|
+| memoryless | 4/4 | $0.0040 |
+| memory (ever-failed) | **3/4 — regresses** | $0.0080 |
+| **memory + aging** | **4/4 — recovers** | **$0.0033** |
+
+**Aging memory is both the most reliable and the cheapest after the migration-and-back**, because
+old failures age out and the again-good lever is re-used. **Naive "ever-failed" memory regresses
+(3/4) and costs more** — it permanently banned the now-good lever. This is the robustness the Phase-2
+longitudinal win needs to survive an evolving repo.
 
 ## Increment 3 — Self-tuning ladder learned offline from traces
 <!-- INC3 -->
