@@ -363,21 +363,39 @@ def apply_reference_fix(repo: Path, task: BenchTask) -> None:
 def run_pytest(repo: Path, timeout_s: int = 120) -> bool:
     """Return True iff the repo's test suite passes.
 
-    Hermetic by construction: when this runs *inside* a parent pytest (especially under
-    ``-n`` xdist), the nested process must not inherit the parent's ``PYTEST_ADDOPTS`` /
-    xdist worker env, its rootdir, or its plugins — otherwise the inner run can pick up
-    foreign options/config and flake (e.g. report a pass it shouldn't). We strip all
-    ``PYTEST_*`` env vars, pin ``rootdir`` to the repo, and disable cache/xdist plugins.
+    Hermetic + load-robust. When this runs *inside* a parent pytest (especially under ``-n``
+    xdist), the nested process must not inherit the parent's ``PYTEST_ADDOPTS`` / xdist worker
+    env, its rootdir, or its plugins — otherwise the inner run can pick up foreign options/config
+    and flake. We strip all ``PYTEST_*`` env vars, pin ``rootdir`` to the repo, and disable
+    cache/xdist plugins.
+
+    Only pytest exit codes 0 (passed) and 1 (tests failed) are *conclusive*. Under heavy
+    parallel load the nested run can transiently exit with an interrupted/internal/collection
+    code (2-5) or time out — that is an infra artifact, not a verdict on the code, so we retry a
+    couple of times before giving up rather than mis-reporting a correct repo as failing.
     """
     import os
 
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
     env["PYTEST_ADDOPTS"] = ""  # ensure no inherited addopts even via a child shell
-    proc = subprocess.run(
-        ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:xdist",
-         "-o", "addopts=", "--rootdir", str(repo), str(repo)],
-        cwd=repo, capture_output=True, text=True, timeout=timeout_s, check=False, env=env)
-    return proc.returncode == 0
+    # Never write/reuse .pyc: a fixture that runs buggy then overwrites with the fix can have
+    # the two writes land in the same mtime-second, so a cached buggy .pyc would be reused and
+    # the "fixed" run would silently execute stale buggy bytecode (a real load-dependent flake).
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    argv = ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:xdist",
+            "-o", "addopts=", "--rootdir", str(repo), str(repo)]
+    last = 2
+    for _ in range(3):
+        try:
+            proc = subprocess.run(argv, cwd=repo, capture_output=True, text=True,
+                                  timeout=timeout_s, check=False, env=env)
+        except subprocess.TimeoutExpired:
+            last = 2  # transient under load -> retry
+            continue
+        if proc.returncode in (0, 1):
+            return proc.returncode == 0  # conclusive: passed / failed
+        last = proc.returncode          # 2-5 = interrupted/usage/collection -> retry
+    return last == 0
 
 
 def tasks_by_difficulty(difficulty: str) -> list[BenchTask]:
