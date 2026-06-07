@@ -74,6 +74,55 @@ def _ci(s, n):
     return {"rate": p, "ci": [lo, hi], "solved": s, "n": n}
 
 
+def _first_failing_check_output(workspace, checks, root) -> str | None:
+    """Run generated checks on a candidate; return the pytest output of the first that FAILS."""
+    import os
+    import shutil
+    import subprocess
+    proxy_ws = root / f"refl_{time.time_ns()}"
+    shutil.copytree(workspace, proxy_ws, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    try:
+        for i, src in enumerate(checks):
+            name = f"test_indep_{i}.py"
+            (proxy_ws / name).write_text(src)
+            p = subprocess.run(["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", name],
+                               cwd=proxy_ws, capture_output=True, text=True, timeout=60, check=False, env=env)
+            (proxy_ws / name).unlink(missing_ok=True)
+            if p.returncode != 0:
+                return p.stdout + p.stderr
+        return None
+    finally:
+        shutil.rmtree(proxy_ws, ignore_errors=True)
+
+
+def _weak_reflective_repair(spec, root, client) -> dict | None:
+    """2303.11366: re-dispatch the weak arm with the GENERATED-test failure as feedback (information,
+    not just another sample) — the lever that can rescue DETERMINISTIC failures sampling can't."""
+    from dataclasses import replace
+
+    from acp.agents.gemini_agent import GeminiAgentAdapter
+    from acp.routing.reflective_repair import build_repair_prompt, failure_summary
+    c1 = _make_candidate(WEAK, spec, root, 300, adapter=GeminiAgentAdapter(model=WEAK.model, temperature=0.0))
+    if not c1:
+        return None
+    single = c1["hidden_pass"]
+    if single:
+        return {"single": True, "repaired": True, "repair_triggered": False}
+    gen = generate_checks(spec, client=client, n=6)
+    fail_out = _first_failing_check_output(c1["workspace"], gen.checks, root)
+    if fail_out is None:                       # generated checks didn't catch it -> no signal to repair on
+        return {"single": single, "repaired": single, "repair_triggered": False}
+    prior_code = (Path(c1["workspace"]) / spec.module_path).read_text()
+    repair_prompt = build_repair_prompt(issue_text=spec.issue_text, module_path=spec.module_path,
+                                        prior_code=prior_code, failure=failure_summary(fail_out))
+    spec2 = replace(spec, issue_text=repair_prompt, buggy=prior_code)
+    c2 = _make_candidate(WEAK, spec2, root, 301, adapter=GeminiAgentAdapter(model=WEAK.model, temperature=0.0))
+    return {"single": single, "repaired": bool(c2 and c2["hidden_pass"]), "repair_triggered": True,
+            "cost": round(c1["cost"] + gen.cost_usd + (c2["cost"] if c2 else 0.0), 6)}
+
+
 def run(n_tasks: int) -> dict:
     tasks = sorted(all_capability_tasks(),
                    key=lambda t: {"easy": 2, "medium": 1, "hard": 0}.get(t.difficulty_band, 0))[:n_tasks]
@@ -85,6 +134,8 @@ def run(n_tasks: int) -> dict:
     tp = fp = fn = tn = 0
     wse_single = wse_ens = wse_ceiling = wse_n = 0
     wse_cost = 0.0
+    rr_single = rr_repaired = rr_n = rr_triggered = rr_rescued = 0
+    rr_cost = 0.0
     n = 0
     t0 = time.time()
     with tempfile.TemporaryDirectory(prefix="capability_") as d:
@@ -135,8 +186,19 @@ def run(n_tasks: int) -> dict:
                 wse_ens += int(wse["ensemble"])
                 wse_ceiling += int(wse["any_correct"])
                 wse_cost += wse["cost"]
+            # reflective repair: re-dispatch the weak arm with generated-test failure feedback
+            rr = _weak_reflective_repair(spec, root, client)
+            if rr:
+                rr_n += 1
+                rr_single += int(rr["single"])
+                rr_repaired += int(rr["repaired"])
+                rr_cost += rr.get("cost", 0.0)
+                if rr["repair_triggered"]:
+                    rr_triggered += 1
+                    rr_rescued += int(rr["repaired"] and not rr["single"])
             print(f"[{spec.name:18}] ens={r.solved} opus={sc['hidden_pass'] if sc else '?'} "
-                  f"weak1={wse['single'] if wse else '?'} weakK={wse['ensemble'] if wse else '?'} ({time.time()-t0:.0f}s)", flush=True)
+                  f"weak1={wse['single'] if wse else '?'} weakK={wse['ensemble'] if wse else '?'} "
+                  f"reflect={rr['repaired'] if rr else '?'} ({time.time()-t0:.0f}s)", flush=True)
 
     ens_solved = sum(int(r.solved) for r in ens_results)
     best_arm = max(arm_solved, key=lambda k: arm_solved[k]) if arm_solved else None
@@ -160,6 +222,14 @@ def run(n_tasks: int) -> dict:
             "any_correct_ceiling": _ci(wse_ceiling, wse_n),
             "capability_headroom_captured": wse_ens > wse_single,
             "total_cost_usd": round(wse_cost, 6),
+        },
+        "reflective_repair": {
+            "arm": WEAK.name, "feedback": "generated independent tests (production signal)", "n": rr_n,
+            "single_attempt": _ci(rr_single, rr_n),
+            "with_reflection": _ci(rr_repaired, rr_n),
+            "repair_triggered_on": rr_triggered, "rescued_by_repair": rr_rescued,
+            "information_feedback_beats_single": rr_repaired > rr_single,
+            "total_cost_usd": round(rr_cost, 6),
         },
         "proxy_precision_recall": {"precision": precision, "recall": recall, "tp": tp, "fp": fp, "fn": fn},
         "elapsed_s": round(time.time() - t0, 1),
@@ -192,6 +262,10 @@ def main() -> int:
     w = rep["weak_self_ensemble"]
     print(f"weak self-ensemble (flash-lite x3): single {w['single_attempt']['rate']:.2f} -> best-of-k {w['ensemble_best_of_k']['rate']:.2f} "
           f"(ceiling {w['any_correct_ceiling']['rate']:.2f}); headroom captured: {w['capability_headroom_captured']}")
+    rr = rep["reflective_repair"]
+    print(f"reflective repair (flash-lite + generated-test feedback): single {rr['single_attempt']['rate']:.2f} -> "
+          f"with-reflection {rr['with_reflection']['rate']:.2f} (rescued {rr['rescued_by_repair']}/{rr['repair_triggered_on']} triggered); "
+          f"info-feedback beats single: {rr['information_feedback_beats_single']}")
     print(f"proxy precision/recall   : {rep['proxy_precision_recall']['precision']}/{rep['proxy_precision_recall']['recall']}")
     print(f"wrote {out}")
     return 0
