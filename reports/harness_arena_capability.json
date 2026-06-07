@@ -1,0 +1,195 @@
+{
+  "experiment": "harness_arena",
+  "corpus": "capability",
+  "question": "is a harness overkill when the task is already well-specified?",
+  "harnesses": {
+    "single_shot": "claude-sonnet-4-6, one API call, minimal context (no harness)",
+    "inproc_harness": "claude-sonnet-4-6, ACP in-process tool loop",
+    "gemini_cli": "gemini-2.5-flash via Google's `gemini` CLI agent (sandboxed)",
+    "openhands": "gemini-2.5-flash via OpenHands V1 local-runtime agent (sandboxed, no Docker)"
+  },
+  "claude_code_cli_status": "installed (v2.1.168) but UNRUNNABLE here: binary behind a read-only 700 root mount; non-root can't reach it and the CLI refuses --dangerously-skip-permissions as root. Represented by inproc_harness.",
+  "trials": 1,
+  "n_tasks": 6,
+  "policies": [
+    "single_shot",
+    "inproc_harness",
+    "gemini_cli",
+    "openhands"
+  ],
+  "n_cells": 24,
+  "elapsed_s": 710.2,
+  "results": {
+    "single_shot": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.6097,
+        "hi": 1.0
+      },
+      "n_conclusive": 6,
+      "public_pass_rate": 1.0,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.018342,
+      "cost_per_verified_success": 0.003057,
+      "avg_latency_s": 4.462,
+      "beats_single_shot_with_ci": false
+    },
+    "inproc_harness": {
+      "verified": 0.8333,
+      "ci": {
+        "point": 0.8333,
+        "lo": 0.4365,
+        "hi": 0.9699
+      },
+      "n_conclusive": 6,
+      "public_pass_rate": 0.8333,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.239634,
+      "cost_per_verified_success": 0.047927,
+      "avg_latency_s": 10.138,
+      "beats_single_shot_with_ci": false
+    },
+    "gemini_cli": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.6097,
+        "hi": 1.0
+      },
+      "n_conclusive": 6,
+      "public_pass_rate": 1.0,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "avg_latency_s": 41.715,
+      "beats_single_shot_with_ci": false
+    },
+    "openhands": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.6097,
+        "hi": 1.0
+      },
+      "n_conclusive": 6,
+      "public_pass_rate": 1.0,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.1649,
+      "cost_per_verified_success": 0.027483,
+      "avg_latency_s": 61.893,
+      "beats_single_shot_with_ci": false
+    }
+  },
+  "per_task": {
+    "cap_reverse": {
+      "single_shot": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "cap_roman": {
+      "single_shot": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "cap_editdist": {
+      "single_shot": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "cap_calc_unary": {
+      "single_shot": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "cap_simplify_path": {
+      "single_shot": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "cap_min_coins": {
+      "single_shot": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    }
+  },
+  "evidence_tier": "live agent harnesses (Anthropic + Google), hidden-test verified, Wilson CIs"
+}

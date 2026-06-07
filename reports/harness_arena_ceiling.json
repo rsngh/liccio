@@ -1,0 +1,231 @@
+{
+  "experiment": "harness_arena",
+  "corpus": "ceiling",
+  "question": "does autonomous harness scaffolding rescue context-gated tasks a single model call fails?",
+  "harnesses": {
+    "single_shot": "claude-sonnet-4-6, one API call, minimal context (no harness)",
+    "inproc_harness": "claude-sonnet-4-6, ACP in-process tool loop",
+    "gemini_cli": "gemini-2.5-flash via Google's `gemini` CLI agent (sandboxed)",
+    "openhands": "gemini-2.5-flash via OpenHands V1 local-runtime agent (sandboxed, no Docker)"
+  },
+  "claude_code_cli_status": "installed (v2.1.168) but UNRUNNABLE here: binary behind a read-only 700 root mount; non-root can't reach it and the CLI refuses --dangerously-skip-permissions as root. Represented by inproc_harness.",
+  "trials": 1,
+  "n_tasks": 8,
+  "policies": [
+    "single_shot",
+    "inproc_harness",
+    "gemini_cli",
+    "openhands"
+  ],
+  "n_cells": 32,
+  "elapsed_s": 786.8,
+  "results": {
+    "single_shot": {
+      "verified": 0.0,
+      "ci": {
+        "point": 0.0,
+        "lo": 0.0,
+        "hi": 0.3244
+      },
+      "n_conclusive": 8,
+      "public_pass_rate": 0.0,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.016095,
+      "cost_per_verified_success": null,
+      "avg_latency_s": 5.891,
+      "beats_single_shot_with_ci": false
+    },
+    "inproc_harness": {
+      "verified": 0.875,
+      "ci": {
+        "point": 0.875,
+        "lo": 0.5291,
+        "hi": 0.9776
+      },
+      "n_conclusive": 8,
+      "public_pass_rate": 0.875,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.287151,
+      "cost_per_verified_success": 0.041022,
+      "avg_latency_s": 9.312,
+      "beats_single_shot_with_ci": true
+    },
+    "gemini_cli": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.6756,
+        "hi": 1.0
+      },
+      "n_conclusive": 8,
+      "public_pass_rate": 1.0,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "avg_latency_s": 38.115,
+      "beats_single_shot_with_ci": true
+    },
+    "openhands": {
+      "verified": 1.0,
+      "ci": {
+        "point": 1.0,
+        "lo": 0.6756,
+        "hi": 1.0
+      },
+      "n_conclusive": 8,
+      "public_pass_rate": 1.0,
+      "unavailable_rate": 0.0,
+      "total_cost_usd": 0.1502,
+      "cost_per_verified_success": 0.018775,
+      "avg_latency_s": 44.865,
+      "beats_single_shot_with_ci": true
+    }
+  },
+  "per_task": {
+    "xfileNG_scale_0": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_offset_1": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_blend_2": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_scale_3": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_offset_4": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_blend_5": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_scale_6": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    },
+    "xfileNG_offset_7": {
+      "single_shot": {
+        "verified": 0.0,
+        "n": 1
+      },
+      "inproc_harness": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "gemini_cli": {
+        "verified": 1.0,
+        "n": 1
+      },
+      "openhands": {
+        "verified": 1.0,
+        "n": 1
+      }
+    }
+  },
+  "evidence_tier": "live agent harnesses (Anthropic + Google), hidden-test verified, Wilson CIs"
+}
