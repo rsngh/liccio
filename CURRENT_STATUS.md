@@ -5,8 +5,8 @@
 > production primitives. External agent harnesses, container isolation, and
 > managed retrieval/observability backends are optional and partially stubbed.
 
-Last updated: 2026-06-06 (Round 28 + evaluation follow-ups — guarded PRs, operator inbox, xdist). Tests: 1194 passing, 18 skipped on a fresh checkout with the `learning` extra (1190 passing / 22 skipped on a bare `dev`-only checkout); skips are optional deps/daemons that self-skip when absent (docker/openhands/openai-sdk/pgvector/qdrant/skillopt) — see `reports/pytest.txt`;
-`ruff` + `mypy` clean across 301 source files; see `reports/coverage.txt`. Gate:
+Last updated: 2026-06-07 (Round 28 + evaluation follow-ups + repo-map feature — guarded PRs, operator inbox, xdist). Tests: 1201 passing, 18 skipped on a fresh checkout with the `learning` extra (1197 passing / 22 skipped on a bare `dev`-only checkout); skips are optional deps/daemons that self-skip when absent (docker/openhands/openai-sdk/pgvector/qdrant/skillopt) — see `reports/pytest.txt`;
+`ruff` + `mypy` clean across 302 source files; see `reports/coverage.txt`. Gate:
 `uv run pytest -q -n 2 && uv run ruff check . && uv run mypy src && uv run alembic
 upgrade head && acp reports validate` (96 artifacts valid). Suite runs under pytest-xdist
 `-n 2` (~5:44 vs ~9:44 serial; `-n 4` oversubscribes the pytest-in-pytest tests).
