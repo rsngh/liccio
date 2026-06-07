@@ -1,0 +1,66 @@
+{
+  "n_tasks": 53,
+  "n_task_types": 8,
+  "n_context_needs": 5,
+  "n_policies": 6,
+  "n_cells": 318,
+  "n_conclusive_cells": 318,
+  "conclusive_rate": 1.0,
+  "by_cell": {
+    "bugfix|cross_file_api": {
+      "n": 30,
+      "conclusive": 30,
+      "solved": 21
+    },
+    "bugfix|exact_symbol": {
+      "n": 48,
+      "conclusive": 48,
+      "solved": 40
+    },
+    "bugfix|memory_required": {
+      "n": 168,
+      "conclusive": 168,
+      "solved": 140
+    },
+    "bugfix|none": {
+      "n": 18,
+      "conclusive": 18,
+      "solved": 11
+    },
+    "ci_fix|cross_file_api": {
+      "n": 6,
+      "conclusive": 6,
+      "solved": 5
+    },
+    "feature|broad_repo_map": {
+      "n": 12,
+      "conclusive": 12,
+      "solved": 7
+    },
+    "flaky_fix|exact_symbol": {
+      "n": 6,
+      "conclusive": 6,
+      "solved": 5
+    },
+    "performance|exact_symbol": {
+      "n": 6,
+      "conclusive": 6,
+      "solved": 5
+    },
+    "refactor|none": {
+      "n": 6,
+      "conclusive": 6,
+      "solved": 5
+    },
+    "security_fix|exact_symbol": {
+      "n": 12,
+      "conclusive": 12,
+      "solved": 10
+    },
+    "test_generation|exact_symbol": {
+      "n": 6,
+      "conclusive": 6,
+      "solved": 5
+    }
+  }
+}

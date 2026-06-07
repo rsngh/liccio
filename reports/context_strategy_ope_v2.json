@@ -1,0 +1,199 @@
+{
+  "experiment": "context_strategy_ope_v2",
+  "recommendations": {
+    "broad_repo_map": {
+      "context_need": "broad_repo_map",
+      "recommended": null,
+      "reason": "no samples"
+    },
+    "cross_file_api": {
+      "context_need": "cross_file_api",
+      "recommended": "grep",
+      "solve_rate": 1.0,
+      "value_per_dollar": 500.0,
+      "candidates": [
+        {
+          "context_need": "cross_file_api",
+          "strategy": "grep",
+          "n": 6,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "cross_file_api",
+          "strategy": "repo_map",
+          "n": 6,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "cross_file_api",
+          "strategy": "repo_map_plus_abstain",
+          "n": 6,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "cross_file_api",
+          "strategy": "minimal",
+          "n": 6,
+          "solve_rate": 0.3333,
+          "mean_cost": 0.002,
+          "value_per_dollar": 166.65
+        }
+      ],
+      "wilson_ci": {
+        "point": 1.0,
+        "lo": 0.6097,
+        "hi": 1.0
+      }
+    },
+    "exact_symbol": {
+      "context_need": "exact_symbol",
+      "recommended": "grep",
+      "solve_rate": 1.0,
+      "value_per_dollar": 500.0,
+      "candidates": [
+        {
+          "context_need": "exact_symbol",
+          "strategy": "grep",
+          "n": 13,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "exact_symbol",
+          "strategy": "minimal",
+          "n": 13,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "exact_symbol",
+          "strategy": "repo_map",
+          "n": 13,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "exact_symbol",
+          "strategy": "repo_map_plus_abstain",
+          "n": 13,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        }
+      ],
+      "wilson_ci": {
+        "point": 1.0,
+        "lo": 0.7719,
+        "hi": 1.0
+      }
+    },
+    "memory_required": {
+      "context_need": "memory_required",
+      "recommended": "grep",
+      "solve_rate": 1.0,
+      "value_per_dollar": 500.0,
+      "candidates": [
+        {
+          "context_need": "memory_required",
+          "strategy": "grep",
+          "n": 28,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "memory_required",
+          "strategy": "minimal",
+          "n": 28,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "memory_required",
+          "strategy": "repo_map",
+          "n": 28,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        },
+        {
+          "context_need": "memory_required",
+          "strategy": "repo_map_plus_abstain",
+          "n": 28,
+          "solve_rate": 1.0,
+          "mean_cost": 0.002,
+          "value_per_dollar": 500.0
+        }
+      ],
+      "wilson_ci": {
+        "point": 1.0,
+        "lo": 0.8794,
+        "hi": 1.0
+      }
+    },
+    "none": {
+      "context_need": "none",
+      "recommended": "grep",
+      "solve_rate": 0.75,
+      "value_per_dollar": 375.0,
+      "candidates": [
+        {
+          "context_need": "none",
+          "strategy": "grep",
+          "n": 4,
+          "solve_rate": 0.75,
+          "mean_cost": 0.002,
+          "value_per_dollar": 375.0
+        },
+        {
+          "context_need": "none",
+          "strategy": "minimal",
+          "n": 4,
+          "solve_rate": 0.75,
+          "mean_cost": 0.002,
+          "value_per_dollar": 375.0
+        },
+        {
+          "context_need": "none",
+          "strategy": "repo_map",
+          "n": 4,
+          "solve_rate": 0.75,
+          "mean_cost": 0.002,
+          "value_per_dollar": 375.0
+        },
+        {
+          "context_need": "none",
+          "strategy": "repo_map_plus_abstain",
+          "n": 4,
+          "solve_rate": 0.75,
+          "mean_cost": 0.002,
+          "value_per_dollar": 375.0
+        }
+      ],
+      "wilson_ci": {
+        "point": 0.75,
+        "lo": 0.3006,
+        "hi": 0.9544
+      }
+    }
+  },
+  "grep_vs_embedding": {
+    "grep_n": 53,
+    "grep_solve_rate": 0.9811,
+    "embedding_n": 0,
+    "embedding_solve_rate": 0.0,
+    "verdict": "insufficient_evidence",
+    "note": "null/insufficient results are reported honestly, not hidden"
+  },
+  "n_buckets": 5
+}

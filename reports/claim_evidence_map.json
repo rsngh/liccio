@@ -1,0 +1,82 @@
+{
+  "experiment": "claim_evidence_map",
+  "n_claims": 8,
+  "n_supported": 8,
+  "n_unsupported": 0,
+  "all_supported": true,
+  "claims": [
+    {
+      "claim": "repo_map_cross_file",
+      "text": "repo_map context improves cross-file coding tasks",
+      "supported": true,
+      "requires": [
+        "reports/live/repo_map_ab.json",
+        "evals/reports/repo_map_coverage.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "advisor_improves",
+      "text": "advisor escalation improves verified success",
+      "supported": true,
+      "requires": [
+        "reports/advisor_ope.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "best_of_k_value",
+      "text": "best-of-k is cost-competitive (cheaper than the strong single agent)",
+      "supported": true,
+      "requires": [
+        "reports/best_of_k_comparator.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "context_routed_by_ope",
+      "text": "context strategy is routed by OPE, not hardcoded",
+      "supported": true,
+      "requires": [
+        "reports/context_strategy_ope.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "finops_promotion",
+      "text": "FinOps promotes a router only on a Pareto cost/quality improvement",
+      "supported": true,
+      "requires": [
+        "reports/finops_cost_per_verified_success.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "memory_helps_repeated",
+      "text": "memory improves first-attempt success on repeated-pattern tasks",
+      "supported": true,
+      "requires": [
+        "reports/memory_aging_smoke.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "metarouter_scaled",
+      "text": "the MetaRouter Arena is proven at scale (>=300 conclusive cells)",
+      "supported": true,
+      "requires": [
+        "reports/metarouter_arena_scaled.json"
+      ],
+      "reasons": []
+    },
+    {
+      "claim": "provider_availability",
+      "text": "unavailable providers are discoverable but not counted as capability failures",
+      "supported": true,
+      "requires": [
+        "reports/vendor_native_live_gate.json"
+      ],
+      "reasons": []
+    }
+  ]
+}

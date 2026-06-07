@@ -1,0 +1,28 @@
+{
+  "experiment": "finops_marginal_value",
+  "budget_class": "cross_file_bugfix",
+  "total_spend": 0.0135,
+  "n_steps": 3,
+  "n_proceeded": 3,
+  "steps": [
+    {
+      "label": "repo_map_context",
+      "proceed": true,
+      "emv": 1.1985,
+      "reason": "marginal value 1.1985 > 0"
+    },
+    {
+      "label": "advisor",
+      "proceed": true,
+      "emv": 0.398,
+      "reason": "marginal value 0.398 > 0"
+    },
+    {
+      "label": "best_of_k_extra",
+      "proceed": true,
+      "emv": 0.03,
+      "reason": "marginal value 0.03 > 0"
+    }
+  ],
+  "note": "spends only while expected marginal value is positive within budget"
+}

@@ -1,0 +1,54 @@
+{
+  "confidence_intervals": {
+    "cheap_static": {
+      "point": 0.0,
+      "lo": 0.0,
+      "hi": 0.0676
+    },
+    "oracle": {
+      "point": 1.0,
+      "lo": 0.9324,
+      "hi": 1.0
+    },
+    "abstain_router": {
+      "point": 0.9623,
+      "lo": 0.8725,
+      "hi": 0.9896
+    },
+    "cheap_single": {
+      "point": 0.8868,
+      "lo": 0.7742,
+      "hi": 0.9471
+    },
+    "grep_router": {
+      "point": 0.9811,
+      "lo": 0.9006,
+      "hi": 0.9967
+    },
+    "repo_map_router": {
+      "point": 0.9623,
+      "lo": 0.8725,
+      "hi": 0.9896
+    }
+  },
+  "promotions": [
+    {
+      "policy": "abstain_router",
+      "beats_incumbent_with_confidence": false,
+      "verified": 0.9623,
+      "incumbent_verified": 0.8868
+    },
+    {
+      "policy": "grep_router",
+      "beats_incumbent_with_confidence": false,
+      "verified": 0.9811,
+      "incumbent_verified": 0.8868
+    },
+    {
+      "policy": "repo_map_router",
+      "beats_incumbent_with_confidence": false,
+      "verified": 0.9623,
+      "incumbent_verified": 0.8868
+    }
+  ]
+}

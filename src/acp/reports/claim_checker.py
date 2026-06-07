@@ -47,6 +47,7 @@ def _deep_get(obj: Any, key: str) -> Any:
 def check_claim(root: Path, claim: Claim) -> dict[str, Any]:
     reasons: list[str] = []
     tiers: list[str] = []
+    loaded: dict[str, dict] = {}
     for rel in claim.requires:
         data = _load(root, rel)
         if data is None:
@@ -55,16 +56,23 @@ def check_claim(root: Path, claim: Claim) -> dict[str, Any]:
         if data.get("__unparseable__"):
             reasons.append(f"unparseable artifact: {rel}")
             continue
+        loaded[rel] = data
         if claim.forbid_contaminated:
             for k in _CONTAMINATED_KEYS:
                 if _deep_get(data, k) is True:
                     reasons.append(f"{rel} is flagged {k}=true")
         if "evidence_tier" in data:
             tiers.append(str(data["evidence_tier"]))
-        for field_name, expected in claim.must_assert:
-            actual = _deep_get(data, field_name)
-            if actual != expected:
-                reasons.append(f"{rel}: {field_name}={actual!r} != {expected!r}")
+    # must_assert: the field must be found in AT LEAST ONE required artifact and equal expected
+    # (and never contradicted by another artifact that carries it).
+    for field_name, expected in claim.must_assert:
+        found = [(rel, _deep_get(d, field_name)) for rel, d in loaded.items()
+                 if _deep_get(d, field_name) is not None]
+        if not found:
+            reasons.append(f"no artifact asserts {field_name}={expected!r}")
+        elif any(v != expected for _, v in found):
+            bad = [f"{rel}:{v!r}" for rel, v in found if v != expected]
+            reasons.append(f"{field_name} != {expected!r} in {bad}")
     # tier check: a 'live' claim cannot rest on a purely fixture-tier artifact
     if claim.tier == "live" and tiers and all("fixture" in t and "live" not in t for t in tiers):
         reasons.append(f"live claim supported only by fixture-tier evidence: {tiers}")

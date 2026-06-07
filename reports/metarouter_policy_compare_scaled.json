@@ -1,0 +1,141 @@
+{
+  "experiment": "metarouter_policy_compare_scaled",
+  "ranking": [
+    "grep_router",
+    "repo_map_router",
+    "abstain_router",
+    "cheap_single",
+    "oracle",
+    "cheap_static"
+  ],
+  "scores": [
+    {
+      "policy": "cheap_static",
+      "n_tasks": 53,
+      "verified_success_rate": 0.0,
+      "hidden_test_pass_rate": 0.0,
+      "public_pass_rate": 0.0943,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 0,
+      "n_conclusive": 53,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": null,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "oracle",
+      "n_tasks": 53,
+      "verified_success_rate": 1.0,
+      "hidden_test_pass_rate": 1.0,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 53,
+      "n_conclusive": 53,
+      "total_cost_usd": 0.0,
+      "cost_per_verified_success": 0.0,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 0.0
+    },
+    {
+      "policy": "abstain_router",
+      "n_tasks": 53,
+      "verified_success_rate": 0.9623,
+      "hidden_test_pass_rate": 0.9623,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 51,
+      "n_conclusive": 53,
+      "total_cost_usd": 0.08733,
+      "cost_per_verified_success": 0.001712,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.618
+    },
+    {
+      "policy": "cheap_single",
+      "n_tasks": 53,
+      "verified_success_rate": 0.8868,
+      "hidden_test_pass_rate": 0.8868,
+      "public_pass_rate": 0.9057,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 47,
+      "n_conclusive": 53,
+      "total_cost_usd": 0.074154,
+      "cost_per_verified_success": 0.001578,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.346
+    },
+    {
+      "policy": "grep_router",
+      "n_tasks": 53,
+      "verified_success_rate": 0.9811,
+      "hidden_test_pass_rate": 0.9811,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 52,
+      "n_conclusive": 53,
+      "total_cost_usd": 0.070761,
+      "cost_per_verified_success": 0.001361,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.168
+    },
+    {
+      "policy": "repo_map_router",
+      "n_tasks": 53,
+      "verified_success_rate": 0.9623,
+      "hidden_test_pass_rate": 0.9623,
+      "public_pass_rate": 1.0,
+      "conclusive_rate": 1.0,
+      "inconclusive_rate": 0.0,
+      "adapter_unavailable_rate": 0.0,
+      "n_solved": 51,
+      "n_conclusive": 53,
+      "total_cost_usd": 0.0765,
+      "cost_per_verified_success": 0.0015,
+      "advisor_call_rate": 0.0,
+      "avg_latency_s": 3.322
+    }
+  ],
+  "confidence_intervals": {
+    "cheap_static": {
+      "point": 0.0,
+      "lo": 0.0,
+      "hi": 0.0676
+    },
+    "oracle": {
+      "point": 1.0,
+      "lo": 0.9324,
+      "hi": 1.0
+    },
+    "abstain_router": {
+      "point": 0.9623,
+      "lo": 0.8725,
+      "hi": 0.9896
+    },
+    "cheap_single": {
+      "point": 0.8868,
+      "lo": 0.7742,
+      "hi": 0.9471
+    },
+    "grep_router": {
+      "point": 0.9811,
+      "lo": 0.9006,
+      "hi": 0.9967
+    },
+    "repo_map_router": {
+      "point": 0.9623,
+      "lo": 0.8725,
+      "hi": 0.9896
+    }
+  }
+}
