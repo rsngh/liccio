@@ -1,0 +1,25 @@
+{
+  "experiment": "best_of_k_v2",
+  "diversity_strategies": [
+    "same_model_different_context",
+    "same_model_different_prompt",
+    "repo_map_vs_grep_context",
+    "cheap_model_then_strong_repair",
+    "test_first_candidate",
+    "minimal_patch_candidate",
+    "security_hardened_candidate"
+  ],
+  "naive_same_prompt": {
+    "selected_verified": false,
+    "diversity": 0.3333
+  },
+  "diverse": {
+    "selected": "d1",
+    "selected_verified": true,
+    "diversity": 1.0,
+    "rejected": 1,
+    "waste_rate": 0.6667
+  },
+  "diversity_improves_success": true,
+  "comparator_rejects_public_pass_hidden_fail": true
+}
