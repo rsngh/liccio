@@ -1,0 +1,60 @@
+{
+  "experiment": "operator_learning_loop",
+  "queue_top": [
+    {
+      "task": "t1",
+      "priority": 10.8,
+      "why": "uncertainty=0.90, risk=high, recurs=8x -> priority 10.800"
+    },
+    {
+      "task": "t3",
+      "priority": 2.939388,
+      "why": "uncertainty=0.60, risk=medium, recurs=5x -> priority 2.939"
+    },
+    {
+      "task": "t2",
+      "priority": 0.282843,
+      "why": "uncertainty=0.20, risk=low, recurs=1x -> priority 0.283"
+    }
+  ],
+  "label_quality": {
+    "n_labels": 3,
+    "reviewer_agreement": 0.6667,
+    "override_rate": 0.0,
+    "false_auto_approve_near_miss": 0
+  },
+  "policy_update": {
+    "new_routing": {
+      "cross_file": "repo_map_router",
+      "security": "cheap_single",
+      "docs": "minimal"
+    },
+    "updates": [
+      {
+        "bucket": "cross_file",
+        "old_action": "cheap_single",
+        "new_action": "repo_map_router",
+        "applied": true,
+        "reason": "label changed future routing"
+      },
+      {
+        "bucket": "security",
+        "old_action": "cheap_single",
+        "new_action": "strict_verify",
+        "applied": false,
+        "reason": "high-risk: advisory until governance gates pass"
+      },
+      {
+        "bucket": "docs",
+        "old_action": "minimal",
+        "new_action": "minimal",
+        "applied": false,
+        "reason": "reviewer disagreement blocks"
+      }
+    ],
+    "n_applied": 1
+  },
+  "label_changed_routing": true,
+  "disagreement_blocks": true,
+  "high_risk_advisory": true
+}
