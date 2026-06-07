@@ -93,6 +93,23 @@ class ContextCompiler:
         )
         required.insert(0, spec_chunk)
 
+        # repo_map strategy (Aider-style, research-backed): prepend a graph-ranked map of the
+        # whole repo's key signatures so the model sees APIs from everywhere, then let normal
+        # retrieval supply full bodies for depth. The map is a required item, capped to a slice
+        # of the budget so it never crowds out the retrieved chunks.
+        if strategy == "repo_map":
+            from acp.context.repo_map import build_repo_map
+
+            map_budget = max(256, min(token_budget // 4, 2048))
+            rmap = build_repo_map(
+                RepoIndexer(self.repo_path, self.repo_id, self.snapshot_id).collect_sources(),
+                token_budget=map_budget,
+            )
+            if rmap.text:
+                required.insert(1, make_chunk(
+                    kind="repo_map_chunk", path="__repo_map__", content=rmap.text,
+                    source="repo_map", repo_id=self.repo_id, snapshot_id=self.snapshot_id))
+
         budgeter = ContextBudgeter(token_budget=token_budget)
         result = budgeter.select(candidates, required=required)
 

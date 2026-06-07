@@ -105,3 +105,6 @@ evals/reports/*
 
 # Independent evaluation (2026-06-06) — live unseen-input acceptance test (committed, redacted)
 !evals/reports/eval_unseen_live.json
+
+# repo-map coverage benchmark (deterministic, committed)
+!evals/reports/repo_map_coverage.json

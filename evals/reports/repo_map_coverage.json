@@ -1,0 +1,86 @@
+{
+  "experiment": "repo_map_coverage",
+  "research": "aider repo map (graph-ranked signatures) \u2014 breadth per token",
+  "n_modules": 40,
+  "coverage_by_budget": [
+    {
+      "token_budget": 200,
+      "minimal": {
+        "apis_covered": 1,
+        "of": 40,
+        "pack_tokens": 160
+      },
+      "hybrid_keyword_embedding": {
+        "apis_covered": 1,
+        "of": 40,
+        "pack_tokens": 160
+      },
+      "repo_map": {
+        "apis_covered": 21,
+        "of": 40,
+        "pack_tokens": 252
+      }
+    },
+    {
+      "token_budget": 400,
+      "minimal": {
+        "apis_covered": 3,
+        "of": 40,
+        "pack_tokens": 381
+      },
+      "hybrid_keyword_embedding": {
+        "apis_covered": 3,
+        "of": 40,
+        "pack_tokens": 381
+      },
+      "repo_map": {
+        "apis_covered": 22,
+        "of": 40,
+        "pack_tokens": 399
+      }
+    },
+    {
+      "token_budget": 800,
+      "minimal": {
+        "apis_covered": 4,
+        "of": 40,
+        "pack_tokens": 601
+      },
+      "hybrid_keyword_embedding": {
+        "apis_covered": 5,
+        "of": 40,
+        "pack_tokens": 748
+      },
+      "repo_map": {
+        "apis_covered": 22,
+        "of": 40,
+        "pack_tokens": 767
+      }
+    },
+    {
+      "token_budget": 1600,
+      "minimal": {
+        "apis_covered": 4,
+        "of": 40,
+        "pack_tokens": 601
+      },
+      "hybrid_keyword_embedding": {
+        "apis_covered": 11,
+        "of": 40,
+        "pack_tokens": 1557
+      },
+      "repo_map": {
+        "apis_covered": 33,
+        "of": 40,
+        "pack_tokens": 1566
+      }
+    }
+  ],
+  "headline": {
+    "budget": 200,
+    "repo_map_apis": 21,
+    "hybrid_apis": 1,
+    "coverage_multiple": 21.0
+  },
+  "deterministic": true
+}

@@ -25,6 +25,7 @@ STRATEGIES = (
     "embedding_only",
     "hybrid_keyword_embedding",
     "symbol_graph",
+    "repo_map",
     "test_focused",
     "bug_reproduction",
     "architecture",

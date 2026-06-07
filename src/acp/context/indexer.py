@@ -121,6 +121,29 @@ class RepoIndexer:
                 )
         return chunks
 
+    def collect_sources(self) -> dict[str, str]:
+        """Return ``{rel_path: source}`` for code files (for the graph-ranked repo map).
+
+        Mirrors :meth:`index`'s file-walk + guards (skip dirs, secrets, binaries, oversized)
+        so the repo map sees exactly the files the indexer would, never divergent.
+        """
+        sources: dict[str, str] = {}
+        for p in self._iter_files():
+            rel = p.relative_to(self.root).as_posix()
+            name = p.name.lower()
+            if name in SECRET_HINT_NAMES or name.startswith(".env"):
+                continue
+            try:
+                raw = p.read_bytes()
+            except OSError:
+                continue
+            if len(raw) > self.max_file_bytes or _is_binary(raw):
+                continue
+            if detect_language(rel) is None:
+                continue  # only code files carry symbols worth mapping
+            sources[rel] = raw.decode("utf-8", errors="replace")
+        return sources
+
     def index(self) -> RepoIndex:
         idx = RepoIndex()
         for p in self._iter_files():
