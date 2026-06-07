@@ -17,7 +17,7 @@ from acp.agents.vendor_native import (
 
 def test_health_detector_shape() -> None:
     h = detect_vendor_health()
-    assert set(h) == {"codex_cli", "claude_code", "openhands"}
+    assert set(h) == {"codex_cli", "claude_code", "gemini_cli", "openhands"}
     for v in h.values():
         assert "available" in v
         if v["available"]:
