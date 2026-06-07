@@ -93,8 +93,43 @@ Learned ladders: `sigA→[cheap]`, `sigB→[ctx]`, `sigC→[strong]`. Same 100% 
 — it starts at the historically-best rung and skips the escalation warm-up (the residual cost is the
 strong lever's own price on the genuinely-hard family, which any router must pay).
 
-## Increment 4 — Self-evolving context + verification for non-test tasks
-<!-- INC4 -->
+## Increment 4 (frontier) — Self-evolving context + verification for non-test tasks
+
+*Papers: Agentic Context Engineering (2510.04618); Evaluating AGENTS.md (2602.11988); Sufficient
+Context (2411.06037).*
+
+- **Self-evolving repo playbook** (`src/acp/context/repo_playbook.py`): the router distils verified
+  fixes into short per-repo lessons (an auto-maintained AGENTS.md), bounded and pruned (keep
+  high-support/recent — the AGENTS.md study's caution that bad context hurts), rendered as a context
+  preamble that surfaces the signature-relevant lesson first. Ties memory → context.
+- **Calibrated stop** (`src/acp/verification/calibrated_stop.py`): for work hidden tests can't grade,
+  commit only if a judge confidence clears a risk-calibrated bar AND context is sufficient
+  (Sufficient Context: confident-but-wrong is the failure mode) — else abstain / human-review.
+
+**Measured (deterministic policy benchmarks):** the playbook accumulates all signatures and surfaces
+the correct lesson first (**relevant-first precision 1.0**); the calibrated stop committed 2/5 cases
+with **zero confident-but-wrong commits** — it abstained on the weak/insufficient/high-risk-below-bar
+ones (trades coverage for precision). *Honest limit:* the live solve-rate uplift from injecting the
+evolved playbook into a model needs real calls; what's measured here is the policy (accumulation +
+precision, and calibrated no-false-commit), not a live model improvement.
+
+---
+
+## Bottom line
+
+Four research-grounded increments, each shipped with disciplined measurement:
+1. **Router now spans model × thinking-level × harness** — Gemini CLI + OpenHands live, Codex +
+   Claude Code registered & availability-gated; escalates thinking before tier (8/8 @ $0.0021).
+2. **Memory survives repo evolution** — aging-aware revision recovers 4/4 after a migration-and-back
+   at lowest cost, where naive memory regresses (3/4).
+3. **Self-tuning ladder** — offline-learned per-signature order, 19.4% cheaper at equal success.
+4. **Self-evolving context + calibrated abstention** — playbook precision 1.0; zero confident-but
+   -wrong commits on non-test tasks.
+
+Honest limits throughout: corpora are synthetic / policy benchmarks are deterministic where live
+model noise would obscure the mechanism; Codex/Claude Code are env-gated; the playbook's live uplift
+is deferred to model-call budget. All four advance the *mechanism* of performance/value, grounded in
+the pdfs/ research.
 
 ## Reproduce
 ```

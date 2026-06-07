@@ -1,0 +1,67 @@
+{
+  "experiment": "verification_frontier",
+  "question": "does the repo playbook accumulate the right context, and does calibrated abstention avoid confident-but-wrong commits?",
+  "playbook": {
+    "sessions": 5,
+    "coverage_curve": [
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "all_signatures_covered": true,
+    "signature_relevant_first_precision": 1.0,
+    "rendered_example": "## Repo playbook (auto-maintained from verified fixes)\n- (bugfix:cross_file_api) use repo_map; the needed constant lives in an unreferenced policy_*.py  [seen 5x]\n- (bugfix:broad_repo_map) grep the whole repo; the wiring spans multiple modules  [seen 5x]\n- (security_fix:none) add a regression test; do not weaken assertions  [seen 5x]"
+  },
+  "calibrated_stop": {
+    "n": 5,
+    "committed": 2,
+    "wrong_commits": 0,
+    "no_confident_but_wrong_commit": true,
+    "decisions": [
+      {
+        "correct": true,
+        "judge": 0.9,
+        "suff": 0.9,
+        "risk": "low",
+        "decision": "commit",
+        "confidence": 0.9
+      },
+      {
+        "correct": false,
+        "judge": 0.55,
+        "suff": 0.8,
+        "risk": "low",
+        "decision": "abstain",
+        "confidence": 0.55
+      },
+      {
+        "correct": false,
+        "judge": 0.95,
+        "suff": 0.3,
+        "risk": "low",
+        "decision": "human_review",
+        "confidence": 0.65
+      },
+      {
+        "correct": true,
+        "judge": 0.88,
+        "suff": 0.95,
+        "risk": "high",
+        "decision": "commit",
+        "confidence": 0.88
+      },
+      {
+        "correct": false,
+        "judge": 0.8,
+        "suff": 0.9,
+        "risk": "high",
+        "decision": "human_review",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "evidence_tier": "deterministic policy benchmark (ACE playbook accumulation + Sufficient-Context calibration)",
+  "honest_note": "live solve-rate uplift from injecting the evolved playbook needs model calls; measured here is the policy (accumulation/precision + calibrated precision), not a live model improvement."
+}
