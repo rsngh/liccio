@@ -1,0 +1,19 @@
+{
+  "experiment": "memory_lifespan_benchmark",
+  "n_sessions": 100,
+  "migrate_at": 50,
+  "memory_solved": 60,
+  "baseline_solved": 39,
+  "memory_cost_per_verified": 0.00485,
+  "baseline_cost_per_verified": 0.007692,
+  "memory_reduces_cost_per_success": true,
+  "recommendation_precision_overall": 0.9286,
+  "revision_recovery_latency_sessions": 31,
+  "revised_after_migration": true,
+  "poisoned_episode_quarantined": true,
+  "final_recommendations": {
+    "sig_a": null,
+    "sig_b": "grep",
+    "sig_c": null
+  }
+}
