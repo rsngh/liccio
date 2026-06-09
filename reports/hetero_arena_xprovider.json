@@ -50,97 +50,97 @@
       "out_per_mtok": 75.0
     }
   },
-  "trials": 1,
+  "trials": 3,
   "n_tasks": 20,
-  "elapsed_s": 1040.3,
+  "elapsed_s": 3139.5,
   "scores": {
     "gemini_flash_lite_single": {
       "verified": 0.8,
       "ci": {
         "point": 0.8,
-        "lo": 0.584,
-        "hi": 0.9193
+        "lo": 0.6822,
+        "hi": 0.8817
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.001311,
+      "n_conclusive": 60,
+      "total_cost_usd": 0.003933,
       "cost_per_verified_success": 8.2e-05
     },
     "gemini_flash_single": {
       "verified": 0.85,
       "ci": {
         "point": 0.85,
-        "lo": 0.6396,
-        "hi": 0.9476
+        "lo": 0.7389,
+        "hi": 0.919
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.156953,
-      "cost_per_verified_success": 0.009233
+      "n_conclusive": 60,
+      "total_cost_usd": 0.493765,
+      "cost_per_verified_success": 0.009682
     },
     "haiku_single": {
-      "verified": 0.95,
+      "verified": 1.0,
       "ci": {
-        "point": 0.95,
-        "lo": 0.7639,
-        "hi": 0.9911
+        "point": 1.0,
+        "lo": 0.9398,
+        "hi": 1.0
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.026714,
-      "cost_per_verified_success": 0.001406
+      "n_conclusive": 60,
+      "total_cost_usd": 0.078707,
+      "cost_per_verified_success": 0.001312
     },
     "sonnet_single": {
       "verified": 0.95,
       "ci": {
         "point": 0.95,
-        "lo": 0.7639,
-        "hi": 0.9911
+        "lo": 0.863,
+        "hi": 0.9829
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.064287,
-      "cost_per_verified_success": 0.003384
+      "n_conclusive": 60,
+      "total_cost_usd": 0.191826,
+      "cost_per_verified_success": 0.003365
     },
     "gemini_pro_single": {
       "verified": 0.95,
       "ci": {
         "point": 0.95,
-        "lo": 0.7639,
-        "hi": 0.9911
+        "lo": 0.863,
+        "hi": 0.9829
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.343064,
-      "cost_per_verified_success": 0.018056
+      "n_conclusive": 60,
+      "total_cost_usd": 1.079616,
+      "cost_per_verified_success": 0.018941
     },
     "opus_single": {
       "verified": 0.95,
       "ci": {
         "point": 0.95,
-        "lo": 0.7639,
-        "hi": 0.9911
+        "lo": 0.863,
+        "hi": 0.9829
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.41031,
-      "cost_per_verified_success": 0.021595
+      "n_conclusive": 60,
+      "total_cost_usd": 1.27173,
+      "cost_per_verified_success": 0.022311
     },
     "cross_provider_escalation": {
       "verified": 0.85,
       "ci": {
         "point": 0.85,
-        "lo": 0.6396,
-        "hi": 0.9476
+        "lo": 0.7389,
+        "hi": 0.919
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.00471,
-      "cost_per_verified_success": 0.000277
+      "n_conclusive": 60,
+      "total_cost_usd": 0.012496,
+      "cost_per_verified_success": 0.000245
     },
     "best_of_providers": {
       "verified": 0.85,
       "ci": {
         "point": 0.85,
-        "lo": 0.6396,
-        "hi": 0.9476
+        "lo": 0.7389,
+        "hi": 0.919
       },
-      "n_conclusive": 20,
-      "total_cost_usd": 0.028725,
-      "cost_per_verified_success": 0.00169
+      "n_conclusive": 60,
+      "total_cost_usd": 0.083055,
+      "cost_per_verified_success": 0.001629
     }
   },
   "cheapest_per_success_ranking": [
@@ -157,681 +157,681 @@
     "cap_reverse": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_fizz": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_roman": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_intervals": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_lengthOfLIS": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_editdist": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_calc": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
-        "verified": 0.0,
-        "n": 1
+        "verified": 0.6667,
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_json": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_atoi": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_valid_number": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
-        "verified": 0.0,
-        "n": 1
+        "verified": 0.3333,
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_wildcard": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
-        "verified": 1.0,
-        "n": 1
+        "verified": 0.0,
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_decode": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_calc_unary": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
-        "verified": 0.0,
-        "n": 1
+        "verified": 1.0,
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_circular_max": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_simplify_path": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 0.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_excel_title": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_vm": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_regex": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_nqueens": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     },
     "cap_min_coins": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 1
+        "n": 3
       }
     }
   },
