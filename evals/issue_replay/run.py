@@ -180,8 +180,14 @@ def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max
         for bi, b in enumerate(bundles):
             if delay_s and bi:
                 time.sleep(delay_s)   # throttle between bundles to avoid provider rate limits
-            produced, cost, did = (_produce_harness(b, model, root, max_steps=max_steps)
-                                   if mode == "harness" else _produce(b, model, root))
+            if mode == "repair":
+                from evals.issue_replay.repair_harness import repair_one
+                produced, cost, did = repair_one(b, root, model_id=_MODELS[model][0],
+                                                 rate=_MODELS[model][1], k=max_steps)
+            elif mode == "harness":
+                produced, cost, did = _produce_harness(b, model, root, max_steps=max_steps)
+            else:
+                produced, cost, did = _produce(b, model, root)
             total_cost += cost
             ran += int(did)
             hidden, public = verify(b, root, module_src=produced)
@@ -230,15 +236,18 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="gemini", choices=list(_MODELS))
     ap.add_argument("--bundles", default="synthetic", choices=["synthetic", "real", "all"])
-    ap.add_argument("--mode", default="single", choices=["single", "harness"])
-    ap.add_argument("--max-steps", type=int, default=14)
+    ap.add_argument("--mode", default="single", choices=["single", "harness", "repair"])
+    ap.add_argument("--max-steps", type=int, default=14, help="harness step budget; in repair mode = best-of-k")
     ap.add_argument("--delay", type=float, default=0.0, help="seconds to sleep between bundles (rate-limit throttle)")
+    ap.add_argument("--limit", type=int, default=0, help="cap number of bundles (0 = all)")
     ap.add_argument("--out", default="reports/issue_replay_live.json")
     args = ap.parse_args()
     if os.environ.get("ANTHROPIC_API_KEY"):
         os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
-    rep = run(args.model, _load_bundles(args.bundles), mode=args.mode, max_steps=args.max_steps,
-              delay_s=args.delay)
+    picked = _load_bundles(args.bundles)
+    if args.limit:
+        picked = picked[:args.limit]
+    rep = run(args.model, picked, mode=args.mode, max_steps=args.max_steps, delay_s=args.delay)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(rep, indent=2)
