@@ -69,38 +69,54 @@ etc.). Each uses the **parent commit as buggy**, the **fix commit as the withhel
 **repo's own contemporaneous test file as the held-out hidden oracle**; every bundle is validated
 hermetically fair (`reports/real_issue_replay_bundles.json`). Single-shot, gold withheld:
 
-| model | real bundles solved (hidden) | cost |
+| path | real bundles solved (hidden) | cost |
 |---|---|---|
-| gemini-3-flash-preview (cheap) | **3 / 17 = 18%** CI[0.06, 0.41] | $0.15 |
-| opus (frontier) | **1 / 17 = 6%** CI[0.01, 0.27] | $2.85 |
+| single-shot gemini-3-flash-preview (cheap) | **3 / 17 = 18%** CI[0.06, 0.41] | $0.15 |
+| single-shot opus (frontier) | **1 / 17 = 6%** CI[0.01, 0.27] | $2.85 |
+| **ACP in-process harness** (haiku, 16 steps, tests visible + runnable) | **1 / 17 = 6%** CI[0.01, 0.27] | $1.63 |
 
-**This is the most important result of the exercise.** The 100% on easy/synthetic tasks does **not**
-transfer to real codebase bugs, and — critically — **the frontier model does not rescue it** (opus
-was no better than cheap gemini, at ~19× the cost; the CIs overlap, so the honest claim is "tier
-makes no difference here"). On real bugs the binding constraint is **context + harness autonomy**
-(explore the repo, run tests, iterate), not model tier — exactly the lever ACP is built around, and
-exactly what single-shot can't supply.
+**This is the most important result of the exercise, and it cuts against the easy optimism:**
+
+1. The 100% on easy/synthetic tasks does **not** transfer to real codebase bugs.
+2. The **frontier model does not rescue single-shot** — opus matched cheap gemini at ~19× the cost
+   (CIs overlap). So it is *not* simply a model-tier problem.
+3. **Nor did the autonomous harness rescue it.** ACP's in-process tool-loop harness — given the
+   failing tests and the ability to read files, run pytest, and iterate — also landed at 1/17. A
+   per-bundle trace confirms it *functions* (it reads the test, runs pytest repeatedly, edits the
+   module, iterates) but on real 38–44 KB modules it thrashes, re-sends the whole file each step
+   (~300 K input tokens in 16 steps), exhausts the step budget without converging, and on one
+   bundle even reverted its own fix.
+
+So the honest verdict is the opposite of a victory lap: on this real corpus, **none of the levers we
+tried (bigger model, autonomous harness) lifted the cheap single-shot baseline.** Real bug-fixing is
+hard, and the binding constraint is the *orchestration* of context size, step budget, and model
+capability — the problem ACP is meant to solve, which this round shows is genuinely unsolved by the
+naive configurations, not something a wrapper gets for free.
 
 ## Honest scope / what is NOT claimed
 
 - Corpora are **20 capability tasks**, **6 synthetic** + **17 real** issue bundles — a real, live,
   validated measurement, but still short of the GOALS "≥100 tasks / 50 real bundles across 5 repos."
-  Yield is **content-bound, not compute-bound**: total live spend was **≈$7.9 of $25**; most of the
+  Yield is **content-bound, not compute-bound**: total live spend was **≈$13 of $25**; most of the
   effort is finding real commits whose tests run hermetically (the fairness gate rejected the
   majority of candidate commits).
-- The real-bundle setting is deliberately hard (terse commit-message "issue", single-shot, no repo
-  exploration, large modules subject to context truncation) — so the low absolute solve rates are a
-  floor for *single-shot*, not a verdict on the harness-routed path, which we did not run on the real
-  corpus this round.
+- The harness number is for **one configuration** (cheap haiku, 16 steps, no context trimming). A
+  stronger model, more steps, or context-budgeted file access (which ACP has primitives for but we
+  did not wire into this loop) could do better — untested here because the 300 K-token/bundle blow-up
+  makes stronger-model sweeps costly. So 1/17 is a floor for the *naive* harness config, not a ceiling
+  for a well-tuned routed path.
 - Bundles are labelled by source (`frozen_synthetic` vs `real_issue_replay`); no synthetic bundle is
   presented as scraped real history.
 
 ## Bottom line on "does the library provide an advantage?"
 
-- **Yes, where measured small-scale:** the proxy verifier reliably catches wrong answers public-only
-  ships (0.85→1.00), and cheap/cross-vendor model selection matches frontier quality on easy work at
-  10–280× lower cost. Those are real, reproduced live.
-- **The real-bug reality check sharpens the thesis:** single-shot — even with the most expensive
-  model — solves few real bugs. That is *evidence for* the metarouter premise (the lever is context/
-  harness, not tier) but it is **not yet demonstrated**: we have not shown ACP's harness-routed path
-  lifting that 3/17 on the real corpus. That is the next experiment.
+- **Yes, narrowly and small-scale:** the proxy verifier reliably catches wrong answers public-only
+  ships (0.85→1.00), and cheap/cross-vendor model selection matches frontier quality on *easy* work at
+  10–280× lower cost. Those are real, reproduced live, and genuinely useful.
+- **No, not yet on real bugs:** on the real corpus, neither a frontier model nor ACP's autonomous
+  harness beat cheap single-shot (3/17). The central promise — orchestrating context/harness/verifier
+  to beat a frontier model on *real* work — is **still unproven**, and this round shows the naive
+  levers don't deliver it for free. The honest status is: solid plumbing + a real but small verifier/
+  cost-routing win, on top of an unsolved hard problem. The next experiment that could actually move
+  the needle is a *tuned* routed path (context-budgeted harness + more steps + escalation), measured
+  on a larger real corpus.

@@ -126,7 +126,50 @@ def _produce(task: IssueReplayTask, model: str, root: Path) -> tuple[str, float,
     return out, cost, True
 
 
-def run(model: str, bundles: list[IssueReplayTask]) -> dict:
+def _produce_harness(task: IssueReplayTask, model: str, root: Path, *, max_steps: int) -> tuple[str, float, bool]:
+    """Run ACP's in-process Claude tool-loop HARNESS on the bundle. Unlike single-shot, the harness
+    can read files, run the repo's tests, and iterate. The repo's real test file is placed in the
+    workspace as a runnable repro (``test_repro.py``) so the harness has a failing test to converge
+    on; grading still uses the bundle's pristine hidden test against the PRODUCED MODULE, so editing
+    the workspace test cannot fool the score."""
+    from acp.agents.claude_harness import ClaudeHarnessAdapter
+    src = root / f"h_{abs(hash(task.repo_name + task.issue_title)) % 10_000}_{time.time_ns()}"
+    src.mkdir(parents=True, exist_ok=True)
+    (src / task.module_path).write_text(task.buggy)
+    for p, c in task.extra_files.items():
+        (src / p).write_text(c)
+    (src / "conftest.py").write_text("import os, sys\nsys.path.insert(0, os.path.dirname(__file__))\n")
+    (src / "test_repro.py").write_text(task.hidden_test)
+    repo = Repo.init(src)
+    repo.config_writer().set_value("user", "name", "t").release()
+    repo.config_writer().set_value("user", "email", "t@e.com").release()
+    repo.index.add([task.module_path, "conftest.py", "test_repro.py", *task.extra_files.keys()])
+    repo.index.commit("base")
+    mgr = LocalWorkspaceManager(src / "ws")
+    r = Repository(name=task.repo_name, local_path=str(src), default_branch="master")
+    ws = mgr.create(r, RepoSnapshot(repo_id=r.id, base_commit=repo.head.commit.hexsha), default_policy())
+    items = [ContextItem(kind="instruction_chunk", path="__issue__",
+                         content=f"{task.issue_title}\n\n{task.issue_body}\n\n"
+                                 f"The failing tests are in test_repro.py. Fix {task.module_path} so they pass; "
+                                 "do not edit the tests.", source="task")]
+    pack = ContextPack(repo_id="r", task_id="t", snapshot_id="s", strategy="minimal", items=items)
+    t = Task(repo_id=r.id, title=task.issue_title, body=task.issue_body)
+    # the harness is a Claude tool-loop; use the requested claude tier, else haiku
+    hmodel = _MODELS[model][0] if model in ("haiku", "sonnet", "opus") else "claude-haiku-4-5"
+    try:
+        res = asyncio.run(ClaudeHarnessAdapter(model=hmodel, max_steps=max_steps).execute(
+            t, pack, ws, Budget(max_cost_usd=0.8, max_wall_time_s=240)))
+    except Exception:  # noqa: BLE001 - a failed loop -> no change -> unsolved
+        return task.buggy, 0.0, False
+    produced = Path(ws.path) / task.module_path
+    out = produced.read_text() if produced.exists() else task.buggy
+    rate = _MODELS.get(model if model in ("haiku", "sonnet", "opus") else "haiku")[1]
+    cost = round((res.input_token_count or 0) * rate[0] + (res.output_token_count or 0) * rate[1], 6)
+    return out, cost, True
+
+
+def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max_steps: int = 14,
+        delay_s: float = 0.0) -> dict:
     solved = equiv = ran = 0
     total_cost = 0.0
     by_source: dict[str, list[int]] = defaultdict(lambda: [0, 0])   # [solved, n]
@@ -134,8 +177,11 @@ def run(model: str, bundles: list[IssueReplayTask]) -> dict:
     t0 = time.time()
     with tempfile.TemporaryDirectory(prefix="issue_replay_live_") as d:
         root = Path(d)
-        for b in bundles:
-            produced, cost, did = _produce(b, model, root)
+        for bi, b in enumerate(bundles):
+            if delay_s and bi:
+                time.sleep(delay_s)   # throttle between bundles to avoid provider rate limits
+            produced, cost, did = (_produce_harness(b, model, root, max_steps=max_steps)
+                                   if mode == "harness" else _produce(b, model, root))
             total_cost += cost
             ran += int(did)
             hidden, public = verify(b, root, module_src=produced)
@@ -155,7 +201,7 @@ def run(model: str, bundles: list[IssueReplayTask]) -> dict:
     return {
         "experiment": "issue_replay_live",
         "question": "can a live cheap model solve issue->fix replay bundles, judged by held-out hidden tests + patch-equivalence?",
-        "model": model, "n_bundles": n, "elapsed_s": round(time.time() - t0, 1),
+        "model": model, "mode": mode, "n_bundles": n, "elapsed_s": round(time.time() - t0, 1),
         "hidden_verified": {"solved": solved, "n": n, "rate": round(p, 4), "ci": [round(lo, 4), round(hi, 4)]},
         "patch_equivalent_rate": round(equiv / n, 4) if n else 0.0,
         "ran_live": ran,
@@ -184,11 +230,15 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="gemini", choices=list(_MODELS))
     ap.add_argument("--bundles", default="synthetic", choices=["synthetic", "real", "all"])
+    ap.add_argument("--mode", default="single", choices=["single", "harness"])
+    ap.add_argument("--max-steps", type=int, default=14)
+    ap.add_argument("--delay", type=float, default=0.0, help="seconds to sleep between bundles (rate-limit throttle)")
     ap.add_argument("--out", default="reports/issue_replay_live.json")
     args = ap.parse_args()
     if os.environ.get("ANTHROPIC_API_KEY"):
         os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
-    rep = run(args.model, _load_bundles(args.bundles))
+    rep = run(args.model, _load_bundles(args.bundles), mode=args.mode, max_steps=args.max_steps,
+              delay_s=args.delay)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(rep, indent=2)
