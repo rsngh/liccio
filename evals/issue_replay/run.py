@@ -42,13 +42,22 @@ from acp.schemas.task import Task
 from acp.workspaces.local import LocalWorkspaceManager
 from acp.workspaces.policies import default_policy
 
+# model id + (in,out) USD-per-token published price
+_MODELS = {
+    "gemini": ("gemini-3-flash-preview", (0.30e-6, 2.50e-6)),
+    "haiku": ("claude-haiku-4-5", (1e-6, 5e-6)),
+    "sonnet": ("claude-sonnet-4-6", (3e-6, 15e-6)),
+    "opus": ("claude-opus-4-8", (15e-6, 75e-6)),
+}
+
 
 def _adapter(model: str):
+    model_id = _MODELS[model][0]
     if model == "gemini":
         from acp.agents.gemini_agent import GeminiAgentAdapter
-        return GeminiAgentAdapter(name="gemini", model="gemini-3-flash-preview", thinking_budget=0)
+        return GeminiAgentAdapter(name="gemini", model=model_id, thinking_budget=0)
     from acp.agents.claude_agent import ClaudeAgentAdapter
-    return ClaudeAgentAdapter(name="haiku", model="claude-haiku-4-5")
+    return ClaudeAgentAdapter(name=model, model=model_id)
 
 
 def _probes_from_tests(task: IssueReplayTask) -> list[str]:
@@ -112,8 +121,7 @@ def _produce(task: IssueReplayTask, model: str, root: Path) -> tuple[str, float,
         return task.buggy, 0.0, False
     produced = (Path(ws.path) / task.module_path)
     out = produced.read_text() if produced.exists() else task.buggy
-    # cheap-tier cost estimate (haiku $1/$5, gemini-flash ~$0.30/$2.50 per Mtok)
-    rate_in, rate_out = (0.30e-6, 2.50e-6) if model == "gemini" else (1e-6, 5e-6)
+    rate_in, rate_out = _MODELS[model][1]
     cost = round((res.input_token_count or 0) * rate_in + (res.output_token_count or 0) * rate_out, 6)
     return out, cost, True
 
@@ -161,14 +169,26 @@ def run(model: str, bundles: list[IssueReplayTask]) -> dict:
     }
 
 
+def _load_bundles(which: str) -> list[IssueReplayTask]:
+    bundles: list[IssueReplayTask] = []
+    if which in ("synthetic", "all"):
+        bundles += frozen_bundles()
+    if which in ("real", "all"):
+        full = Path("reports/real_issue_replay_full.json")
+        if full.exists():
+            bundles += [IssueReplayTask(**d) for d in json.loads(full.read_text())]
+    return bundles
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="gemini", choices=["gemini", "haiku"])
+    ap.add_argument("--model", default="gemini", choices=list(_MODELS))
+    ap.add_argument("--bundles", default="synthetic", choices=["synthetic", "real", "all"])
     ap.add_argument("--out", default="reports/issue_replay_live.json")
     args = ap.parse_args()
     if os.environ.get("ANTHROPIC_API_KEY"):
         os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
-    rep = run(args.model, frozen_bundles())
+    rep = run(args.model, _load_bundles(args.bundles))
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(rep, indent=2)

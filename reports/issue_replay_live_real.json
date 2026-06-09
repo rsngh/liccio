@@ -1,0 +1,200 @@
+{
+  "experiment": "issue_replay_live",
+  "question": "can a live cheap model solve issue->fix replay bundles, judged by held-out hidden tests + patch-equivalence?",
+  "model": "gemini",
+  "n_bundles": 17,
+  "elapsed_s": 277.1,
+  "hidden_verified": {
+    "solved": 3,
+    "n": 17,
+    "rate": 0.1765,
+    "ci": [
+      0.0619,
+      0.4103
+    ]
+  },
+  "patch_equivalent_rate": 0.0588,
+  "ran_live": 17,
+  "total_cost_usd": 0.149401,
+  "cost_per_verified_success": 0.0498,
+  "by_source": {
+    "real_issue_replay": {
+      "solved": 3,
+      "n": 17,
+      "rate": 0.1765
+    }
+  },
+  "per_bundle": [
+    {
+      "repo": "okunishinishi/python-stringcase",
+      "module": "stringcase.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": true,
+      "cost_usd": 0.004229
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.017113
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": false,
+      "patch_equivalent": false,
+      "cost_usd": 0.015066
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.011107
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "dictutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "cacheutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.010542
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "cacheutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "timeutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.014025
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.001831
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.01106
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": false,
+      "patch_equivalent": false,
+      "cost_usd": 0.011151
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "listutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.009721
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "mathutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.002498
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "formatutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.009663
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "tableutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": false,
+      "patch_equivalent": false,
+      "cost_usd": 0.013155
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "ioutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.010124
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "ioutils.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.008116
+    }
+  ],
+  "evidence_tier": "live single-shot over issue->fix bundles; gold patch + hidden tests withheld; bundles labelled by source (frozen_synthetic vs real_issue_replay)"
+}

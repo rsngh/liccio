@@ -56,15 +56,51 @@ single-shot live at its real published price:
 attempts each issue→fix bundle with the **gold patch and hidden tests withheld**, graded by the
 held-out hidden test AND semantic patch-equivalence to the gold:
 
-- `gemini-3-flash-preview`: **6/6 hidden-verified**, **5/6 patch-equivalent**, total $0.0014.
-- The one non-equivalent case is the LRU *class* bundle, where repr-based equivalence legitimately
-  can't corroborate behaviour — reported honestly per-bundle rather than hidden.
+- On the **6 frozen-synthetic** bundles `gemini-3-flash-preview` scored **6/6 hidden-verified**,
+  **5/6 patch-equivalent**, $0.0014 (the one miss is the LRU *class* bundle, where repr-based
+  equivalence can't corroborate behaviour — reported per-bundle, not hidden).
+
+## P3 — REAL issue-replay (the reality check)
+
+Direct `git clone` works here (the GitHub API does not, token or no token), so
+`evals/issue_replay/build_real_corpus.py` harvests **17 real bundles** from actual fix commits in
+two public repos (`okunishinishi/python-stringcase`, `mahmoud/boltons` — real issues #240/#302/#348/#349,
+etc.). Each uses the **parent commit as buggy**, the **fix commit as the withheld gold**, and the
+**repo's own contemporaneous test file as the held-out hidden oracle**; every bundle is validated
+hermetically fair (`reports/real_issue_replay_bundles.json`). Single-shot, gold withheld:
+
+| model | real bundles solved (hidden) | cost |
+|---|---|---|
+| gemini-3-flash-preview (cheap) | **3 / 17 = 18%** CI[0.06, 0.41] | $0.15 |
+| opus (frontier) | **1 / 17 = 6%** CI[0.01, 0.27] | $2.85 |
+
+**This is the most important result of the exercise.** The 100% on easy/synthetic tasks does **not**
+transfer to real codebase bugs, and — critically — **the frontier model does not rescue it** (opus
+was no better than cheap gemini, at ~19× the cost; the CIs overlap, so the honest claim is "tier
+makes no difference here"). On real bugs the binding constraint is **context + harness autonomy**
+(explore the repo, run tests, iterate), not model tier — exactly the lever ACP is built around, and
+exactly what single-shot can't supply.
 
 ## Honest scope / what is NOT claimed
 
-- The capability corpus is **20 tasks** and issue-replay is **6 frozen-synthetic bundles**; this is
-  a *scaled live measurement at the available corpus size*, not the GOALS "≥100 tasks / 50 scraped
-  real GitHub bundles." Reaching those is bottlenecked by **content** (authoring/scraping
-  offline-fair bundles with held-out hidden tests), not compute — the $25 budget was barely touched.
-- Bundles remain labelled by source (`frozen_synthetic` vs `real_issue_replay`); no synthetic bundle
-  is presented as scraped real history.
+- Corpora are **20 capability tasks**, **6 synthetic** + **17 real** issue bundles — a real, live,
+  validated measurement, but still short of the GOALS "≥100 tasks / 50 real bundles across 5 repos."
+  Yield is **content-bound, not compute-bound**: total live spend was **≈$7.9 of $25**; most of the
+  effort is finding real commits whose tests run hermetically (the fairness gate rejected the
+  majority of candidate commits).
+- The real-bundle setting is deliberately hard (terse commit-message "issue", single-shot, no repo
+  exploration, large modules subject to context truncation) — so the low absolute solve rates are a
+  floor for *single-shot*, not a verdict on the harness-routed path, which we did not run on the real
+  corpus this round.
+- Bundles are labelled by source (`frozen_synthetic` vs `real_issue_replay`); no synthetic bundle is
+  presented as scraped real history.
+
+## Bottom line on "does the library provide an advantage?"
+
+- **Yes, where measured small-scale:** the proxy verifier reliably catches wrong answers public-only
+  ships (0.85→1.00), and cheap/cross-vendor model selection matches frontier quality on easy work at
+  10–280× lower cost. Those are real, reproduced live.
+- **The real-bug reality check sharpens the thesis:** single-shot — even with the most expensive
+  model — solves few real bugs. That is *evidence for* the metarouter premise (the lever is context/
+  harness, not tier) but it is **not yet demonstrated**: we have not shown ACP's harness-routed path
+  lifting that 3/17 on the real corpus. That is the next experiment.
