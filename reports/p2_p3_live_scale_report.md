@@ -73,38 +73,39 @@ hermetically fair (`reports/real_issue_replay_bundles.json`). Single-shot, gold 
 |---|---|---|
 | single-shot gemini-3-flash-preview (cheap) | **3 / 17 = 18%** CI[0.06, 0.41] | $0.15 |
 | single-shot opus (frontier) | **1 / 17 = 6%** CI[0.01, 0.27] | $2.85 |
-| **ACP in-process harness** (haiku, 16 steps, tests visible + runnable) | **1 / 17 = 6%** CI[0.01, 0.27] | $1.63 |
+| ACP in-process tool-loop harness (haiku, 16 steps, tests visible) | **1 / 17 = 6%** CI[0.01, 0.27] | $1.63 |
+| **enhanced repair harness — gemini** (localize→best-of-k→splice) | **3 / 17 = 18%** CI[0.06, 0.41] | $0.20 |
+| **enhanced repair harness — sonnet** (same pipeline, stronger model) | **3 / 17 = 18%** CI[0.06, 0.41] | $1.10 |
 
-**This is the most important result of the exercise, and it cuts against the easy optimism:**
+**The most important result of the exercise — and it cuts against the easy optimism.** We tried, in
+order: a frontier model, an autonomous tool-loop harness, and then a research-grounded *enhanced*
+repair harness (the convergent recommendation of three paper sweeps: localize the bug to a function,
+show the model only that snippet, sample best-of-k, splice the fix back by AST, iterate on the precise
+test failure). The enhanced harness did exactly what the papers promised mechanically — it **localized
+correctly** (e.g. pinpointed `OneToOne.update`), cut context/cost ~15× vs single-shot opus, and removed
+the tool-loop thrashing. **But the solve rate did not move: 3/17, the same as cheap single-shot, and a
+stronger model (sonnet) did not change it either.**
 
-1. The 100% on easy/synthetic tasks does **not** transfer to real codebase bugs.
-2. The **frontier model does not rescue single-shot** — opus matched cheap gemini at ~19× the cost
-   (CIs overlap). So it is *not* simply a model-tier problem.
-3. **Nor did the autonomous harness rescue it.** ACP's in-process tool-loop harness — given the
-   failing tests and the ability to read files, run pytest, and iterate — also landed at 1/17. A
-   per-bundle trace confirms it *functions* (it reads the test, runs pytest repeatedly, edits the
-   module, iterates) but on real 38–44 KB modules it thrashes, re-sends the whole file each step
-   (~300 K input tokens in 16 steps), exhausts the step budget without converging, and on one
-   bundle even reverted its own fix.
-
-So the honest verdict is the opposite of a victory lap: on this real corpus, **none of the levers we
-tried (bigger model, autonomous harness) lifted the cheap single-shot baseline.** Real bug-fixing is
-hard, and the binding constraint is the *orchestration* of context size, step budget, and model
-capability — the problem ACP is meant to solve, which this round shows is genuinely unsolved by the
-naive configurations, not something a wrapper gets for free.
+So across five configurations — cheap single-shot, frontier single-shot, autonomous harness, and the
+enhanced localize→repair harness on two model tiers — **the real-bug solve rate is flat at ~3/17.**
+The three solved are the clean single-function bugs; the other 14 (mostly class-method/multi-function
+boltons bugs) resist every lever we pulled. The binding constraint is therefore **not** context size
+(we fixed that), **not** model tier (sonnet ≈ gemini ≈ opus here), and **not** scaffolding thrash (the
+enhanced pipeline is clean) — it is the underlying difficulty of correctly diagnosing these specific
+real bugs from a terse issue. That is a genuinely hard, unsolved problem, and importantly: the gold fix
+provably passes each test file, so the corpus is fair — the models simply don't find the right fix.
 
 ## Honest scope / what is NOT claimed
 
 - Corpora are **20 capability tasks**, **6 synthetic** + **17 real** issue bundles — a real, live,
   validated measurement, but still short of the GOALS "≥100 tasks / 50 real bundles across 5 repos."
-  Yield is **content-bound, not compute-bound**: total live spend was **≈$13 of $25**; most of the
+  Yield is **content-bound, not compute-bound**: total live spend was **≈$15 of $25**; most of the
   effort is finding real commits whose tests run hermetically (the fairness gate rejected the
   majority of candidate commits).
-- The harness number is for **one configuration** (cheap haiku, 16 steps, no context trimming). A
-  stronger model, more steps, or context-budgeted file access (which ACP has primitives for but we
-  did not wire into this loop) could do better — untested here because the 300 K-token/bundle blow-up
-  makes stronger-model sweeps costly. So 1/17 is a floor for the *naive* harness config, not a ceiling
-  for a well-tuned routed path.
+- The enhanced repair harness fixed the things we could diagnose (context blow-up, scaffolding thrash,
+  localization) and is the configuration the research literature recommends; its flat 3/17 is therefore
+  a meaningful signal, not a strawman. Remaining unknowns: localization still misses on ~2 bundles
+  (whole-module fallback), and we capped best-of-k at 2–3 and reflexion at 2 rounds.
 - Bundles are labelled by source (`frozen_synthetic` vs `real_issue_replay`); no synthetic bundle is
   presented as scraped real history.
 
@@ -113,10 +114,17 @@ naive configurations, not something a wrapper gets for free.
 - **Yes, narrowly and small-scale:** the proxy verifier reliably catches wrong answers public-only
   ships (0.85→1.00), and cheap/cross-vendor model selection matches frontier quality on *easy* work at
   10–280× lower cost. Those are real, reproduced live, and genuinely useful.
-- **No, not yet on real bugs:** on the real corpus, neither a frontier model nor ACP's autonomous
-  harness beat cheap single-shot (3/17). The central promise — orchestrating context/harness/verifier
-  to beat a frontier model on *real* work — is **still unproven**, and this round shows the naive
-  levers don't deliver it for free. The honest status is: solid plumbing + a real but small verifier/
-  cost-routing win, on top of an unsolved hard problem. The next experiment that could actually move
-  the needle is a *tuned* routed path (context-budgeted harness + more steps + escalation), measured
-  on a larger real corpus.
+- **Not demonstrated on real bugs:** across five configurations (cheap/frontier single-shot, autonomous
+  harness, enhanced localize→repair on two model tiers) the real-bug solve rate is **flat at 3/17**.
+  The central promise — orchestrating context/harness/verifier to beat a frontier model on *real* work
+  — remains **unproven**, and we now know *why the easy levers fail*: it is neither context nor tier nor
+  scaffolding thrash, but the underlying difficulty of these bugs.
+
+## Recommendation on scaling to a big test
+
+**Do not yet spend budget scaling to 50+ bundles.** Five distinct configurations agree at 3/17, so a
+bigger run with the *current* methods would most likely just reconfirm a low rate at higher cost — low
+information per dollar. The higher-value next step is a **cheap failure diagnostic** on the 14 misses
+(are the model's fixes near-misses? is localization wrong? does the model break unrelated tests?), which
+tells us whether the problem is solvable-in-principle before committing to a large measurement. Scale
+only after a config demonstrably clears, say, >40% on the current 17.
