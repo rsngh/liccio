@@ -1,0 +1,337 @@
+{
+  "experiment": "issue_replay_diagnosis",
+  "n": 17,
+  "n_measurable": 12,
+  "categories": {
+    "solved": 3,
+    "unmeasurable": 5,
+    "no_progress": 8,
+    "regressed": 1
+  },
+  "solved_of_measurable": "3/12",
+  "localized_count": 15,
+  "oracle_gap_over_measurable": {
+    "min": 1,
+    "max": 7,
+    "median": 1,
+    "single_test_bugs": 9,
+    "broad_bugs_gt3": 1
+  },
+  "gold_passes_all_measurable": true,
+  "rows": [
+    {
+      "repo": "okunishinishi/python-stringcase",
+      "module": "stringcase.py",
+      "issue": "Fix alphanumcase for Python 3",
+      "tests_total": 13,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "alphanumcase",
+        "camelcase",
+        "constcase"
+      ],
+      "localized": true,
+      "produced_passes": true,
+      "fixed": 1,
+      "newly_broken": 0,
+      "category": "solved",
+      "cost_usd": 0.000301
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "issue": "fix(human_readable_list): altering f-string syntax to have b",
+      "tests_total": 0,
+      "oracle_gap": 0,
+      "gold_passes": true,
+      "focus": [],
+      "localized": false,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "unmeasurable",
+      "cost_usd": 0.046874
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "issue": "fix strutils",
+      "tests_total": 0,
+      "oracle_gap": 0,
+      "gold_passes": true,
+      "focus": [],
+      "localized": false,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "unmeasurable",
+      "cost_usd": 0.046825
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "issue": "Fix warnings in python3.7",
+      "tests_total": 12,
+      "oracle_gap": 7,
+      "gold_passes": true,
+      "focus": [
+        "parse_int_list",
+        "sub",
+        "is_uuid"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.001697
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "dictutils.py",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "tests_total": 27,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "update",
+        "add",
+        "pop"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.00201
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "cacheutils.py",
+      "issue": "Test and fix for #348 (#349)",
+      "tests_total": 16,
+      "oracle_gap": 0,
+      "gold_passes": true,
+      "focus": [
+        "__init__",
+        "cached",
+        "cachedmethod"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "unmeasurable",
+      "cost_usd": 0.000661
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "cacheutils.py",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to ",
+      "tests_total": 10,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "cached",
+        "cachedmethod",
+        "__init__"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 3,
+      "category": "regressed",
+      "cost_usd": 0.009478
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "timeutils.py",
+      "issue": "Fix infinite daterange issue when start and stop is same (#3",
+      "tests_total": 5,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "daterange",
+        "total_seconds"
+      ],
+      "localized": true,
+      "produced_passes": true,
+      "fixed": 1,
+      "newly_broken": 0,
+      "category": "solved",
+      "cost_usd": 0.003186
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_appare",
+      "tests_total": 4,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "complement",
+        "add",
+        "index"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.002077
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "tests_total": 4,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "complement",
+        "index",
+        "pop"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.00187
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "issue": "Fix warnings in python3.7",
+      "tests_total": 0,
+      "oracle_gap": 0,
+      "gold_passes": true,
+      "focus": [
+        "complement",
+        "pop",
+        "isdisjoint"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "unmeasurable",
+      "cost_usd": 0.001328
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "listutils.py",
+      "issue": "Fix barrellist sort with multiple lists",
+      "tests_total": 3,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "sort",
+        "insert",
+        "pop"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.003603
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "mathutils.py",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "tests_total": 10,
+      "oracle_gap": 2,
+      "gold_passes": true,
+      "focus": [
+        "clamp",
+        "ceil",
+        "floor"
+      ],
+      "localized": true,
+      "produced_passes": true,
+      "fixed": 2,
+      "newly_broken": 0,
+      "category": "solved",
+      "cost_usd": 0.000836
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "formatutils.py",
+      "issue": "DeferredValue: fix get_value and caching",
+      "tests_total": 5,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "get_value",
+        "infer_positional_format_args",
+        "get_format_args"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.001648
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "tableutils.py",
+      "issue": "Fix warnings in python3.7",
+      "tests_total": 0,
+      "oracle_gap": 0,
+      "gold_passes": true,
+      "focus": [
+        "__init__",
+        "from_dict",
+        "to_html"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "unmeasurable",
+      "cost_usd": 0.010686
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "ioutils.py",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "tests_total": 74,
+      "oracle_gap": 1,
+      "gold_passes": true,
+      "focus": [
+        "write",
+        "seek",
+        "read"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.002887
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "ioutils.py",
+      "issue": "Fix call to non-existant attribute",
+      "tests_total": 56,
+      "oracle_gap": 2,
+      "gold_passes": true,
+      "focus": [
+        "write",
+        "getvalue",
+        "seek"
+      ],
+      "localized": true,
+      "produced_passes": false,
+      "fixed": 0,
+      "newly_broken": 0,
+      "category": "no_progress",
+      "cost_usd": 0.002076
+    }
+  ]
+}

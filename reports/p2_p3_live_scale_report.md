@@ -124,7 +124,32 @@ provably passes each test file, so the corpus is fair — the models simply don'
 
 **Do not yet spend budget scaling to 50+ bundles.** Five distinct configurations agree at 3/17, so a
 bigger run with the *current* methods would most likely just reconfirm a low rate at higher cost — low
-information per dollar. The higher-value next step is a **cheap failure diagnostic** on the 14 misses
-(are the model's fixes near-misses? is localization wrong? does the model break unrelated tests?), which
-tells us whether the problem is solvable-in-principle before committing to a large measurement. Scale
-only after a config demonstrably clears, say, >40% on the current 17.
+information per dollar. Scale only after a config demonstrably clears, say, >40% on the current 17.
+
+## Failure diagnostic (why the misses miss) — `reports/issue_replay_diagnosis.json`
+
+A cheap diagnostic (re-run the enhanced gemini repair, classify each produced module's remaining
+failures vs the buggy baseline, return-code authoritative) categorises the 17:
+
+| category | n | meaning |
+|---|---|---|
+| solved | 3 | produced module passes the whole held-out file |
+| **no_progress** | **8** | localization found the right function, but the fix does **not** flip the failing test |
+| regressed | 1 | the fix broke other tests the buggy base passed |
+| unmeasurable | 5 | the (large boltons) test file times out / errors standalone — excluded, not graded |
+
+Supporting facts: **localized 15/17**, **oracle-gap median = 1** (9 bugs need exactly one test
+flipped), and **the gold fix passes every measurable bundle** (corpus is fair). So the dominant
+failure (`no_progress`, 8) is **not** context size, **not** scaffolding, **not** an over-broad oracle
+— the model is handed the correct, small buggy function and a single failing test, and still writes a
+wrong fix. The bottleneck is **repair correctness on subtle bugs**, i.e. raw model/diagnosis
+capability — which is exactly what neither the stronger model (sonnet) nor the research-grounded
+pipeline moved.
+
+**Implication for scaling and for the library's thesis:** more orchestration (context/harness/verifier
+routing — what ACP does) cannot recover these, because the orchestration is already doing its job
+(right file, right test, clean loop). The remaining gap is model capability on hard real bugs. A
+larger corpus would re-measure the same wall; the only levers with a plausible shot are
+verifier-guided *many*-sample search (far more than k=2-3) or a materially stronger repair model —
+both of which trade a lot of cost for uncertain gain. Recommendation stands: **bank these honest
+findings; don't scale the corpus until a config first clears ~40% on the existing 17.**
