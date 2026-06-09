@@ -1,0 +1,90 @@
+{
+  "experiment": "issue_replay_live",
+  "question": "can a live cheap model solve issue->fix replay bundles, judged by held-out hidden tests + patch-equivalence?",
+  "model": "gemini",
+  "n_bundles": 6,
+  "elapsed_s": 14.9,
+  "hidden_verified": {
+    "solved": 6,
+    "n": 6,
+    "rate": 1.0,
+    "ci": [
+      0.6097,
+      1.0
+    ]
+  },
+  "patch_equivalent_rate": 0.8333,
+  "ran_live": 6,
+  "total_cost_usd": 0.001363,
+  "cost_per_verified_success": 0.000227,
+  "by_source": {
+    "frozen_synthetic": {
+      "solved": 6,
+      "n": 6,
+      "rate": 1.0
+    }
+  },
+  "per_bundle": [
+    {
+      "repo": "acme/dates",
+      "module": "dates.py",
+      "source": "frozen_synthetic",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": true,
+      "cost_usd": 0.000302
+    },
+    {
+      "repo": "acme/cache",
+      "module": "lru.py",
+      "source": "frozen_synthetic",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.000454
+    },
+    {
+      "repo": "acme/billing",
+      "module": "invoice.py",
+      "source": "frozen_synthetic",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": true,
+      "cost_usd": 0.000126
+    },
+    {
+      "repo": "acme/web",
+      "module": "redir.py",
+      "source": "frozen_synthetic",
+      "task_type": "security_fix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": true,
+      "cost_usd": 0.000208
+    },
+    {
+      "repo": "acme/pager",
+      "module": "paginate.py",
+      "source": "frozen_synthetic",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": true,
+      "cost_usd": 0.000123
+    },
+    {
+      "repo": "acme/ranges",
+      "module": "clamp.py",
+      "source": "frozen_synthetic",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": true,
+      "cost_usd": 0.00015
+    }
+  ],
+  "evidence_tier": "live single-shot over issue->fix bundles; gold patch + hidden tests withheld; bundles labelled by source (frozen_synthetic vs real_issue_replay)"
+}

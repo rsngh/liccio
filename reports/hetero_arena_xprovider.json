@@ -20,7 +20,7 @@
       "out_per_mtok": 0.4
     },
     "gemini_flash": {
-      "model": "gemini-3.5-flash",
+      "model": "gemini-3-flash-preview",
       "provider": "gemini",
       "in_per_mtok": 0.3,
       "out_per_mtok": 2.5
@@ -50,97 +50,97 @@
       "out_per_mtok": 75.0
     }
   },
-  "trials": 2,
+  "trials": 1,
   "n_tasks": 20,
-  "elapsed_s": 1790.4,
+  "elapsed_s": 1040.3,
   "scores": {
     "gemini_flash_lite_single": {
       "verified": 0.8,
       "ci": {
         "point": 0.8,
-        "lo": 0.6524,
-        "hi": 0.895
+        "lo": 0.584,
+        "hi": 0.9193
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.002622,
+      "n_conclusive": 20,
+      "total_cost_usd": 0.001311,
       "cost_per_verified_success": 8.2e-05
     },
     "gemini_flash_single": {
-      "verified": 1.0,
+      "verified": 0.85,
       "ci": {
-        "point": 1.0,
-        "lo": 0.9124,
-        "hi": 1.0
+        "point": 0.85,
+        "lo": 0.6396,
+        "hi": 0.9476
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.187296,
-      "cost_per_verified_success": 0.004682
+      "n_conclusive": 20,
+      "total_cost_usd": 0.156953,
+      "cost_per_verified_success": 0.009233
     },
     "haiku_single": {
-      "verified": 0.975,
+      "verified": 0.95,
       "ci": {
-        "point": 0.975,
-        "lo": 0.8712,
-        "hi": 0.9956
+        "point": 0.95,
+        "lo": 0.7639,
+        "hi": 0.9911
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.054643,
-      "cost_per_verified_success": 0.001401
+      "n_conclusive": 20,
+      "total_cost_usd": 0.026714,
+      "cost_per_verified_success": 0.001406
     },
     "sonnet_single": {
       "verified": 0.95,
       "ci": {
         "point": 0.95,
-        "lo": 0.835,
-        "hi": 0.9862
+        "lo": 0.7639,
+        "hi": 0.9911
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.126969,
-      "cost_per_verified_success": 0.003341
+      "n_conclusive": 20,
+      "total_cost_usd": 0.064287,
+      "cost_per_verified_success": 0.003384
     },
     "gemini_pro_single": {
       "verified": 0.95,
       "ci": {
         "point": 0.95,
-        "lo": 0.835,
-        "hi": 0.9862
+        "lo": 0.7639,
+        "hi": 0.9911
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.71476,
-      "cost_per_verified_success": 0.018809
+      "n_conclusive": 20,
+      "total_cost_usd": 0.343064,
+      "cost_per_verified_success": 0.018056
     },
     "opus_single": {
       "verified": 0.95,
       "ci": {
         "point": 0.95,
-        "lo": 0.835,
-        "hi": 0.9862
+        "lo": 0.7639,
+        "hi": 0.9911
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.811095,
-      "cost_per_verified_success": 0.021345
+      "n_conclusive": 20,
+      "total_cost_usd": 0.41031,
+      "cost_per_verified_success": 0.021595
     },
     "cross_provider_escalation": {
       "verified": 0.85,
       "ci": {
         "point": 0.85,
-        "lo": 0.7093,
-        "hi": 0.9294
+        "lo": 0.6396,
+        "hi": 0.9476
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.01239,
-      "cost_per_verified_success": 0.000364
+      "n_conclusive": 20,
+      "total_cost_usd": 0.00471,
+      "cost_per_verified_success": 0.000277
     },
     "best_of_providers": {
       "verified": 0.85,
       "ci": {
         "point": 0.85,
-        "lo": 0.7093,
-        "hi": 0.9294
+        "lo": 0.6396,
+        "hi": 0.9476
       },
-      "n_conclusive": 40,
-      "total_cost_usd": 0.055605,
-      "cost_per_verified_success": 0.001635
+      "n_conclusive": 20,
+      "total_cost_usd": 0.028725,
+      "cost_per_verified_success": 0.00169
     }
   },
   "cheapest_per_success_ranking": [
@@ -157,683 +157,683 @@
     "cap_reverse": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_fizz": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_roman": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_intervals": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
-        "verified": 1.0,
-        "n": 2
+        "verified": 0.0,
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_lengthOfLIS": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_editdist": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_calc": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
-        "verified": 1.0,
-        "n": 2
+        "verified": 0.0,
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_json": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_atoi": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_valid_number": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
-        "verified": 1.0,
-        "n": 2
+        "verified": 0.0,
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_wildcard": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_decode": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_calc_unary": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
-        "verified": 1.0,
-        "n": 2
+        "verified": 0.0,
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_circular_max": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
-        "verified": 0.5,
-        "n": 2
+        "verified": 1.0,
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_simplify_path": {
       "gemini_flash_lite_single": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 0.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_excel_title": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_vm": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_regex": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_nqueens": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     },
     "cap_min_coins": {
       "gemini_flash_lite_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_flash_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "haiku_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "sonnet_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "gemini_pro_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "opus_single": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "cross_provider_escalation": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       },
       "best_of_providers": {
         "verified": 1.0,
-        "n": 2
+        "n": 1
       }
     }
   },
-  "gemini_status": "LIVE (reachable this run): gemini-2.5-flash/pro generateContent OK"
+  "gemini_status": "LIVE (reachable this run): gemini-3.1-flash-lite, gemini-3-flash-preview, gemini-3.1-pro-preview generateContent OK"
 }

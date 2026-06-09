@@ -45,7 +45,8 @@ OPUS = Tier("opus", "claude-opus-4-8", 15.0 / 1e6, 75.0 / 1e6)
 # gemini_flash_lite: no-thinking, cheapest/fastest tier
 GEMINI_FLASH_LITE = Tier("gemini_flash_lite", "gemini-3.1-flash-lite",
                          0.10 / 1e6, 0.40 / 1e6, provider="gemini")
-GEMINI_FLASH = Tier("gemini_flash", "gemini-3.5-flash", 0.30 / 1e6, 2.50 / 1e6, provider="gemini")
+GEMINI_FLASH = Tier("gemini_flash", "gemini-3-flash-preview", 0.30 / 1e6, 2.50 / 1e6,
+                    provider="gemini")
 GEMINI_PRO = Tier("gemini_pro", "gemini-3.1-pro-preview", 2.0 / 1e6, 12.0 / 1e6, provider="gemini")
 
 TIERS = {t.name: t for t in (HAIKU, SONNET, OPUS)}

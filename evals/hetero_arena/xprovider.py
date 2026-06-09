@@ -87,8 +87,10 @@ def policy_best_of_providers(spec, root) -> ArenaAttempt:
                         detail="flash+haiku diversity by public proof")
 
 
-def run(trials: int) -> dict:
+def run(trials: int, n_tasks: int = 0) -> dict:
     tasks = all_capability_tasks()
+    if n_tasks:
+        tasks = tasks[:n_tasks]
     glob: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     cost: dict[str, float] = defaultdict(float)
     per_task: dict[str, dict[str, list[int]]] = defaultdict(lambda: defaultdict(lambda: [0, 0]))
@@ -128,7 +130,9 @@ def run(trials: int) -> dict:
         "cheapest_per_success_ranking": [k for k, _ in ranked],
         "per_task": {t: {p: {"verified": round(v[0] / v[1], 4) if v[1] else 0.0, "n": v[1]}
                          for p, v in by.items()} for t, by in per_task.items()},
-        "gemini_status": "LIVE (reachable this run): gemini-2.5-flash/pro generateContent OK",
+        "gemini_status": "LIVE (reachable this run): "
+                         + ", ".join(t.model for t in SINGLE_TIERS if t.provider == "gemini")
+                         + " generateContent OK",
     }
 
 
@@ -145,11 +149,12 @@ def _tally(glob, cost, per_task, name, task, a) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--trials", type=int, default=2)
+    ap.add_argument("--tasks", type=int, default=0, help="limit corpus size (0 = all)")
     ap.add_argument("--out", default="reports/hetero_arena_xprovider.json")
     args = ap.parse_args()
     if os.environ.get("ANTHROPIC_API_KEY"):
         os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
-    rep = run(args.trials)
+    rep = run(args.trials, args.tasks)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(rep, indent=2)

@@ -44,6 +44,7 @@ from acp.schemas.context import ContextItem, ContextPack
 from acp.schemas.repo import Repository, RepoSnapshot
 from acp.schemas.task import Task
 from acp.verification.independent_proof import generate_checks, proxy_evaluate
+from acp.verification.proxy_stop_signal import decide as proxy_stop_decide
 from acp.workspaces.local import LocalWorkspaceManager
 from acp.workspaces.policies import default_policy
 
@@ -92,8 +93,12 @@ def run(n_tasks: int, k: int) -> dict:
     client = _anthropic_client()
     roster = (ROSTER * ((k // len(ROSTER)) + 1))[:k]
 
-    sel_solved = {"public_only": 0, "proxy": 0, "oracle": 0}
-    sel_cost = {"public_only": 0.0, "proxy": 0.0, "oracle": 0.0}
+    sel_solved = {"public_only": 0, "proxy": 0, "proxy_stop_signal": 0, "oracle": 0}
+    sel_cost = {"public_only": 0.0, "proxy": 0.0, "proxy_stop_signal": 0.0, "oracle": 0.0}
+    # proxy_stop_signal additionally tracks WHAT it did: auto-commit vs escalate to a human.
+    # The point of the production stop signal is it must never AUTO-COMMIT a wrong candidate.
+    pss_actions = {"commit": 0, "human_review": 0, "abstain": 0}
+    pss_wrong_autocommits = 0
     sel_n = 0
     # proxy-vs-hidden confusion over ALL candidates
     tp = fp = tn = fn = 0
@@ -132,10 +137,20 @@ def run(n_tasks: int, k: int) -> dict:
             pub = next((c for c in cands if c["public_pass"]), cands[0])
             proxy_res = select_best_online(cmp_cands)
             oracle_res = select_best(cmp_cands)
+            # the production stop signal: commit only a proxy-verified candidate it's confident in,
+            # else escalate to human review (medium risk). Charges the proxy's own check-gen cost.
+            pss = proxy_stop_decide(cmp_cands, verdicts, gen_cost_usd=gen.cost_usd,
+                                    risk_level="medium")
+            pss_actions[pss.action] = pss_actions.get(pss.action, 0) + 1
+            pss_committed = pss.action == "commit" and pss.selected is not None
+            pss_solved = bool(pss_committed and by_id[pss.selected]["hidden_pass"])
+            if pss_committed and not pss_solved:
+                pss_wrong_autocommits += 1     # the failure mode the stop signal must avoid
             chosen = {
                 "public_only": (by_id[pub["id"]]["hidden_pass"], total_gen_cost),
                 "proxy": (by_id[proxy_res.selected]["hidden_pass"] if proxy_res.selected else False,
                           total_gen_cost + gen.cost_usd),
+                "proxy_stop_signal": (pss_solved, total_gen_cost + pss.proxy_cost_usd),
                 "oracle": (by_id[oracle_res.selected]["hidden_pass"] if oracle_res.selected else False,
                            total_gen_cost),
             }
@@ -161,7 +176,10 @@ def run(n_tasks: int, k: int) -> dict:
         "selectors": {name: {**_rate(sel_solved[name]),
                              "total_cost_usd": round(sel_cost[name], 6),
                              "cost_per_verified_success": round(sel_cost[name] / sel_solved[name], 6) if sel_solved[name] else None}
-                      for name in ("public_only", "proxy", "oracle")},
+                      for name in ("public_only", "proxy", "proxy_stop_signal", "oracle")},
+        "proxy_stop_signal_actions": {**pss_actions, "wrong_autocommits": pss_wrong_autocommits,
+                                      "note": "production stop signal (verification.proxy_stop_signal.decide); "
+                                              "auto-commits only confident proxy-verified candidates, else routes to human review"},
         "proxy_vs_hidden_oracle": {"precision": precision, "recall": recall,
                                    "tp": tp, "fp": fp, "tn": tn, "fn": fn,
                                    "note": "pred=proxy_pass, truth=hidden_pass over all candidates"},

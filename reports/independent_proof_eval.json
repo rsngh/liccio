@@ -1,7 +1,7 @@
 {
   "experiment": "independent_proof",
   "question": "does an independent proxy verifier beat public-only candidate selection per dollar?",
-  "n_tasks": 14,
+  "n_tasks": 20,
   "k_candidates": 5,
   "roster": [
     "gemini_flash_lite",
@@ -10,121 +10,189 @@
     "haiku",
     "gemini_flash"
   ],
-  "elapsed_s": 638.1,
+  "elapsed_s": 905.2,
   "selectors": {
     "public_only": {
-      "solved": 11,
-      "n": 14,
-      "rate": 0.7857,
+      "solved": 17,
+      "n": 20,
+      "rate": 0.85,
       "ci": [
-        0.5241,
-        0.9243
+        0.6396,
+        0.9476
       ],
-      "total_cost_usd": 0.119004,
-      "cost_per_verified_success": 0.010819
+      "total_cost_usd": 0.148633,
+      "cost_per_verified_success": 0.008743
     },
     "proxy": {
-      "solved": 14,
-      "n": 14,
+      "solved": 20,
+      "n": 20,
       "rate": 1.0,
       "ci": [
-        0.7847,
+        0.8389,
         1.0
       ],
-      "total_cost_usd": 0.161712,
-      "cost_per_verified_success": 0.011551
+      "total_cost_usd": 0.205537,
+      "cost_per_verified_success": 0.010277
+    },
+    "proxy_stop_signal": {
+      "solved": 20,
+      "n": 20,
+      "rate": 1.0,
+      "ci": [
+        0.8389,
+        1.0
+      ],
+      "total_cost_usd": 0.205537,
+      "cost_per_verified_success": 0.010277
     },
     "oracle": {
-      "solved": 14,
-      "n": 14,
+      "solved": 20,
+      "n": 20,
       "rate": 1.0,
       "ci": [
-        0.7847,
+        0.8389,
         1.0
       ],
-      "total_cost_usd": 0.119004,
-      "cost_per_verified_success": 0.0085
+      "total_cost_usd": 0.148633,
+      "cost_per_verified_success": 0.007432
     }
+  },
+  "proxy_stop_signal_actions": {
+    "commit": 20,
+    "human_review": 0,
+    "abstain": 0,
+    "wrong_autocommits": 0,
+    "note": "production stop signal (verification.proxy_stop_signal.decide); auto-commits only confident proxy-verified candidates, else routes to human review"
   },
   "proxy_vs_hidden_oracle": {
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 63,
+    "tp": 91,
     "fp": 0,
-    "tn": 7,
+    "tn": 9,
     "fn": 0,
     "note": "pred=proxy_pass, truth=hidden_pass over all candidates"
   },
-  "proxy_check_gen_cost_usd": 0.042708,
+  "proxy_check_gen_cost_usd": 0.056904,
   "per_task": {
     "cap_lengthOfLIS": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_editdist": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_calc": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_json": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_atoi": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_valid_number": {
       "public_only": 0,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_wildcard": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_decode": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_calc_unary": {
       "public_only": 0,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_circular_max": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_simplify_path": {
       "public_only": 0,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_excel_title": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_vm": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     },
     "cap_regex": {
       "public_only": 1,
       "proxy": 1,
+      "proxy_stop_signal": 1,
+      "oracle": 1
+    },
+    "cap_nqueens": {
+      "public_only": 1,
+      "proxy": 1,
+      "proxy_stop_signal": 1,
+      "oracle": 1
+    },
+    "cap_min_coins": {
+      "public_only": 1,
+      "proxy": 1,
+      "proxy_stop_signal": 1,
+      "oracle": 1
+    },
+    "cap_roman": {
+      "public_only": 1,
+      "proxy": 1,
+      "proxy_stop_signal": 1,
+      "oracle": 1
+    },
+    "cap_intervals": {
+      "public_only": 1,
+      "proxy": 1,
+      "proxy_stop_signal": 1,
+      "oracle": 1
+    },
+    "cap_reverse": {
+      "public_only": 1,
+      "proxy": 1,
+      "proxy_stop_signal": 1,
+      "oracle": 1
+    },
+    "cap_fizz": {
+      "public_only": 1,
+      "proxy": 1,
+      "proxy_stop_signal": 1,
       "oracle": 1
     }
   },
