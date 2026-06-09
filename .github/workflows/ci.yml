@@ -4,10 +4,15 @@ on:
   push:
     branches: ["**"]
   pull_request:
+  workflow_dispatch:
 
 jobs:
-  test:
+  # Deterministic gate: must never call a live provider. ACP_STRICT_OFFLINE makes
+  # a leaked provider key a hard failure rather than a silent live call.
+  offline:
     runs-on: ubuntu-latest
+    env:
+      ACP_STRICT_OFFLINE: "1"
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -20,9 +25,39 @@ jobs:
         run: uv run ruff check .
       - name: Mypy
         run: uv run mypy src
-      - name: Unit + integration
-        run: uv run pytest tests/unit tests/integration -q
-      - name: E2E
-        run: uv run pytest tests/e2e -q --timeout=600
+      - name: Offline suite (unit + integration + e2e)
+        run: make test-offline-strict
       - name: Coverage
         run: uv run pytest tests/unit tests/integration --cov=acp --cov-report=term-missing
+
+  # Live arenas: opt-in only (manual dispatch), require provider secrets, and write
+  # live artifacts. Never run on normal pushes/PRs so the deterministic gate stays clean.
+  live:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    env:
+      ACP_TEST_LIVE: "1"
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Sync (all extras)
+        run: uv sync --all-extras
+      - name: Live OpenAI
+        run: make test-live-openai
+      - name: Live Anthropic
+        run: make test-live-anthropic
+      - name: Live Gemini
+        run: make test-live-gemini
+      - name: Upload live artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-reports
+          path: reports/
+          if-no-files-found: ignore

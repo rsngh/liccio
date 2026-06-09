@@ -106,6 +106,7 @@ markers = [
     "live: tests requiring real API keys (skipped by default)",
     "live_openai: live tests against the OpenAI API",
     "live_second_harness: live tests against the second harness (Anthropic)",
+    "live_gemini: live tests against the Google Gemini API",
     "live_docker: live tests requiring a working Docker daemon",
     "live_pgvector: tests requiring a live pgvector Postgres",
     "live_qdrant: tests requiring qdrant-client (real local engine)",

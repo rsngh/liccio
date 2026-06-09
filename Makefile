@@ -1,4 +1,6 @@
 .PHONY: help sync test test-unit test-integration test-e2e lint type fmt check coverage \
+        test-offline test-offline-strict test-live-openai test-live-anthropic \
+        test-live-gemini test-live-harness test-live-all \
         soak-6h eval-bakeoff-overnight bandit-monte-carlo retriever-stress chaos security-redteam \
         docker-security multi-harness-bakeoff calibration alpha4-artifacts \
         live-openai live-second-harness live-docker \
@@ -25,6 +27,13 @@ help:
 	@echo "  retriever-stress           synthetic large-repo retrieval stress"
 	@echo "  chaos                      kill/resume workflow test"
 	@echo "  security-redteam           malicious-task safety suite"
+	@echo "  --- deterministic vs live split (P0) ---"
+	@echo "  test-offline               deterministic suite; never calls live providers"
+	@echo "  test-offline-strict        offline suite; FAILS FAST if provider keys are set (CI)"
+	@echo "  test-live-anthropic        live Anthropic (claude) harness arena"
+	@echo "  test-live-gemini           live Google Gemini arena"
+	@echo "  test-live-harness          live cross-harness routing arena"
+	@echo "  test-live-all              every live target (requires provider keys)"
 
 sync:
 	$(UV) sync --all-extras
@@ -42,6 +51,33 @@ test:
 
 test-e2e:
 	$(UV) run pytest tests/e2e -q --timeout=600
+
+# --- P0: deterministic (offline) vs live execution, env-isolated --------------
+# Offline targets never reach a live provider even if keys are exported: the
+# tests/conftest.py guard strips provider keys at configure time unless
+# ACP_TEST_LIVE=1. The live targets opt in explicitly and write live artifacts.
+test-offline:
+	$(UV) run pytest tests/unit tests/integration tests/e2e -q
+
+# Same suite, but fail fast if provider keys leaked into the offline environment.
+# Used by the offline CI job so a misconfigured runner is loud, not silently live.
+test-offline-strict:
+	ACP_STRICT_OFFLINE=1 $(UV) run pytest tests/unit tests/integration tests/e2e -q
+
+test-live-openai:
+	ACP_TEST_LIVE=1 $(UV) run pytest tests/live -m live_openai -q
+
+test-live-anthropic:
+	ACP_TEST_LIVE=1 $(UV) run pytest tests/live -m live_second_harness -q
+
+test-live-gemini:
+	ACP_TEST_LIVE=1 $(UV) run pytest tests/live -m live_gemini -q
+
+test-live-harness:
+	ACP_TEST_LIVE=1 $(UV) run python -m evals.harness_arena.run --corpus capability --trials 1
+
+test-live-all: test-live-openai test-live-anthropic test-live-gemini test-live-harness
+	@echo "live suite complete — see reports/ for live artifacts"
 
 lint:
 	$(UV) run ruff check .
