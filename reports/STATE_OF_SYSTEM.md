@@ -26,7 +26,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
 | Boosted cheap repair (repair_v2) | hard cheap rung 2/10 → 3/10 (+1 feature-add), higher per-attempt cost | **modest** |
 | Predictive (difficulty) routing | LOO at n=27: no zero-regret threshold; can't isolate the cheap-winnable minority | **negative — data-starved** |
-| Test-time multi-sampling cracks the hardest bug | best-of-3 Codex partial (#0–7 single-shot); #8 resampling **not reached** | **open — environment-blocked** |
+| Test-time multi-sampling cracks the hardest bug | best-of-3 Codex = single-shot on all **9/9 solvable** hard bundles (solves first-try; resampling adds 0); only #8 (universal miss) would need it, and each ~650s sample exceeds the window | **open — #8 resampling environment-blocked (runner now resumable)** |
 
 ## What genuinely works (the value)
 1. **Cost-routing economics** — ≥ best single agent on quality, < always-running-it on cost.

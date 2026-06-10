@@ -3,15 +3,15 @@
   "agent": "codex_cli",
   "n_samples": 3,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 8,
+  "completed": 9,
   "best_of_k_solved": {
-    "1": 8,
-    "2": 8,
-    "3": 8
+    "1": 9,
+    "2": 9,
+    "3": 9
   },
-  "single_shot_solved": 8,
-  "best_of_n_solved": 8,
-  "elapsed_s": 1359.1,
+  "single_shot_solved": 9,
+  "best_of_n_solved": 9,
+  "elapsed_s": 176.6,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -21,7 +21,8 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 0
     },
     {
       "repo": "r1chardj0n3s/parse",
@@ -30,7 +31,8 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 1
     },
     {
       "repo": "more-itertools/more-itertools",
@@ -39,7 +41,8 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 2
     },
     {
       "repo": "more-itertools/more-itertools",
@@ -48,7 +51,8 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 3
     },
     {
       "repo": "more-itertools/more-itertools",
@@ -57,7 +61,8 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 4
     },
     {
       "repo": "more-itertools/more-itertools",
@@ -66,7 +71,8 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 5
     },
     {
       "repo": "more-itertools/more-itertools",
@@ -75,11 +81,23 @@
         1
       ],
       "solved": true,
-      "samples_to_success": 1
+      "samples_to_success": 1,
+      "idx": 6
     },
     {
       "repo": "more-itertools/more-itertools",
       "issue": "Issue 1098: Add synchronized decorator",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1,
+      "idx": 7
+    },
+    {
+      "idx": 9,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1093: Add serialize()",
       "samples": [
         1
       ],
