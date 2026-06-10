@@ -41,10 +41,25 @@ REPOS: list[tuple[str, list[tuple[str, str]]]] = [
     ("https://github.com/more-itertools/more-itertools",
      [("more_itertools/more.py", "tests/test_more.py"),
       ("more_itertools/recipes.py", "tests/test_recipes.py")]),
+    # corpus-scaling batch (package-mode; per-module test files, deep fix history) — more repos so
+    # the learned components (routing/difficulty/memory) finally have enough labeled bundles
+    ("https://github.com/jmespath/jmespath.py",
+     [("jmespath/functions.py", "tests/test_functions.py"),
+      ("jmespath/parser.py", "tests/test_parser.py"),
+      ("jmespath/lexer.py", "tests/test_lexer.py")]),
+    ("https://github.com/arrow-py/arrow",
+     [("arrow/arrow.py", "tests/test_arrow.py"),
+      ("arrow/factory.py", "tests/test_factory.py"),
+      ("arrow/parser.py", "tests/test_parser.py"),
+      ("arrow/formatter.py", "tests/test_formatter.py"),
+      ("arrow/locales.py", "tests/test_locales.py"),
+      ("arrow/util.py", "tests/test_util.py")]),
 ]
 # repos whose tests import sibling submodules -> harvest as package bundles (real package laid down)
 PACKAGE_REPOS = {"https://github.com/pytoolz/toolz",
-                 "https://github.com/more-itertools/more-itertools"}
+                 "https://github.com/more-itertools/more-itertools",
+                 "https://github.com/jmespath/jmespath.py",
+                 "https://github.com/arrow-py/arrow"}
 
 
 def main() -> int:
