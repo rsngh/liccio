@@ -65,3 +65,40 @@ intake-only features can't isolate the small cheap-winnable minority at this n (
 cheap-cost but loses 2 of 5 easy wins). The probe + 3 unit tests ship as sound infrastructure; it
 needs materially more labeled bundles or a cheap *dry-run* signal to become useful. Recorded in
 `reports/issue_replay_predictive_routing.json` (`verdict: INSUFFICIENT SIGNAL`).
+
+---
+
+# Second wave (#1–#4): driving the ceiling, scaling data, memory, verifier trust
+
+## #3 — procedural / solution memory (`src/acp/memory/solution_store.py`)
+Beyond the outcome-only ExperienceBank: cache the **verified fixed function(s)** per
+`(repo_family, failure_signature)` and **replay** them by AST-splice into the current buggy module.
+A recurring bug (CI retry, reopened issue, regression) is then solved with **zero agent calls** —
+splice + verify. Trust-gated (only verified fixes admitted), tenant-isolated, drift-safe (splice
+returns `None` if the target function is gone → fall back to the live ladder). 4 unit tests. This is
+the research's "store solutions, not just outcomes" idea (Mem²/ReMe/ACE), and it targets the
+realistic deployment: repeated work on one codebase.
+
+## #4 — verifier reliability audit (`evals/issue_replay/verifier_audit.py`)
+Everything rests on one signal — "repo test passed → commit." Audited across **108 real candidate
+gradings** (4 agents × easy+hard):
+
+- **Public-only is unsafe:** it would auto-commit **24 hidden-failing fixes (24% of its accepts wrong)**.
+  The held-out repo-test verify-stop is necessary, not optional — this validates the core design.
+- **The patch-equivalence probe is too brittle to gate on:** it disagrees with the repo test on
+  **73/77 (95%)** of *correct* fixes; as a commit gate it would reject nearly everything real.
+- **Recommendation:** keep the repo test as the primary verify-stop; for high-stakes commits add an
+  **independent freshly-generated check** (`verification.proxy_stop_signal` / `independent_proof`) —
+  *not* the probe; demote patch-equivalence to a reporting-only diagnostic.
+
+## #1 — verifier-guided multi-sampling on a strong agent (`evals/issue_replay/multisample.py`)
+Best-of-N on a single strong agent (Codex), N independent runs, verifier-selects the first that
+passes the held-out test. Tests the research's coverage-scaling claim and, specifically, whether it
+cracks the universal-miss bundle (#8 "concurrent tee") that defeated the whole pool. _Result: pending
+the live run (best-of-3 Codex on the hard 10)._
+
+## #2 — corpus scaling (`evals/issue_replay/build_real_corpus.py`)
+Added jmespath + arrow as package-mode repos (on top of toolz/more-itertools/parse/boltons/stringcase)
+to grow the labeled set toward the ~100+ bundles the learned components (routing, difficulty, memory)
+need for signal — the binding constraint behind #C's negative result. _Result: build in progress
+(writes `real_issue_replay_full_v2.json`)._
