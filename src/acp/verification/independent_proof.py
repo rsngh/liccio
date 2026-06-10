@@ -66,9 +66,12 @@ def _run_pytest(repo: Path, test_name: str) -> bool:
     """Run one test file in `repo` with a hermetic env; True iff it passes."""
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    proc = subprocess.run(
-        ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", test_name],
-        cwd=repo, capture_output=True, text=True, timeout=60, check=False, env=env)
+    try:
+        proc = subprocess.run(
+            ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", test_name],
+            cwd=repo, capture_output=True, text=True, timeout=60, check=False, env=env)
+    except subprocess.TimeoutExpired:
+        return False  # a hanging generated check fails closed, never crashes the verifier
     return proc.returncode == 0
 
 

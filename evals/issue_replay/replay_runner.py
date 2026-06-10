@@ -62,8 +62,11 @@ def patch_equivalent(task: IssueReplayTask, produced_src: str, *, probes: list[s
             script = ("import json\nimport " + mod + " as m\n"
                       "print(json.dumps([repr(" + ev + ") for c in " + repr(probes) + "]))")
             (repo / "_probe.py").write_text(script)
-            r = subprocess.run(["python", "_probe.py"], cwd=repo, capture_output=True, text=True,
-                               timeout=30, check=False)
+            try:
+                r = subprocess.run(["python", "_probe.py"], cwd=repo, capture_output=True, text=True,
+                                   timeout=30, check=False)
+            except subprocess.TimeoutExpired:
+                return None  # hanging probe -> "not equivalent", never crashes the loop
             if r.returncode != 0:
                 return None
             import json
