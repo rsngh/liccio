@@ -16,6 +16,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Model-only hits a wall on real bugs | 3/17 (18%) across cheap+frontier, single-shot+harness | **solid** |
 | Real coding agents break the wall | Codex 17/17, Gemini 16/17, Claude Code 15/17 (easy); 7–9/10 (hard) | **solid** |
 | Cost-routing matches the best agent for less | escalation = best single agent's solve rate at **~30–37% lower cost**, invoking the strongest agent ~0–1× instead of every task | **solid — the core value** |
+| ...but the cost win is CONDITIONAL | sensitivity sweep: +30% at realistic prior, +76% steep gradient, but **NEGATIVE for flat/shallow priors** (you pay for failed cheap attempts) | **refined — needs steep gradient or difficulty-skip** |
 | Harder bundles separate the frontier | hard-10: inproc .2 / claude .7 / gemini .8 / codex .9; one bug no agent solves | **solid** |
 | Ensemble adds coverage over the best agent | greedy: **Codex alone = the full union** (superset); +0 marginal coverage from others | **refuted — pool value is cost+robustness, not coverage** |
 | Pool insures against unknown-best | expected union of a *random* single agent only 0.71; ~3 random agents to reach union | **solid** |

@@ -1,0 +1,129 @@
+{
+  "experiment": "issue_replay_cost_sensitivity",
+  "corpus": "combined",
+  "n_bundles": 27,
+  "ladder": [
+    "inproc_repair",
+    "gemini_cli",
+    "claude_code",
+    "codex_cli"
+  ],
+  "strongest": "codex_cli",
+  "saving_min": -0.139,
+  "saving_median": 0.657,
+  "saving_max": 0.761,
+  "always_best_solve_rate_matched": true,
+  "sweep_expensive_multiplier": [
+    {
+      "expensive_multiplier": 2.0,
+      "saving_vs_always_best": -0.139,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 3.0,
+      "saving_vs_always_best": 0.161,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 4.0,
+      "saving_vs_always_best": 0.32,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 5.0,
+      "saving_vs_always_best": 0.419,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 6.0,
+      "saving_vs_always_best": 0.488,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 7.0,
+      "saving_vs_always_best": 0.539,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 8.0,
+      "saving_vs_always_best": 0.579,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 9.0,
+      "saving_vs_always_best": 0.61,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 10.0,
+      "saving_vs_always_best": 0.636,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 11.0,
+      "saving_vs_always_best": 0.657,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 12.0,
+      "saving_vs_always_best": 0.676,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 13.0,
+      "saving_vs_always_best": 0.691,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 14.0,
+      "saving_vs_always_best": 0.705,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 15.0,
+      "saving_vs_always_best": 0.717,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 16.0,
+      "saving_vs_always_best": 0.728,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 17.0,
+      "saving_vs_always_best": 0.738,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 18.0,
+      "saving_vs_always_best": 0.746,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 19.0,
+      "saving_vs_always_best": 0.754,
+      "escalation_solved": 26
+    },
+    {
+      "expensive_multiplier": 20.0,
+      "saving_vs_always_best": 0.761,
+      "escalation_solved": 26
+    }
+  ],
+  "named_priors": {
+    "api_equivalent(2-6-10-12 scaled)": {
+      "saving_vs_always_best": 0.296,
+      "solved": 26
+    },
+    "flat(all equal)": {
+      "saving_vs_always_best": -0.963,
+      "solved": 26
+    },
+    "steep(cheap\u226aexpensive, m=20)": {
+      "saving_vs_always_best": 0.761,
+      "solved": 26
+    }
+  },
+  "takeaway": "saving vs always-best ranges [-0.14, 0.76] over m=2..20 (median 0.66); ~0.30 at the realistic api-equivalent prior, up to 0.76 with a steep gradient. CRUCIAL NUANCE: the saving goes NEGATIVE for shallow/flat priors (flat = -0.96) \u2014 blind cheapest-first PAYS MORE than always-best when cheap rungs aren't much cheaper, because you pay for failed cheap attempts. So the cost win is conditional: it needs a steep cost gradient (a small model is realistically 10-100x cheaper than a frontier agent -> the win holds) OR difficulty-prediction/memory to skip doomed cheap attempts. This is exactly what motivates the difficulty probe and the memory-seeded rung-skipping.",
+  "evidence_tier": "offline over real per-agent solve vectors; cost priors are modeled (subscriptions are $0-metered)"
+}
