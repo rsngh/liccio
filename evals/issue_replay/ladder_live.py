@@ -100,8 +100,8 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
                     (work / "test_repro.py").write_text(b.hidden_test)
                     (work / b.module_path).parent.mkdir(parents=True, exist_ok=True)
                     (work / b.module_path).write_text(produced)
-                    _, out = _run(work, "test_repro.py")
-                    hint = _brief(rung, b.buggy, produced, failure_summary(out))
+                    _, fail_out = _run(work, "test_repro.py")  # don't shadow the `out` report Path
+                    hint = _brief(rung, b.buggy, produced, failure_summary(fail_out))
             stop_rung[solved_at] += 1
             per_bundle.append({"repo": b.repo_name, "issue": b.issue_title[:70],
                                "solved_at": solved_at, "path": path})
