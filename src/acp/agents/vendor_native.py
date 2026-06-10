@@ -36,7 +36,10 @@ def _codex_argv(repo: Path, prompt: str) -> list[str]:
 
 
 def _claude_argv(repo: Path, prompt: str) -> list[str]:
-    return ["claude", "-p", prompt, "--dangerously-skip-permissions"]
+    # acceptEdits auto-applies file edits non-interactively WITHOUT the unsafe
+    # --dangerously-skip-permissions autonomous mode (read/edit tools only; no blanket bash).
+    return ["claude", "-p", prompt, "--permission-mode", "acceptEdits",
+            "--allowedTools", "Edit", "Write", "Read", "Grep", "Glob"]
 
 
 def _gemini_argv(repo: Path, prompt: str) -> list[str]:
@@ -52,6 +55,28 @@ VENDOR_SPECS: dict[str, VendorSpec] = {
                              needs_cwd=True),
     "openhands": VendorSpec("openhands", "openhands", ["--version"], None),
 }
+
+_HOST_CA = "/etc/ssl/certs/ca-certificates.crt"
+
+
+def vendor_env(name: str) -> dict[str, str]:
+    """Subprocess env for a vendor CLI run.
+
+    * Every node-based CLI gets ``NODE_EXTRA_CA_CERTS`` so it trusts the host/proxy CA bundle.
+    * ``claude_code`` runs on the **Claude subscription (OAuth)**, so ``ANTHROPIC_API_KEY`` /
+      ``ACP_ANTHROPIC_API_KEY`` are STRIPPED — when that env var is present Claude Code silently
+      switches to API-key billing instead of the logged-in subscription.
+    * ``gemini_cli`` gets ``GEMINI_CLI_TRUST_WORKSPACE`` so a fresh workspace runs headless.
+    """
+    env = dict(os.environ)
+    if os.path.exists(_HOST_CA):
+        env.setdefault("NODE_EXTRA_CA_CERTS", _HOST_CA)
+    if name == "claude_code":
+        env.pop("ANTHROPIC_API_KEY", None)
+        env.pop("ACP_ANTHROPIC_API_KEY", None)
+    if name == "gemini_cli":
+        env.setdefault("GEMINI_CLI_TRUST_WORKSPACE", "true")
+    return env
 
 
 def detect_vendor_health() -> dict:
@@ -90,9 +115,12 @@ def build_smoke_fixture(root: Path) -> Path:
     (repo / "calculator.py").write_text(_CALC)
     (repo / "tests" / "test_calculator.py").write_text(_TEST)
     (repo / "tests" / "__init__.py").write_text("")
+    # this env enforces signed commits via a signing server; disable so the fixture commit works
     for argv in (["git", "init", "-q"], ["git", "config", "user.email", "t@e.com"],
-                 ["git", "config", "user.name", "t"], ["git", "add", "-A"],
-                 ["git", "commit", "-qm", "init"]):
+                 ["git", "config", "user.name", "t"],
+                 ["git", "config", "commit.gpgsign", "false"],
+                 ["git", "config", "tag.gpgsign", "false"], ["git", "add", "-A"],
+                 ["git", "-c", "commit.gpgsign=false", "commit", "--no-gpg-sign", "-qm", "init"]):
         subprocess.run(argv, cwd=repo, check=False)
     return repo
 
@@ -196,7 +224,7 @@ class VendorNativeHarness:
         t0 = time.monotonic()
         try:
             proc = subprocess.run(argv, cwd=repo, capture_output=True, text=True,
-                                  timeout=timeout_s)
+                                  timeout=timeout_s, env=vendor_env(self.spec.name))
             out_text = (proc.stdout or "") + (proc.stderr or "")
         except subprocess.TimeoutExpired:
             res.timed_out = True
