@@ -26,13 +26,34 @@ of *cheap, implementable* mechanisms aimed squarely at this project's three **me
 On top of v1's localize→splice: (1) module API-map + sibling signatures in the prompt; (2) failed
 patches fed back as "do not repeat"; (3) a skeptic **critic** call between rounds that must state the
 root cause, conditioning the next round; (4) AST-parse + AST-hash dedupe prune before any test run.
-Targets bottleneck (a). _Result: pending the live run (captured as ladder rung 1)._
+Targets bottleneck (a). Captured as **rung 1 of the live ladder** on the hard 10.
+
+**Result:** the boosted cheap rung solved **3 of the first 9 hard bundles** (#3 running_statistics,
+#5, #6) vs the v1 cheap rung's **2/10** on the same set (#5, #6 only). So +1 cheap solve — and the
+flip is a *feature-add* bundle (#3) the v1 cheap rung never got. Modest but real, at higher
+per-attempt cost (k=3 × 2 rounds + critic vs v1's k=1). n is tiny; the clean re-run adds #9.
 
 ## Prong B — live ladder with diagnosis hand-off (`evals/issue_replay/ladder_live.py`)
 Runs the real verify-stop ladder inproc→gemini_cli→claude_code→codex_cli; when a rung fails, its
 **capped patch diff + the test failure** are injected into the next rung's prompt. The P4 no-hint
 per-agent vectors (gemini 8/10, claude 7/10, codex 9/10; union 9/10) are the ablation baseline.
-Targets bottleneck (b). _Result: pending the live run._
+Targets bottleneck (b).
+
+**Result (bundles 0–8; the first run crashed on #8's hint-distillation via the now-fixed timeout
+bug — these are the real logged rung outcomes, clean re-run in progress):**
+
+- The hinted `gemini_cli` ran on the 6 bundles the cheap rung missed and solved 5 (#0,1,2,4,7).
+  Crucially **#7 is a bundle no-hint Gemini MISSED in P4** (its vector `1111111001` fails #7,#8) —
+  the failed cheap rung's diagnosis brief **flipped #7 for Gemini**. That is direct evidence the
+  hand-off helps an agent solve a case it misses on its own.
+- The one bundle still unsolved is **#8 "concurrent tee"** — the universal miss (every agent fails
+  it in P4, with or without hints). So the hand-off did **not** raise the union ceiling (9/10);
+  what it changed is that an agent solved *earlier/cheaper* than it would have alone.
+
+**Honest verdict:** diagnosis hand-off is a real but **modest** lever at this n — it flipped one
+Gemini miss and let the cheap rung clear three bundles, trimming escalations; it did not crack the
+genuinely-hard bundle that defeats the whole pool. Worth keeping as a cheap mechanism; not a
+ceiling-breaker.
 
 ## Prong C — predictive routing (`src/acp/routing/difficulty_probe.py`, `evals/.../predictive_routing.py`)
 A tiny auditable logistic probe over intake-only features (module/test size, feature-add, package
