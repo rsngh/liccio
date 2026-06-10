@@ -38,7 +38,8 @@ def _codex_argv(repo: Path, prompt: str) -> list[str]:
 def _claude_argv(repo: Path, prompt: str) -> list[str]:
     # acceptEdits auto-applies file edits non-interactively WITHOUT the unsafe
     # --dangerously-skip-permissions autonomous mode (read/edit tools only; no blanket bash).
-    return ["claude", "-p", prompt, "--permission-mode", "acceptEdits",
+    # `--effort medium` keeps it fast/quota-light — Claude Code solves these well below full effort.
+    return ["claude", "-p", prompt, "--permission-mode", "acceptEdits", "--effort", "medium",
             "--allowedTools", "Edit", "Write", "Read", "Grep", "Glob"]
 
 
