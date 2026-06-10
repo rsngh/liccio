@@ -29,7 +29,7 @@ from evals.issue_replay.run import _produce_vendor
 
 
 def run_multisample(bundles: list[IssueReplayTask], agent: str, n: int, *, out: Path | None = None,
-                    offset: int = 0) -> dict:
+                    offset: int = 0, vendor_timeout: int = 300) -> dict:
     t0 = time.time()
     by_idx: dict[int, dict] = {}
     if out is not None and out.exists():     # RESUME: reload prior samples so windows accumulate
@@ -51,7 +51,7 @@ def run_multisample(bundles: list[IssueReplayTask], agent: str, n: int, *, out: 
                 continue
             while len(rec["samples"]) < n and not rec["solved"]:
                 s = len(rec["samples"])
-                produced, cost, _ = _produce_vendor(b, agent, root / f"b{bi}_s{s}_{time.time_ns()}")
+                produced, cost, _ = _produce_vendor(b, agent, root / f"b{bi}_s{s}_{time.time_ns()}", timeout_s=vendor_timeout)
                 hidden, _ = verify(b, root / f"v{bi}_s{s}_{time.time_ns()}", module_src=produced)
                 rec["samples"].append(int(hidden))
                 if hidden:
@@ -88,12 +88,13 @@ def main() -> int:
     ap.add_argument("--bundle-file", required=True)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--start", type=int, default=0, help="absolute bundle index to start at (resume-safe)")
+    ap.add_argument("--vendor-timeout", type=int, default=300, help="per-sample agent time budget (s)")
     ap.add_argument("--out", default="reports/issue_replay_multisample.json")
     args = ap.parse_args()
     bundles = [IssueReplayTask(**d) for d in json.loads(Path(args.bundle_file).read_text())]
     end = args.limit or len(bundles)
     bundles = bundles[args.start:end]
-    rep = run_multisample(bundles, args.agent, args.n, out=Path(args.out), offset=args.start)
+    rep = run_multisample(bundles, args.agent, args.n, out=Path(args.out), offset=args.start, vendor_timeout=args.vendor_timeout)
     Path(args.out).write_text(json.dumps(rep, indent=2) + "\n")
     print(f"\n=== MULTISAMPLE {args.agent} N={args.n} === single-shot {rep['single_shot_solved']} "
           f"-> best-of-{args.n} {rep['best_of_n_solved']} / {rep['completed']}  curve {rep['best_of_k_solved']}")
