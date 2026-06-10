@@ -1,0 +1,245 @@
+{
+  "experiment": "issue_replay_solution_memory",
+  "question": "does cached-fix replay reproduce a verified solve, and how much ladder cost does it avoid on recurrences?",
+  "n_bundles": 17,
+  "replay_success": 17,
+  "replay_success_rate": 1.0,
+  "fraction_of_ladder_cost_avoided_at_recurrence": {
+    "recurrence_25pct": 0.25,
+    "recurrence_50pct": 0.5,
+    "recurrence_75pct": 0.75
+  },
+  "evidence_tier": "offline; gold fix stored then AST-splice-replayed into the buggy module, graded by the pristine held-out test; zero agent calls",
+  "per_bundle": [
+    {
+      "repo": "okunishinishi/python-stringcase",
+      "module": "stringcase.py",
+      "changed_fns": [
+        "alphanumcase"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "changed_fns": [
+        "camel2under",
+        "under2camel",
+        "slugify",
+        "split_punct_ws",
+        "unit_len",
+        "ordinalize",
+        "cardinalize",
+        "singularize",
+        "pluralize",
+        "_match_case",
+        "find_hashtags",
+        "a10n",
+        "strip_ansi",
+        "asciify",
+        "is_ascii",
+        "bytes2human",
+        "html2text",
+        "gunzip_bytes",
+        "gzip_bytes",
+        "iter_splitlines",
+        "indent",
+        "is_uuid",
+        "escape_shell_args",
+        "args2sh",
+        "args2cmd",
+        "parse_int_list",
+        "format_int_list",
+        "complement_int_list",
+        "int_ranges_from_int_list",
+        "multi_replace",
+        "unwrap_text",
+        "removeprefix",
+        "human_readable_list",
+        "__missing__",
+        "__init__",
+        "handle_data",
+        "handle_charref",
+        "handle_entityref",
+        "get_text",
+        "_get_value",
+        "sub"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "changed_fns": [
+        "camel2under",
+        "under2camel",
+        "slugify",
+        "split_punct_ws",
+        "unit_len",
+        "ordinalize",
+        "cardinalize",
+        "singularize",
+        "pluralize",
+        "_match_case",
+        "find_hashtags",
+        "a10n",
+        "strip_ansi",
+        "asciify",
+        "is_ascii",
+        "bytes2human",
+        "html2text",
+        "gunzip_bytes",
+        "gzip_bytes",
+        "iter_splitlines",
+        "indent",
+        "is_uuid",
+        "escape_shell_args",
+        "args2sh",
+        "args2cmd",
+        "parse_int_list",
+        "format_int_list",
+        "complement_int_list",
+        "int_ranges_from_int_list",
+        "multi_replace",
+        "unwrap_text",
+        "removeprefix",
+        "__missing__",
+        "__init__",
+        "handle_data",
+        "handle_charref",
+        "handle_entityref",
+        "get_text",
+        "_get_value",
+        "sub"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "strutils.py",
+      "changed_fns": [
+        "__init__"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "dictutils.py",
+      "changed_fns": [],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "cacheutils.py",
+      "changed_fns": [
+        "__setitem__"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "cacheutils.py",
+      "changed_fns": [
+        "cached",
+        "cachedmethod",
+        "__call__",
+        "cached_func_decorator",
+        "cached_method_decorator"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "timeutils.py",
+      "changed_fns": [
+        "daterange"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "changed_fns": [
+        "_get_apparent_index"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "changed_fns": [
+        "_get_apparent_index",
+        "index"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "setutils.py",
+      "changed_fns": [],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "listutils.py",
+      "changed_fns": [
+        "sort"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "mathutils.py",
+      "changed_fns": [
+        "clamp"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "formatutils.py",
+      "changed_fns": [
+        "get_value"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "tableutils.py",
+      "changed_fns": [],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "ioutils.py",
+      "changed_fns": [
+        "next",
+        "__iter__"
+      ],
+      "stored": true,
+      "replay_solved": true
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "module": "ioutils.py",
+      "changed_fns": [],
+      "stored": true,
+      "replay_solved": true
+    }
+  ]
+}

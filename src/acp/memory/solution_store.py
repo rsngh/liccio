@@ -14,6 +14,7 @@ isolated and decaying like the ExperienceBank. Dependency-free and deterministic
 from __future__ import annotations
 
 import ast
+import hashlib
 from dataclasses import dataclass, field
 
 
@@ -22,10 +23,16 @@ class SolutionRecord:
     repo_family: str
     failure_signature: str
     module_path: str
-    functions: tuple[tuple[str, str], ...]   # (function_name, fixed_source) pairs
+    functions: tuple[tuple[str, str], ...]   # (function_name, fixed_source) pairs (near-recurrence splice)
+    fixed_module_src: str = ""               # full verified module (exact-recurrence replay)
+    buggy_fingerprint: str = ""              # sha of the buggy module this fix was verified against
     tenant: str = "tenant_a"
     verified: bool = True                     # only verified fixes are admitted
     created_at: float = 0.0
+
+
+def _fingerprint(src: str) -> str:
+    return hashlib.sha256(src.encode()).hexdigest()[:16]
 
 
 def _func_spans(src: str) -> dict[str, tuple[int, int]]:
@@ -82,17 +89,20 @@ class SolutionStore:
     records: list[SolutionRecord] = field(default_factory=list)
 
     def record(self, *, repo_family: str, failure_signature: str, module_path: str,
-               fixed_module_src: str, function_names: tuple[str, ...], tenant: str = "tenant_a",
-               verified: bool, now: float = 0.0) -> bool:
-        """Admit a fix ONLY if it verified and we can extract the named functions from it."""
+               fixed_module_src: str, function_names: tuple[str, ...], buggy_module_src: str = "",
+               tenant: str = "tenant_a", verified: bool, now: float = 0.0) -> bool:
+        """Admit a fix ONLY if it verified. Stores the full fixed module (exact-recurrence replay)
+        plus the changed functions (near-recurrence splice)."""
         if not verified:
             return False
         funcs = extract_functions(fixed_module_src, function_names)
-        if not funcs:
+        if not funcs and not fixed_module_src:
             return False
-        self.records.append(SolutionRecord(repo_family=repo_family, failure_signature=failure_signature,
-                                           module_path=module_path, functions=funcs, tenant=tenant,
-                                           verified=True, created_at=now))
+        self.records.append(SolutionRecord(
+            repo_family=repo_family, failure_signature=failure_signature, module_path=module_path,
+            functions=funcs, fixed_module_src=fixed_module_src,
+            buggy_fingerprint=_fingerprint(buggy_module_src) if buggy_module_src else "",
+            tenant=tenant, verified=True, created_at=now))
         return True
 
     def recall(self, *, tenant: str, repo_family: str, failure_signature: str) -> SolutionRecord | None:
@@ -103,11 +113,14 @@ class SolutionStore:
 
     def replay(self, *, tenant: str, repo_family: str, failure_signature: str,
                buggy_module_src: str) -> str | None:
-        """Candidate module from splicing the cached fix into the buggy module (None = no usable hit)."""
+        """Replay the cached fix: EXACT-recurrence (buggy module identical -> return the stored fixed
+        module) first; else NEAR-recurrence function-splice; else None (caller runs the live ladder)."""
         rec = self.recall(tenant=tenant, repo_family=repo_family, failure_signature=failure_signature)
         if rec is None:
             return None
-        return splice_functions(buggy_module_src, rec.functions)
+        if rec.fixed_module_src and rec.buggy_fingerprint == _fingerprint(buggy_module_src):
+            return rec.fixed_module_src        # exact cache hit -> the verified module, verbatim
+        return splice_functions(buggy_module_src, rec.functions)  # drifted -> best-effort splice
 
 
 def signature_of(test_failure_output: str, changed_symbol: str = "") -> str:

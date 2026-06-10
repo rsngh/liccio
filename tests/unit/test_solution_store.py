@@ -27,12 +27,24 @@ def test_extract_and_splice_roundtrip_fixes_the_buggy_function() -> None:
 def test_record_is_trust_gated_then_replays() -> None:
     st = SolutionStore()
     assert st.record(repo_family="acme", failure_signature="AssertionError:add", module_path="m.py",
-                     fixed_module_src=FIXED, function_names=("add",), verified=False) is False  # unverified rejected
+                     fixed_module_src=FIXED, function_names=("add",), buggy_module_src=BUGGY, verified=False) is False  # unverified rejected
     assert st.record(repo_family="acme", failure_signature="AssertionError:add", module_path="m.py",
-                     fixed_module_src=FIXED, function_names=("add",), verified=True) is True
+                     fixed_module_src=FIXED, function_names=("add",), buggy_module_src=BUGGY, verified=True) is True
     cand = st.replay(tenant="tenant_a", repo_family="acme", failure_signature="AssertionError:add",
                      buggy_module_src=BUGGY)
     assert cand is not None and "return a + b" in cand
+
+
+def test_exact_recurrence_returns_full_module_even_when_fix_is_not_just_a_function() -> None:
+    # fix adds a module-level constant + new import (not a pure function-body change) -> splice alone
+    # would miss it, but exact buggy-fingerprint match returns the whole verified module
+    buggy = "def f():\n    return VALUE\n"
+    fixed = "import os\n\nVALUE = 1\n\n\ndef f():\n    return VALUE + len(os.sep)\n"
+    st = SolutionStore()
+    st.record(repo_family="acme", failure_signature="NameError:f", module_path="m.py",
+              fixed_module_src=fixed, function_names=("f",), buggy_module_src=buggy, verified=True)
+    cand = st.replay(tenant="tenant_a", repo_family="acme", failure_signature="NameError:f", buggy_module_src=buggy)
+    assert cand == fixed  # verbatim verified module on exact recurrence
 
 
 def test_replay_misses_are_none_signature_and_tenant_isolation() -> None:

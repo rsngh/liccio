@@ -102,3 +102,33 @@ Added jmespath + arrow as package-mode repos (on top of toolz/more-itertools/par
 to grow the labeled set toward the ~100+ bundles the learned components (routing, difficulty, memory)
 need for signal — the binding constraint behind #C's negative result. _Result: build in progress
 (writes `real_issue_replay_full_v2.json`)._
+
+---
+
+# Round 2 results + environment lesson
+
+## ENVIRONMENT CONSTRAINT (learned the hard way)
+Detached/background jobs do **not** survive this container's idle-suspend: the #1 multisample and #2
+corpus builds were silently killed ~95 min in (no Python procs, frozen logs, no completion markers),
+and #2's full file — written only at the end — was lost (40 harvested bundles gone). Foreground Bash
+also caps at 10 min. **Strategy going forward:** bounded (<~8 min) work units that persist
+incrementally and commit+push every increment (the pushed branch is the only durable store);
+long experiments must be resumable and run in slices, never as fire-and-forget background jobs.
+
+## #1 — multi-sampling (PARTIAL, job killed)
+Best-of-3 Codex reached 8/10 before the container killed it: bundles #0–7 each solved on the FIRST
+sample (best-of-{1,2,3} all = 8, no resampling needed). The decisive test — does resampling crack the
+universal-miss #8 — was **not reached** (#8 sample 1 failed; samples 2–3 and #9 never completed).
+Open question; must be re-run as a bounded slice (just #8/#9).
+
+## #3 — solution-memory payoff (`evals/issue_replay/solution_memory_eval.py`) — STRONG
+Offline, on the real easy-17: store the gold fix, then replay it on a recurrence and grade with the
+pristine held-out test (zero agent calls).
+
+- **Exact recurrence: 17/17 = 100%.** An identical re-encounter (CI retry, regression of the same
+  bug) is solved by returning the verified module verbatim — free. (Added an exact buggy-fingerprint
+  match path to `SolutionStore`; function-splice remains the ~41% best-effort path for *drifted*
+  modules, where the fix touches more than one function body.)
+- **Cost model:** avoided ladder cost scales linearly with recurrence — at 50% recurrence, **50% of
+  total workload cost** is saved. This is the clearest payoff yet for the realistic deployment
+  (repeated work on one codebase), and it needs no model capability gain at all.
