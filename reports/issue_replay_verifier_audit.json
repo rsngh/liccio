@@ -1,0 +1,19 @@
+{
+  "experiment": "issue_replay_verifier_audit",
+  "question": "which stop-signal is safe to auto-commit on, and is the equivalence probe trustworthy as a second gate?",
+  "n_candidate_gradings": 108,
+  "public_pass_rate": 0.935,
+  "hidden_pass_rate": 0.713,
+  "patch_equivalent_rate": 0.037,
+  "public_only_false_accepts": 24,
+  "public_only_wrong_commit_rate": 0.238,
+  "hidden_pass_but_probe_disagrees": 73,
+  "probe_disagreement_rate_on_correct_fixes": 0.948,
+  "probe_false_accepts_vs_repo_test": 0,
+  "verdict": [
+    "PUBLIC-ONLY IS UNSAFE: it would auto-commit 24 hidden-failing fixes (24% of its accepts wrong) \u2014 the repo-test verify-stop is necessary, not optional.",
+    "THE EQUIVALENCE PROBE IS TOO BRITTLE TO GATE ON: it disagrees with the repo test on 73/77 correct fixes (95%); used as a commit gate it would reject almost all genuine fixes.",
+    "RECOMMENDATION: keep the repo's held-out test as the primary verify-stop; for high-stakes commits add an INDEPENDENT freshly-generated check (verification.proxy_stop_signal / independent_proof), NOT the probe; demote patch-equivalence to a reporting-only diagnostic."
+  ],
+  "evidence_tier": "offline audit over real per-agent candidate gradings (108 across 4 agents \u00d7 easy+hard); no new model calls"
+}
