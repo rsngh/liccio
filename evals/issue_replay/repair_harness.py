@@ -35,12 +35,17 @@ from acp.routing.reflective_repair import failure_summary
 _ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
 
 
-def _run(repo: Path, test_name: str) -> tuple[bool, str]:
+def _run(repo: Path, test_name: str, *, timeout: int = 150) -> tuple[bool, str]:
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    p = subprocess.run(["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=",
-                        test_name, "-v"], cwd=repo, capture_output=True, text=True, timeout=90,
-                       check=False, env=env)
+    cmd = ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", test_name, "-v"]
+    try:
+        p = subprocess.run(cmd, cwd=repo, capture_output=True, text=True, timeout=timeout,
+                           check=False, env=env)
+    except subprocess.TimeoutExpired:
+        # a hanging/too-slow candidate grades as a fail, never crashing the caller (repair_v2,
+        # ladder_live) — large test files (more-itertools) can exceed the budget under load
+        return False, "TIMEOUT: test run exceeded the budget (treated as a failing candidate)"
     return p.returncode == 0, (p.stdout + "\n" + p.stderr)
 
 

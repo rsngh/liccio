@@ -52,11 +52,22 @@ def _attempt(rung: str, task: IssueReplayTask, root: Path, hint: str) -> tuple[s
     return produced, cost
 
 
-def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True) -> dict:
+def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path | None = None) -> dict:
     per_bundle = []
     stop_rung: dict[str, int] = dict.fromkeys([*RUNGS, "unsolved"], 0)
     t0 = time.time()
     import tempfile
+
+    def snapshot() -> dict:
+        done = len(per_bundle)
+        return {"experiment": "issue_replay_ladder_live",
+                "question": "does the live verify-stop ladder with diagnosis handoff match offline economics and lift the union?",
+                "hints": hints, "n_bundles": len(bundles), "completed": done,
+                "solved": done - stop_rung["unsolved"], "stop_rung": stop_rung,
+                "elapsed_s": round(time.time() - t0, 1),
+                "evidence_tier": "live escalation; pristine held-out test as verify-stop; hints carry only prior FAILED attempt diff + test output (no gold, no oracle leakage)",
+                "per_bundle": per_bundle}
+
     with tempfile.TemporaryDirectory(prefix="ladder_live_") as d:
         root = Path(d)
         for bi, b in enumerate(bundles):
@@ -94,17 +105,12 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True) -> dict:
             stop_rung[solved_at] += 1
             per_bundle.append({"repo": b.repo_name, "issue": b.issue_title[:70],
                                "solved_at": solved_at, "path": path})
+            if out is not None:           # incremental persist: a late crash never wipes prior bundles
+                out.write_text(json.dumps(snapshot(), indent=2) + "\n")
     n = len(bundles)
-    solved = n - stop_rung["unsolved"]
-    return {
-        "experiment": "issue_replay_ladder_live",
-        "question": "does the live verify-stop ladder with diagnosis handoff match offline economics and lift the union?",
-        "hints": hints, "n_bundles": n, "solved": solved, "rate": round(solved / n, 3),
-        "stop_rung": stop_rung, "elapsed_s": round(time.time() - t0, 1),
-        "evidence_tier": "live escalation; pristine held-out test as verify-stop; hints carry only "
-                         "prior FAILED attempt diff + test output (no gold, no oracle leakage)",
-        "per_bundle": per_bundle,
-    }
+    rep = snapshot()
+    rep["rate"] = round((n - stop_rung["unsolved"]) / n, 3)
+    return rep
 
 
 def main() -> int:
@@ -117,7 +123,7 @@ def main() -> int:
     bundles = [IssueReplayTask(**d) for d in json.loads(Path(args.bundle_file).read_text())]
     if args.limit:
         bundles = bundles[:args.limit]
-    rep = run_ladder(bundles, hints=not args.no_hints)
+    rep = run_ladder(bundles, hints=not args.no_hints, out=Path(args.out))
     Path(args.out).write_text(json.dumps(rep, indent=2) + "\n")
     print(f"\n=== LADDER LIVE (hints={rep['hints']}) === solved {rep['solved']}/{rep['n_bundles']} "
           f"stop-rung {rep['stop_rung']}")
