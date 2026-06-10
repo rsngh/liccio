@@ -27,8 +27,10 @@ def _run_test(repo: Path, test_name: str) -> bool:
 def build_repo(task: IssueReplayTask, root: Path, *, module_src: str) -> Path:
     repo = root / task.module_path.replace("/", "_").replace(".py", "")
     repo.mkdir(parents=True, exist_ok=True)
+    (repo / task.module_path).parent.mkdir(parents=True, exist_ok=True)  # nested (package) path
     (repo / task.module_path).write_text(module_src)
     for p, c in task.extra_files.items():
+        (repo / p).parent.mkdir(parents=True, exist_ok=True)
         (repo / p).write_text(c)
     (repo / "conftest.py").write_text(
         "import os, sys\nsys.path.insert(0, os.path.dirname(__file__))\n")
@@ -50,7 +52,7 @@ def patch_equivalent(task: IssueReplayTask, produced_src: str, *, probes: list[s
 
         def outputs(src: str) -> list | None:
             repo = build_repo(task, root / f"eq_{id(src)}", module_src=src)
-            mod = task.module_path[:-3]
+            mod = task.module_path[:-3].replace("/", ".")  # package bundles import dotted
             ev = "eval(c, {'m': m, '__builtins__': __builtins__})"
             script = ("import json\nimport " + mod + " as m\n"
                       "print(json.dumps([repr(" + ev + ") for c in " + repr(probes) + "]))")

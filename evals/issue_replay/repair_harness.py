@@ -167,9 +167,11 @@ def repair_one(task: IssueReplayTask, root: Path, *, model_id: str, rate: tuple[
     work = root / f"rp_{abs(hash(task.repo_name + task.issue_title)) % 10000}"
     work.mkdir(parents=True, exist_ok=True)
     for p, c in task.extra_files.items():
+        (work / p).parent.mkdir(parents=True, exist_ok=True)
         (work / p).write_text(c)
     (work / "conftest.py").write_text("import os,sys\nsys.path.insert(0,os.path.dirname(__file__))\n")
     (work / "test_repro.py").write_text(task.hidden_test)
+    (work / task.module_path).parent.mkdir(parents=True, exist_ok=True)  # package bundles: nested module_path
 
     def repro(module_src: str) -> tuple[bool, str]:
         (work / task.module_path).write_text(module_src)

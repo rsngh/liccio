@@ -67,10 +67,30 @@ def _rewrite_imports(test_src: str, pkg: str, modbase: str) -> str:
     return s
 
 
-def harvest(repo: Path, module: str, test: str, *, max_commits: int) -> list[IssueReplayTask]:
+def _package_files(repo: Path, sha: str, pkg: str, target: str) -> dict[str, str]:
+    """Every non-test .py file under the package at ``sha`` EXCEPT the editable target module — the
+    pristine sibling submodules a harder package's test imports (toolz.utils, toolz.functoolz, ...).
+    These are laid down read-only so the test imports the real package; only ``target`` is buggy."""
+    listing = _git(repo, "ls-tree", "-r", "--name-only", sha, "--", f"{pkg}/").splitlines()
+    out: dict[str, str] = {}
+    for path in listing:
+        if not path.endswith(".py") or path == target or f"{pkg}/tests/" in f"{path}/":
+            continue
+        src = _file_at(repo, sha, path)
+        if src:
+            out[path] = src
+    return out
+
+
+def harvest(repo: Path, module: str, test: str, *, max_commits: int,
+            package_mode: bool = False) -> list[IssueReplayTask]:
     """Whole-test-file mode: for each fix commit touching ``module``, take the PARENT module as
     buggy and the commit module as the withheld gold, run the commit's own (import-flattened) test
-    file as the held-out hidden oracle, and keep the bundle only if it is hermetically fair."""
+    file as the held-out hidden oracle, and keep the bundle only if it is hermetically fair.
+
+    ``package_mode`` (P4): for algorithmically harder libs whose tests import sibling submodules
+    (toolz, ...), DON'T flatten — lay the pristine package down as ``extra_files`` and keep the real
+    ``from pkg.module import`` so the test resolves. The agent still edits only the buggy target."""
     repo_name = next((ln.split("github.com[:/]", 1)[-1].removesuffix(".git").strip()
                       for ln in _git(repo, "remote", "get-url", "origin").splitlines()), repo.name)
     repo_name = re.sub(r"^.*github\.com[:/]", "", repo_name)
@@ -99,14 +119,23 @@ def harvest(repo: Path, module: str, test: str, *, max_commits: int) -> list[Iss
             key = ",".join(_changed_funcs(repo, sha, module)) or sha[:10]
             if key in seen_funcs:        # one bundle per distinct changed-function set per repo
                 continue
-            hidden = _rewrite_imports(test_src, pkg, modbase) if pkg else test_src
-            public = f"import {modbase}\n\n\ndef test_pub():\n    assert {modbase} is not None\n"
+            if package_mode and pkg:
+                # keep the real package: target module editable, pristine siblings as extra_files
+                hidden = test_src
+                public = f"import {pkg}\n\n\ndef test_pub():\n    assert {pkg} is not None\n"
+                mod_path, extra = module, _package_files(repo, sha, pkg, module)
+                notes = f"real history {repo_name}@{sha[:10]}; PACKAGE bundle ({pkg} laid down read-only); whole test file as hidden oracle; gold withheld"
+            else:
+                hidden = _rewrite_imports(test_src, pkg, modbase) if pkg else test_src
+                public = f"import {modbase}\n\n\ndef test_pub():\n    assert {modbase} is not None\n"
+                mod_path, extra = flat_module, {}
+                notes = f"real history {repo_name}@{sha[:10]}; whole repo test file as hidden oracle; gold withheld from agent"
             task = IssueReplayTask(
                 repo_name=repo_name, base_sha=f"{sha[:10]}^",
                 issue_title=subj, issue_body=f"{subj} (in {module}).",
-                module_path=flat_module, buggy=buggy, gold_patch=gold,
+                module_path=mod_path, buggy=buggy, gold_patch=gold, extra_files=extra,
                 public_test=public, hidden_test=hidden, source="real_issue_replay",
-                leakage_notes=f"real history {repo_name}@{sha[:10]}; whole repo test file as hidden oracle; gold withheld from agent")
+                leakage_notes=notes)
             try:
                 fair = offline_fairness(task, root)["fair"]
             except Exception:  # noqa: BLE001 - a slow/erroring repo test file -> not hermetic, skip

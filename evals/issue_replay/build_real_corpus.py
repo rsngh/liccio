@@ -39,25 +39,33 @@ REPOS: list[tuple[str, list[tuple[str, str]]]] = [
      [("parse.py", "tests/test_parse.py"), ("parse.py", "tests/test_bugs.py"),
       ("parse.py", "tests/test_pattern.py"), ("parse.py", "tests/test_search.py")]),
 ]
+# repos whose tests import sibling submodules -> harvest as package bundles (real package laid down)
+PACKAGE_REPOS = {"https://github.com/pytoolz/toolz"}
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-commits", type=int, default=120)
+    ap.add_argument("--only", default="", help="only build repos whose URL contains this substring (comma-separated)")
     ap.add_argument("--out", default="reports/real_issue_replay_bundles.json")
     args = ap.parse_args()
+    repos = REPOS
+    if args.only:
+        subs = [s.strip() for s in args.only.split(",") if s.strip()]
+        repos = [(u, m) for u, m in REPOS if any(s in u for s in subs)]
     all_bundles = []
     with tempfile.TemporaryDirectory(prefix="real_corpus_") as d:
         cache = Path(d)
-        for url, modules in REPOS:
+        for url, modules in repos:
             dest = cache / url.rstrip("/").split("/")[-1]
             print(f"cloning {url} ...", flush=True)
             subprocess.run(["git", "clone", "--quiet", "--depth", "400", url, str(dest)],
                            check=False, env={"GIT_TERMINAL_PROMPT": "0", "PATH": "/usr/bin:/bin"})
+            pkg_mode = url in PACKAGE_REPOS  # tests import sibling submodules -> lay down the real package
             for module, test in modules:
                 if not (dest / test).exists():
                     continue
-                got = harvest(dest, module, test, max_commits=args.max_commits)
+                got = harvest(dest, module, test, max_commits=args.max_commits, package_mode=pkg_mode)
                 for b in got:
                     print(f"  + {b.repo_name} {b.base_sha} :: {b.issue_title[:64]}", flush=True)
                 all_bundles += got
@@ -84,7 +92,10 @@ def main() -> int:
                     | {"gold_patch_hash": b.gold_patch_hash} for b in all_bundles],
     }
     out.write_text(json.dumps(manifest, indent=2) + "\n")
-    full = out.with_name("real_issue_replay_full.json")
+    # full-bundle file tracks --out (…bundles[_x].json -> …full[_x].json) so a custom --out never
+    # clobbers the canonical v1 corpus reports/real_issue_replay_full.json
+    full = out.with_name(out.name.replace("bundles", "full")) if "bundles" in out.name \
+        else out.with_name(out.stem + "_full.json")
     full.write_text(json.dumps([asdict(b) for b in all_bundles], indent=2) + "\n")
     print(f"\nbuilt {len(all_bundles)} real bundles across {len(manifest['repos'])} repos -> {out}")
     return 0

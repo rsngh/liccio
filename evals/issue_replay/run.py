@@ -95,8 +95,10 @@ def _produce(task: IssueReplayTask, model: str, root: Path) -> tuple[str, float,
     """Run a live single-shot model on the bundle; return (produced_module_src, cost_usd, ran)."""
     src = root / f"src_{abs(hash(task.repo_name)) % 10_000}_{time.time_ns()}"
     src.mkdir(parents=True, exist_ok=True)
+    (src / task.module_path).parent.mkdir(parents=True, exist_ok=True)  # package bundles: nested module_path
     (src / task.module_path).write_text(task.buggy)
     for p, c in task.extra_files.items():
+        (src / p).parent.mkdir(parents=True, exist_ok=True)
         (src / p).write_text(c)
     repo = Repo.init(src)
     repo.config_writer().set_value("user", "name", "t").release()
@@ -135,8 +137,10 @@ def _produce_harness(task: IssueReplayTask, model: str, root: Path, *, max_steps
     from acp.agents.claude_harness import ClaudeHarnessAdapter
     src = root / f"h_{abs(hash(task.repo_name + task.issue_title)) % 10_000}_{time.time_ns()}"
     src.mkdir(parents=True, exist_ok=True)
+    (src / task.module_path).parent.mkdir(parents=True, exist_ok=True)  # package bundles: nested module_path
     (src / task.module_path).write_text(task.buggy)
     for p, c in task.extra_files.items():
+        (src / p).parent.mkdir(parents=True, exist_ok=True)
         (src / p).write_text(c)
     (src / "conftest.py").write_text("import os, sys\nsys.path.insert(0, os.path.dirname(__file__))\n")
     (src / "test_repro.py").write_text(task.hidden_test)
@@ -181,8 +185,10 @@ def _produce_vendor(task: IssueReplayTask, agent: str, root: Path, *, timeout_s:
         return task.buggy, 0.0, False
     src = root / f"v_{agent}_{abs(hash(task.repo_name + task.issue_title)) % 10000}_{time.time_ns()}"
     src.mkdir(parents=True, exist_ok=True)
+    (src / task.module_path).parent.mkdir(parents=True, exist_ok=True)  # package bundles: nested module_path
     (src / task.module_path).write_text(task.buggy)
     for p, c in task.extra_files.items():
+        (src / p).parent.mkdir(parents=True, exist_ok=True)
         (src / p).write_text(c)
     (src / "conftest.py").write_text("import os,sys\nsys.path.insert(0,os.path.dirname(__file__))\n")
     (src / "test_repro.py").write_text(task.hidden_test)
