@@ -142,8 +142,27 @@ def route_and_solve(*, task_id: str, failure_signature: str, repo_family: str, t
                     task_type: str, risk_level: str, budget_class: str, ladder: list[Lever],
                     attempt_fn: AttemptFn, memory: ExperienceBank | None = None,
                     memory_policy: MemoryPolicy | None = None, now: float = 0.0,
-                    recommend_fn=None, avoid_fn=None) -> UnifiedResult:
-    """Route one task through memory-seeded, FinOps-gated, safety-bounded escalation; then learn."""
+                    recommend_fn=None, avoid_fn=None, solution_replay_fn=None) -> UnifiedResult:
+    """Route one task through memory-seeded, FinOps-gated, safety-bounded escalation; then learn.
+
+    `solution_replay_fn(task_id) -> (solved, cost) | None` is RUNG 0 (procedural memory): if a cached
+    verified fix replays and PASSES verification, short-circuit the whole ladder — a recurring bug is
+    solved with zero agent calls. The replay is itself verified (it returns solved only if the held-out
+    test passed), so this never blind-trusts the cache. Misses (None / not-solved) fall through to the
+    normal escalation, unchanged.
+    """
+    if solution_replay_fn is not None:
+        hit = solution_replay_fn(task_id)
+        if hit is not None and hit[0]:
+            cost = hit[1]
+            if memory is not None and memory_policy is not None:
+                memory.write(_episode(repo_family, task_type, failure_signature, "solution_cache",
+                                      tenant, outcome="solved", reward=1.0, cost=cost, now=now),
+                             policy=memory_policy)
+            return UnifiedResult(task=task_id, solved=True, terminal="commit_success",
+                                 lever_path=["solution_cache", "commit_success"], total_cost=cost,
+                                 used_memory_seed=True, ladder_used=["solution_cache"],
+                                 safety_notes=["solution-cache replay verified by the held-out test"])
     ordered, avoided, seeded = _memory_reorder(
         ladder, memory=memory, tenant=tenant, failure_signature=failure_signature,
         recommend_fn=recommend_fn, avoid_fn=avoid_fn)

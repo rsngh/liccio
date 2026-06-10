@@ -59,3 +59,23 @@ def test_family_memory_seeds_known_good_agent_and_cost_declines() -> None:
     assert "inproc_repair" in s0.lever_path
     assert "inproc_repair" not in s1.ladder_used and s1.used_memory_seed
     assert s1.total_cost < s0.total_cost and s1.solved
+
+
+def test_solution_cache_rung0_short_circuits_the_ladder() -> None:
+    # a verified cache replay solves at rung 0 -> no agent rung runs, near-zero cost
+    fn = make_agent_attempt_fn(LADDER, _solve_fn({"codex_cli"}))  # would otherwise climb to codex
+    res = route_and_solve(task_id="b", failure_signature="bugfix:recurring", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None, solution_replay_fn=lambda _t: (True, 0.0))
+    assert res.solved and res.terminal == "commit_success"
+    assert res.ladder_used == ["solution_cache"] and res.total_cost == 0.0
+    assert "codex_cli" not in res.lever_path  # the expensive ladder never ran
+
+
+def test_solution_cache_miss_falls_through_to_ladder() -> None:
+    # cache miss (None) or unverified replay -> normal escalation proceeds unchanged
+    fn = make_agent_attempt_fn(LADDER, _solve_fn({"gemini_cli", "codex_cli"}))
+    res = route_and_solve(task_id="b", failure_signature="bugfix:x", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None, solution_replay_fn=lambda _t: None)
+    assert res.solved and "gemini_cli" in res.lever_path and "solution_cache" not in res.ladder_used
