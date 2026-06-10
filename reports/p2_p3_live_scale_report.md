@@ -202,3 +202,47 @@ larger corpus would re-measure the same wall; the only levers with a plausible s
 verifier-guided *many*-sample search (far more than k=2-3) or a materially stronger repair model —
 both of which trade a lot of cost for uncertain gain. Recommendation stands: **bank these honest
 findings; don't scale the corpus until a config first clears ~40% on the existing 17.**
+
+## P4 — harder bundles that separate the frontier; routing value holds at larger n
+
+The diagnostic above is about the **model-only** plateau on the easy v1 corpus. P4 scales a different
+axis: harder, *agent-separating* bundles. v1's 17 utility fixes clustered the frontier agents at
+0.88–1.0 (no room to distinguish them). New **package-mode harvesting** (lay down the real package +
+pristine siblings instead of flattening to one file) unlocked algorithmically richer libs —
+`toolz`, `parse`, `more-itertools` — for **24 harder bundles**; the pool ran on a tractable 10-bundle
+subset (the whole-test-file oracle on `more-itertools` is heavy, so grading was made
+crash-proof — a timeout scores as a fail — and capped at a 10-bundle `--limit`).
+
+**Per-agent solve rate — easy vs hard (the separation we were missing):**
+
+| agent | v1 easy (17) | P4 hard (10) |
+|---|---|---|
+| inproc model | 0.18 | 0.20 |
+| claude_code | 0.88 | **0.70** |
+| gemini_cli | 0.94 | **0.80** |
+| codex_cli | **1.00** | **0.90** |
+
+On hard the frontier spreads to 0.7–0.9 (codex > gemini > claude — same order, wider gaps), and **one
+bundle ("concurrent tee") is solved by no agent at all** (union 9/10) — a genuine ceiling-breaker the
+easy corpus never produced. Codex drops from a perfect 17/17 to 9/10: the harder corpus does its job.
+
+**ACP routing vs agent-only, combined corpus (27 bundles), effective-cost prior:**
+
+| policy | solved | strongest-agent runs | cost/verified-success |
+|---|---|---|---|
+| agent-only: Codex (best single) | 26/27 | **27** | 0.125 |
+| agent-only: Gemini | 24/27 | 0 | 0.068 |
+| agent-only: Claude Code | 22/27 | 0 | 0.123 |
+| **ACP escalation (cheapest-first + verify-stop)** | **26/27** | **1** | **0.088** |
+| ACP ensemble (all + verify-select) | 26/27 | 27 | 0.312 |
+
+The headline survives harder, separating data **at larger n**: ACP escalation **matches the best
+single agent (26/27) while invoking the strongest agent once instead of 27 times — ~30% cheaper per
+verified success** (stop-rung: inproc 5, gemini 19, claude 2, codex 0; 1 unsolved by anyone). And it
+still beats every cheaper single agent on solve rate (+2 vs Gemini, +4 vs Claude Code).
+
+**Honest scope:** 27 bundles across 5 repos; the hard slice is 10 bundles (heavy oracle caps the
+pool). The model-only wall from the diagnostic is unchanged — P4 doesn't claim to move raw repair
+capability; it shows the *meta-router's* value (match the best at lower cost) holds once the corpus is
+hard enough to tell the agents apart, and that genuinely hard bugs (the no-agent-solves bundle) exist
+in the harvested set for future capability work.
