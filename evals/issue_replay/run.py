@@ -172,7 +172,8 @@ def _produce_harness(task: IssueReplayTask, model: str, root: Path, *, max_steps
     return out, cost, True
 
 
-def _produce_vendor(task: IssueReplayTask, agent: str, root: Path, *, timeout_s: int = 300) -> tuple[str, float, bool]:
+def _produce_vendor(task: IssueReplayTask, agent: str, root: Path, *, timeout_s: int = 300,
+                    hint: str = "") -> tuple[str, float, bool]:
     """Drive a real stateful CLI coding agent (claude_code / codex_cli / gemini_cli) on the bundle.
 
     The agent runs in a git repo containing the buggy module + the failing test as a runnable repro;
@@ -202,6 +203,10 @@ def _produce_vendor(task: IssueReplayTask, agent: str, root: Path, *, timeout_s:
     repo.index.commit("base")
     prompt = (f"{task.issue_title}\n\n{task.issue_body}\n\nThe failing tests are in test_repro.py. "
               f"Fix {task.module_path} so they pass. Do not edit the tests.")
+    if hint:
+        prompt += ("\n\nA cheaper agent already attempted this and FAILED. Its attempt and the "
+                   "resulting test failure are below — use them as a diagnosis starting point, but "
+                   "verify independently (its approach may be wrong):\n" + hint)
     res = h.run_task(src, prompt, timeout_s=timeout_s)
     produced = src / task.module_path
     out = produced.read_text() if produced.exists() else task.buggy
@@ -226,6 +231,10 @@ def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max
                 from evals.issue_replay.repair_harness import repair_one
                 produced, cost, did = repair_one(b, root, model_id=_MODELS[model][0],
                                                  rate=_MODELS[model][1], k=max_steps)
+            elif mode == "repair2":
+                from evals.issue_replay.repair_v2 import repair_v2
+                produced, cost, did = repair_v2(b, root, model_id=_MODELS[model][0],
+                                                rate=_MODELS[model][1], k=max_steps)
             elif mode == "harness":
                 produced, cost, did = _produce_harness(b, model, root, max_steps=max_steps)
             elif mode == "vendor":
@@ -284,7 +293,7 @@ def main() -> int:
     ap.add_argument("--model", default="gemini", choices=list(_MODELS))
     ap.add_argument("--bundles", default="synthetic", choices=["synthetic", "real", "all"])
     ap.add_argument("--bundle-file", default="", help="explicit full-bundle JSON to run (overrides --bundles)")
-    ap.add_argument("--mode", default="single", choices=["single", "harness", "repair", "vendor"])
+    ap.add_argument("--mode", default="single", choices=["single", "harness", "repair", "repair2", "vendor"])
     ap.add_argument("--agent", default="claude_code",
                     choices=["claude_code", "codex_cli", "gemini_cli"], help="vendor CLI agent (mode=vendor)")
     ap.add_argument("--max-steps", type=int, default=14, help="harness step budget; in repair mode = best-of-k")
@@ -298,7 +307,7 @@ def main() -> int:
     if args.limit:
         picked = picked[:args.limit]
     rep = run(args.model, picked, mode=args.mode, max_steps=args.max_steps, delay_s=args.delay,
-              agent=args.agent)
+              agent=args.agent if args.mode == "vendor" else "")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(rep, indent=2)
