@@ -38,8 +38,10 @@ def _codex_argv(repo: Path, prompt: str) -> list[str]:
 def _claude_argv(repo: Path, prompt: str) -> list[str]:
     # acceptEdits auto-applies file edits non-interactively WITHOUT the unsafe
     # --dangerously-skip-permissions autonomous mode (read/edit tools only; no blanket bash).
-    # `--effort medium` keeps it fast/quota-light — Claude Code solves these well below full effort.
-    return ["claude", "-p", prompt, "--permission-mode", "acceptEdits", "--effort", "medium",
+    # Claude Code solves these well at low effort, so default to low (fast + quota-light);
+    # override with ACP_CLAUDE_EFFORT=medium|high if a hard bundle needs more.
+    effort = os.environ.get("ACP_CLAUDE_EFFORT", "low")
+    return ["claude", "-p", prompt, "--permission-mode", "acceptEdits", "--effort", effort,
             "--allowedTools", "Edit", "Write", "Read", "Grep", "Glob"]
 
 
