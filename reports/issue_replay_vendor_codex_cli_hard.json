@@ -1,0 +1,132 @@
+{
+  "experiment": "issue_replay_live",
+  "question": "can a live cheap model solve issue->fix replay bundles, judged by held-out hidden tests + patch-equivalence?",
+  "model": "codex_cli",
+  "agent": "codex_cli",
+  "mode": "vendor",
+  "n_bundles": 10,
+  "elapsed_s": 2259.7,
+  "hidden_verified": {
+    "solved": 9,
+    "n": 10,
+    "rate": 0.9,
+    "ci": [
+      0.5958,
+      0.9821
+    ]
+  },
+  "patch_equivalent_rate": 0.0,
+  "ran_live": 8,
+  "total_cost_usd": 0.0,
+  "cost_per_verified_success": 0.0,
+  "by_source": {
+    "real_issue_replay": {
+      "solved": 9,
+      "n": 10,
+      "rate": 0.9
+    }
+  },
+  "per_bundle": [
+    {
+      "repo": "pytoolz/toolz",
+      "module": "toolz/functoolz.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "r1chardj0n3s/parse",
+      "module": "parse.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": false,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "module": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "task_type": "bugfix",
+      "hidden_pass": true,
+      "public_pass": true,
+      "patch_equivalent": false,
+      "cost_usd": 0.0
+    }
+  ],
+  "evidence_tier": "live single-shot over issue->fix bundles; gold patch + hidden tests withheld; bundles labelled by source (frozen_synthetic vs real_issue_replay)"
+}
