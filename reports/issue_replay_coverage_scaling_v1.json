@@ -1,0 +1,66 @@
+{
+  "experiment": "issue_replay_coverage_scaling",
+  "corpus": "v1",
+  "n_bundles": 17,
+  "agents": [
+    "inproc_repair",
+    "gemini_cli",
+    "claude_code",
+    "codex_cli"
+  ],
+  "full_pool_union_rate": 1.0,
+  "greedy_best_curve": [
+    {
+      "k": 1,
+      "added": "codex_cli",
+      "union_rate": 1.0
+    },
+    {
+      "k": 2,
+      "added": "inproc_repair",
+      "union_rate": 1.0
+    },
+    {
+      "k": 3,
+      "added": "gemini_cli",
+      "union_rate": 1.0
+    },
+    {
+      "k": 4,
+      "added": "claude_code",
+      "union_rate": 1.0
+    }
+  ],
+  "greedy_marginal_lift": [
+    {
+      "k": 1,
+      "added": "codex_cli",
+      "marginal_lift": 1.0
+    },
+    {
+      "k": 2,
+      "added": "inproc_repair",
+      "marginal_lift": 0.0
+    },
+    {
+      "k": 3,
+      "added": "gemini_cli",
+      "marginal_lift": 0.0
+    },
+    {
+      "k": 4,
+      "added": "claude_code",
+      "marginal_lift": 0.0
+    }
+  ],
+  "smallest_pool_reaching_union": 1,
+  "expected_union_rate_by_pool_size": {
+    "1": 0.75,
+    "2": 0.971,
+    "3": 1.0,
+    "4": 1.0
+  },
+  "single_agent_mean": 0.75,
+  "takeaway": "greedy pool reaches the union (1.0) at 1 agents; the curve's marginal lift shows where adding agents stops paying.",
+  "evidence_tier": "offline over real per-agent solve vectors; no model calls"
+}
