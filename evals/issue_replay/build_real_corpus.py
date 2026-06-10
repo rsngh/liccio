@@ -18,6 +18,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from evals.issue_replay.harvest_real import harvest
+from evals.issue_replay.replay_task import IssueReplayTask
 
 # (repo_url, [(module_path_in_repo, test_path_in_repo), ...]); flat single-file modules with a
 # co-located test file. Modules that yield no hermetically-fair bundle are simply skipped.
@@ -66,13 +67,21 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-commits", type=int, default=120)
     ap.add_argument("--only", default="", help="only build repos whose URL contains this substring (comma-separated)")
+    ap.add_argument("--append", action="store_true", help="merge into the existing full file (resumable, incremental per-repo persist)")
     ap.add_argument("--out", default="reports/real_issue_replay_bundles.json")
     args = ap.parse_args()
     repos = REPOS
     if args.only:
         subs = [s.strip() for s in args.only.split(",") if s.strip()]
         repos = [(u, m) for u, m in REPOS if any(s in u for s in subs)]
-    all_bundles = []
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    full = (out.with_name(out.name.replace("bundles", "full")) if "bundles" in out.name
+            else out.with_name(out.stem + "_full.json"))
+    all_bundles: list = []
+    if args.append and full.exists():   # resume: keep what's already harvested
+        all_bundles = [IssueReplayTask(**d) for d in json.loads(full.read_text())]
+        print(f"append mode: loaded {len(all_bundles)} existing bundles from {full.name}", flush=True)
     with tempfile.TemporaryDirectory(prefix="real_corpus_") as d:
         cache = Path(d)
         for url, modules in repos:
@@ -88,20 +97,31 @@ def main() -> int:
                 for b in got:
                     print(f"  + {b.repo_name} {b.base_sha} :: {b.issue_title[:64]}", flush=True)
                 all_bundles += got
-    # dedupe identical fixes harvested via >1 test file (same repo+commit+gold = one bundle)
+            _persist(_dedup(all_bundles), out, full)   # incremental: survive a mid-build kill
+            print(f"  …persisted {len(_dedup(all_bundles))} bundles after {url.split('/')[-1]}", flush=True)
+    all_bundles = _dedup(all_bundles)
+    _persist(all_bundles, out, full)
+    print(f"\nbuilt {len(all_bundles)} real bundles across {len({b.repo_name for b in all_bundles})} repos -> {out}")
+    return 0
+
+
+def _dedup(bundles: list) -> list:
+    """One bundle per (repo, commit, gold) — same fix harvested via >1 test file collapses to one."""
     seen: set[tuple[str, str, str]] = set()
-    deduped = []
-    for b in all_bundles:
+    out = []
+    for b in bundles:
         key = (b.repo_name, b.base_sha, b.gold_patch_hash)
         if key not in seen:
             seen.add(key)
-            deduped.append(b)
-    all_bundles = deduped
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
+            out.append(b)
+    return out
+
+
+def _persist(all_bundles: list, out: Path, full: Path) -> None:
+    """Write manifest (out) + full bundles (full). Called after every repo so a mid-build kill is safe.
+    `full` tracks --out (…bundles[_x].json -> …full[_x].json) so a custom --out never clobbers v1."""
     manifest = {
-        "experiment": "real_issue_replay_bundles",
-        "n_bundles": len(all_bundles),
+        "experiment": "real_issue_replay_bundles", "n_bundles": len(all_bundles),
         "source": "real_issue_replay",
         "via": "direct git clone of public repos (no GitHub API/token; api.github.com is proxy-blocked here)",
         "repos": sorted({b.repo_name for b in all_bundles}),
@@ -111,13 +131,7 @@ def main() -> int:
                     | {"gold_patch_hash": b.gold_patch_hash} for b in all_bundles],
     }
     out.write_text(json.dumps(manifest, indent=2) + "\n")
-    # full-bundle file tracks --out (…bundles[_x].json -> …full[_x].json) so a custom --out never
-    # clobbers the canonical v1 corpus reports/real_issue_replay_full.json
-    full = out.with_name(out.name.replace("bundles", "full")) if "bundles" in out.name \
-        else out.with_name(out.stem + "_full.json")
     full.write_text(json.dumps([asdict(b) for b in all_bundles], indent=2) + "\n")
-    print(f"\nbuilt {len(all_bundles)} real bundles across {len(manifest['repos'])} repos -> {out}")
-    return 0
 
 
 if __name__ == "__main__":
