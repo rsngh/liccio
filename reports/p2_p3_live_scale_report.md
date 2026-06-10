@@ -76,8 +76,28 @@ hermetically fair (`reports/real_issue_replay_bundles.json`). Single-shot, gold 
 | ACP in-process tool-loop harness (haiku, 16 steps, tests visible) | **1 / 17 = 6%** CI[0.01, 0.27] | $1.63 |
 | **enhanced repair harness — gemini** (localize→best-of-k→splice) | **3 / 17 = 18%** CI[0.06, 0.41] | $0.20 |
 | **enhanced repair harness — sonnet** (same pipeline, stronger model) | **3 / 17 = 18%** CI[0.06, 0.41] | $1.10 |
+| **🟢 Claude Code CLI (real stateful agent, your subscription)** | **15 / 17 = 88%** CI[0.66, 0.97] | $0 metered (subscription quota) |
 
-**The most important result of the exercise — and it cuts against the easy optimism.** We tried, in
+## THE BREAKTHROUGH: a real coding agent shatters the 3/17 wall
+
+Once the three production CLI agents were authed in-container (Claude Code + Codex on subscriptions,
+Gemini on the API key) and wired into the runner (`--mode vendor`), **Claude Code solved 15/17 = 88%**
+of the exact same bundles every model config plateaued at 3/17 — including the class-method/multi-file
+boltons bugs that resisted single-shot (cheap & frontier), the autonomous in-process harness, and the
+localize→repair pipeline. Graded identically (return-code-authoritative on the pristine held-out test).
+
+This is the decisive result of the whole investigation and it confirms the plan's hypothesis:
+- The real-bug wall was **the weakness of the agents in the pool**, not the orchestration. A strong
+  real agent (with its own native localization, multi-file edits, test-running, and iteration) clears
+  the bugs the model-only configs could not.
+- It reframes the meta-router's job: not "out-muscle a frontier model by wrapping it," but **route to
+  the agent that can actually do the work**, and (next) get ~that quality at lower cost/quota by trying
+  cheaper agents first and escalating, and by verifier-selecting across a diverse agent pool.
+
+The earlier sections below remain the honest record of the *model-only* plateau — context for why the
+agent result matters.
+
+**The model-only plateau (still the honest record) — and why it cut against easy optimism.** We tried, in
 order: a frontier model, an autonomous tool-loop harness, and then a research-grounded *enhanced*
 repair harness (the convergent recommendation of three paper sweeps: localize the bug to a function,
 show the model only that snippet, sample best-of-k, splice the fix back by AST, iterate on the precise

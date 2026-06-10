@@ -168,8 +168,44 @@ def _produce_harness(task: IssueReplayTask, model: str, root: Path, *, max_steps
     return out, cost, True
 
 
+def _produce_vendor(task: IssueReplayTask, agent: str, root: Path, *, timeout_s: int = 300) -> tuple[str, float, bool]:
+    """Drive a real stateful CLI coding agent (claude_code / codex_cli / gemini_cli) on the bundle.
+
+    The agent runs in a git repo containing the buggy module + the failing test as a runnable repro;
+    it localizes/edits/iterates natively. Env is subscription-safe (vendor_native.vendor_env strips
+    ANTHROPIC_API_KEY for claude_code). Grading is unchanged (pristine hidden test on the produced
+    module), so the agent editing the in-repo test cannot game the score."""
+    from acp.agents.vendor_native import VendorNativeHarness
+    h = VendorNativeHarness(agent)
+    if not h.available():
+        return task.buggy, 0.0, False
+    src = root / f"v_{agent}_{abs(hash(task.repo_name + task.issue_title)) % 10000}_{time.time_ns()}"
+    src.mkdir(parents=True, exist_ok=True)
+    (src / task.module_path).write_text(task.buggy)
+    for p, c in task.extra_files.items():
+        (src / p).write_text(c)
+    (src / "conftest.py").write_text("import os,sys\nsys.path.insert(0,os.path.dirname(__file__))\n")
+    (src / "test_repro.py").write_text(task.hidden_test)
+    repo = Repo.init(src)
+    cw = repo.config_writer()
+    cw.set_value("user", "name", "t")
+    cw.set_value("user", "email", "t@e.com")
+    cw.set_value("commit", "gpgsign", "false")
+    cw.release()
+    repo.index.add([task.module_path, "conftest.py", "test_repro.py", *task.extra_files.keys()])
+    repo.index.commit("base")
+    prompt = (f"{task.issue_title}\n\n{task.issue_body}\n\nThe failing tests are in test_repro.py. "
+              f"Fix {task.module_path} so they pass. Do not edit the tests.")
+    res = h.run_task(src, prompt, timeout_s=timeout_s)
+    produced = src / task.module_path
+    out = produced.read_text() if produced.exists() else task.buggy
+    # claude_code + codex run on the subscription (quota, not metered $ here); gemini_cli is API-key
+    # but the CLI doesn't surface tokens -> cost recorded 0.0 and noted in the report's evidence tier.
+    return out, 0.0, (not res.timed_out and res.error is None)
+
+
 def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max_steps: int = 14,
-        delay_s: float = 0.0) -> dict:
+        delay_s: float = 0.0, agent: str = "") -> dict:
     solved = equiv = ran = 0
     total_cost = 0.0
     by_source: dict[str, list[int]] = defaultdict(lambda: [0, 0])   # [solved, n]
@@ -186,6 +222,8 @@ def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max
                                                  rate=_MODELS[model][1], k=max_steps)
             elif mode == "harness":
                 produced, cost, did = _produce_harness(b, model, root, max_steps=max_steps)
+            elif mode == "vendor":
+                produced, cost, did = _produce_vendor(b, agent, root)
             else:
                 produced, cost, did = _produce(b, model, root)
             total_cost += cost
@@ -207,7 +245,8 @@ def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max
     return {
         "experiment": "issue_replay_live",
         "question": "can a live cheap model solve issue->fix replay bundles, judged by held-out hidden tests + patch-equivalence?",
-        "model": model, "mode": mode, "n_bundles": n, "elapsed_s": round(time.time() - t0, 1),
+        "model": (agent or model), "agent": agent, "mode": mode,
+        "n_bundles": n, "elapsed_s": round(time.time() - t0, 1),
         "hidden_verified": {"solved": solved, "n": n, "rate": round(p, 4), "ci": [round(lo, 4), round(hi, 4)]},
         "patch_equivalent_rate": round(equiv / n, 4) if n else 0.0,
         "ran_live": ran,
@@ -236,7 +275,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="gemini", choices=list(_MODELS))
     ap.add_argument("--bundles", default="synthetic", choices=["synthetic", "real", "all"])
-    ap.add_argument("--mode", default="single", choices=["single", "harness", "repair"])
+    ap.add_argument("--mode", default="single", choices=["single", "harness", "repair", "vendor"])
+    ap.add_argument("--agent", default="claude_code",
+                    choices=["claude_code", "codex_cli", "gemini_cli"], help="vendor CLI agent (mode=vendor)")
     ap.add_argument("--max-steps", type=int, default=14, help="harness step budget; in repair mode = best-of-k")
     ap.add_argument("--delay", type=float, default=0.0, help="seconds to sleep between bundles (rate-limit throttle)")
     ap.add_argument("--limit", type=int, default=0, help="cap number of bundles (0 = all)")
@@ -247,7 +288,8 @@ def main() -> int:
     picked = _load_bundles(args.bundles)
     if args.limit:
         picked = picked[:args.limit]
-    rep = run(args.model, picked, mode=args.mode, max_steps=args.max_steps, delay_s=args.delay)
+    rep = run(args.model, picked, mode=args.mode, max_steps=args.max_steps, delay_s=args.delay,
+              agent=args.agent)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(rep, indent=2)
@@ -256,7 +298,7 @@ def main() -> int:
         assert not (v and v in txt), f"{key} leaked"
     out.write_text(txt + "\n")
     h = rep["hidden_verified"]
-    print(f"\n=== ISSUE REPLAY (live, {args.model}) ===")
+    print(f"\n=== ISSUE REPLAY (live, {rep['model']}, mode={args.mode}) ===")
     print(f"hidden-verified {h['solved']}/{h['n']} = {h['rate']:.2f} CI[{h['ci'][0]:.2f},{h['ci'][1]:.2f}]  "
           f"patch-equivalent {rep['patch_equivalent_rate']:.2f}  ${rep['total_cost_usd']:.4f}")
     print(f"wrote {out}")
