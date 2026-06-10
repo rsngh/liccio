@@ -35,8 +35,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 3. **Solution/procedural memory** — exact recurrences become free verified solves (rung 0 of the router).
 
 ## What doesn't (yet), stated plainly
-- Orchestration **cannot manufacture capability**: the cheap model stays ~18%, and one hard bug
-  defeats the entire pool even with hints. The wall is model skill.
+- Orchestration **cannot manufacture capability** for the CHEAP model (stays ~18% on real bugs — the real wall). But the strong-agent ceiling is softer than it looked: the one bundle that defeated the pool single-shot (and resisted diagnosis-hints) was RECOVERED by an independent Codex resample — a stochastic miss, not an absolute wall.
 - The **learned** levers (difficulty routing) are data-starved at n≈27 — no usable signal.
 - Diagnosis hand-off and boosted cheap repair help at the margins, not the ceiling.
 
@@ -51,13 +50,11 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
   economics, multisample, verifier audit, solution-memory + predictive evals.
 
 ## Environment constraints (operational reality)
-- Detached/background jobs do **not** survive idle-suspend; foreground Bash caps at 10 min. All work
-  must be bounded, incrementally persisted, and committed every increment (pushed branch = only store).
+- Foreground Bash caps at 10 min; **background jobs (run_in_background) have NO such cap and DO run while the session is active** (the #8 ceiling run completed this way). They die only on idle-suspend, so long jobs must checkpoint per-step + resume, and commit every increment (pushed branch = only durable store).
 - No GitHub API (clone-only). Gemini live; Codex/Claude on subscription ($0 metered).
 
 ## What to try next (ranked, with the constraints in mind)
-1. **Verifier-guided multi-sampling on strong agents** — the only lever with a shot at the ceiling;
-   needs a background-capable runner (blocked here by suspend). Highest upside.
+1. **Verifier-guided multi-sampling on strong agents** — DEMONSTRATED (n=1): a background Codex resample recovered the one hard miss -> best-of-3 = 10/10. Next: scale resampling across many bundles to estimate the lift curve (run in background while the session is active; checkpoint+resume handles suspends).
 2. **Scale the corpus to ~100+ bundles** — the binding constraint on every learned component; the
    resumable harvester now supports it, but yield is repo-dependent (more-itertools-class repos work;
    data-file/complex-import repos don't).
@@ -77,8 +74,7 @@ unit tests green). 11 resumable per-sample multisample (9/9 solvable bundles sin
 --vendor-timeout. 13 difficulty probe wired into the router (drop_levers) — all three prongs are now
 router capabilities.
 
-**Tractable, reliable work is saturated.** The remaining upside is gated on inputs not available here,
-not on more ideas:
+**Update (post-pause):** asked to elevate the 600s cap, I clarified it's foreground-only and re-ran the #8 ceiling experiment as a true background job while the session was active — it CRACKED #8 (resampling recovers the universal miss; best-of-3 Codex = 10/10 hard). Remaining upside still gated on:
 - **Background-capable execution** — the #8 ceiling experiment (does test-time resampling crack the
   universal-miss bug) needs samples that each exceed the 600s foreground cap; detached jobs die on
   idle-suspend. With a runner that survives, the resumable multisample grinds it out.
