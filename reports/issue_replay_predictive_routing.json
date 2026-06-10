@@ -1,0 +1,226 @@
+{
+  "experiment": "issue_replay_predictive_routing",
+  "question": "can an intake-only probe skip doomed cheap attempts without dropping easy wins? (leave-one-out)",
+  "n_bundles": 27,
+  "n_doomed_cheap_rung": 22,
+  "threshold": 0.85,
+  "loo_accuracy": 0.296,
+  "skipped_doomed": 5,
+  "skipped_easy_MISTAKE": 2,
+  "kept_doomed_blindlike": 17,
+  "kept_easy_correct": 3,
+  "blind_cheap_cost": 0.54,
+  "predictive_cheap_cost": 0.4,
+  "cheap_cost_saved_pct": 25.9,
+  "best_zero_regret_threshold": null,
+  "best_zero_regret_skips": 0,
+  "threshold_sweep": {
+    "0.5": {
+      "skipped_doomed": 22,
+      "easy_wins_lost": 5,
+      "kept_doomed": 0,
+      "kept_easy": 0
+    },
+    "0.55": {
+      "skipped_doomed": 22,
+      "easy_wins_lost": 5,
+      "kept_doomed": 0,
+      "kept_easy": 0
+    },
+    "0.6": {
+      "skipped_doomed": 22,
+      "easy_wins_lost": 5,
+      "kept_doomed": 0,
+      "kept_easy": 0
+    },
+    "0.65": {
+      "skipped_doomed": 22,
+      "easy_wins_lost": 5,
+      "kept_doomed": 0,
+      "kept_easy": 0
+    },
+    "0.7": {
+      "skipped_doomed": 22,
+      "easy_wins_lost": 5,
+      "kept_doomed": 0,
+      "kept_easy": 0
+    },
+    "0.75": {
+      "skipped_doomed": 22,
+      "easy_wins_lost": 5,
+      "kept_doomed": 0,
+      "kept_easy": 0
+    },
+    "0.8": {
+      "skipped_doomed": 8,
+      "easy_wins_lost": 5,
+      "kept_doomed": 14,
+      "kept_easy": 0
+    },
+    "0.85": {
+      "skipped_doomed": 5,
+      "easy_wins_lost": 2,
+      "kept_doomed": 17,
+      "kept_easy": 3
+    },
+    "0.9": {
+      "skipped_doomed": 0,
+      "easy_wins_lost": 1,
+      "kept_doomed": 22,
+      "kept_easy": 4
+    },
+    "0.95": {
+      "skipped_doomed": 0,
+      "easy_wins_lost": 0,
+      "kept_doomed": 22,
+      "kept_easy": 5
+    }
+  },
+  "verdict": "INSUFFICIENT SIGNAL at n=27: no threshold skips doomed attempts without losing easy wins; intake-only features can't isolate the cheap-winnable minority \u2014 needs more labels or a cheap dry-run signal",
+  "shipped_weights": {
+    "bias": 1.21,
+    "module_kb": 0.311,
+    "test_kb": -0.283,
+    "is_feature_add": -0.061,
+    "is_package": -0.237,
+    "n_funcs_over_50": 0.488
+  },
+  "evidence_tier": "leave-one-out logistic over intake-only features; labels = did the cheap inproc rung fail; no gold/oracle access",
+  "predictions": [
+    {
+      "doomed": 0,
+      "p_fail": 0.839,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.788,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.79,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.785,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.859,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.854,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.854,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 0,
+      "p_fail": 0.843,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.84,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.857,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.856,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.76,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 0,
+      "p_fail": 0.841,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.76,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.771,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.839,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.754,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.812,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.784,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.795,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.795,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.778,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 0,
+      "p_fail": 0.897,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 0,
+      "p_fail": 0.907,
+      "skipped_cheap": 1
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.778,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.795,
+      "skipped_cheap": 0
+    },
+    {
+      "doomed": 1,
+      "p_fail": 0.778,
+      "skipped_cheap": 0
+    }
+  ]
+}
