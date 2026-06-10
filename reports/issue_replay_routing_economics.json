@@ -1,5 +1,6 @@
 {
   "experiment": "issue_replay_routing_economics",
+  "corpus": "v1",
   "question": "does ACP routing match the best single agent's solve rate at lower cost than running it on every task?",
   "n_bundles": 17,
   "ladder_cheapest_first": [
@@ -15,6 +16,22 @@
     "codex_cli": 0.12
   },
   "note": "subscriptions bill $0 metered; effective-cost prior models API-equivalent compute for a fair, scale-relevant comparison. Solve/invocation counts are exact from the real per-agent results.",
+  "agent_separation": {
+    "per_agent_solved": {
+      "inproc_repair": 3,
+      "gemini_cli": 16,
+      "claude_code": 15,
+      "codex_cli": 17
+    },
+    "per_agent_rate": {
+      "inproc_repair": 0.176,
+      "gemini_cli": 0.941,
+      "claude_code": 0.882,
+      "codex_cli": 1.0
+    },
+    "spread_max_minus_min": 0.824,
+    "union_solved": 17
+  },
   "policies": [
     {
       "policy": "agent_only:inproc_repair",

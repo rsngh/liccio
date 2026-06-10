@@ -38,9 +38,13 @@ REPOS: list[tuple[str, list[tuple[str, str]]]] = [
     ("https://github.com/r1chardj0n3s/parse",
      [("parse.py", "tests/test_parse.py"), ("parse.py", "tests/test_bugs.py"),
       ("parse.py", "tests/test_pattern.py"), ("parse.py", "tests/test_search.py")]),
+    ("https://github.com/more-itertools/more-itertools",
+     [("more_itertools/more.py", "tests/test_more.py"),
+      ("more_itertools/recipes.py", "tests/test_recipes.py")]),
 ]
 # repos whose tests import sibling submodules -> harvest as package bundles (real package laid down)
-PACKAGE_REPOS = {"https://github.com/pytoolz/toolz"}
+PACKAGE_REPOS = {"https://github.com/pytoolz/toolz",
+                 "https://github.com/more-itertools/more-itertools"}
 
 
 def main() -> int:

@@ -25,27 +25,37 @@ from pathlib import Path
 # (report path, effective-cost prior per successful-or-attempted run, in illustrative $ units).
 # Ordered cheapest -> strongest; the prior models API-equivalent compute (subscription = $0 metered,
 # but modeled here so the routing economics are meaningful and scale-relevant).
-AGENTS = [
-    ("inproc_repair", "reports/issue_replay_repair_real_gemini.json", 0.02),
-    ("gemini_cli", "reports/issue_replay_vendor_gemini_cli_real.json", 0.06),
-    ("claude_code", "reports/issue_replay_vendor_claude_code_real.json", 0.10),
-    ("codex_cli", "reports/issue_replay_vendor_codex_cli_real.json", 0.12),
-]
+# effective-cost prior per agent (illustrative $ units, cheapest->strongest)
+COST = {"inproc_repair": 0.02, "gemini_cli": 0.06, "claude_code": 0.10, "codex_cli": 0.12}
+# per-corpus report paths (v1 = the easy 17; hard = the P4 harder 24)
+CORPORA = {
+    "v1": {"inproc_repair": "reports/issue_replay_repair_real_gemini.json",
+           "gemini_cli": "reports/issue_replay_vendor_gemini_cli_real.json",
+           "claude_code": "reports/issue_replay_vendor_claude_code_real.json",
+           "codex_cli": "reports/issue_replay_vendor_codex_cli_real.json"},
+    "hard": {"inproc_repair": "reports/issue_replay_repair_hard.json",
+             "gemini_cli": "reports/issue_replay_vendor_gemini_cli_hard.json",
+             "claude_code": "reports/issue_replay_vendor_claude_code_hard.json",
+             "codex_cli": "reports/issue_replay_vendor_codex_cli_hard.json"},
+}
 
 
-def _load() -> tuple[list[str], dict[str, list[int]], dict[str, float], list[str]]:
-    names, solves, cost, repos = [], {}, {}, []
-    for name, path, c in AGENTS:
-        if not Path(path).exists():
-            continue
-        d = json.loads(Path(path).read_text())
-        pb = d["per_bundle"]
-        names.append(name)
-        solves[name] = [int(r["hidden_pass"]) for r in pb]
-        cost[name] = c
-        if not repos:
-            repos = [r["repo"] for r in pb]
-    return names, solves, cost, repos
+def _load(corpus: str) -> tuple[list[str], dict[str, list[int]], dict[str, float], list[str]]:
+    """Load per-agent solve vectors for a corpus (v1 | hard | combined = v1 then hard concatenated)."""
+    sources = ["v1", "hard"] if corpus == "combined" else [corpus]
+    names: list[str] = []
+    solves: dict[str, list[int]] = {}
+    repos: list[str] = []
+    for ci, c in enumerate(sources):
+        paths = CORPORA[c]
+        present = [a for a in COST if Path(paths.get(a, "")).exists()]
+        if ci == 0:
+            names = present
+        for a in names:
+            pb = json.loads(Path(paths[a]).read_text())["per_bundle"]
+            solves.setdefault(a, []).extend(int(r["hidden_pass"]) for r in pb)
+        repos += [r["repo"] for r in json.loads(Path(paths[names[0]]).read_text())["per_bundle"]]
+    return names, solves, {a: COST[a] for a in names}, repos
 
 
 def _agent_only(name: str, solves: dict, cost: dict, n: int) -> dict:
@@ -115,27 +125,40 @@ def _family_memory(order: list[str], solves: dict, cost: dict, repos: list[str])
             "cost_per_success": round(total / solved, 4) if solved else None}
 
 
+def _separation(names: list[str], solves: dict, n: int) -> dict:
+    """Per-agent solve rate + how much the agents SPREAD (harder bundles should distinguish them)."""
+    rates = {a: round(sum(solves[a]) / n, 3) for a in names}
+    return {"per_agent_solved": {a: sum(solves[a]) for a in names}, "per_agent_rate": rates,
+            "spread_max_minus_min": round(max(rates.values()) - min(rates.values()), 3),
+            "union_solved": sum(1 for i in range(n) if any(solves[a][i] for a in names))}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--corpus", default="v1", choices=["v1", "hard", "combined"])
     ap.add_argument("--out", default="reports/issue_replay_routing_economics.json")
     args = ap.parse_args()
-    names, solves, cost, repos = _load()
+    names, solves, cost, repos = _load(args.corpus)
     n = len(next(iter(solves.values())))
     order = [a for a in ("inproc_repair", "gemini_cli", "claude_code", "codex_cli") if a in names]
     policies = [_agent_only(a, solves, cost, n) for a in names]
     policies.append(_escalation(order, solves, cost, n))
     policies.append(_ensemble(order, solves, cost, n))
     fam = _family_memory(order, solves, cost, repos)
+    sep = _separation(names, solves, n)
     rep = {
         "experiment": "issue_replay_routing_economics",
+        "corpus": args.corpus,
         "question": "does ACP routing match the best single agent's solve rate at lower cost than running it on every task?",
         "n_bundles": n, "ladder_cheapest_first": order,
-        "effective_cost_prior_usd": {a: c for a, c in [(x[0], x[2]) for x in AGENTS] if a in names},
+        "effective_cost_prior_usd": cost,
         "note": "subscriptions bill $0 metered; effective-cost prior models API-equivalent compute for a fair, scale-relevant comparison. Solve/invocation counts are exact from the real per-agent results.",
-        "policies": policies, "family_memory": fam,
+        "agent_separation": sep, "policies": policies, "family_memory": fam,
     }
     Path(args.out).write_text(json.dumps(rep, indent=2) + "\n")
-    print(f"\n=== ACP ROUTING vs AGENT-ONLY (n={n}, cheapest-first ladder {order}) ===")
+    print(f"\n=== ACP ROUTING vs AGENT-ONLY (corpus={args.corpus}, n={n}, ladder {order}) ===")
+    print("per-agent solve rate (separation):", sep["per_agent_rate"],
+          f"spread={sep['spread_max_minus_min']} union={sep['union_solved']}/{n}")
     print(f"{'policy':46} {'solved':>7} {'strongest_runs':>15} {'eff_cost':>9} {'cost/succ':>10}")
     for p in policies:
         print(f"{p['policy']:46} {str(p['solved'])+'/'+str(n):>7} {p.get('strongest_invocations',0):>15} "
