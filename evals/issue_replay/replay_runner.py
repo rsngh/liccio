@@ -16,12 +16,17 @@ from pathlib import Path
 from evals.issue_replay.replay_task import IssueReplayTask
 
 
-def _run_test(repo: Path, test_name: str) -> bool:
+def _run_test(repo: Path, test_name: str, *, timeout: int = 150) -> bool:
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    return subprocess.run(
-        ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", test_name],
-        cwd=repo, capture_output=True, text=True, timeout=60, check=False, env=env).returncode == 0
+    cmd = ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", test_name]
+    try:
+        return subprocess.run(cmd, cwd=repo, capture_output=True, text=True, timeout=timeout,
+                              check=False, env=env).returncode == 0
+    except subprocess.TimeoutExpired:
+        # a hanging/too-slow candidate (e.g. an agent fix with an infinite loop) grades as a FAIL,
+        # never crashing the run (more-itertools' large test files can be slow under load)
+        return False
 
 
 def build_repo(task: IssueReplayTask, root: Path, *, module_src: str) -> Path:
