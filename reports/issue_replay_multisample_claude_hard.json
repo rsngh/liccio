@@ -1,0 +1,28 @@
+{
+  "experiment": "issue_replay_multisample",
+  "agent": "claude_code",
+  "n_samples": 3,
+  "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
+  "completed": 0,
+  "best_of_k_solved": {
+    "1": 0,
+    "2": 0,
+    "3": 0
+  },
+  "single_shot_solved": 0,
+  "best_of_n_solved": 0,
+  "elapsed_s": 306.2,
+  "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
+  "per_bundle": [
+    {
+      "idx": 0,
+      "repo": "pytoolz/toolz",
+      "issue": "FIX: compatibility with python3.7",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    }
+  ]
+}
