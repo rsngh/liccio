@@ -22,6 +22,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Pool insures against unknown-best | expected union of a *random* single agent only 0.71; ~3 random agents to reach union | **solid** |
 | Verify-stop is necessary | a public-only signal would auto-commit **24% wrong** fixes (108-grading audit) | **solid** |
 | Solution memory frees recurrences | exact-recurrence replay **17/17 = 100%** at zero agent calls; ~50% workload cost saved at 50% recurrence | **solid (offline)** |
+| Memory drives cost down over sessions | over a recurring workload: rung-memory saves **33–36%**, solution-memory **75%** vs blind re-escalation — **independent of cost prior**, rescuing the shallow-gradient regime | **solid (offline)** |
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
 | Boosted cheap repair (repair_v2) | hard cheap rung 2/10 → 3/10 (+1 feature-add), higher per-attempt cost | **modest** |
 | Predictive (difficulty) routing | LOO at n=27: no zero-regret threshold; can't isolate the cheap-winnable minority | **negative — data-starved** |
