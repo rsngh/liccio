@@ -260,7 +260,9 @@ def run(model: str, bundles: list[IssueReplayTask], *, mode: str = "single", max
     }
 
 
-def _load_bundles(which: str) -> list[IssueReplayTask]:
+def _load_bundles(which: str, bundle_file: str = "") -> list[IssueReplayTask]:
+    if bundle_file:  # explicit corpus file (e.g. the P4 net-new harder bundles) overrides `which`
+        return [IssueReplayTask(**d) for d in json.loads(Path(bundle_file).read_text())]
     bundles: list[IssueReplayTask] = []
     if which in ("synthetic", "all"):
         bundles += frozen_bundles()
@@ -275,6 +277,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="gemini", choices=list(_MODELS))
     ap.add_argument("--bundles", default="synthetic", choices=["synthetic", "real", "all"])
+    ap.add_argument("--bundle-file", default="", help="explicit full-bundle JSON to run (overrides --bundles)")
     ap.add_argument("--mode", default="single", choices=["single", "harness", "repair", "vendor"])
     ap.add_argument("--agent", default="claude_code",
                     choices=["claude_code", "codex_cli", "gemini_cli"], help="vendor CLI agent (mode=vendor)")
@@ -285,7 +288,7 @@ def main() -> int:
     args = ap.parse_args()
     if os.environ.get("ANTHROPIC_API_KEY"):
         os.environ.setdefault("ACP_ANTHROPIC_API_KEY", os.environ["ANTHROPIC_API_KEY"])
-    picked = _load_bundles(args.bundles)
+    picked = _load_bundles(args.bundles, args.bundle_file)
     if args.limit:
         picked = picked[:args.limit]
     rep = run(args.model, picked, mode=args.mode, max_steps=args.max_steps, delay_s=args.delay,

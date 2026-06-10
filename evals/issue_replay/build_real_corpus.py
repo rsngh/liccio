@@ -29,6 +29,15 @@ REPOS: list[tuple[str, list[tuple[str, str]]]] = [
       ("strutils", "dictutils", "cacheutils", "timeutils", "setutils", "listutils",
        "iterutils", "mathutils", "funcutils", "formatutils", "fileutils", "jsonutils",
        "statsutils", "queueutils", "tableutils", "namedutils", "ioutils")]),
+    # harder, algorithmically richer flat-module libs added in P4 to break the 17/17 ceiling and
+    # produce bundles that actually SEPARATE the agents (toolz = functional/currying edge cases;
+    # parse = format-string parsing). Same `from pkg.module import fn` pattern the harvester flattens.
+    ("https://github.com/pytoolz/toolz",
+     [(f"toolz/{m}.py", f"toolz/tests/test_{m}.py") for m in
+      ("itertoolz", "functoolz", "dicttoolz", "recipes")]),
+    ("https://github.com/r1chardj0n3s/parse",
+     [("parse.py", "tests/test_parse.py"), ("parse.py", "tests/test_bugs.py"),
+      ("parse.py", "tests/test_pattern.py"), ("parse.py", "tests/test_search.py")]),
 ]
 
 
@@ -52,6 +61,15 @@ def main() -> int:
                 for b in got:
                     print(f"  + {b.repo_name} {b.base_sha} :: {b.issue_title[:64]}", flush=True)
                 all_bundles += got
+    # dedupe identical fixes harvested via >1 test file (same repo+commit+gold = one bundle)
+    seen: set[tuple[str, str, str]] = set()
+    deduped = []
+    for b in all_bundles:
+        key = (b.repo_name, b.base_sha, b.gold_patch_hash)
+        if key not in seen:
+            seen.add(key)
+            deduped.append(b)
+    all_bundles = deduped
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     manifest = {
