@@ -28,33 +28,47 @@ from evals.issue_replay.replay_task import IssueReplayTask
 from evals.issue_replay.run import _produce_vendor
 
 
-def run_multisample(bundles: list[IssueReplayTask], agent: str, n: int, *, out: Path | None = None) -> dict:
-    per_bundle = []
+def run_multisample(bundles: list[IssueReplayTask], agent: str, n: int, *, out: Path | None = None,
+                    offset: int = 0) -> dict:
     t0 = time.time()
+    by_idx: dict[int, dict] = {}
+    if out is not None and out.exists():     # RESUME: reload prior samples so windows accumulate
+        try:
+            prior = json.loads(out.read_text()).get("per_bundle", [])
+            by_idx = {r.get("idx", i): {**r, "idx": r.get("idx", i)} for i, r in enumerate(prior)}
+            print(f"resume: loaded {len(by_idx)} prior bundle records", flush=True)
+        except (json.JSONDecodeError, KeyError):
+            by_idx = {}
     with tempfile.TemporaryDirectory(prefix="multisample_") as d:
         root = Path(d)
-        for bi, b in enumerate(bundles):
-            samples = []
-            first_pass = None
-            for s in range(n):
-                produced, cost, _ = _produce_vendor(b, agent, root / f"b{bi}_s{s}")
-                hidden, _ = verify(b, root / f"v{bi}_s{s}", module_src=produced)
-                samples.append(int(hidden))
-                print(f"[{b.repo_name} #{bi}] {agent} sample {s + 1}/{n} hidden={hidden} "
+        for li, b in enumerate(bundles):
+            bi = offset + li   # absolute bundle index (stable across --start slices for resume)
+            rec = by_idx.get(bi, {"idx": bi, "repo": b.repo_name, "issue": b.issue_title[:70],
+                                  "samples": [], "solved": False, "samples_to_success": None})
+            # RESUMABLE: a bundle is done once it has a passing sample or N samples already
+            if rec["solved"] or len(rec["samples"]) >= n:
+                by_idx[bi] = rec
+                continue
+            while len(rec["samples"]) < n and not rec["solved"]:
+                s = len(rec["samples"])
+                produced, cost, _ = _produce_vendor(b, agent, root / f"b{bi}_s{s}_{time.time_ns()}")
+                hidden, _ = verify(b, root / f"v{bi}_s{s}_{time.time_ns()}", module_src=produced)
+                rec["samples"].append(int(hidden))
+                if hidden:
+                    rec["solved"] = True
+                    rec["samples_to_success"] = len(rec["samples"])
+                print(f"[{b.repo_name} #{bi}] {agent} sample {len(rec['samples'])}/{n} hidden={hidden} "
                       f"({round(time.time() - t0, 0)}s elapsed)", flush=True)
-                if hidden and first_pass is None:
-                    first_pass = s + 1
-                    break  # verifier-select: stop at the first passing sample (cheapest best-of-N)
-            per_bundle.append({"repo": b.repo_name, "issue": b.issue_title[:70],
-                               "samples": samples, "solved": any(samples),
-                               "samples_to_success": first_pass})
-            if out is not None:
-                out.write_text(json.dumps(_summary(per_bundle, agent, n, t0), indent=2) + "\n")
-    return _summary(per_bundle, agent, n, t0)
+                by_idx[bi] = rec
+                if out is not None:   # persist after EVERY sample so a kill mid-bundle keeps progress
+                    out.write_text(json.dumps(_summary(by_idx, agent, n, t0), indent=2) + "\n")
+            by_idx[bi] = rec
+    return _summary(by_idx, agent, n, t0)
 
 
-def _summary(per_bundle: list[dict], agent: str, n: int, t0: float) -> dict:
-    done = len(per_bundle)
+def _summary(by_idx: dict[int, dict], agent: str, n: int, t0: float) -> dict:
+    per_bundle = [by_idx[i] for i in sorted(by_idx)]
+    done = sum(1 for r in per_bundle if r["solved"] or len(r["samples"]) >= n)
     bestofk = {k: sum(1 for r in per_bundle if any(r["samples"][:k])) for k in range(1, n + 1)}
     return {
         "experiment": "issue_replay_multisample", "agent": agent, "n_samples": n,
@@ -73,12 +87,13 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=3)
     ap.add_argument("--bundle-file", required=True)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--start", type=int, default=0, help="absolute bundle index to start at (resume-safe)")
     ap.add_argument("--out", default="reports/issue_replay_multisample.json")
     args = ap.parse_args()
     bundles = [IssueReplayTask(**d) for d in json.loads(Path(args.bundle_file).read_text())]
-    if args.limit:
-        bundles = bundles[:args.limit]
-    rep = run_multisample(bundles, args.agent, args.n, out=Path(args.out))
+    end = args.limit or len(bundles)
+    bundles = bundles[args.start:end]
+    rep = run_multisample(bundles, args.agent, args.n, out=Path(args.out), offset=args.start)
     Path(args.out).write_text(json.dumps(rep, indent=2) + "\n")
     print(f"\n=== MULTISAMPLE {args.agent} N={args.n} === single-shot {rep['single_shot_solved']} "
           f"-> best-of-{args.n} {rep['best_of_n_solved']} / {rep['completed']}  curve {rep['best_of_k_solved']}")
