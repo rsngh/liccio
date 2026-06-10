@@ -63,3 +63,28 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
    data-file/complex-import repos don't).
 3. **Solution-memory in production loops** — biggest realistic payoff (repeated work on one codebase).
 4. **Harden the verifier's blind spot** — independent fresh-test gate for high-stakes commits.
+
+---
+
+## Autonomous session log (rounds 1–13) + why active work is paused
+Delivered this session (all committed/pushed, metered cost ~$0 — offline + subscription agents):
+1–3 solution-memory module, payoff eval (exact-recurrence 100%), wired as router rung-0.
+4 resumable corpus builder + this scorecard. 5 coverage-scaling (refuted ensemble-coverage; Codex
+dominates). 6 reliability sweep (timeout-crash class guarded everywhere). 7 cost-sensitivity (the
+saving is CONDITIONAL — needs a steep gradient or difficulty-skip). 8 memory-economics (memory saves
+33–75%, independent of cost prior). 9 economics-math unit tests. 10 end-to-end compose test (916
+unit tests green). 11 resumable per-sample multisample (9/9 solvable bundles single-shot). 12
+--vendor-timeout. 13 difficulty probe wired into the router (drop_levers) — all three prongs are now
+router capabilities.
+
+**Tractable, reliable work is saturated.** The remaining upside is gated on inputs not available here,
+not on more ideas:
+- **Background-capable execution** — the #8 ceiling experiment (does test-time resampling crack the
+  universal-miss bug) needs samples that each exceed the 600s foreground cap; detached jobs die on
+  idle-suspend. With a runner that survives, the resumable multisample grinds it out.
+- **More hard-bundle data (~100+)** — every learned component (difficulty routing especially) is
+  data-starved at n≈27. Harvest yield is repo-dependent; only boltons/more-itertools-class repos work.
+- **Live budget for repair_v2 vs v1 on hard bundles** — to firm up the modest cheap-rung gain.
+
+I will not manufacture low-value rounds. Point me at any of the above (or a new direction / new PDFs)
+and I'll continue.
