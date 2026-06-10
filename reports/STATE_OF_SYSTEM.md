@@ -17,6 +17,8 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Real coding agents break the wall | Codex 17/17, Gemini 16/17, Claude Code 15/17 (easy); 7–9/10 (hard) | **solid** |
 | Cost-routing matches the best agent for less | escalation = best single agent's solve rate at **~30–37% lower cost**, invoking the strongest agent ~0–1× instead of every task | **solid — the core value** |
 | Harder bundles separate the frontier | hard-10: inproc .2 / claude .7 / gemini .8 / codex .9; one bug no agent solves | **solid** |
+| Ensemble adds coverage over the best agent | greedy: **Codex alone = the full union** (superset); +0 marginal coverage from others | **refuted — pool value is cost+robustness, not coverage** |
+| Pool insures against unknown-best | expected union of a *random* single agent only 0.71; ~3 random agents to reach union | **solid** |
 | Verify-stop is necessary | a public-only signal would auto-commit **24% wrong** fixes (108-grading audit) | **solid** |
 | Solution memory frees recurrences | exact-recurrence replay **17/17 = 100%** at zero agent calls; ~50% workload cost saved at 50% recurrence | **solid (offline)** |
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
