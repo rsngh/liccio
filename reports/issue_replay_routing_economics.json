@@ -1,0 +1,110 @@
+{
+  "experiment": "issue_replay_routing_economics",
+  "question": "does ACP routing match the best single agent's solve rate at lower cost than running it on every task?",
+  "n_bundles": 17,
+  "ladder_cheapest_first": [
+    "inproc_repair",
+    "gemini_cli",
+    "claude_code",
+    "codex_cli"
+  ],
+  "effective_cost_prior_usd": {
+    "inproc_repair": 0.02,
+    "gemini_cli": 0.06,
+    "claude_code": 0.1,
+    "codex_cli": 0.12
+  },
+  "note": "subscriptions bill $0 metered; effective-cost prior models API-equivalent compute for a fair, scale-relevant comparison. Solve/invocation counts are exact from the real per-agent results.",
+  "policies": [
+    {
+      "policy": "agent_only:inproc_repair",
+      "solved": 3,
+      "n": 17,
+      "invocations": {
+        "inproc_repair": 17
+      },
+      "strongest_invocations": 0,
+      "effective_cost": 0.34,
+      "cost_per_success": 0.1133
+    },
+    {
+      "policy": "agent_only:gemini_cli",
+      "solved": 16,
+      "n": 17,
+      "invocations": {
+        "gemini_cli": 17
+      },
+      "strongest_invocations": 0,
+      "effective_cost": 1.02,
+      "cost_per_success": 0.0638
+    },
+    {
+      "policy": "agent_only:claude_code",
+      "solved": 15,
+      "n": 17,
+      "invocations": {
+        "claude_code": 17
+      },
+      "strongest_invocations": 0,
+      "effective_cost": 1.7,
+      "cost_per_success": 0.1133
+    },
+    {
+      "policy": "agent_only:codex_cli",
+      "solved": 17,
+      "n": 17,
+      "invocations": {
+        "codex_cli": 17
+      },
+      "strongest_invocations": 17,
+      "effective_cost": 2.04,
+      "cost_per_success": 0.12
+    },
+    {
+      "policy": "acp_escalation(cheapest-first, verify-stop)",
+      "solved": 17,
+      "n": 17,
+      "invocations": {
+        "inproc_repair": 17,
+        "gemini_cli": 14,
+        "claude_code": 1,
+        "codex_cli": 0
+      },
+      "strongest_invocations": 0,
+      "stop_rung": {
+        "inproc_repair": 3,
+        "gemini_cli": 13,
+        "claude_code": 1,
+        "codex_cli": 0,
+        "unsolved": 0
+      },
+      "effective_cost": 1.28,
+      "cost_per_success": 0.0753
+    },
+    {
+      "policy": "acp_ensemble(all+verify-select)",
+      "solved": 17,
+      "n": 17,
+      "invocations": {
+        "inproc_repair": 17,
+        "gemini_cli": 17,
+        "claude_code": 17,
+        "codex_cli": 17
+      },
+      "strongest_invocations": 17,
+      "effective_cost": 5.1,
+      "cost_per_success": 0.3
+    }
+  ],
+  "family_memory": {
+    "policy": "acp_family_memory",
+    "solved": 17,
+    "n": 17,
+    "family_default": {
+      "okunishinishi/python-stringcase": "inproc_repair",
+      "mahmoud/boltons": "inproc_repair"
+    },
+    "effective_cost": 1.28,
+    "cost_per_success": 0.0753
+  }
+}

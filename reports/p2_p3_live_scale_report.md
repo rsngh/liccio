@@ -101,6 +101,31 @@ This is the decisive result of the whole investigation and it validates the meta
   agent wins, to drive cost/quota down over time.** It does *not* out-muscle a frontier agent by
   wrapping it — it orchestrates a pool of them.
 
+## P3 — ACP routing vs agent-only: the value, quantified (`reports/issue_replay_routing_economics.json`)
+
+Offline policy evaluation over the real per-agent results (an agent "succeeds" iff its produced
+module passed the held-out test — the acceptance check the router runs as its stop-signal; invocation
+counts are exact, the per-agent $ is a transparent API-equivalent prior since subscriptions bill $0
+metered). Cheapest-first ladder: inproc-repair → gemini-cli → claude-code → codex.
+
+| policy | solved | strongest-agent runs | cost/verified-success |
+|---|---|---|---|
+| agent-only: inproc model | 3/17 | 0 | 0.113 |
+| agent-only: Gemini CLI | 16/17 | 0 | 0.064 |
+| agent-only: Claude Code | 15/17 | 0 | 0.113 |
+| agent-only: **Codex (best single)** | **17/17** | **17** | 0.120 |
+| **ACP escalation (cheapest-first + verify-stop)** | **17/17** | **0** | **0.075** |
+| ACP ensemble (all + verify-select) | 17/17 | 17 | 0.300 |
+
+**ACP routing matches the best single agent's 17/17 at ~37% lower cost, and never invokes the
+strongest agent at all** — the ladder stops at: inproc 3, Gemini 13, Claude Code 1, Codex 0. It also
+beats every *cheaper* single agent on solve rate (+1 vs Gemini, +2 vs Claude Code) by escalating only
+on the misses. That is the meta-router's value made concrete: **≥ the best single agent on quality,
+< always-running-it on cost.** The ensemble row is the boosting upper bound (max robustness, max cost);
+per-family memory (`family_memory` in the JSON) is the mechanism that drives the escalation cost down
+further over repeated work by defaulting each repo family to its known cheapest-sufficient agent.
+
+
 **The model-only plateau (still the honest record) — and why it cut against easy optimism.** We tried, in
 order: a frontier model, an autonomous tool-loop harness, and then a research-grounded *enhanced*
 repair harness (the convergent recommendation of three paper sweeps: localize the bug to a function,
