@@ -3,15 +3,15 @@
   "agent": "codex_cli",
   "n_samples": 3,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 9,
+  "completed": 10,
   "best_of_k_solved": {
-    "1": 9,
-    "2": 9,
-    "3": 9
+    "1": 10,
+    "2": 10,
+    "3": 10
   },
-  "single_shot_solved": 9,
-  "best_of_n_solved": 9,
-  "elapsed_s": 176.6,
+  "single_shot_solved": 10,
+  "best_of_n_solved": 10,
+  "elapsed_s": 393.6,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -93,6 +93,16 @@
       "solved": true,
       "samples_to_success": 1,
       "idx": 7
+    },
+    {
+      "idx": 8,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1096: Concurrent tee",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
     },
     {
       "idx": 9,

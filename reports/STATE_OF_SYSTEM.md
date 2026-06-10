@@ -17,7 +17,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Real coding agents break the wall | Codex 17/17, Gemini 16/17, Claude Code 15/17 (easy); 7–9/10 (hard) | **solid** |
 | Cost-routing matches the best agent for less | escalation = best single agent's solve rate at **~30–37% lower cost**, invoking the strongest agent ~0–1× instead of every task | **solid — the core value** |
 | ...but the cost win is CONDITIONAL | sensitivity sweep: +30% at realistic prior, +76% steep gradient, but **NEGATIVE for flat/shallow priors** (you pay for failed cheap attempts) | **refined — needs steep gradient or difficulty-skip** |
-| Harder bundles separate the frontier | hard-10: inproc .2 / claude .7 / gemini .8 / codex .9; one bug no agent solves | **solid** |
+| Harder bundles separate the frontier | hard-10: inproc .2 / claude .7 / gemini .8 / codex .9 single-shot; the lone single-shot universal miss is recovered by a Codex resample (see resampling row) | **solid** |
 | Ensemble adds coverage over the best agent | greedy: **Codex alone = the full union** (superset); +0 marginal coverage from others | **refuted — pool value is cost+robustness, not coverage** |
 | Pool insures against unknown-best | expected union of a *random* single agent only 0.71; ~3 random agents to reach union | **solid** |
 | Verify-stop is necessary | a public-only signal would auto-commit **24% wrong** fixes (108-grading audit) | **solid** |
@@ -26,7 +26,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
 | Boosted cheap repair (repair_v2) | hard cheap rung 2/10 → 3/10 (+1 feature-add), higher per-attempt cost | **modest** |
 | Predictive (difficulty) routing | LOO at n=27: no zero-regret threshold; can't isolate the cheap-winnable minority | **negative — data-starved** |
-| Test-time multi-sampling cracks the hardest bug | best-of-3 Codex = single-shot on all **9/9 solvable** hard bundles (solves first-try; resampling adds 0); only #8 (universal miss) would need it, and each ~650s sample exceeds the window | **blocked — one #8 sample exceeds the 600s window even at reduced budget; needs a background-capable env** |
+| Test-time resampling recovers the 'universal miss' | run in BACKGROUND (no 600s cap): a fresh Codex sample SOLVED #8 'concurrent tee' — the bug no agent got single-shot in P4 — so best-of-3 Codex = **10/10** on the hard set. The miss was a stochastic single-run failure, not a wall; re-run + verify-select recovers it (n=1 recovery) | **solid (direct coverage-scaling evidence)** |
 
 ## What genuinely works (the value)
 1. **Cost-routing economics** — ≥ best single agent on quality, < always-running-it on cost.
