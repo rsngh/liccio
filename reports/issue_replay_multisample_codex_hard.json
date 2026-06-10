@@ -3,15 +3,15 @@
   "agent": "codex_cli",
   "n_samples": 3,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 7,
+  "completed": 8,
   "best_of_k_solved": {
-    "1": 7,
-    "2": 7,
-    "3": 7
+    "1": 8,
+    "2": 8,
+    "3": 8
   },
-  "single_shot_solved": 7,
-  "best_of_n_solved": 7,
-  "elapsed_s": 1209.2,
+  "single_shot_solved": 8,
+  "best_of_n_solved": 8,
+  "elapsed_s": 1359.1,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -71,6 +71,15 @@
     {
       "repo": "more-itertools/more-itertools",
       "issue": "Fix support for iterators using \"repeat\"",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1098: Add synchronized decorator",
       "samples": [
         1
       ],
