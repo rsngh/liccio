@@ -26,7 +26,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
 | Boosted cheap repair (repair_v2) | hard cheap rung 2/10 → 3/10 (+1 feature-add), higher per-attempt cost | **modest** |
 | Predictive (difficulty) routing | LOO at n=27: no zero-regret threshold; can't isolate the cheap-winnable minority | **negative — data-starved** |
-| Test-time multi-sampling cracks the hardest bug | best-of-3 Codex = single-shot on all **9/9 solvable** hard bundles (solves first-try; resampling adds 0); only #8 (universal miss) would need it, and each ~650s sample exceeds the window | **open — #8 resampling environment-blocked (runner now resumable)** |
+| Test-time multi-sampling cracks the hardest bug | best-of-3 Codex = single-shot on all **9/9 solvable** hard bundles (solves first-try; resampling adds 0); only #8 (universal miss) would need it, and each ~650s sample exceeds the window | **blocked — one #8 sample exceeds the 600s window even at reduced budget; needs a background-capable env** |
 
 ## What genuinely works (the value)
 1. **Cost-routing economics** — ≥ best single agent on quality, < always-running-it on cost.
@@ -46,7 +46,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
   `build_agent_ladder` / `make_agent_attempt_fn`.
 - `src/acp/memory/` — `experience_bank` (which rung won/failed) + `solution_store` (cache+replay fixes).
 - `src/acp/verification/` — verify-stop, proxy/independent checks, safety invariants.
-- `src/acp/routing/difficulty_probe.py` — predictive routing (infra; needs more data).
+- `src/acp/routing/difficulty_probe.py` — predictive routing; wired into route_and_solve via `drop_levers` (conservative cheap-rung pre-filter). Infra solid; needs more data for signal.
 - `evals/issue_replay/` — corpus build/harvest (flat + package mode), live runner, escalation
   economics, multisample, verifier audit, solution-memory + predictive evals.
 

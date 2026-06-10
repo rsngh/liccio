@@ -142,7 +142,8 @@ def route_and_solve(*, task_id: str, failure_signature: str, repo_family: str, t
                     task_type: str, risk_level: str, budget_class: str, ladder: list[Lever],
                     attempt_fn: AttemptFn, memory: ExperienceBank | None = None,
                     memory_policy: MemoryPolicy | None = None, now: float = 0.0,
-                    recommend_fn=None, avoid_fn=None, solution_replay_fn=None) -> UnifiedResult:
+                    recommend_fn=None, avoid_fn=None, solution_replay_fn=None,
+                    drop_levers: set[str] | None = None) -> UnifiedResult:
     """Route one task through memory-seeded, FinOps-gated, safety-bounded escalation; then learn.
 
     `solution_replay_fn(task_id) -> (solved, cost) | None` is RUNG 0 (procedural memory): if a cached
@@ -163,8 +164,12 @@ def route_and_solve(*, task_id: str, failure_signature: str, repo_family: str, t
                                  lever_path=["solution_cache", "commit_success"], total_cost=cost,
                                  used_memory_seed=True, ladder_used=["solution_cache"],
                                  safety_notes=["solution-cache replay verified by the held-out test"])
+    # PRONG C: difficulty-probe pre-filter — drop the cheap rungs a confident probe predicts doomed
+    # (the caller's DifficultyProbe decides; conservative default drops nothing). Always keep >=1 rung.
+    base = [lev for lev in ladder if lev.name not in drop_levers] if drop_levers else ladder
+    base = base or ladder[:1]
     ordered, avoided, seeded = _memory_reorder(
-        ladder, memory=memory, tenant=tenant, failure_signature=failure_signature,
+        base, memory=memory, tenant=tenant, failure_signature=failure_signature,
         recommend_fn=recommend_fn, avoid_fn=avoid_fn)
     trimmed = _finops_trim(ordered, budget_class=budget_class)
     res = run_controller(task_id, attempt_fn, risk_level=risk_level,

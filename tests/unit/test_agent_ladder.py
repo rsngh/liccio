@@ -79,3 +79,22 @@ def test_solution_cache_miss_falls_through_to_ladder() -> None:
                           task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
                           attempt_fn=fn, memory=None, solution_replay_fn=lambda _t: None)
     assert res.solved and "gemini_cli" in res.lever_path and "solution_cache" not in res.ladder_used
+
+
+def test_difficulty_prefilter_drops_doomed_cheap_rung() -> None:
+    # probe predicts the cheap inproc rung is doomed -> drop it; ladder starts at gemini, saving inproc's cost
+    fn = make_agent_attempt_fn(LADDER, _solve_fn({"gemini_cli", "claude_code", "codex_cli"}))
+    res = route_and_solve(task_id="b", failure_signature="bugfix:hard", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None, drop_levers={"inproc_repair"})
+    assert res.solved and "inproc_repair" not in res.ladder_used
+    assert res.lever_path[0] == "gemini_cli"   # started at the first non-dropped rung
+
+
+def test_difficulty_prefilter_never_empties_the_ladder() -> None:
+    # pathological: probe tries to drop everything -> keep at least one rung (never abstain by mistake)
+    fn = make_agent_attempt_fn(LADDER, _solve_fn({"inproc_repair", "gemini_cli", "claude_code", "codex_cli"}))
+    res = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None, drop_levers={lev.name for lev in LADDER})
+    assert res.ladder_used and res.solved
