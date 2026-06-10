@@ -116,7 +116,7 @@ _CRITIC = (
 
 
 def repair_v2(task: IssueReplayTask, root: Path, *, model_id: str, rate: tuple[float, float],
-              k: int = 3, rounds: int = 3) -> tuple[str, float, bool]:
+              k: int = 3, rounds: int = 2) -> tuple[str, float, bool]:
     """Boosted localized repair. Returns (produced_module_src, cost_usd, ran)."""
     work = root / f"r2_{abs(hash(task.repo_name + task.issue_title)) % 100000}"
     work.mkdir(parents=True, exist_ok=True)
