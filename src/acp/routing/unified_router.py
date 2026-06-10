@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from acp.finops.marginal_value import budget_for, marginal_value_of_next_call
 from acp.memory.experience_bank import ExperienceBank, ExperienceEpisode
 from acp.memory.memory_policy import MemoryPolicy
-from acp.routing.topology_program_executor import AttemptFn, run_controller
+from acp.routing.topology_program_executor import AttemptFn, AttemptOutcome, run_controller
 
 _CONTROL_ACTIONS = {"run_strict_verifier", "commit_success", "route_to_human", "abstain"}
 
@@ -38,6 +38,40 @@ class Lever:
     name: str               # also the memory `context_strategy` key
     est_cost: float         # expected $ for the FinOps gate
     prior_p_solve: float    # base success prior for the FinOps uplift
+    agent: str | None = None  # if set, this rung INVOKES an external agent (vendor) instead of an in-process strategy
+
+
+def build_agent_ladder(specs: list[tuple[str, float, float]]) -> list[Lever]:
+    """Build a cheapest-first AGENT escalation ladder (GOALS P3).
+
+    `specs` is (agent_name, est_cost, prior_p_solve) ordered cheapest->strongest. The rung name is
+    the agent name, so memory learns per-(repo_family, failure_signature) WHICH AGENT solves — the
+    next time that signature recurs, the known-good agent is seeded and the cheaper failers are
+    skipped, so cost-per-verified-success declines (the offline economics in
+    reports/issue_replay_routing_economics.json, now executable live).
+    """
+    return [Lever(name=a, est_cost=c, prior_p_solve=p, agent=a) for a, c, p in specs]
+
+
+def make_agent_attempt_fn(ladder: list[Lever], solve_fn, *, verify_fn=None) -> AttemptFn:
+    """Adapt an agent ladder into an `AttemptFn` for `run_controller` (verify-stop escalation).
+
+    `solve_fn(agent, task_id) -> (produced: bool, cost: float)` invokes the agent. The controller's
+    STOP-SIGNAL is `verify_fn(agent, task_id)` if given (e.g. run the repo's acceptance test on the
+    produced module), else the produced flag — so the ladder climbs agents and stops at the first
+    one whose output verifies, never blind-trusting an agent's own claim.
+    """
+    agents = {lev.name: lev.agent for lev in ladder if lev.agent}
+
+    def fn(action: str, task_id: str):
+        agent = agents.get(action)
+        if agent is None:
+            return None
+        produced, cost = solve_fn(agent, task_id)
+        verified = verify_fn(agent, task_id) if verify_fn is not None else produced
+        return AttemptOutcome(solved=verified, public_solved=produced, cost=cost)
+
+    return fn
 
 
 @dataclass
