@@ -1,0 +1,81 @@
+{
+  "experiment": "issue_replay_multisample",
+  "agent": "codex_cli",
+  "n_samples": 3,
+  "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
+  "completed": 7,
+  "best_of_k_solved": {
+    "1": 7,
+    "2": 7,
+    "3": 7
+  },
+  "single_shot_solved": 7,
+  "best_of_n_solved": 7,
+  "elapsed_s": 1209.2,
+  "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
+  "per_bundle": [
+    {
+      "repo": "pytoolz/toolz",
+      "issue": "FIX: compatibility with python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "r1chardj0n3s/parse",
+      "issue": "Fix microsecond precision loss in timestamp parsing",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix empty ranges in numeric_range.__reversed__",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1057: Raise exception for invalid size in windowed()",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Simplify nth_combination_with_replacement. Fix incorrect exception.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix support for iterators using \"repeat\"",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    }
+  ]
+}
