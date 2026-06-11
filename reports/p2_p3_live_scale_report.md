@@ -246,3 +246,73 @@ pool). The model-only wall from the diagnostic is unchanged — P4 doesn't claim
 capability; it shows the *meta-router's* value (match the best at lower cost) holds once the corpus is
 hard enough to tell the agents apart, and that genuinely hard bugs (the no-agent-solves bundle) exist
 in the harvested set for future capability work.
+
+## P5 — n=52 scaled corpus: the meta-router result holds AND strengthens (escalation beats the best single agent)
+
+P4 left the corpus at 27 bundles and recommended scaling only once the data tells the agents apart —
+which it now does. **v2 doubles the labelled set to 52 real bundles across 6 repos** (boltons 19,
+more-itertools 29, toolz/parse/arrow/stringcase 1 each; built `$0`-metered via `git clone` + local
+pytest fairness — the gold fix must pass and the buggy base must fail, standalone). All four agents
+were then profiled single-shot on the full 52 via the **resumable** `multisample --n 1` path (per-bundle
+persist, so the multi-hour pool survives container suspends). Subscriptions ran `$0`-metered
+(`claude_code` at `ACP_CLAUDE_EFFORT=low`); the only metered spend was repair2 (≈$0.26) + the
+Gemini-CLI key.
+
+**Per-agent single-shot solve rate at n=52 (the separation is now stable):**
+
+| agent | v1 easy (17) | P4 hard (10) | **v2 (52)** |
+|---|---|---|---|
+| inproc/repair2 | 0.18 | 0.20 | **0.37** (19/52) |
+| claude_code | 0.88 | 0.70 | **0.83** (43/52) |
+| gemini_cli | 0.94 | 0.80 | **0.87** (45/52) |
+| codex_cli | 1.00 | 0.90 | **0.98** (51/52) |
+
+**ACP routing vs agent-only, v2 (52 bundles), effective-cost prior:**
+
+| policy | solved | strongest-agent runs | effective cost | cost/verified-success |
+|---|---|---|---|---|
+| agent-only: Codex (best single) | 51/52 | **52** | 6.24 | 0.122 |
+| agent-only: Gemini | 45/52 | 0 | — | — |
+| agent-only: Claude Code | 43/52 | 0 | 5.20 | 0.121 |
+| **ACP escalation (cheapest-first + verify-stop)** | **52/52** | **1** | **3.64** | **0.070** |
+| ACP ensemble (all + verify-select) | 52/52 | 52 | 15.6 | 0.300 |
+
+The headline is now **stronger than "match the best at lower cost"**: at n=52, cheapest-first
+verify-stop **beats the best single agent on solve rate (52/52 vs Codex's 51/52) while invoking the
+strongest agent once instead of 52 times — ~42% cheaper effective cost (3.64 vs 6.24), 0.070 vs 0.122
+per verified success.** Stop-rung distribution: **repair2 19, gemini 28, claude 4, codex 1, unsolved 0** —
+the ladder resolves 90% of work on the two cheapest rungs and touches the most expensive agent exactly
+once.
+
+**Why escalation now *beats* Codex, not just ties it — heterogeneity pays off concretely.** Codex's
+lone single-shot miss is more-itertools #1096 "concurrent tee" (the same bug that no agent solved at P4
+n=10). At n=52 it is solved single-shot by **`claude_code` — a *cheaper* rung** — so the diverse pool
+covers Codex's blind spot and the union reaches **52/52 with zero bundles unsolved by everyone**. This is
+the cross-agent-diversity argument made concrete: the best agent is not a superset of the pool, so
+routing across heterogeneous agents strictly dominates always-running the single strongest one.
+
+**Robustness of the cost claim (`reports/issue_replay_cost_sensitivity_v2.json`).** Sweeping the cost
+prior m∈[2,20]: saving vs always-best median **0.72**, max **0.81**, and **0.417** at the realistic
+api-equivalent prior. The honest nuance from P4 survives: under a *flat* prior (cheap rungs not actually
+cheaper) the saving goes **negative (−0.75)** — blind cheapest-first pays for failed cheap attempts. The
+win is therefore conditional on a real cost gradient (which holds: a small model is 10–100× cheaper than
+a frontier agent) or on memory/difficulty-prediction to skip doomed cheap rungs.
+
+**Coverage + memory at n=52.** Greedy pool growth reaches **union 1.0 at just 2 agents** (codex 0.981 →
++claude 1.0; marginal lift from agents 3–4 is zero), and expected union by random pool size is
+{1: 0.76, 2: 0.95, 3: 0.99} — two well-chosen heterogeneous agents capture essentially all solvable
+work. Memory economics (`..._memory_economics_v2.json`): solution-memory saves **0.75** and rung-memory
+**0.20–0.30**, both independent of the cost prior — exactly the lever that rescues the shallow-gradient
+regime where blind escalation loses.
+
+**Honest scope + the Step-2 finding (corpus stays Codex-saturated).** 52 bundles across 6 repos; harvest
+yield is **content-bound, not compute-bound** (jmespath yielded 0 hermetic bundles; the fairness gate
+rejects most candidate commits). Critically, **even at 2× the corpus, Codex single-shot is 51/52 (0.98)** —
+the labelled set the harvestable utility libraries can produce remains near-saturated by the strongest
+agent. The *de-saturating subset* (where the top agent misses single-shot) is therefore essentially the
+**single** "concurrent tee" bundle, which a cheaper rung already recovers. So a multi-hour *live*
+unsaturated escalation ladder would re-measure that one bundle and add no information beyond the offline
+n=52 economics above. **The meta-router thesis is now demonstrated at larger n** (cheaper than, and
+strictly better than, the best single agent, with the diversity mechanism identified); **raw repair
+capability on genuinely hard bugs is still the open frontier** — unchanged from the P4 diagnostic, and
+not something more orchestration can move.
