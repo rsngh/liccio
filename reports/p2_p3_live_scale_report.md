@@ -316,3 +316,54 @@ n=52 economics above. **The meta-router thesis is now demonstrated at larger n**
 strictly better than, the best single agent, with the diversity mechanism identified); **raw repair
 capability on genuinely hard bugs is still the open frontier** — unchanged from the P4 diagnostic, and
 not something more orchestration can move.
+
+## P6 — attacking the capability wall: a dense, fair, in-loop verifier (verifier-guided repair)
+
+P5 closed the *routing* story and re-confirmed the *capability* wall: the cheap in-process repair rung
+solves 19/52, and the diagnostic's dominant failure is `no_progress` (right function localized, wrong
+fix). The research corpus (KVerus/AutoVerus/VerMCTS + Reflexion/DeepConf) converges on one mechanism for
+exactly this: **a dense verification signal driving search + structured refinement.** P6 builds the
+Python analogue and runs the smallest experiment that can prove or kill it (`guided_repair_phase0`).
+
+**Two code-verified facts motivated it.** (1) The cheap loop's in-loop accept signal was the *hidden
+test* itself (`repair_harness.py:178/217`) — BINARY and PRIVILEGED (the vendor CLIs never see it), so even
+with the oracle visible, 0/1 over k samples gives no gradient. (2) The `independent_proof` proxy already
+synthesizes fair checks from spec + public test but was used only for post-hoc *selection*. P6 turns it
+into a **continuous, fair in-loop value function** (`repair_battery`): example + property + differential
+checks (the *discriminating/guard* split falls out of running each check on the buggy baseline once),
+scored in [0,1], built only from spec + public test + buggy baseline — never the hidden test (reserved
+for grading) and never the gold patch. The greedy solver (`guided_repair`) climbs this score and
+localizes on the *public* test, fixing the privilege leak.
+
+**What Phase 0 found (11 diagnostic bundles: 8 `no_progress` + 3 `solved`), after honest iteration:**
+
+- **The thesis holds where the battery is valid.** Score↔hidden point-biserial **r = 0.526** with sonnet
+  in-loop (vs 0.335 with the cheap model, 0.207 before the fixes) — the dense score is a genuinely good
+  correctness predictor. On the bundles whose battery *discriminates* the bug (gold climbs high), sonnet
+  recovered 3 (incl. **formatutils**, a real `no_progress` flip with trajectory **0.4 → 0.4 → 0.4 → 1.0**
+  driven purely by multi-round battery feedback — a bug the binary loop could not fix).
+- **The decisive Phase-0 bug was battery validity, not the thesis.** Initial runs were flat because the
+  check generator used real-world package imports (`from boltons import dictutils`) while bundles are
+  flattened (`import dictutils`) → `ModuleNotFoundError` → checks ERRORED on buggy *and* gold and were
+  mis-counted as discriminating (gold scored 0.4, passing 0). Fix: **pin generated-check imports to the
+  public test's convention + a `pytest --collect-only` validity filter.** dictutils' gold went 0.4 → 0.95
+  (9/11 discriminating); a clean gradient appeared.
+- **The new binding constraint is check *discrimination*, not signal density in principle.** Even after
+  the fix, only ~4/11 bundles get a battery that actually exercises the bug; 7/11 are *non-discriminating*
+  (either `disc=0` — buggy passes every generated check, so the score is a vacuous 1.0 — or gold itself
+  can't pass the generated checks). Spec-based test synthesis is weakest on exactly the subtle bugs that
+  are hard. The capable model also still missed dictutils despite a valid battery — the **localized-splice
+  scaffold** (1–3 functions) is too narrow for bugs needing whole-class context, which is precisely where
+  the full tool-using vendor agents win.
+
+**Verdict: PROCEED, with a reshaped Phase 1.** The mechanism is real (dense fair signal + capable model +
+guided refinement recovers `no_progress` bugs; r=0.526), but the leverage has moved. Phase 1 priorities,
+in order: (1) **check discrimination** — generate checks that exercise the bug (show the buggy region to
+the generator — fair, the agent sees it too; seed from the failing test; detect & escalate `disc=0`
+batteries instead of scoring them 1.0); (2) **a capable / escalating in-loop model** (sonnet climbs where
+gemini-3-flash cannot — connect to the adaptive-compute ladder so the in-loop model escalates on a flat
+battery trajectory); (3) **broaden the repair scaffold** beyond localized-splice for whole-class bugs.
+MCTS/beam over the value function (the original Phase 2) only pays once (1)–(3) make the gradient both
+valid and reachable. Artifacts: `reports/issue_replay_phase0_battery.json` (cheap rung),
+`reports/issue_replay_phase0_sonnet.json` (capable rung); code in `src/acp/verification/repair_battery.py`
++ `evals/issue_replay/guided_repair.py`.
