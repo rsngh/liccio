@@ -3,13 +3,13 @@
   "thesis": "a dense, FAIR, continuous battery score is a climbable gradient the binary hidden test never gave",
   "n_targets": 11,
   "n_no_progress": 8,
-  "recovered_no_progress": 0,
+  "recovered_no_progress": 1,
   "regressed_solved": 0,
   "score_vs_hidden_point_biserial": 1.0,
-  "n_candidates_scored": 5,
-  "battery_gold_accepted": 1,
-  "battery_buggy_rejected": 2,
-  "n_battery": 2,
+  "n_candidates_scored": 6,
+  "battery_gold_accepted": 2,
+  "battery_buggy_rejected": 3,
+  "n_battery": 3,
   "proxy_precision": 1.0,
   "proxy_recall": 1.0,
   "decision": "PROCEED",
@@ -69,6 +69,33 @@
       "best_accept": false,
       "escalations": [],
       "cost_usd": 0.2432
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "dictutils.py",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "hidden_pass": true,
+      "best_score": 1.0,
+      "best_proxy_pass": true,
+      "score_trajectory": [
+        0.4,
+        1.0
+      ],
+      "n_checks": 12,
+      "n_discriminating": 12,
+      "gold_proxy_pass": true,
+      "gold_score": 1.0,
+      "gold_discrim": "12/12",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "OneToOne"
+      ],
+      "class_mode": true,
+      "battery_valid": true,
+      "best_accept": true,
+      "escalations": [],
+      "cost_usd": 0.019312
     }
   ],
   "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
