@@ -53,25 +53,56 @@ def build_agent_ladder(specs: list[tuple[str, float, float]]) -> list[Lever]:
     return [Lever(name=a, est_cost=c, prior_p_solve=p, agent=a) for a, c, p in specs]
 
 
-def make_agent_attempt_fn(ladder: list[Lever], solve_fn, *, verify_fn=None) -> AttemptFn:
+def make_agent_attempt_fn(ladder: list[Lever], solve_fn, *, verify_fn=None,
+                          resamples: int | dict[str, int] = 1, gate_fn=None) -> AttemptFn:
     """Adapt an agent ladder into an `AttemptFn` for `run_controller` (verify-stop escalation).
 
-    `solve_fn(agent, task_id) -> (produced: bool, cost: float)` invokes the agent. The controller's
-    STOP-SIGNAL is `verify_fn(agent, task_id)` if given (e.g. run the repo's acceptance test on the
-    produced module), else the produced flag — so the ladder climbs agents and stops at the first
-    one whose output verifies, never blind-trusting an agent's own claim.
+    `solve_fn(agent, task_id) -> (produced, cost)` or `(produced, cost, signature)` invokes the agent.
+    The STOP-SIGNAL is `verify_fn(agent, task_id)` if given, else the produced flag — never blind-trust.
+
+    Consistency-gated resample-then-escalate (research: budget-aware TTS, cascade routing): a rung may
+    draw up to `resamples` independent samples (int, or per-agent dict) and stops at the first that
+    verifies — recovering STOCHASTIC misses cheaply before paying to escalate. `gate_fn(signatures)`
+    (signatures are the optional 3rd element solve_fn returns for FAILED samples) may cut resampling
+    early when failures AGREE (a PERSISTENT miss → escalate now, don't waste samples). `resamples=1`
+    reproduces the original single-attempt behaviour. The reported cost is the sum of samples drawn.
     """
     agents = {lev.name: lev.agent for lev in ladder if lev.agent}
+
+    def _call(agent: str, task_id: str):
+        r = solve_fn(agent, task_id)
+        return (r[0], r[1], r[2]) if len(r) == 3 else (r[0], r[1], None)
 
     def fn(action: str, task_id: str):
         agent = agents.get(action)
         if agent is None:
             return None
-        produced, cost = solve_fn(agent, task_id)
-        verified = verify_fn(agent, task_id) if verify_fn is not None else produced
-        return AttemptOutcome(solved=verified, public_solved=produced, cost=cost)
+        k = resamples.get(agent, 1) if isinstance(resamples, dict) else resamples
+        total = 0.0
+        last_produced = False
+        fail_sigs: list = []
+        for _ in range(max(1, k)):
+            produced, cost, sig = _call(agent, task_id)
+            total += cost
+            last_produced = produced
+            verified = verify_fn(agent, task_id) if verify_fn is not None else produced
+            if verified:
+                return AttemptOutcome(solved=True, public_solved=produced, cost=total)
+            fail_sigs.append(sig)
+            if gate_fn is not None and gate_fn(fail_sigs):
+                break  # failures agree -> persistent miss -> stop resampling, let the controller escalate
+        return AttemptOutcome(solved=False, public_solved=last_produced, cost=total)
 
     return fn
+
+
+def agreement_gate(min_repeats: int = 2):
+    """A gate_fn: stop resampling once any failed-sample signature has repeated `min_repeats` times
+    (independent attempts converged on the same wrong output -> persistent, not stochastic)."""
+    def gate(fail_sigs: list) -> bool:
+        sigs = [s for s in fail_sigs if s is not None]
+        return any(sigs.count(s) >= min_repeats for s in sigs)
+    return gate
 
 
 @dataclass

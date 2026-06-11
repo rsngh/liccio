@@ -11,7 +11,12 @@ from __future__ import annotations
 
 from acp.memory.experience_bank import ExperienceBank
 from acp.memory.memory_policy import MemoryPolicy
-from acp.routing.unified_router import build_agent_ladder, make_agent_attempt_fn, route_and_solve
+from acp.routing.unified_router import (
+    agreement_gate,
+    build_agent_ladder,
+    make_agent_attempt_fn,
+    route_and_solve,
+)
 
 # cheapest-first, costs match the effective-cost prior used in the economics report
 SPECS = [("inproc_repair", 0.02, 0.2), ("gemini_cli", 0.06, 0.85),
@@ -98,3 +103,51 @@ def test_difficulty_prefilter_never_empties_the_ladder() -> None:
                           task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
                           attempt_fn=fn, memory=None, drop_levers={lev.name for lev in LADDER})
     assert res.ladder_used and res.solved
+
+
+_SCOST = {"inproc_repair": 0.02, "gemini_cli": 0.06, "claude_code": 0.10, "codex_cli": 0.12}
+
+
+def _stateful_solve(schedule):
+    # schedule: {agent: [(produced, signature) per successive call]}; per-sample cost = the prior cost
+    calls: dict[str, int] = {}
+    def fn(agent, _tid):
+        i = calls.get(agent, 0)
+        calls[agent] = i + 1
+        seq = schedule.get(agent, [(False, "x")])
+        produced, sig = seq[min(i, len(seq) - 1)]
+        return produced, _SCOST[agent], sig
+    return fn
+
+
+def test_resample_recovers_a_stochastic_miss_without_escalating() -> None:
+    # inproc fails sample 1 then SUCCEEDS sample 2 (stochastic) -> recovered at rung 0, no escalation
+    fn = make_agent_attempt_fn(LADDER, _stateful_solve({"inproc_repair": [(False, "a"), (True, "b")]}),
+                               resamples=3)
+    res = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None)
+    assert res.solved and res.lever_path == ["inproc_repair", "commit_success"]
+    assert abs(res.total_cost - 0.04) < 1e-9   # two cheap samples drawn (2x0.02), no pricier agent
+
+
+def test_agreement_gate_escalates_on_persistent_miss_without_wasting_samples() -> None:
+    # inproc emits the SAME wrong patch twice -> gate trips at 2 (not 5) -> escalate; gemini solves
+    fn = make_agent_attempt_fn(
+        LADDER, _stateful_solve({"inproc_repair": [(False, "same"), (False, "same"), (False, "same")],
+                                 "gemini_cli": [(True, "g")]}),
+        resamples={"inproc_repair": 5, "gemini_cli": 1}, gate_fn=agreement_gate(min_repeats=2))
+    res = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None)
+    assert res.solved and "gemini_cli" in res.lever_path
+    assert abs(res.total_cost - 0.10) < 1e-9   # 2 inproc (0.04, gate trips) + 1 gemini (0.06), NOT 5 inproc
+
+
+def test_resamples_default_one_reproduces_single_attempt() -> None:
+    fn = make_agent_attempt_fn(LADDER, _stateful_solve({"inproc_repair": [(False, "a"), (True, "b")]}))
+    res = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                          task_type="bugfix", risk_level="low", budget_class="migration", ladder=LADDER,
+                          attempt_fn=fn, memory=None)
+    # only ONE inproc sample (the failing one) -> escalates; does not see the would-be sample-2 success
+    assert res.lever_path[0] == "inproc_repair" and res.lever_path[1] != "commit_success"
