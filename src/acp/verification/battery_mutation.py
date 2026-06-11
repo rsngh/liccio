@@ -31,7 +31,7 @@ import time
 from pathlib import Path
 
 _EPS = 0.1            # weight floor for insensitive checks (never zero: they may still be right)
-_MUTANT_TIMEOUT = 90  # one pytest run over all checks for one mutant
+_MUTANT_TIMEOUT = 25  # one pytest run over all checks for one mutant (a hung mutant must not stall the build)
 
 
 def _in_spans(lineno: int | None, spans: list[tuple[int, int]] | None) -> bool:
@@ -152,16 +152,38 @@ def sensitivity_weights(baseline_src: str, checks: list[tuple[str, str]],
                         baseline_pass: list[bool], *, module_path: str,
                         extra_files: dict[str, str], root: Path,
                         spans: list[tuple[int, int]] | None = None,
-                        cap: int = 24) -> tuple[list[float], dict]:
+                        cap: int = 16, time_budget_s: float = 150.0,
+                        slow_check_s: float = 6.0, skip_check_s: float = 15.0) -> tuple[list[float], dict]:
     """Per-check weights in [_EPS, 1.0] = normalized count of focus-region mutants that flip the
-    check's verdict vs the buggy baseline. Uniform 1.0 when mutation yields no information."""
+    check's verdict vs the buggy baseline. Uniform 1.0 when mutation yields no information.
+
+    Robustness (the ioutils stall fix): a timed probe run sizes the budget — slow modules get fewer
+    mutants and very slow ones skip mutation entirely; an overall wall-clock budget bounds the loop so
+    a hung/near-infinite mutant can never stall the battery build."""
     n = len(checks)
-    mutants = gen_mutants(baseline_src, spans, cap=cap)
-    info = {"n_mutants": len(mutants), "n_runs_ok": 0}
-    if not mutants or not n:
+    info = {"n_mutants": 0, "n_runs_ok": 0, "skipped": False, "probe_s": 0.0}
+    if not n:
+        return [], info
+    # probe: how slow is ONE run over all checks on the (clean) baseline?
+    t0 = time.monotonic()
+    probe = _run_all_checks_once(baseline_src, checks, module_path=module_path,
+                                 extra_files=extra_files, root=root)
+    dt = time.monotonic() - t0
+    info["probe_s"] = round(dt, 2)
+    if probe is None or dt > skip_check_s:        # too slow / crashing -> don't pay for mutation
+        info["skipped"] = True
+        return [1.0] * n, info
+    eff_cap = max(4, cap // 3) if dt > slow_check_s else cap
+    mutants = gen_mutants(baseline_src, spans, cap=eff_cap)
+    info["n_mutants"] = len(mutants)
+    if not mutants:
         return [1.0] * n, info
     flips = [0] * n
+    deadline = time.monotonic() + time_budget_s
     for m in mutants:
+        if time.monotonic() > deadline:
+            info["budget_hit"] = True
+            break
         res = _run_all_checks_once(m, checks, module_path=module_path,
                                    extra_files=extra_files, root=root)
         if res is None:
@@ -172,6 +194,6 @@ def sensitivity_weights(baseline_src: str, checks: list[tuple[str, str]],
                 flips[j] += 1
     top = max(flips)
     info["flips"] = flips
-    if top == 0:
-        return [1.0] * n, info   # no signal anywhere -> don't punish anyone
+    if top == 0 or info["n_runs_ok"] == 0:
+        return [1.0] * n, info   # no signal -> don't punish anyone
     return [max(_EPS, f / top) for f in flips], info

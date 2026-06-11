@@ -315,23 +315,32 @@ _ERROR_MARKERS = ("AttributeError", "TypeError", "NameError", "ImportError", "Mo
 
 
 def _run_check_kinds(module_src: str, checks: list[tuple[str, str]], *, module_path: str,
-                     extra_files: dict[str, str], root: Path, tag: str) -> list[str]:
+                     extra_files: dict[str, str], root: Path, tag: str,
+                     per_check_timeout: int = 25, budget_s: float = 180.0) -> list[str]:
     """Per-check verdict KIND on `module_src`: 'pass' | 'assert' (behavioural disagreement, incl.
-    pytest.raises DID-NOT-RAISE) | 'error' (AttributeError/TypeError/... — the check mis-uses the API,
-    e.g. a hallucinated function, so it fails EVERY implementation and can never discriminate)."""
+    pytest.raises DID-NOT-RAISE, and hangs) | 'error' (AttributeError/TypeError/... — the check
+    mis-uses the API so it fails EVERY implementation and can never discriminate).
+
+    Bounded (the ioutils stall fix): each check has a short timeout, and once the overall budget is
+    spent the rest are marked 'error' so they get DROPPED — never silently kept as discriminating."""
     import os
     import subprocess
+    import time as _time
     ws = _build_ws(root, module_path, module_src, extra_files, tag)
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     out: list[str] = []
+    deadline = _time.monotonic() + budget_s
     for i, (_kind, src) in enumerate(checks):
+        if _time.monotonic() > deadline:
+            out.append("error")          # unclassified under budget -> drop (safer than mis-keeping)
+            continue
         name = f"test_battery_{i}.py"
         (ws / name).write_text(src)
         try:
             p = subprocess.run(["python", "-m", "pytest", "-q", "--tb=line", "-p", "no:cacheprovider",
                                 "-o", "addopts=", name], cwd=ws, capture_output=True, text=True,
-                               timeout=120, check=False, env=env)
+                               timeout=per_check_timeout, check=False, env=env)
             text = p.stdout + "\n" + p.stderr
             if p.returncode == 0:
                 out.append("pass")
@@ -446,7 +455,7 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
                      baseline_src: str, public_test: str, workspace_root: Path,
                      focus_src: str = "", focus_spans: list[tuple[int, int]] | None = None,
                      n_example: int = 10, n_property: int = 4, n_invert: int = 6,
-                     max_regen_rounds: int = 2, mutant_cap: int = 24,
+                     max_regen_rounds: int = 2, mutant_cap: int = 16,
                      min_disc: int = 5, model: str = "claude-haiku-4-5") -> RepairBattery:
     """Discriminating-by-construction battery (P7 W1). On top of v1's import-pin + collect filter:
 
