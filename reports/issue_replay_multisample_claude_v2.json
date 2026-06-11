@@ -3,13 +3,13 @@
   "agent": "claude_code",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 43,
+  "completed": 44,
   "best_of_k_solved": {
     "1": 38
   },
   "single_shot_solved": 38,
   "best_of_n_solved": 38,
-  "elapsed_s": 4250.0,
+  "elapsed_s": 4349.0,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -441,6 +441,16 @@
       ],
       "solved": true,
       "samples_to_success": 1
+    },
+    {
+      "idx": 43,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue: #898: Sync recipe with main docs. Eliminate quadratic fallback.",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
     }
   ]
 }
