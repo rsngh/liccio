@@ -8,8 +8,8 @@
   "score_vs_hidden_point_biserial": -0.006,
   "n_candidates_scored": 13,
   "battery_gold_accepted": 2,
-  "battery_buggy_rejected": 4,
-  "n_battery": 4,
+  "battery_buggy_rejected": 5,
+  "n_battery": 5,
   "proxy_precision": 1.0,
   "proxy_recall": 0.25,
   "decision": "INCONCLUSIVE",
@@ -125,6 +125,41 @@
       "best_accept": false,
       "escalations": [],
       "cost_usd": 0.077436
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "setutils.py",
+      "issue": "add more IndexedSet.index() tests and fix typo in ",
+      "hidden_pass": false,
+      "best_score": 0.1,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "n_checks": 14,
+      "n_discriminating": 0,
+      "gold_proxy_pass": false,
+      "gold_score": 0.1,
+      "gold_discrim": "0/0",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "IndexedSet"
+      ],
+      "class_mode": true,
+      "battery_valid": false,
+      "best_accept": false,
+      "escalations": [
+        {
+          "round": 1,
+          "to": "haiku",
+          "spend": 0.0342
+        }
+      ],
+      "cost_usd": 0.055154
     }
   ],
   "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
