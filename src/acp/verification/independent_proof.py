@@ -175,3 +175,12 @@ def proxy_evaluate(spec: SpecLike, candidates: list[dict], root: Path, *,
             n_checks_run=n_checks, n_checks_surviving=len(surviving), n_checks_failed=len(failed),
             detail=f"failed_checks={failed}" if failed else "")
     return verdicts
+
+
+def strict_pass(v: ProxyVerdict, *, min_surviving: int = 1) -> bool:
+    """Fail-closed verdict for HIGH-STAKES gates: a candidate passes only if it cleared at least
+    `min_surviving` consensus-surviving independent checks. Guards the vacuous-pass hole found by
+    the red-team (issue_replay_verifier_redteam): when every generated check is wrong/inapplicable,
+    consensus drops them all and `independent_pass` is trivially True — which must NOT certify a
+    high-stakes commit. Zero surviving checks => inconclusive => not a strict pass (route to human)."""
+    return v.independent_pass and v.n_checks_surviving >= min_surviving

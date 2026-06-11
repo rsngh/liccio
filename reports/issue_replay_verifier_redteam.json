@@ -40,7 +40,65 @@
       "issue": "Test and fix for #348 (#349)",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "6": {
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to ",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "7": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#3",
+      "overfit_fools_primary": true,
+      "n_checks_generated": 6,
+      "gold_pass": true,
+      "overfit_pass": true,
+      "checks_surviving": 0,
+      "detected": false
+    },
+    "8": {
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_appare",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "9": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.04824730000000001
+  "cost_usd": 0.09111650000000002,
+  "summary": {
+    "bundles_attempted": 10,
+    "overfit_fooled_primary": 2,
+    "gate_detected_overfit": 1,
+    "gate_detection_rate": 0.5,
+    "gold_accepted": 2,
+    "gold_false_rejection_rate": 0.0,
+    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
+    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
+  },
+  "elapsed_s": 138.8,
+  "strict_rule_rescore": {
+    "rule": "strict_pass: independent_pass AND n_checks_surviving>=1 (vacuous consensus -> inconclusive -> human review)",
+    "per_bundle": {
+      "0": {
+        "gold_auto_commit": true,
+        "overfit_auto_commit": false,
+        "routed_to_human": false
+      },
+      "7": {
+        "gold_auto_commit": false,
+        "overfit_auto_commit": false,
+        "routed_to_human": true
+      }
+    },
+    "overfit_auto_committed": 0,
+    "gold_auto_committed": 1,
+    "routed_to_human": 1,
+    "verdict": "under the strict rule, 0/2 overfit patches auto-commit (was 1/2 via the vacuous-pass hole); 1/2 gold auto-commits, 1/2 goes to human review (safe, not a wrong rejection)"
+  }
 }

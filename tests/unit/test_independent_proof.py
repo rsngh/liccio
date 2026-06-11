@@ -67,3 +67,14 @@ def _ws(path: Path, module_src: str) -> Path:
     (path / "r.py").write_text(module_src)
     (path / "conftest.py").write_text("import os, sys\nsys.path.insert(0, os.path.dirname(__file__))\n")
     return path
+
+
+def test_strict_pass_fails_closed_on_vacuous_consensus() -> None:
+    from acp.verification.independent_proof import ProxyVerdict, strict_pass
+    # vacuous: all generated checks were dropped by consensus -> independent_pass True but 0 surviving
+    vac = ProxyVerdict(candidate_id="c", proxy_pass=True, public_pass=True, independent_pass=True,
+                       adversarial_high=False, n_checks_run=6, n_checks_surviving=0, n_checks_failed=0)
+    assert not strict_pass(vac)            # inconclusive, never certify high-stakes
+    ok = ProxyVerdict(candidate_id="c", proxy_pass=True, public_pass=True, independent_pass=True,
+                      adversarial_high=False, n_checks_run=6, n_checks_surviving=4, n_checks_failed=0)
+    assert strict_pass(ok)
