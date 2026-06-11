@@ -63,6 +63,55 @@ def _func_table(module_src: str) -> dict[str, tuple[int, int, int]]:
     return out
 
 
+def _class_table(module_src: str) -> dict[str, tuple[int, int, int]]:
+    """name -> (start_line, end_line, indent) for every TOP-LEVEL class (P7 W2: class-scope splice —
+    whole-class bugs like OneToOne.update need the full class in context, not a lone method)."""
+    out: dict[str, tuple[int, int, int]] = {}
+    try:
+        tree = ast.parse(module_src)
+    except SyntaxError:
+        return out
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            start = min([node.lineno, *[d.lineno for d in node.decorator_list]])
+            out[node.name] = (start, node.end_lineno or node.lineno, node.col_offset)
+    return out
+
+
+def _owning_class(module_src: str) -> dict[str, str]:
+    """method/function name -> enclosing top-level class name (absent for pure functions)."""
+    out: dict[str, str] = {}
+    try:
+        tree = ast.parse(module_src)
+    except SyntaxError:
+        return out
+    for cls in tree.body:
+        if isinstance(cls, ast.ClassDef):
+            for sub in ast.walk(cls):
+                if isinstance(sub, ast.FunctionDef | ast.AsyncFunctionDef):
+                    out.setdefault(sub.name, cls.name)
+    return out
+
+
+def _strip_fence(block: str) -> str:
+    if "```" in block:
+        parts = block.split("```")
+        return max((p[6:] if p.startswith("python") else p for p in parts[1::2]),
+                   key=len, default=block)
+    return block
+
+
+def _parse_classes(block: str) -> dict[str, str]:
+    """Extract {class_name: source} for top-level classes in a returned code block."""
+    try:
+        tree = ast.parse(_strip_fence(block))
+    except SyntaxError:
+        return {}
+    src = _strip_fence(block)
+    return {node.name: seg for node in tree.body if isinstance(node, ast.ClassDef)
+            if (seg := ast.get_source_segment(src, node))}
+
+
 def _failed_tests(output: str) -> list[str]:
     return re.findall(r"(\w+)\s+FAILED|FAILED\s+\S+::(\w+)", output)  # type: ignore[return-value]
 
@@ -121,10 +170,7 @@ def _splice(module_src: str, table: dict[str, tuple[int, int, int]], new: dict[s
 
 def _parse_funcs(block: str) -> dict[str, str]:
     """Extract {func_name: source} from a returned code block (tolerates ``` fences)."""
-    if "```" in block:
-        parts = block.split("```")
-        block = max((p[6:] if p.startswith("python") else p for p in parts[1::2]),
-                    key=len, default=block)
+    block = _strip_fence(block)
     try:
         tree = ast.parse(block)
     except SyntaxError:

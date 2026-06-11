@@ -22,11 +22,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from evals.issue_replay.repair_harness import (
+    _class_table,
     _extract,
     _first_block,
     _func_table,
     _llm,
     _localize,
+    _owning_class,
+    _parse_classes,
     _parse_funcs,
     _splice,
 )
@@ -94,11 +97,27 @@ def guided_repair(task: IssueReplayTask, root: Path, *, model_id: str, rate: tup
     # FAIR localization: use the public (failing) test, never the hidden test.
     focus_names = _localize(current, task.issue_title, task.public_test, "")
     whole = not focus_names
-    focus = _extract(current, focus_names, table) if focus_names else current[:14000]
+    # P7 W2 class-scope promotion: a focused METHOD is repaired as its whole class (whole-class bugs
+    # like OneToOne.update need cross-method context the lone-function splice never shows). Pure
+    # functions keep the function-level path; the merged span table lets _splice handle both.
+    owners = _owning_class(current)
+    cls_names = sorted({owners[n] for n in focus_names if n in owners})
+    class_mode = bool(cls_names)
+    if class_mode:
+        ctab = _class_table(current)
+        pure = [n for n in focus_names if n not in owners]
+        focus_names = cls_names + pure
+        table = {**{n: ctab[n] for n in cls_names if n in ctab},
+                 **{n: table[n] for n in pure if n in table}}
+        focus = _extract(current, [n for n in focus_names if n in table], table)
+    else:
+        focus = _extract(current, focus_names, table) if focus_names else current[:14000]
     skeleton = module_skeleton(current) or "(unavailable)"
     sibs = sibling_signatures(task.extra_files)
     sib_block = f"SIBLING MODULES (callable API):\n{sibs}\n\n" if sibs else ""
-    instr = _instr(whole)
+    instr = ("Return ONLY the corrected full definition(s) of the class(es)/function(s) shown, in a "
+             "```python code block — same names, same signatures, nothing else."
+             if class_mode else _instr(whole))
 
     base_score = score_candidate(battery, candidate_src=current, workspace_root=bench, candidate_id="base")
     best_cand, best_score = current, base_score
@@ -128,8 +147,12 @@ def guided_repair(task: IssueReplayTask, root: Path, *, model_id: str, rate: tup
                 continue
             ran = True
             cost += it * rate[0] + ot * rate[1]
-            cand = (_first_block(text) or current) if whole else (
-                _splice(current, table, _parse_funcs(text)) if _parse_funcs(text) else current)
+            if whole:
+                cand = _first_block(text) or current
+            else:
+                defs = {**_parse_funcs(text), **(_parse_classes(text) if class_mode else {})}
+                defs = {n: s for n, s in defs.items() if n in table}   # only spliceable spans
+                cand = _splice(current, table, defs) if defs else current
             h = _ast_hash(cand)
             if not h or h in seen:                 # early prune: unparseable or already-tried
                 continue
@@ -159,6 +182,7 @@ def guided_repair(task: IssueReplayTask, root: Path, *, model_id: str, rate: tup
 
     telemetry = {
         "search_mode": search_mode, "focus_names": focus_names, "whole_module": whole,
+        "class_mode": class_mode,
         "n_checks": len(battery.checks), "n_discriminating": battery.n_discriminating,
         "n_guard": battery.n_guard, "n_expansions": n_expansions,
         "best_score": round(best_score.score, 4), "best_proxy_pass": best_score.proxy_pass,
