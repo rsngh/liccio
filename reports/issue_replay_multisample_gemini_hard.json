@@ -3,15 +3,15 @@
   "agent": "gemini_cli",
   "n_samples": 3,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 4,
+  "completed": 8,
   "best_of_k_solved": {
-    "1": 4,
-    "2": 4,
-    "3": 4
+    "1": 8,
+    "2": 8,
+    "3": 8
   },
-  "single_shot_solved": 4,
-  "best_of_n_solved": 4,
-  "elapsed_s": 405.0,
+  "single_shot_solved": 8,
+  "best_of_n_solved": 8,
+  "elapsed_s": 1428.2,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -48,6 +48,46 @@
       "idx": 3,
       "repo": "more-itertools/more-itertools",
       "issue": "Issue #1057: Raise exception for invalid size in windowed()",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 4,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 5,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Simplify nth_combination_with_replacement. Fix incorrect exception.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 6,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix support for iterators using \"repeat\"",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 7,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1098: Add synchronized decorator",
       "samples": [
         1
       ],
