@@ -58,13 +58,15 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 - Foreground Bash caps at 10 min; **background jobs (run_in_background) have NO such cap and DO run while the session is active** (the #8 ceiling run completed this way). They die only on idle-suspend, so long jobs must checkpoint per-step + resume, and commit every increment (pushed branch = only durable store).
 - No GitHub API (clone-only). Gemini live; Codex/Claude on subscription ($0 metered).
 
-## What to try next (ranked, with the constraints in mind)
-1. **Verifier-guided multi-sampling on strong agents** — DEMONSTRATED (n=1): a background Codex resample recovered the one hard miss -> best-of-3 = 10/10. Next: scale resampling across many bundles to estimate the lift curve (run in background while the session is active; checkpoint+resume handles suspends).
-2. **Scale the corpus to ~100+ bundles** — the binding constraint on every learned component; the
-   resumable harvester now supports it, but yield is repo-dependent (more-itertools-class repos work;
-   data-file/complex-import repos don't).
-3. **Solution-memory in production loops** — biggest realistic payoff (repeated work on one codebase).
-4. **Harden the verifier's blind spot** — independent fresh-test gate for high-stakes commits.
+## What to try next (ranked; updated after the Plan A/B round)
+1. **Solution-memory in production loops** — biggest realistic payoff (repeated work on one codebase);
+   all router plumbing (rung-0 replay, family memory, fail-closed high-stakes gate) is now in place.
+2. **Scale the corpus to ~100+ bundles** — still the binding constraint on the learned components;
+   yield is repo-dependent (more-itertools-class repos work; data-file/complex-import repos don't).
+3. **Unsaturated-corpus live ladder** — the gated-resampling + diagnosis-handoff mechanisms only show
+   their value where the top agent has misses; needs harder bundles than the current saturated set.
+DONE since first ranking: multisampling lift curve (selective, gate-only), verifier hardening
+(red-team + strict_pass fail-closed), SkillBank family playbooks (clean null on the cheap rung).
 
 ---
 
