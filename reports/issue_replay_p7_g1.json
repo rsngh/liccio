@@ -1,14 +1,14 @@
 {
   "experiment": "issue_replay_p7_g1_battery_v2",
   "gate": "valid>=9/11 AND gold_accept>=9/11 AND buggy_rejected==11/11 AND no gold stuck at 0.4",
-  "n_done": 8,
+  "n_done": 9,
   "n_targets": 11,
-  "valid": 5,
-  "gold_accept": 2,
-  "buggy_rejected": 8,
+  "valid": 6,
+  "gold_accept": 3,
+  "buggy_rejected": 9,
   "gold_stuck_at_0.4": 5,
   "gate_pass": false,
-  "total_gen_cost_usd": 0.2085,
+  "total_gen_cost_usd": 0.2241,
   "per_bundle": [
     {
       "category": "solved",
@@ -276,6 +276,42 @@
       "buggy_score": 0.1,
       "buggy_accept": false,
       "gen_cost_usd": 0.025328
+    },
+    {
+      "category": "no_progress",
+      "module": "formatutils.py",
+      "issue": "DeferredValue: fix get_value and caching",
+      "battery_valid": true,
+      "invalid_reason": "",
+      "n_checks": 13,
+      "n_discriminating": 9,
+      "n_guard": 4,
+      "check_kinds": [
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "property",
+        "property",
+        "property"
+      ],
+      "mutation_info": {
+        "n_mutants": 1,
+        "n_runs_ok": 1
+      },
+      "gold_score": 1.0,
+      "gold_accept": true,
+      "gold_disc_frac": 1.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.4,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.015656
     }
   ],
   "evidence_tier": "live: battery-v2 (fail-to-pass gate + AssertFlip + mutation weights); gold/buggy scored only \u2014 no repair calls"
