@@ -88,6 +88,9 @@ def main() -> int:
                     help="use build_battery_v2 (fail-to-pass gate + AssertFlip + mutation weights)")
     ap.add_argument("--g1-only", action="store_true",
                     help="G1 gate: build batteries + score gold/buggy only — no repair LLM calls")
+    ap.add_argument("--search-mode", default="greedy", choices=["greedy", "beam", "mcts"])
+    ap.add_argument("--ladder", action="store_true",
+                    help="enable in-loop model escalation (gemini->haiku->sonnet) on flat trajectories")
     args = ap.parse_args()
 
     from evals.issue_replay.run import _MODELS
@@ -150,8 +153,8 @@ def main() -> int:
                 _persist_g1(args.out, per_bundle, len(targets))
                 continue
             res = guided_repair(b, root / f"gr{bi}", model_id=model_id, rate=rate, client=client,
-                                search_mode="greedy", k=args.k, rounds=args.rounds,
-                                battery=battery, record_candidates=True)
+                                search_mode=args.search_mode, k=args.k, rounds=args.rounds,
+                                ladder=args.ladder, battery=battery, record_candidates=True)
             hidden_pass, _public = verify(b, root / f"ver{bi}", module_src=res.module_src)
             # value-function quality: grade every scored candidate with the hidden oracle
             for c in res.telemetry.get("candidates", []):
@@ -189,6 +192,10 @@ def main() -> int:
                 "gold_discrim": (f"{gold_sc.n_discrim_passed}/{gold_sc.n_discrim_surviving}" if gold_sc else None),
                 "buggy_proxy_pass": (buggy_sc.proxy_pass if buggy_sc else None),
                 "focus_names": res.telemetry.get("focus_names"),
+                "class_mode": res.telemetry.get("class_mode"),
+                "battery_valid": res.telemetry.get("battery_valid"),
+                "best_accept": res.telemetry.get("best_accept"),
+                "escalations": res.telemetry.get("escalations", []),
                 "cost_usd": res.cost_usd})
             print(f"[{bi+1}/{len(targets)}] {cat:11} {Path(b.module_path).name:14} hidden_pass={hidden_pass} "
                   f"best_score={res.telemetry['best_score']} traj={res.telemetry['score_trajectory']}", flush=True)
