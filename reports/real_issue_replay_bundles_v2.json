@@ -1,11 +1,13 @@
 {
   "experiment": "real_issue_replay_bundles",
-  "n_bundles": 20,
+  "n_bundles": 22,
   "source": "real_issue_replay",
   "via": "direct git clone of public repos (no GitHub API/token; api.github.com is proxy-blocked here)",
   "repos": [
     "mahmoud/boltons",
-    "okunishinishi/python-stringcase"
+    "okunishinishi/python-stringcase",
+    "pytoolz/toolz",
+    "r1chardj0n3s/parse"
   ],
   "fairness": "each bundle validated offline-fair (buggy fails the repo's own test file; gold passes)",
   "bundles": [
@@ -188,6 +190,24 @@
       "source": "real_issue_replay",
       "leakage_notes": "real history mahmoud/boltons@270e974975; whole repo test file as hidden oracle; gold withheld from agent",
       "gold_patch_hash": "02a353f89c038037"
+    },
+    {
+      "repo_name": "pytoolz/toolz",
+      "base_sha": "5eb9fcbc8d^",
+      "issue_title": "FIX: compatibility with python3.7",
+      "module_path": "toolz/functoolz.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history pytoolz/toolz@5eb9fcbc8d; PACKAGE bundle (toolz laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "3518bffe7b950439"
+    },
+    {
+      "repo_name": "r1chardj0n3s/parse",
+      "base_sha": "ba6803d571^",
+      "issue_title": "Fix microsecond precision loss in timestamp parsing",
+      "module_path": "parse.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history r1chardj0n3s/parse@ba6803d571; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "2698dc9972e19d83"
     }
   ]
 }
