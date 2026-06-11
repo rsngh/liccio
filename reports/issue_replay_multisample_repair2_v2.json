@@ -3,13 +3,13 @@
   "agent": "repair2",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 28,
+  "completed": 47,
   "best_of_k_solved": {
-    "1": 7
+    "1": 18
   },
-  "single_shot_solved": 7,
-  "best_of_n_solved": 7,
-  "elapsed_s": 1133.7,
+  "single_shot_solved": 18,
+  "best_of_n_solved": 18,
+  "elapsed_s": 1803.6,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -286,6 +286,196 @@
       "idx": 27,
       "repo": "more-itertools/more-itertools",
       "issue": "Issue 1098: Add synchronized decorator",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 28,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1096: Concurrent tee",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 29,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1093: Add serialize()",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 30,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix bug for negative inputs to exactly_n(). Optimize code.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 31,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix product_index() with iterator input",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 32,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 900: Replace iequals fillvalue logic with strict size test",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 33,
+      "repo": "more-itertools/more-itertools",
+      "issue": "fix last() when __reversed__ is None",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 34,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 986: argmin and argmax",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 35,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix __all__ error due to forgotton comma",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 36,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix unique pool by not using a set",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 37,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Add more sample() tests and fix bug in strict option with counts",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 38,
+      "repo": "more-itertools/more-itertools",
+      "issue": "remove string.format(); fix tests",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 39,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 916: lt only for is_sorted (#917)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 40,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 870: counts parameter for sample",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 41,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 869: Add a steps argument to circular_shifts",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 42,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 862: change relative_seek() behaviour",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 43,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue: #898: Sync recipe with main docs. Eliminate quadratic fallback.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 44,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 45,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix random_product() as well",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 46,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1070: Add random derangements",
       "samples": [
         0
       ],

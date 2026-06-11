@@ -3,13 +3,13 @@
   "agent": "codex_cli",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 13,
+  "completed": 20,
   "best_of_k_solved": {
-    "1": 13
+    "1": 20
   },
-  "single_shot_solved": 13,
-  "best_of_n_solved": 13,
-  "elapsed_s": 1153.0,
+  "single_shot_solved": 20,
+  "best_of_n_solved": 20,
+  "elapsed_s": 1835.8,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -136,6 +136,76 @@
       "idx": 12,
       "repo": "mahmoud/boltons",
       "issue": "fix default arguments of mathutitls.clamp",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 13,
+      "repo": "mahmoud/boltons",
+      "issue": "DeferredValue: fix get_value and caching",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 14,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 15,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 16,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix call to non-existant attribute",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 17,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 18,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 19,
+      "repo": "mahmoud/boltons",
+      "issue": "address ecoutils import issue, fixes #294",
       "samples": [
         1
       ],
