@@ -86,3 +86,22 @@ router capabilities.
 
 I will not manufacture low-value rounds. Point me at any of the above (or a new direction / new PDFs)
 and I'll continue.
+
+## Consistency-gated resample-then-escalate (planned feature — COMPLETE)
+Built per the approved plan (research: budget-aware TTS 2510.14913, cascade routing 2603.04445):
+- **Phase 1 (data):** profiled all 4 agents' stochastic-vs-persistent misses on hard-10 via the
+  resumable multisample runner (`reports/issue_replay_multisample_{repair2,gemini,claude,codex}_hard.json`).
+  best-of-3 recovery: codex 10 (#8 stochastic), gemini 8→9 (#7/#9 stochastic, #8 persistent),
+  claude 7 (none), repair2 3 (none) → resampling recovers misses ONLY for the strong agents.
+- **Phase 2 (economics, `resample_escalate.py`):** uniform best-of-K loses 25–57% (wastes samples on
+  persistent misses); oracle-gated (perfect consistency gate) saves +1.4–7.1% (grows with cost
+  gradient). Small here because the ladder already hits 10/10 via codex single-shot; the mechanism's
+  biggest value is resampling the TOP rung when the strongest agent itself has stochastic misses.
+- **Phase 3 (shipped):** `make_agent_attempt_fn(resamples=, gate_fn=)` + `agreement_gate` in the
+  router, +3 unit tests (stochastic recovery without escalation; gate escalates at 2 not 5; default-1
+  unchanged). Backward compatible.
+- **Phase 4 (live) — DEPRIORITIZED:** the offline verdict + unit tests already establish the result,
+  and the hard-10 ladder is saturated (codex 10/10 single-shot) so a live run adds little at real
+  cost/quota. Worth running only on an UNSATURATED corpus (where the strongest agent has stochastic
+  misses). Net: ship the gated capability; enable resampling selectively at the strong/top rung, never
+  uniformly, never on persistent-miss rungs (the gate handles this).
