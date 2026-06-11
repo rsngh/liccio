@@ -1,14 +1,14 @@
 {
   "experiment": "issue_replay_p7_g1_battery_v2",
   "gate": "valid>=9/11 AND gold_accept>=9/11 AND buggy_rejected==11/11 AND no gold stuck at 0.4",
-  "n_done": 9,
+  "n_done": 10,
   "n_targets": 11,
-  "valid": 6,
-  "gold_accept": 3,
-  "buggy_rejected": 9,
-  "gold_stuck_at_0.4": 5,
+  "valid": 4,
+  "gold_accept": 4,
+  "buggy_rejected": 10,
+  "gold_stuck_at_0.4": 6,
   "gate_pass": false,
-  "total_gen_cost_usd": 0.2241,
+  "total_gen_cost_usd": 0.2369,
   "per_bundle": [
     {
       "category": "solved",
@@ -16,20 +16,23 @@
       "issue": "Fix alphanumcase for Python 3",
       "battery_valid": true,
       "invalid_reason": "",
-      "n_checks": 6,
+      "n_checks": 7,
       "n_discriminating": 4,
-      "n_guard": 2,
+      "n_guard": 3,
       "check_kinds": [
         "example",
         "example",
-        "property",
-        "property",
-        "property",
+        "example",
+        "example",
+        "example",
+        "example",
         "property"
       ],
       "mutation_info": {
         "n_mutants": 0,
-        "n_runs_ok": 0
+        "n_runs_ok": 0,
+        "skipped": false,
+        "probe_s": 0.73
       },
       "gold_score": 1.0,
       "gold_accept": true,
@@ -37,7 +40,7 @@
       "gold_guard_frac": 1.0,
       "buggy_score": 0.4,
       "buggy_accept": false,
-      "gen_cost_usd": 0.012021
+      "gen_cost_usd": 0.011991
     },
     {
       "category": "no_progress",
@@ -69,7 +72,7 @@
       "gold_guard_frac": 1.0,
       "buggy_score": 0.1,
       "buggy_accept": false,
-      "gen_cost_usd": 0.036664
+      "gen_cost_usd": 0.035317
     },
     {
       "category": "no_progress",
@@ -90,73 +93,34 @@
         "example",
         "example",
         "example",
-        "property",
+        "example",
         "property",
         "property",
         "property"
       ],
       "mutation_info": {
         "n_mutants": 0,
-        "n_runs_ok": 0
+        "n_runs_ok": 0,
+        "skipped": false,
+        "probe_s": 0.72
       },
-      "gold_score": 0.9077,
+      "gold_score": 0.9538,
       "gold_accept": true,
-      "gold_disc_frac": 0.8462,
+      "gold_disc_frac": 0.9231,
       "gold_guard_frac": 1.0,
       "buggy_score": 0.4,
       "buggy_accept": false,
-      "gen_cost_usd": 0.012199
+      "gen_cost_usd": 0.013983
     },
     {
       "category": "solved",
       "module": "timeutils.py",
       "issue": "Fix infinite daterange issue when start and stop i",
-      "battery_valid": true,
-      "invalid_reason": "",
-      "n_checks": 18,
-      "n_discriminating": 5,
-      "n_guard": 13,
-      "check_kinds": [
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "property",
-        "property",
-        "property",
-        "property",
-        "f2p",
-        "f2p",
-        "flip",
-        "flip"
-      ],
-      "mutation_info": {
-        "n_mutants": 14,
-        "n_runs_ok": 14
-      },
-      "gold_score": 0.64,
-      "gold_accept": false,
-      "gold_disc_frac": 0.4,
-      "gold_guard_frac": 1.0,
-      "buggy_score": 0.4,
-      "buggy_accept": false,
-      "gen_cost_usd": 0.043065
-    },
-    {
-      "category": "no_progress",
-      "module": "setutils.py",
-      "issue": "add more IndexedSet.index() tests and fix typo in ",
       "battery_valid": false,
       "invalid_reason": "non_discriminating",
-      "n_checks": 15,
+      "n_checks": 13,
       "n_discriminating": 1,
-      "n_guard": 14,
+      "n_guard": 12,
       "check_kinds": [
         "example",
         "example",
@@ -170,9 +134,7 @@
         "example",
         "property",
         "property",
-        "property",
-        "property",
-        "flip"
+        "property"
       ],
       "mutation_info": {},
       "gold_score": 0.1,
@@ -181,84 +143,20 @@
       "gold_guard_frac": 1.0,
       "buggy_score": 0.1,
       "buggy_accept": false,
-      "gen_cost_usd": 0.027795
+      "gen_cost_usd": 0.035343
     },
     {
       "category": "no_progress",
       "module": "setutils.py",
-      "issue": "fix IndexedSet.index() to account for removals, fi",
-      "battery_valid": true,
-      "invalid_reason": "",
-      "n_checks": 14,
-      "n_discriminating": 3,
-      "n_guard": 11,
-      "check_kinds": [
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "example",
-        "property",
-        "property",
-        "property",
-        "property"
-      ],
-      "mutation_info": {
-        "n_mutants": 0,
-        "n_runs_ok": 0
-      },
-      "gold_score": 0.4,
-      "gold_accept": false,
-      "gold_disc_frac": 0.0,
-      "gold_guard_frac": 1.0,
-      "buggy_score": 0.4,
-      "buggy_accept": false,
-      "gen_cost_usd": 0.030052
-    },
-    {
-      "category": "no_progress",
-      "module": "listutils.py",
-      "issue": "Fix barrellist sort with multiple lists",
-      "battery_valid": true,
-      "invalid_reason": "",
-      "n_checks": 6,
-      "n_discriminating": 5,
-      "n_guard": 1,
-      "check_kinds": [
-        "example",
-        "f2p",
-        "f2p",
-        "f2p",
-        "f2p",
-        "f2p"
-      ],
-      "mutation_info": {
-        "n_mutants": 5,
-        "n_runs_ok": 5
-      },
-      "gold_score": 0.4,
-      "gold_accept": false,
-      "gold_disc_frac": 0.0,
-      "gold_guard_frac": 1.0,
-      "buggy_score": 0.4,
-      "buggy_accept": false,
-      "gen_cost_usd": 0.021365
-    },
-    {
-      "category": "solved",
-      "module": "mathutils.py",
-      "issue": "fix default arguments of mathutitls.clamp",
+      "issue": "add more IndexedSet.index() tests and fix typo in ",
       "battery_valid": false,
       "invalid_reason": "non_discriminating",
-      "n_checks": 8,
+      "n_checks": 10,
       "n_discriminating": 0,
-      "n_guard": 8,
+      "n_guard": 10,
       "check_kinds": [
+        "example",
+        "example",
         "example",
         "example",
         "example",
@@ -275,7 +173,96 @@
       "gold_guard_frac": 1.0,
       "buggy_score": 0.1,
       "buggy_accept": false,
-      "gen_cost_usd": 0.025328
+      "gen_cost_usd": 0.022921
+    },
+    {
+      "category": "no_progress",
+      "module": "setutils.py",
+      "issue": "fix IndexedSet.index() to account for removals, fi",
+      "battery_valid": false,
+      "invalid_reason": "non_discriminating",
+      "n_checks": 11,
+      "n_discriminating": 0,
+      "n_guard": 11,
+      "check_kinds": [
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "property"
+      ],
+      "mutation_info": {},
+      "gold_score": 0.1,
+      "gold_accept": false,
+      "gold_disc_frac": 1.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.1,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.025311
+    },
+    {
+      "category": "no_progress",
+      "module": "listutils.py",
+      "issue": "Fix barrellist sort with multiple lists",
+      "battery_valid": false,
+      "invalid_reason": "non_discriminating",
+      "n_checks": 6,
+      "n_discriminating": 0,
+      "n_guard": 6,
+      "check_kinds": [
+        "example",
+        "example",
+        "property",
+        "property",
+        "property",
+        "property"
+      ],
+      "mutation_info": {},
+      "gold_score": 0.1,
+      "gold_accept": false,
+      "gold_disc_frac": 1.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.1,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.023252
+    },
+    {
+      "category": "solved",
+      "module": "mathutils.py",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "battery_valid": false,
+      "invalid_reason": "non_discriminating",
+      "n_checks": 12,
+      "n_discriminating": 0,
+      "n_guard": 12,
+      "check_kinds": [
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "property",
+        "property",
+        "property",
+        "property"
+      ],
+      "mutation_info": {},
+      "gold_score": 0.1,
+      "gold_accept": false,
+      "gold_disc_frac": 1.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.1,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.024635
     },
     {
       "category": "no_progress",
@@ -284,8 +271,8 @@
       "battery_valid": true,
       "invalid_reason": "",
       "n_checks": 13,
-      "n_discriminating": 9,
-      "n_guard": 4,
+      "n_discriminating": 6,
+      "n_guard": 7,
       "check_kinds": [
         "example",
         "example",
@@ -303,7 +290,9 @@
       ],
       "mutation_info": {
         "n_mutants": 1,
-        "n_runs_ok": 1
+        "n_runs_ok": 1,
+        "skipped": false,
+        "probe_s": 0.75
       },
       "gold_score": 1.0,
       "gold_accept": true,
@@ -311,7 +300,40 @@
       "gold_guard_frac": 1.0,
       "buggy_score": 0.4,
       "buggy_accept": false,
-      "gen_cost_usd": 0.015656
+      "gen_cost_usd": 0.014115
+    },
+    {
+      "category": "no_progress",
+      "module": "ioutils.py",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "battery_valid": true,
+      "invalid_reason": "",
+      "n_checks": 8,
+      "n_discriminating": 8,
+      "n_guard": 0,
+      "check_kinds": [
+        "f2p",
+        "f2p",
+        "f2p",
+        "f2p",
+        "f2p",
+        "f2p",
+        "f2p",
+        "f2p"
+      ],
+      "mutation_info": {
+        "n_mutants": 16,
+        "n_runs_ok": 16,
+        "skipped": false,
+        "probe_s": 0.7
+      },
+      "gold_score": 1.0,
+      "gold_accept": true,
+      "gold_disc_frac": 1.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.4,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.030007
     }
   ],
   "evidence_tier": "live: battery-v2 (fail-to-pass gate + AssertFlip + mutation weights); gold/buggy scored only \u2014 no repair calls"
