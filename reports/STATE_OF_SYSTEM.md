@@ -27,6 +27,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Memory drives cost down over sessions | over a recurring workload: rung-memory saves **33–36%**, solution-memory **75%** vs blind re-escalation — **independent of cost prior**, rescuing the shallow-gradient regime | **solid (offline)** |
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
 | Boosted cheap repair (repair_v2) | hard cheap rung 2/10 → 3/10 (+1 feature-add), higher per-attempt cost | **modest** |
+| SkillBank family playbooks lift the cheap rung | LOO A/B on the 22-bundle more-itertools family: control 11/22 → treatment 11/22, **zero flips either way** ($0.50) | **null — third convergent datapoint that prompt-side levers don't move the cheap rung's capability wall** |
 | Predictive (difficulty) routing | LOO at n=27: no zero-regret threshold; can't isolate the cheap-winnable minority | **negative — data-starved** |
 | Test-time resampling recovers the 'universal miss' | run in BACKGROUND (no 600s cap): a fresh Codex sample SOLVED #8 'concurrent tee' — the bug no agent got single-shot in P4 — so best-of-3 Codex = **10/10** on the hard set. The miss was a stochastic single-run failure, not a wall; re-run + verify-select recovers it (n=1 recovery) | **solid (direct coverage-scaling evidence)** |
 

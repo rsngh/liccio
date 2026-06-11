@@ -207,9 +207,28 @@
   "treatment": {
     "2": false,
     "3": true,
-    "4": false
+    "4": false,
+    "5": true,
+    "6": true,
+    "7": false,
+    "8": false,
+    "9": false,
+    "10": true,
+    "11": true,
+    "12": true,
+    "13": true,
+    "14": false,
+    "15": false,
+    "16": true,
+    "17": true,
+    "18": true,
+    "19": false,
+    "20": false,
+    "21": false,
+    "22": false,
+    "23": true
   },
-  "cost_usd": 0.28349110000000005,
+  "cost_usd": 0.5021621000000002,
   "traces": {
     "2": "ISSUE: Fix empty ranges in numeric_range.__reversed__\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
     "3": "ISSUE: Issue #1057: Raise exception for invalid size in windowed()\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -1047,7 +1047,4 @@\n     \"\"\"\n-    if n < 0:\n-        raise ValueError('n must be >= 0')\n-    if n == 0:\n-        yield ()\n-        return\n+    if n <= 0:\n+        raise ValueError('n must be > 0')\n     if step < 1:\n",
@@ -233,5 +252,15 @@
     "21": "ISSUE: Fix formatting\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
     "22": "ISSUE: Issue 920: Add is_prime recipe\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
     "23": "ISSUE: Issue 821: key argument for all_equal\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -201,3 +201,3 @@\n \n-def all_equal(iterable):\n+def all_equal(iterable, key=None):\n     \"\"\"\n@@ -211,3 +211,3 @@\n     \"\"\"\n-    g = groupby(iterable)\n+    g = groupby(iterable, key)\n     return next(g, True) and not next(g, False)\n"
-  }
+  },
+  "summary": {
+    "control_solved": 11,
+    "treatment_solved": 11,
+    "n": 22,
+    "flipped_up": [],
+    "flipped_down": [],
+    "verdict": "no net effect at this n",
+    "honest_scope": "n=8, one family, single run per arm -> directional only; flips both ways reported"
+  },
+  "elapsed_s": 2825.1
 }
