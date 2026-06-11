@@ -38,6 +38,7 @@ from evals.issue_replay.repair_harness import (
     _llm,
     _localize,
     _owning_class,
+    _owning_classes,
     _parse_classes,
     _parse_funcs,
     _splice,
@@ -197,7 +198,13 @@ def guided_repair(task: IssueReplayTask, root: Path, *, model_id: str, rate: tup
     # P7 W2 class-scope promotion: a focused METHOD is repaired as its whole class (whole-class bugs
     # like OneToOne.update need cross-method context the lone-function splice never shows). Pure
     # functions keep the function-level path; the merged span table lets _splice handle both.
-    owners = _owning_class(current)
+    # Methods defined on several classes are disambiguated by the class named in the issue title
+    # ("fix OneToOne.update ..." -> OneToOne, not the first class that happens to define update).
+    import re as _re
+    title_ids = set(_re.findall(r"[A-Za-z_]\w*", task.issue_title))
+    all_owners = _owning_classes(current)
+    owners = {n: (next((c for c in cs if c in title_ids), cs[0]))
+              for n, cs in all_owners.items()}
     cls_names = sorted({owners[n] for n in focus_names if n in owners})
     class_mode = bool(cls_names)
     if class_mode:

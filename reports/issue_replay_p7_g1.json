@@ -1,14 +1,14 @@
 {
   "experiment": "issue_replay_p7_g1_battery_v2",
   "gate": "valid>=9/11 AND gold_accept>=9/11 AND buggy_rejected==11/11 AND no gold stuck at 0.4",
-  "n_done": 1,
+  "n_done": 3,
   "n_targets": 11,
-  "valid": 1,
-  "gold_accept": 1,
-  "buggy_rejected": 1,
-  "gold_stuck_at_0.4": 0,
+  "valid": 2,
+  "gold_accept": 2,
+  "buggy_rejected": 3,
+  "gold_stuck_at_0.4": 1,
   "gate_pass": false,
-  "total_gen_cost_usd": 0.0093,
+  "total_gen_cost_usd": 0.048,
   "per_bundle": [
     {
       "category": "solved",
@@ -41,6 +41,64 @@
       "buggy_score": 0.4,
       "buggy_accept": false,
       "gen_cost_usd": 0.009275
+    },
+    {
+      "category": "no_progress",
+      "module": "strutils.py",
+      "issue": "Fix warnings in python3.7",
+      "battery_valid": false,
+      "invalid_reason": "non_discriminating",
+      "n_checks": 8,
+      "n_discriminating": 1,
+      "n_guard": 7,
+      "check_kinds": [
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "property",
+        "property"
+      ],
+      "mutation_info": {},
+      "gold_score": 0.1,
+      "gold_accept": false,
+      "gold_disc_frac": 0.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.1,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.029441
+    },
+    {
+      "category": "no_progress",
+      "module": "dictutils.py",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "battery_valid": true,
+      "invalid_reason": "",
+      "n_checks": 7,
+      "n_discriminating": 6,
+      "n_guard": 1,
+      "check_kinds": [
+        "example",
+        "example",
+        "example",
+        "example",
+        "example",
+        "property",
+        "property"
+      ],
+      "mutation_info": {
+        "n_mutants": 0,
+        "n_runs_ok": 0
+      },
+      "gold_score": 1.0,
+      "gold_accept": true,
+      "gold_disc_frac": 1.0,
+      "gold_guard_frac": 1.0,
+      "buggy_score": 0.4,
+      "buggy_accept": false,
+      "gen_cost_usd": 0.009297
     }
   ],
   "evidence_tier": "live: battery-v2 (fail-to-pass gate + AssertFlip + mutation weights); gold/buggy scored only \u2014 no repair calls"

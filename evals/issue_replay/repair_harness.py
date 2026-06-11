@@ -78,9 +78,10 @@ def _class_table(module_src: str) -> dict[str, tuple[int, int, int]]:
     return out
 
 
-def _owning_class(module_src: str) -> dict[str, str]:
-    """method/function name -> enclosing top-level class name (absent for pure functions)."""
-    out: dict[str, str] = {}
+def _owning_classes(module_src: str) -> dict[str, list[str]]:
+    """method/function name -> ALL top-level classes defining it (methods like `update` exist on
+    several classes; the caller disambiguates, e.g. by the class named in the issue title)."""
+    out: dict[str, list[str]] = {}
     try:
         tree = ast.parse(module_src)
     except SyntaxError:
@@ -89,8 +90,13 @@ def _owning_class(module_src: str) -> dict[str, str]:
         if isinstance(cls, ast.ClassDef):
             for sub in ast.walk(cls):
                 if isinstance(sub, ast.FunctionDef | ast.AsyncFunctionDef):
-                    out.setdefault(sub.name, cls.name)
+                    out.setdefault(sub.name, []).append(cls.name)
     return out
+
+
+def _owning_class(module_src: str) -> dict[str, str]:
+    """method/function name -> enclosing top-level class name (first definition wins)."""
+    return {n: cs[0] for n, cs in _owning_classes(module_src).items()}
 
 
 def _strip_fence(block: str) -> str:
