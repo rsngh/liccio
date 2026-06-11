@@ -4,15 +4,15 @@
   "n_targets": 11,
   "n_no_progress": 8,
   "recovered_no_progress": 0,
-  "regressed_solved": 2,
-  "score_vs_hidden_point_biserial": 0.207,
+  "regressed_solved": 1,
+  "score_vs_hidden_point_biserial": 0.335,
   "n_candidates_scored": 28,
   "battery_gold_accepted": 0,
   "battery_buggy_rejected": 11,
   "n_battery": 11,
-  "proxy_precision": 1.0,
-  "proxy_recall": 0.056,
-  "decision": "INCONCLUSIVE",
+  "proxy_precision": null,
+  "proxy_recall": 0.0,
+  "decision": "PROCEED",
   "kill_criterion": "0/8 recovered AND r<0.2",
   "proceed_criterion": ">=2/8 recovered OR r>=0.3",
   "per_bundle": [
@@ -22,18 +22,24 @@
       "module": "stringcase.py",
       "issue": "Fix alphanumcase for Python 3",
       "hidden_pass": true,
-      "best_score": 1.0,
-      "best_proxy_pass": true,
+      "best_score": 0.95,
+      "best_proxy_pass": false,
       "score_trajectory": [
         0.4,
         0.95,
-        1.0
+        0.95,
+        0.95
       ],
       "n_checks": 12,
       "n_discriminating": 12,
       "gold_proxy_pass": false,
+      "gold_score": 0.95,
+      "gold_discrim": "11/12",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.010376
+      "focus_names": [
+        "alphanumcase"
+      ],
+      "cost_usd": 0.013064
     },
     {
       "category": "no_progress",
@@ -50,10 +56,13 @@
         0.4
       ],
       "n_checks": 12,
-      "n_discriminating": 12,
+      "n_discriminating": 6,
       "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/6",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.091543
+      "focus_names": [],
+      "cost_usd": 0.114225
     },
     {
       "category": "no_progress",
@@ -70,10 +79,15 @@
         0.4
       ],
       "n_checks": 12,
-      "n_discriminating": 12,
+      "n_discriminating": 11,
       "gold_proxy_pass": false,
+      "gold_score": 0.9455,
+      "gold_discrim": "10/11",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.015356
+      "focus_names": [
+        "update"
+      ],
+      "cost_usd": 0.014571
     },
     {
       "category": "solved",
@@ -90,10 +104,15 @@
         0.4
       ],
       "n_checks": 12,
-      "n_discriminating": 12,
+      "n_discriminating": 11,
       "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/11",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.041019
+      "focus_names": [
+        "daterange"
+      ],
+      "cost_usd": 0.040883
     },
     {
       "category": "no_progress",
@@ -101,19 +120,25 @@
       "module": "setutils.py",
       "issue": "add more IndexedSet.index() tests and fix typo in ",
       "hidden_pass": false,
-      "best_score": 0.4,
+      "best_score": 1.0,
       "best_proxy_pass": false,
       "score_trajectory": [
-        0.4,
-        0.4,
-        0.4,
-        0.4
+        1.0,
+        1.0,
+        1.0,
+        1.0
       ],
       "n_checks": 12,
-      "n_discriminating": 12,
+      "n_discriminating": 0,
       "gold_proxy_pass": false,
+      "gold_score": 1.0,
+      "gold_discrim": "0/0",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.013844
+      "focus_names": [
+        "add",
+        "index"
+      ],
+      "cost_usd": 0.012277
     },
     {
       "category": "no_progress",
@@ -121,19 +146,24 @@
       "module": "setutils.py",
       "issue": "fix IndexedSet.index() to account for removals, fi",
       "hidden_pass": false,
-      "best_score": 0.4,
+      "best_score": 1.0,
       "best_proxy_pass": false,
       "score_trajectory": [
-        0.4,
-        0.4,
-        0.4,
-        0.4
+        1.0,
+        1.0,
+        1.0,
+        1.0
       ],
-      "n_checks": 12,
-      "n_discriminating": 12,
+      "n_checks": 9,
+      "n_discriminating": 0,
       "gold_proxy_pass": false,
+      "gold_score": 1.0,
+      "gold_discrim": "0/0",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.017361
+      "focus_names": [
+        "index"
+      ],
+      "cost_usd": 0.013559
     },
     {
       "category": "no_progress",
@@ -149,31 +179,41 @@
         0.4,
         0.4
       ],
-      "n_checks": 12,
-      "n_discriminating": 12,
+      "n_checks": 5,
+      "n_discriminating": 5,
       "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/5",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.015676
+      "focus_names": [
+        "sort"
+      ],
+      "cost_usd": 0.012849
     },
     {
       "category": "solved",
       "repo": "boltons",
       "module": "mathutils.py",
       "issue": "fix default arguments of mathutitls.clamp",
-      "hidden_pass": false,
-      "best_score": 0.4,
+      "hidden_pass": true,
+      "best_score": 0.55,
       "best_proxy_pass": false,
       "score_trajectory": [
         0.4,
-        0.4,
-        0.4,
-        0.4
+        0.55,
+        0.55,
+        0.55
       ],
-      "n_checks": 9,
-      "n_discriminating": 9,
+      "n_checks": 12,
+      "n_discriminating": 8,
       "gold_proxy_pass": false,
+      "gold_score": 0.55,
+      "gold_discrim": "2/8",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.015315
+      "focus_names": [
+        "clamp"
+      ],
+      "cost_usd": 0.018649
     },
     {
       "category": "no_progress",
@@ -189,11 +229,16 @@
         0.4,
         0.4
       ],
-      "n_checks": 4,
-      "n_discriminating": 4,
+      "n_checks": 12,
+      "n_discriminating": 8,
       "gold_proxy_pass": false,
+      "gold_score": 0.925,
+      "gold_discrim": "7/8",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.017214
+      "focus_names": [
+        "get_value"
+      ],
+      "cost_usd": 0.017562
     },
     {
       "category": "no_progress",
@@ -209,11 +254,14 @@
         0.4,
         0.4
       ],
-      "n_checks": 4,
-      "n_discriminating": 4,
+      "n_checks": 12,
+      "n_discriminating": 12,
       "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/12",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.11406
+      "focus_names": [],
+      "cost_usd": 0.117127
     },
     {
       "category": "no_progress",
@@ -230,10 +278,13 @@
         0.4
       ],
       "n_checks": 12,
-      "n_discriminating": 12,
+      "n_discriminating": 4,
       "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/4",
       "buggy_proxy_pass": false,
-      "cost_usd": 0.07775
+      "focus_names": [],
+      "cost_usd": 0.077273
     }
   ],
   "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
