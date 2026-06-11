@@ -536,7 +536,10 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
             checks = [chk for j, chk in enumerate(checks) if j not in flagged2]
             baseline_pass = [p for j, p in enumerate(baseline_pass) if j not in flagged2]
 
-    valid = n_disc() >= 2
+    # validity floor 3: across five G1 runs every harmful battery (gold-rejecting) had disc<=2 while
+    # useful ones landed at disc>=4 — tiny discriminating sets are coin-flips; declare them invalid
+    # (safe: the router escalates) rather than risk a wrong gradient
+    valid = n_disc() >= 3
     weights: list[float] = []
     mut_info: dict = {}
     if valid and checks:
