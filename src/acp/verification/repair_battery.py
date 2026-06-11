@@ -30,6 +30,7 @@ so the existing stop-signal / red-team gates keep working. Pure `src` (callers p
 
 from __future__ import annotations
 
+import re
 import shutil
 import time
 from dataclasses import dataclass, field
@@ -152,7 +153,7 @@ _EXAMPLE_PROMPT = (
     "implementation meets this specification. Cover edge cases, boundaries, and tricky inputs implied "
     "by the spec; write DIFFERENT tests than the public one. Each test must be fully self-contained, "
     "must NOT reference any hidden/secret test, and must only assert behaviour the spec guarantees.\n\n"
-    "{import_rule}\n"
+    "{import_rule}\n{entail_rule}\n"
     "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
     "`def test_...`).\n\nISSUE:\n{issue}\n\nEXISTING PUBLIC TEST:\n{public}\n"
 )
@@ -163,7 +164,7 @@ _PROP_PROMPT = (
     "idempotence (f(f(x))==f(x)), round-trip (decode(encode(x))==x), monotonicity, bounds/range, "
     "type-stability, or behaviour on empty / singleton / boundary inputs. Each test must be fully "
     "self-contained, must NOT reference any hidden/secret test, and must only use behaviour the spec "
-    "guarantees.\n\n{import_rule}\n"
+    "guarantees.\n\n{import_rule}\n{entail_rule}\n"
     "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
     "`def test_...`).\n\nISSUE:\n{issue}\n\nEXISTING PUBLIC TEST:\n{public}\n"
 )
@@ -181,16 +182,38 @@ def _extract_imports(public_test: str) -> str:
 # the hidden test stay withheld, and every emitted check is execution-validated (must FAIL on the
 # buggy baseline), so showing buggy code cannot pin buggy behaviour into the battery.
 
+# The single most important rule, learned from G1: when the issue does not state the exact expected
+# value, a guessed exact assertion fails the TRUE fix too (e.g. "fix infinite daterange(x,x)" — is the
+# result 0 elements or 1? the issue doesn't say). The check must then assert only the property that
+# separates fixed from buggy: termination (via itertools.islice bounds), no exception, count bounds,
+# membership, ordering — NEVER a guessed exact value.
+_ENTAIL_RULE = (
+    "EXPECTATION RULE (critical): assert ONLY what the issue text or the public test explicitly "
+    "entails. If the exact expected value is not stated, DO NOT guess it — assert the weakest property "
+    "that still distinguishes fixed from buggy code: termination (always bound potentially-infinite "
+    "iteration with itertools.islice(..., K)), 'does not raise', count bounds (<=, >=), membership, or "
+    "ordering. Never let a test hang: bound every loop/iterator. The public test is authoritative "
+    "about semantics where it speaks.\n"
+)
+
 _REGEN_PROMPT = (
     "You are a senior test engineer. The code below contains a BUG described by the issue. Every test "
     "written so far PASSES on this buggy code — they fail to exercise the bug at all. Write {n} NEW "
     "pytest tests that FAIL on the code below precisely because of the described bug, and that would "
-    "pass once the bug is fixed per the issue. Target the specific wrong behaviour; assert the "
-    "spec-correct expectation. Each test must be fully self-contained and must NOT reference any "
-    "hidden/secret test.\n\n{import_rule}\n"
+    "pass once the bug is fixed per the issue. Target the specific wrong behaviour. Each test must be "
+    "fully self-contained and must NOT reference any hidden/secret test.\n\n{import_rule}\n{entail_rule}\n"
     "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
     "`def test_...`).\n\nISSUE:\n{issue}\n\nBUGGY CODE (the suspected region):\n```python\n{focus}\n```\n\n"
     "EXISTING PUBLIC TEST:\n{public}\n"
+)
+
+_ENTAIL_FILTER_PROMPT = (
+    "You are auditing pytest tests for SPEC ENTAILMENT. For each numbered test below, decide whether "
+    "its asserted expectations are EXPLICITLY entailed by the issue text / public test, or whether "
+    "any expected value is a GUESS the spec does not determine (e.g. asserting an exact count or "
+    "value the issue never states). Judge the assertions, not the style.\n\n"
+    "Return ONLY a JSON array of the NUMBERS of tests whose expectations are guesses (empty array if "
+    "none).\n\nISSUE:\n{issue}\n\nPUBLIC TEST (authoritative):\n{public}\n\nTESTS:\n{tests}\n"
 )
 
 _PIN_PROMPT = (
@@ -208,9 +231,11 @@ _FLIP_PROMPT = (
     "Each pytest test below currently PASSES on a buggy implementation — its assertions pin the WRONG "
     "behaviour described by the issue. Rewrite EACH test so its assertions state the SPEC-CORRECT "
     "expected behaviour instead (what a fixed implementation should do per the issue). Keep the same "
-    "imports, function calls and inputs; change ONLY the expected values/assertions. Return ONLY a "
-    "JSON array of the rewritten test files, same length and order as the input.\n\n"
-    "ISSUE:\n{issue}\n\nTESTS PINNING BUGGY BEHAVIOUR:\n{tests_json}\n"
+    "imports, function calls and inputs; change ONLY the expected values/assertions. If the issue does "
+    "not state the exact corrected value, assert the weakest property that distinguishes fixed from "
+    "buggy (not-equal to the buggy value, bounds, 'does not raise', bounded termination) instead of "
+    "guessing. Return ONLY a JSON array of the rewritten test files, same length and order as the "
+    "input.\n\nISSUE:\n{issue}\n\nTESTS PINNING BUGGY BEHAVIOUR:\n{tests_json}\n"
 )
 
 
@@ -220,7 +245,7 @@ def _generate(spec: SpecLike, *, client, model: str, n: int, template: str, **ex
         return [], 0.0
     import_rule = _IMPORT_RULE.format(imports=_extract_imports(spec.public_test))
     prompt = template.format(n=n, issue=spec.issue_text, public=spec.public_test,
-                             import_rule=import_rule, **extra)
+                             import_rule=import_rule, entail_rule=_ENTAIL_RULE, **extra)
     try:
         msg = client.messages.create(model=model, max_tokens=1600,
                                      messages=[{"role": "user", "content": prompt}])
@@ -334,6 +359,30 @@ def _keep_by_baseline(cands: list[str], *, want_fail: bool, module_path: str, ba
     return [c for c, passed in zip(ok, res, strict=True) if passed != want_fail]
 
 
+def _entailment_filter(spec: SpecLike, checks: list[tuple[str, str]], idxs: list[int], *,
+                       client, model: str) -> tuple[set[int], float]:
+    """Self-audit: which discriminating checks assert GUESSED expectations the spec never states?
+    Returns the indices (into `checks`) judged guesses, to be dropped. Fail-open (empty set)."""
+    if client is None or not idxs:
+        return set(), 0.0
+    import json as _json
+    numbered = "\n\n".join(f"### {j}\n{checks[j][1]}" for j in idxs)
+    prompt = _ENTAIL_FILTER_PROMPT.format(issue=spec.issue_text, public=spec.public_test,
+                                          tests=numbered)
+    try:
+        msg = client.messages.create(model=model, max_tokens=300,
+                                     messages=[{"role": "user", "content": prompt}])
+        text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+        m = re.search(r"\[[\d,\s]*\]", text)
+        flagged = set(_json.loads(m.group(0))) if m else set()
+        usage = getattr(msg, "usage", None)
+        cost = round((getattr(usage, "input_tokens", 0) or 0) * 1.0 / 1e6
+                     + (getattr(usage, "output_tokens", 0) or 0) * 5.0 / 1e6, 6)
+        return {j for j in flagged if j in set(idxs)}, cost
+    except Exception:  # noqa: BLE001
+        return set(), 0.0
+
+
 def _flip_assertions(spec: SpecLike, pins: list[str], *, client, model: str) -> tuple[list[str], float]:
     """AssertFlip step 2: rewrite passing buggy-behaviour pins into spec-correct expectations."""
     if client is None or not pins:
@@ -413,6 +462,15 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
                                  root=workspace_root, kind="flip")
         checks += kept
         baseline_pass += [False] * len(kept)
+
+    # entailment self-filter: drop discriminating checks whose expectations are guesses the spec
+    # never states (G1 finding: ambiguous issues -> plausible-but-wrong exact values fail the true fix)
+    disc_idx = [j for j, p in enumerate(baseline_pass) if not p]
+    flagged, fcost = _entailment_filter(spec, checks, disc_idx, client=client, model=model)
+    cost += fcost
+    if flagged and len(flagged) < len(disc_idx):   # never drop the whole discriminating set
+        checks = [chk for j, chk in enumerate(checks) if j not in flagged]
+        baseline_pass = [p for j, p in enumerate(baseline_pass) if j not in flagged]
 
     valid = n_disc() >= 2
     weights: list[float] = []
