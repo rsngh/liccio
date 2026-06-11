@@ -445,9 +445,9 @@ def _flip_assertions(spec: SpecLike, pins: list[str], *, client, model: str) -> 
 def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: dict[str, str],
                      baseline_src: str, public_test: str, workspace_root: Path,
                      focus_src: str = "", focus_spans: list[tuple[int, int]] | None = None,
-                     n_example: int = 6, n_property: int = 3, n_invert: int = 4,
+                     n_example: int = 10, n_property: int = 4, n_invert: int = 6,
                      max_regen_rounds: int = 2, mutant_cap: int = 24,
-                     model: str = "claude-haiku-4-5") -> RepairBattery:
+                     min_disc: int = 5, model: str = "claude-haiku-4-5") -> RepairBattery:
     """Discriminating-by-construction battery (P7 W1). On top of v1's import-pin + collect filter:
 
     * Otter fail-to-pass gate — while the battery has <2 discriminating checks, regenerate showing
@@ -480,11 +480,13 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
     def n_disc() -> int:
         return sum(1 for p in baseline_pass if not p)
 
-    # Otter fail-to-pass regen: only checks that FAIL on buggy are admitted (kind="f2p")
+    # Otter fail-to-pass regen toward min_disc: a battery with only 1-2 discriminating checks is
+    # fragile — a single wrong expectation dominates the gradient; volume dilutes wrong checks and
+    # gives the audits something to keep (G1 finding: the harmful batteries were all tiny)
     for _ in range(max_regen_rounds):
-        if n_disc() >= 2:
+        if n_disc() >= min_disc:
             break
-        regen, c = _generate(spec, client=client, model=model, n=4, template=_REGEN_PROMPT, focus=focus)
+        regen, c = _generate(spec, client=client, model=model, n=5, template=_REGEN_PROMPT, focus=focus)
         cost += c
         kept = _keep_by_baseline(regen, want_fail=True, module_path=module_path,
                                  baseline_src=baseline_src, extra_files=extra_files,
@@ -493,7 +495,7 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
         baseline_pass += [False] * len(kept)
 
     # AssertFlip: pins must PASS on buggy; flips must FAIL on buggy (discriminating by construction)
-    if n_disc() < 4 and n_invert > 0:
+    if n_disc() < min_disc + 1 and n_invert > 0:
         pins_raw, c = _generate(spec, client=client, model=model, n=n_invert, template=_PIN_PROMPT, focus=focus)
         cost += c
         pins = [s for _k, s in _keep_by_baseline(pins_raw, want_fail=False, module_path=module_path,
@@ -515,6 +517,15 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
     if flagged and len(flagged) < len(disc_idx):   # never drop the whole discriminating set
         checks = [chk for j, chk in enumerate(checks) if j not in flagged]
         baseline_pass = [p for j, p in enumerate(baseline_pass) if j not in flagged]
+    if 0 < n_disc() <= 3:
+        # small discriminating sets are fragile (one wrong expectation dominates the gradient):
+        # a second independent audit; union of flags
+        disc_idx = [j for j, p in enumerate(baseline_pass) if not p]
+        flagged2, fcost2 = _entailment_filter(spec, checks, disc_idx, client=client, model=model)
+        cost += fcost2
+        if flagged2 and len(flagged2) < len(disc_idx):
+            checks = [chk for j, chk in enumerate(checks) if j not in flagged2]
+            baseline_pass = [p for j, p in enumerate(baseline_pass) if j not in flagged2]
 
     valid = n_disc() >= 2
     weights: list[float] = []
