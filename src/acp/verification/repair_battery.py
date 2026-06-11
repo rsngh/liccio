@@ -456,6 +456,37 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
                      focus_src: str = "", focus_spans: list[tuple[int, int]] | None = None,
                      n_example: int = 10, n_property: int = 4, n_invert: int = 6,
                      max_regen_rounds: int = 2, mutant_cap: int = 16,
+                     min_disc: int = 5, model: str = "claude-haiku-4-5",
+                     rebuilds_on_invalid: int = 1) -> RepairBattery:
+    """build_battery_v2 with variance control (P7 G3 finding): generation is stochastic — the same
+    bundle oscillates useful<->invalid across builds (mathutils/ioutils were useful in one run,
+    invalid the next, costing recoveries). An invalid battery triggers up to `rebuilds_on_invalid`
+    full rebuilds (fresh sampling, ~$0.03 each); the attempt with the most discriminating checks
+    wins. Total generation cost is accumulated on the returned battery."""
+    best: RepairBattery | None = None
+    total_cost = 0.0
+    for _ in range(rebuilds_on_invalid + 1):
+        bat = _build_battery_v2_once(
+            spec, client=client, module_path=module_path, extra_files=extra_files,
+            baseline_src=baseline_src, public_test=public_test, workspace_root=workspace_root,
+            focus_src=focus_src, focus_spans=focus_spans, n_example=n_example,
+            n_property=n_property, n_invert=n_invert, max_regen_rounds=max_regen_rounds,
+            mutant_cap=mutant_cap, min_disc=min_disc, model=model)
+        total_cost += bat.gen_cost_usd
+        if best is None or bat.n_discriminating > best.n_discriminating:
+            best = bat
+        if best.valid:
+            break
+    assert best is not None
+    best.gen_cost_usd = round(total_cost, 6)
+    return best
+
+
+def _build_battery_v2_once(spec: SpecLike, *, client, module_path: str, extra_files: dict[str, str],
+                     baseline_src: str, public_test: str, workspace_root: Path,
+                     focus_src: str = "", focus_spans: list[tuple[int, int]] | None = None,
+                     n_example: int = 10, n_property: int = 4, n_invert: int = 6,
+                     max_regen_rounds: int = 2, mutant_cap: int = 16,
                      min_disc: int = 5, model: str = "claude-haiku-4-5") -> RepairBattery:
     """Discriminating-by-construction battery (P7 W1). On top of v1's import-pin + collect filter:
 
