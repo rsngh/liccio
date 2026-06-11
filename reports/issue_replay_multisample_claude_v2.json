@@ -3,13 +3,13 @@
   "agent": "claude_code",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 22,
+  "completed": 24,
   "best_of_k_solved": {
-    "1": 19
+    "1": 21
   },
-  "single_shot_solved": 19,
-  "best_of_n_solved": 19,
-  "elapsed_s": 1535.4,
+  "single_shot_solved": 21,
+  "best_of_n_solved": 21,
+  "elapsed_s": 1785.8,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -226,6 +226,26 @@
       "idx": 21,
       "repo": "r1chardj0n3s/parse",
       "issue": "Fix microsecond precision loss in timestamp parsing",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 22,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix empty ranges in numeric_range.__reversed__",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 23,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1057: Raise exception for invalid size in windowed()",
       "samples": [
         1
       ],
