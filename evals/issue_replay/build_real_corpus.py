@@ -29,7 +29,10 @@ REPOS: list[tuple[str, list[tuple[str, str]]]] = [
      [(f"boltons/{m}.py", f"tests/test_{m}.py") for m in
       ("strutils", "dictutils", "cacheutils", "timeutils", "setutils", "listutils",
        "iterutils", "mathutils", "funcutils", "formatutils", "fileutils", "jsonutils",
-       "statsutils", "queueutils", "tableutils", "namedutils", "ioutils")]),
+       "statsutils", "queueutils", "tableutils", "namedutils", "ioutils",
+       # step-1 corpus scaling: the remaining boltons modules (same proven flat-module pattern)
+       "urlutils", "typeutils", "socketutils", "ecoutils", "gcutils", "mboxutils",
+       "excutils", "easterutils", "debugutils", "deprutils", "txutils")]),
     # harder, algorithmically richer flat-module libs added in P4 to break the 17/17 ceiling and
     # produce bundles that actually SEPARATE the agents (toolz = functional/currying edge cases;
     # parse = format-string parsing). Same `from pkg.module import fn` pattern the harvester flattens.
