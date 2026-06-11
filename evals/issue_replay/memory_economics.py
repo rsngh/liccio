@@ -47,7 +47,7 @@ def _per_bundle_costs(solves: dict, order: list[str], cost: dict[str, float], n:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", default="combined", choices=["v1", "hard", "combined"])
+    ap.add_argument("--corpus", default="combined", choices=["v1", "hard", "combined", "v2"])
     ap.add_argument("--recurrence", type=int, default=4, help="occurrences per bundle in the workload")
     ap.add_argument("--out", default="reports/issue_replay_memory_economics.json")
     args = ap.parse_args()

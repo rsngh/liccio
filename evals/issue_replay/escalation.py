@@ -37,7 +37,22 @@ CORPORA = {
              "gemini_cli": "reports/issue_replay_vendor_gemini_cli_hard.json",
              "claude_code": "reports/issue_replay_vendor_claude_code_hard.json",
              "codex_cli": "reports/issue_replay_vendor_codex_cli_hard.json"},
+    # v2 = the scaled 52-bundle corpus, profiled via resumable multisample (--n 1 single-shot)
+    "v2": {"inproc_repair": "reports/issue_replay_multisample_repair2_v2.json",
+           "gemini_cli": "reports/issue_replay_multisample_gemini_v2.json",
+           "claude_code": "reports/issue_replay_multisample_claude_v2.json",
+           "codex_cli": "reports/issue_replay_multisample_codex_v2.json"},
 }
+
+
+def _bundle_solved(r: dict) -> int:
+    """Read a per-bundle solve flag from either the run.py format (`hidden_pass`) or the multisample
+    format (`solved` / best-of-1 from `samples`)."""
+    if "hidden_pass" in r:
+        return int(bool(r["hidden_pass"]))
+    if "solved" in r:
+        return int(bool(r["solved"]))
+    return int(bool(r.get("samples", [0])[:1] == [1]))
 
 
 def _load(corpus: str) -> tuple[list[str], dict[str, list[int]], dict[str, float], list[str]]:
@@ -53,7 +68,7 @@ def _load(corpus: str) -> tuple[list[str], dict[str, list[int]], dict[str, float
             names = present
         for a in names:
             pb = json.loads(Path(paths[a]).read_text())["per_bundle"]
-            solves.setdefault(a, []).extend(int(r["hidden_pass"]) for r in pb)
+            solves.setdefault(a, []).extend(_bundle_solved(r) for r in pb)
         repos += [r["repo"] for r in json.loads(Path(paths[names[0]]).read_text())["per_bundle"]]
     return names, solves, {a: COST[a] for a in names}, repos
 
@@ -135,7 +150,7 @@ def _separation(names: list[str], solves: dict, n: int) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", default="v1", choices=["v1", "hard", "combined"])
+    ap.add_argument("--corpus", default="v1", choices=["v1", "hard", "combined", "v2"])
     ap.add_argument("--out", default="reports/issue_replay_routing_economics.json")
     args = ap.parse_args()
     names, solves, cost, repos = _load(args.corpus)

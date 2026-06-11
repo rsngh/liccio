@@ -3,13 +3,13 @@
   "agent": "gemini_cli",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 31,
+  "completed": 42,
   "best_of_k_solved": {
-    "1": 28
+    "1": 38
   },
-  "single_shot_solved": 28,
-  "best_of_n_solved": 28,
-  "elapsed_s": 3428.8,
+  "single_shot_solved": 38,
+  "best_of_n_solved": 38,
+  "elapsed_s": 4577.3,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -316,6 +316,116 @@
       "idx": 30,
       "repo": "more-itertools/more-itertools",
       "issue": "Fix bug for negative inputs to exactly_n(). Optimize code.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 31,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix product_index() with iterator input",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 32,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 900: Replace iequals fillvalue logic with strict size test",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 33,
+      "repo": "more-itertools/more-itertools",
+      "issue": "fix last() when __reversed__ is None",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 34,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 986: argmin and argmax",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 35,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix __all__ error due to forgotton comma",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 36,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix unique pool by not using a set",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 37,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Add more sample() tests and fix bug in strict option with counts",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 38,
+      "repo": "more-itertools/more-itertools",
+      "issue": "remove string.format(); fix tests",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 39,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 916: lt only for is_sorted (#917)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 40,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 870: counts parameter for sample",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 41,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 869: Add a steps argument to circular_shifts",
       "samples": [
         1
       ],

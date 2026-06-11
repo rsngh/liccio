@@ -49,7 +49,7 @@ def _prior(m: float) -> dict[str, float]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", default="combined", choices=["v1", "hard", "combined"])
+    ap.add_argument("--corpus", default="combined", choices=["v1", "hard", "combined", "v2"])
     ap.add_argument("--out", default="reports/issue_replay_cost_sensitivity.json")
     args = ap.parse_args()
     names, solves, _c, _r = _load(args.corpus)

@@ -30,7 +30,7 @@ def _union_rate(solves: dict[str, list[int]], agents: tuple[str, ...], n: int) -
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", default="combined", choices=["v1", "hard", "combined"])
+    ap.add_argument("--corpus", default="combined", choices=["v1", "hard", "combined", "v2"])
     ap.add_argument("--out", default="reports/issue_replay_coverage_scaling.json")
     args = ap.parse_args()
     names, solves, _cost, _repos = _load(args.corpus)
