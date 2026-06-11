@@ -151,3 +151,28 @@ def test_resamples_default_one_reproduces_single_attempt() -> None:
                           attempt_fn=fn, memory=None)
     # only ONE inproc sample (the failing one) -> escalates; does not see the would-be sample-2 success
     assert res.lever_path[0] == "inproc_repair" and res.lever_path[1] != "commit_success"
+
+
+def test_high_risk_fails_closed_without_strict_verifier() -> None:
+    # high-risk + agent solves, but NO independent strict verifier wired -> never auto-commit
+    fn = make_agent_attempt_fn(LADDER, _solve_fn({"inproc_repair"}))
+    res = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                          task_type="security_fix", risk_level="high", budget_class="migration",
+                          ladder=LADDER, attempt_fn=fn, memory=None)
+    assert not res.solved and res.terminal == "route_to_human"
+
+
+def test_high_risk_commits_only_when_independent_gate_passes() -> None:
+    fn_ok = make_agent_attempt_fn(LADDER, _solve_fn({"inproc_repair"}),
+                                  strict_verify_fn=lambda _t: (True, 0.001))
+    res = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                          task_type="security_fix", risk_level="high", budget_class="migration",
+                          ladder=LADDER, attempt_fn=fn_ok, memory=None)
+    assert res.solved and "run_strict_verifier" in res.lever_path
+    # and a FAILING independent gate blocks the commit
+    fn_bad = make_agent_attempt_fn(LADDER, _solve_fn({"inproc_repair"}),
+                                   strict_verify_fn=lambda _t: (False, 0.001))
+    res2 = route_and_solve(task_id="b", failure_signature="x", repo_family="r", tenant="t",
+                           task_type="security_fix", risk_level="high", budget_class="migration",
+                           ladder=LADDER, attempt_fn=fn_bad, memory=None)
+    assert not res2.solved

@@ -54,7 +54,8 @@ def build_agent_ladder(specs: list[tuple[str, float, float]]) -> list[Lever]:
 
 
 def make_agent_attempt_fn(ladder: list[Lever], solve_fn, *, verify_fn=None,
-                          resamples: int | dict[str, int] = 1, gate_fn=None) -> AttemptFn:
+                          resamples: int | dict[str, int] = 1, gate_fn=None,
+                          strict_verify_fn=None) -> AttemptFn:
     """Adapt an agent ladder into an `AttemptFn` for `run_controller` (verify-stop escalation).
 
     `solve_fn(agent, task_id) -> (produced, cost)` or `(produced, cost, signature)` invokes the agent.
@@ -74,6 +75,14 @@ def make_agent_attempt_fn(ladder: list[Lever], solve_fn, *, verify_fn=None,
         return (r[0], r[1], r[2]) if len(r) == 3 else (r[0], r[1], None)
 
     def fn(action: str, task_id: str):
+        if action == "run_strict_verifier":
+            # high-risk/security tasks: the controller demands an INDEPENDENT check before commit
+            # (e.g. verification.independent_proof fresh-test gate). Without one, fail CLOSED so a
+            # high-risk result is never auto-committed on the primary signal alone.
+            if strict_verify_fn is None:
+                return AttemptOutcome(solved=False, public_solved=False, cost=0.0)
+            ok, cost = strict_verify_fn(task_id)
+            return AttemptOutcome(solved=bool(ok), public_solved=bool(ok), cost=cost)
         agent = agents.get(action)
         if agent is None:
             return None
