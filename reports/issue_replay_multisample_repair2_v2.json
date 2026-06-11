@@ -3,13 +3,13 @@
   "agent": "repair2",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 47,
+  "completed": 52,
   "best_of_k_solved": {
-    "1": 18
+    "1": 19
   },
-  "single_shot_solved": 18,
-  "best_of_n_solved": 18,
-  "elapsed_s": 1803.6,
+  "single_shot_solved": 19,
+  "best_of_n_solved": 19,
+  "elapsed_s": 2047.3,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -476,6 +476,56 @@
       "idx": 46,
       "repo": "more-itertools/more-itertools",
       "issue": "Issue 1070: Add random derangements",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 47,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1003: Multidimensional reshape() (#1062)",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 48,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix formatting",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 49,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 920: Add is_prime recipe",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 50,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 821: key argument for all_equal",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 51,
+      "repo": "arrow-py/arrow",
+      "issue": "Fix arrow.get functionality when weekday is parsed alone (#823)",
       "samples": [
         0
       ],
