@@ -116,7 +116,7 @@ _CRITIC = (
 
 
 def repair_v2(task: IssueReplayTask, root: Path, *, model_id: str, rate: tuple[float, float],
-              k: int = 3, rounds: int = 2) -> tuple[str, float, bool]:
+              k: int = 3, rounds: int = 2, skill: str = "") -> tuple[str, float, bool]:
     """Boosted localized repair. Returns (produced_module_src, cost_usd, ran)."""
     work = root / f"r2_{abs(hash(task.repo_name + task.issue_title)) % 100000}"
     work.mkdir(parents=True, exist_ok=True)
@@ -156,7 +156,7 @@ def repair_v2(task: IssueReplayTask, root: Path, *, model_id: str, rate: tuple[f
         diag_block = f"REVIEWER DIAGNOSIS (address this directly):\n{diagnosis}\n\n" if diagnosis else ""
         failed_block = ("PATCHES THAT ALREADY FAILED — do NOT repeat these approaches:\n"
                         + "\n---\n".join(failed_patches[-3:]) + "\n") if failed_patches else ""
-        prompt = _PROMPT.format(instr=instr, issue=f"{task.issue_title}\n{task.issue_body}",
+        prompt = (skill + "\n\n" if skill else "") + _PROMPT.format(instr=instr, issue=f"{task.issue_title}\n{task.issue_body}",
                                 skeleton=skeleton, siblings=sib_block, focus=focus,
                                 failure=failure, diagnosis=diag_block, failed=failed_block)
         temps = [0.0, 0.7, 1.0] if rnd == 0 else [0.4, 0.8, 1.0]
