@@ -68,7 +68,7 @@ def _bestofk_cost(s: int | None, k: int) -> int:
 
 
 def _ladder_econ(order, sts, k: int, cost: dict[str, float], n: int):
-    """resample-escalate with best-of-k per rung; returns (solved, total_cost)."""
+    """resample-escalate with UNIFORM best-of-k per rung; returns (solved, total_cost)."""
     solved = 0
     total = 0.0
     for i in range(n):
@@ -77,6 +77,23 @@ def _ladder_econ(order, sts, k: int, cost: dict[str, float], n: int):
             if _bestofk_solved(sts[a][i], k):
                 solved += 1
                 break
+    return solved, total
+
+
+def _ladder_gated(order, sts, k: int, cost: dict[str, float], n: int, *, probe: int = 1):
+    """ORACLE-gated resample-escalate (perfect consistency gate, upper bound): at a rung, resample up
+    to k ONLY when that (agent,bundle) is actually recoverable within k (stochastic); otherwise pay a
+    small `probe` of samples to detect the persistent miss, then escalate. Returns (solved, cost)."""
+    solved = 0
+    total = 0.0
+    for i in range(n):
+        for a in order:
+            s = sts[a][i]
+            if s is not None and s <= k:          # stochastic & recoverable -> resample to the win
+                total += s * cost[a]
+                solved += 1
+                break
+            total += probe * cost[a]               # persistent -> gate detects agreement, escalate
     return solved, total
 
 
@@ -100,9 +117,12 @@ def main() -> int:
         base_solved, base_cost = _ladder_econ(order, sts, 1, cost, n)
         for k in range(1, K + 1):
             sv, ct = _ladder_econ(order, sts, k, cost, n)
-            row[f"K{k}"] = {"solved": sv, "cost": round(ct, 3),
-                            "cost_per_success": round(ct / sv, 4) if sv else None,
-                            "saving_vs_blind": round(1 - (ct / base_cost), 3) if base_cost else 0.0}
+            row[f"uniformK{k}"] = {"solved": sv, "cost": round(ct, 3),
+                                   "saving_vs_blind": round(1 - (ct / base_cost), 3) if base_cost else 0.0}
+        gsv, gct = _ladder_gated(order, sts, K, cost, n)
+        row["oracle_gated"] = {"solved": gsv, "cost": round(gct, 3),
+                               "cost_per_success": round(gct / gsv, 4) if gsv else None,
+                               "saving_vs_blind": round(1 - (gct / base_cost), 3) if base_cost else 0.0}
         sweep.append(row)
     has_resample_data = [a for a in order if maxk[a] > 1]
     rep = {
@@ -121,9 +141,10 @@ def main() -> int:
     for a in order:
         print(f"  {a:14} best-of-k solved: {per_agent[a]}")
     mid = sweep[len(sweep) // 2]
-    print(f"ladder @ m={mid['expensive_multiplier']}: " +
-          "  ".join(f"K{k}={mid[f'K{k}']['solved']}/{n}@cost{mid[f'K{k}']['cost']}(save {mid[f'K{k}']['saving_vs_blind']})"
-                    for k in range(1, K + 1)))
+    print(f"ladder @ m={mid['expensive_multiplier']} (vs blind escalation):")
+    for k in range(1, K + 1):
+        print(f"  uniform best-of-{k}: {mid[f'uniformK{k}']['solved']}/{n}  save {mid[f'uniformK{k}']['saving_vs_blind']}")
+    print(f"  ORACLE-gated:       {mid['oracle_gated']['solved']}/{n}  save {mid['oracle_gated']['saving_vs_blind']}")
     print(f"wrote {args.out}")
     return 0
 

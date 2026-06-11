@@ -10,15 +10,21 @@
   ],
   "max_k": 3,
   "agents_with_multisample_data": [
+    "inproc_repair",
+    "gemini_cli",
     "claude_code",
     "codex_cli"
   ],
   "per_agent_best_of_k_solved": {
     "inproc_repair": {
-      "best_of_1": 2
+      "best_of_1": 3,
+      "best_of_2": 3,
+      "best_of_3": 3
     },
     "gemini_cli": {
-      "best_of_1": 8
+      "best_of_1": 8,
+      "best_of_2": 9,
+      "best_of_3": 9
     },
     "claude_code": {
       "best_of_1": 7,
@@ -34,107 +40,122 @@
   "ladder_economics_sweep": [
     {
       "expensive_multiplier": 2.0,
-      "K1": {
+      "uniformK1": {
         "solved": 10,
-        "cost": 25.254,
-        "cost_per_success": 2.5254,
+        "cost": 23.994,
         "saving_vs_blind": 0.0
       },
-      "K2": {
+      "uniformK2": {
         "solved": 10,
-        "cost": 37.361,
-        "cost_per_success": 3.7361,
-        "saving_vs_blind": -0.479
+        "cost": 33.514,
+        "saving_vs_blind": -0.397
       },
-      "K3": {
+      "uniformK3": {
         "solved": 10,
-        "cost": 49.469,
-        "cost_per_success": 4.9469,
-        "saving_vs_blind": -0.959
+        "cost": 43.361,
+        "saving_vs_blind": -0.807
+      },
+      "oracle_gated": {
+        "solved": 10,
+        "cost": 23.667,
+        "cost_per_success": 2.3667,
+        "saving_vs_blind": 0.014
       }
     },
     {
       "expensive_multiplier": 6.0,
-      "K1": {
+      "uniformK1": {
         "solved": 10,
-        "cost": 37.141,
-        "cost_per_success": 3.7141,
+        "cost": 35.324,
         "saving_vs_blind": 0.0
       },
-      "K2": {
+      "uniformK2": {
         "solved": 10,
-        "cost": 52.077,
-        "cost_per_success": 5.2077,
-        "saving_vs_blind": -0.402
+        "cost": 45.958,
+        "saving_vs_blind": -0.301
       },
-      "K3": {
+      "uniformK3": {
         "solved": 10,
-        "cost": 67.013,
-        "cost_per_success": 6.7013,
-        "saving_vs_blind": -0.804
+        "cost": 58.077,
+        "saving_vs_blind": -0.644
+      },
+      "oracle_gated": {
+        "solved": 10,
+        "cost": 33.839,
+        "cost_per_success": 3.3839,
+        "saving_vs_blind": 0.042
       }
     },
     {
       "expensive_multiplier": 10.0,
-      "K1": {
+      "uniformK1": {
         "solved": 10,
-        "cost": 46.519,
-        "cost_per_success": 4.6519,
+        "cost": 44.364,
         "saving_vs_blind": 0.0
       },
-      "K2": {
+      "uniformK2": {
         "solved": 10,
-        "cost": 63.469,
-        "cost_per_success": 6.3469,
-        "saving_vs_blind": -0.364
+        "cost": 55.673,
+        "saving_vs_blind": -0.255
       },
-      "K3": {
+      "uniformK3": {
         "solved": 10,
-        "cost": 80.42,
-        "cost_per_success": 8.042,
-        "saving_vs_blind": -0.729
+        "cost": 69.469,
+        "saving_vs_blind": -0.566
+      },
+      "oracle_gated": {
+        "solved": 10,
+        "cost": 41.877,
+        "cost_per_success": 4.1877,
+        "saving_vs_blind": 0.056
       }
     },
     {
       "expensive_multiplier": 14.0,
-      "K1": {
+      "uniformK1": {
         "solved": 10,
-        "cost": 54.899,
-        "cost_per_success": 5.4899,
+        "cost": 52.489,
         "saving_vs_blind": 0.0
       },
-      "K2": {
+      "uniformK2": {
         "solved": 10,
-        "cost": 73.528,
-        "cost_per_success": 7.3528,
-        "saving_vs_blind": -0.339
+        "cost": 64.309,
+        "saving_vs_blind": -0.225
       },
-      "K3": {
+      "uniformK3": {
         "solved": 10,
-        "cost": 92.157,
-        "cost_per_success": 9.2157,
-        "saving_vs_blind": -0.679
+        "cost": 79.528,
+        "saving_vs_blind": -0.515
+      },
+      "oracle_gated": {
+        "solved": 10,
+        "cost": 49.09,
+        "cost_per_success": 4.909,
+        "saving_vs_blind": 0.065
       }
     },
     {
       "expensive_multiplier": 18.0,
-      "K1": {
+      "uniformK1": {
         "solved": 10,
-        "cost": 62.703,
-        "cost_per_success": 6.2703,
+        "cost": 60.082,
         "saving_vs_blind": 0.0
       },
-      "K2": {
+      "uniformK2": {
         "solved": 10,
-        "cost": 82.812,
-        "cost_per_success": 8.2812,
-        "saving_vs_blind": -0.321
+        "cost": 72.323,
+        "saving_vs_blind": -0.204
       },
-      "K3": {
+      "uniformK3": {
         "solved": 10,
-        "cost": 102.922,
-        "cost_per_success": 10.2922,
-        "saving_vs_blind": -0.641
+        "cost": 88.812,
+        "saving_vs_blind": -0.478
+      },
+      "oracle_gated": {
+        "solved": 10,
+        "cost": 55.834,
+        "cost_per_success": 5.5834,
+        "saving_vs_blind": 0.071
       }
     }
   ],

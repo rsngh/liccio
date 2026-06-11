@@ -20,6 +20,8 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Harder bundles separate the frontier | hard-10: inproc .2 / claude .7 / gemini .8 / codex .9 single-shot; the lone single-shot universal miss is recovered by a Codex resample (see resampling row) | **solid** |
 | Ensemble adds coverage over the best agent | greedy: **Codex alone = the full union** (superset); +0 marginal coverage from others | **refuted — pool value is cost+robustness, not coverage** |
 | Pool insures against unknown-best | expected union of a *random* single agent only 0.71; ~3 random agents to reach union | **solid** |
+| Resample-then-escalate recovers STOCHASTIC misses | best-of-3 recovery: codex #8 + gemini #7/#9 recovered; claude (#0/#4/#8) & repair2 = 0 recovery (persistent). Resampling helps the STRONG agents only | **solid** |
+| ...but only CONSISTENCY-GATED, not uniform | uniform best-of-K loses 25-57% (wastes samples on persistent misses); oracle-gated saves +1.4-7.1% (grows w/ cost gradient). On this corpus the saving is small (ladder already 10/10 via codex single-shot) | **refined — gate selectivity is essential; biggest value is resampling the TOP rung when it has stochastic misses** |
 | Verify-stop is necessary | a public-only signal would auto-commit **24% wrong** fixes (108-grading audit) | **solid** |
 | Solution memory frees recurrences | exact-recurrence replay **17/17 = 100%** at zero agent calls; ~50% workload cost saved at 50% recurrence | **solid (offline)** |
 | Memory drives cost down over sessions | over a recurring workload: rung-memory saves **33–36%**, solution-memory **75%** vs blind re-escalation — **independent of cost prior**, rescuing the shallow-gradient regime | **solid (offline)** |
