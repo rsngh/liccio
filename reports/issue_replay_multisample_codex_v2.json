@@ -3,13 +3,13 @@
   "agent": "codex_cli",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 43,
+  "completed": 52,
   "best_of_k_solved": {
-    "1": 42
+    "1": 51
   },
-  "single_shot_solved": 42,
-  "best_of_n_solved": 42,
-  "elapsed_s": 5480.3,
+  "single_shot_solved": 51,
+  "best_of_n_solved": 51,
+  "elapsed_s": 6602.2,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -436,6 +436,96 @@
       "idx": 42,
       "repo": "more-itertools/more-itertools",
       "issue": "Issue 862: change relative_seek() behaviour",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 43,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue: #898: Sync recipe with main docs. Eliminate quadratic fallback.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 44,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 45,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix random_product() as well",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 46,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1070: Add random derangements",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 47,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1003: Multidimensional reshape() (#1062)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 48,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix formatting",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 49,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 920: Add is_prime recipe",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 50,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 821: key argument for all_equal",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 51,
+      "repo": "arrow-py/arrow",
+      "issue": "Fix arrow.get functionality when weekday is parsed alone (#823)",
       "samples": [
         1
       ],
