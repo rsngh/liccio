@@ -3,13 +3,13 @@
   "agent": "claude_code",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 3,
+  "completed": 13,
   "best_of_k_solved": {
-    "1": 2
+    "1": 12
   },
-  "single_shot_solved": 2,
-  "best_of_n_solved": 2,
-  "elapsed_s": 102.6,
+  "single_shot_solved": 12,
+  "best_of_n_solved": 12,
+  "elapsed_s": 689.4,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -36,6 +36,106 @@
       "idx": 2,
       "repo": "mahmoud/boltons",
       "issue": "fix strutils",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 3,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 4,
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 5,
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 6,
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to @cached an",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 7,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#302)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 8,
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_apparent_index, ",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 9,
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 10,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 11,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 12,
+      "repo": "mahmoud/boltons",
+      "issue": "fix default arguments of mathutitls.clamp",
       "samples": [
         1
       ],
