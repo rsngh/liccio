@@ -1,0 +1,46 @@
+{
+  "experiment": "issue_replay_verifier_redteam",
+  "per_bundle": {
+    "0": {
+      "repo": "okunishinishi/python-stringcase",
+      "issue": "Fix alphanumcase for Python 3",
+      "overfit_fools_primary": true,
+      "n_checks_generated": 6,
+      "gold_pass": true,
+      "overfit_pass": false,
+      "checks_surviving": 6,
+      "detected": true
+    },
+    "1": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix(human_readable_list): altering f-string syntax to have b",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "2": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix strutils",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "3": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "4": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "5": {
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    }
+  },
+  "cost_usd": 0.04824730000000001
+}
