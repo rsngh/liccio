@@ -1,0 +1,84 @@
+{
+  "experiment": "issue_replay_memory_economics",
+  "corpus": "v2",
+  "n_bundles": 52,
+  "recurrence_per_bundle": 4,
+  "ladder": [
+    "inproc_repair",
+    "gemini_cli",
+    "claude_code",
+    "codex_cli"
+  ],
+  "rung_memory_saving_range": [
+    0.204,
+    0.296
+  ],
+  "solution_memory_saving_range": [
+    0.75,
+    0.75
+  ],
+  "sweep": [
+    {
+      "expensive_multiplier": 2.0,
+      "blind_cost": 414.06,
+      "rung_memory_saving": 0.296,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 4.0,
+      "blind_cost": 483.93,
+      "rung_memory_saving": 0.269,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 6.0,
+      "blind_cost": 537.9,
+      "rung_memory_saving": 0.253,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 8.0,
+      "blind_cost": 584.0,
+      "rung_memory_saving": 0.241,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 10.0,
+      "blind_cost": 625.22,
+      "rung_memory_saving": 0.232,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 12.0,
+      "blind_cost": 663.03,
+      "rung_memory_saving": 0.225,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 14.0,
+      "blind_cost": 698.31,
+      "rung_memory_saving": 0.218,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 16.0,
+      "blind_cost": 731.61,
+      "rung_memory_saving": 0.213,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 18.0,
+      "blind_cost": 763.3,
+      "rung_memory_saving": 0.208,
+      "solution_memory_saving": 0.75
+    },
+    {
+      "expensive_multiplier": 20.0,
+      "blind_cost": 793.66,
+      "rung_memory_saving": 0.204,
+      "solution_memory_saving": 0.75
+    }
+  ],
+  "takeaway": "over a workload with 4 occurrences/bundle, rung-memory (skip known-failed rungs) saves 20-30% vs blind re-escalation, and solution-memory (exact replay at ~0) saves 75-75% \u2014 both INDEPENDENT of the cost prior (they cut re-paid attempts, not per-call price), so they rescue exactly the shallow-gradient regime where blind cheapest-first loses. This is the 'memory drives cost down over sessions' thesis, quantified on real solve data.",
+  "evidence_tier": "offline over real per-agent solve vectors; recurrence workload modeled; cost priors modeled"
+}
