@@ -1,0 +1,143 @@
+{
+  "experiment": "issue_replay_resample_escalate",
+  "corpus": "hard",
+  "n_bundles": 10,
+  "ladder": [
+    "inproc_repair",
+    "gemini_cli",
+    "claude_code",
+    "codex_cli"
+  ],
+  "max_k": 3,
+  "agents_with_multisample_data": [
+    "claude_code",
+    "codex_cli"
+  ],
+  "per_agent_best_of_k_solved": {
+    "inproc_repair": {
+      "best_of_1": 2
+    },
+    "gemini_cli": {
+      "best_of_1": 8
+    },
+    "claude_code": {
+      "best_of_1": 7,
+      "best_of_2": 7,
+      "best_of_3": 7
+    },
+    "codex_cli": {
+      "best_of_1": 10,
+      "best_of_2": 10,
+      "best_of_3": 10
+    }
+  },
+  "ladder_economics_sweep": [
+    {
+      "expensive_multiplier": 2.0,
+      "K1": {
+        "solved": 10,
+        "cost": 25.254,
+        "cost_per_success": 2.5254,
+        "saving_vs_blind": 0.0
+      },
+      "K2": {
+        "solved": 10,
+        "cost": 37.361,
+        "cost_per_success": 3.7361,
+        "saving_vs_blind": -0.479
+      },
+      "K3": {
+        "solved": 10,
+        "cost": 49.469,
+        "cost_per_success": 4.9469,
+        "saving_vs_blind": -0.959
+      }
+    },
+    {
+      "expensive_multiplier": 6.0,
+      "K1": {
+        "solved": 10,
+        "cost": 37.141,
+        "cost_per_success": 3.7141,
+        "saving_vs_blind": 0.0
+      },
+      "K2": {
+        "solved": 10,
+        "cost": 52.077,
+        "cost_per_success": 5.2077,
+        "saving_vs_blind": -0.402
+      },
+      "K3": {
+        "solved": 10,
+        "cost": 67.013,
+        "cost_per_success": 6.7013,
+        "saving_vs_blind": -0.804
+      }
+    },
+    {
+      "expensive_multiplier": 10.0,
+      "K1": {
+        "solved": 10,
+        "cost": 46.519,
+        "cost_per_success": 4.6519,
+        "saving_vs_blind": 0.0
+      },
+      "K2": {
+        "solved": 10,
+        "cost": 63.469,
+        "cost_per_success": 6.3469,
+        "saving_vs_blind": -0.364
+      },
+      "K3": {
+        "solved": 10,
+        "cost": 80.42,
+        "cost_per_success": 8.042,
+        "saving_vs_blind": -0.729
+      }
+    },
+    {
+      "expensive_multiplier": 14.0,
+      "K1": {
+        "solved": 10,
+        "cost": 54.899,
+        "cost_per_success": 5.4899,
+        "saving_vs_blind": 0.0
+      },
+      "K2": {
+        "solved": 10,
+        "cost": 73.528,
+        "cost_per_success": 7.3528,
+        "saving_vs_blind": -0.339
+      },
+      "K3": {
+        "solved": 10,
+        "cost": 92.157,
+        "cost_per_success": 9.2157,
+        "saving_vs_blind": -0.679
+      }
+    },
+    {
+      "expensive_multiplier": 18.0,
+      "K1": {
+        "solved": 10,
+        "cost": 62.703,
+        "cost_per_success": 6.2703,
+        "saving_vs_blind": 0.0
+      },
+      "K2": {
+        "solved": 10,
+        "cost": 82.812,
+        "cost_per_success": 8.2812,
+        "saving_vs_blind": -0.321
+      },
+      "K3": {
+        "solved": 10,
+        "cost": 102.922,
+        "cost_per_success": 10.2922,
+        "saving_vs_blind": -0.641
+      }
+    }
+  ],
+  "note": "best-of-K from real multi-sample data where available, else single-shot fallback. K is small (per-run). The agreement-gate refinement is covered by router unit tests + live Phase 4, not modeled here.",
+  "evidence_tier": "offline over real per-(agent,bundle) sample vectors; cost priors modeled"
+}
