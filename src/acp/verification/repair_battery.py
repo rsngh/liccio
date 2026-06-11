@@ -310,6 +310,43 @@ def _run_checks(module_src: str, checks: list[tuple[str, str]], *, module_path: 
     return out
 
 
+_ERROR_MARKERS = ("AttributeError", "TypeError", "NameError", "ImportError", "ModuleNotFoundError",
+                  "errors during collection", "error during collection")
+
+
+def _run_check_kinds(module_src: str, checks: list[tuple[str, str]], *, module_path: str,
+                     extra_files: dict[str, str], root: Path, tag: str) -> list[str]:
+    """Per-check verdict KIND on `module_src`: 'pass' | 'assert' (behavioural disagreement, incl.
+    pytest.raises DID-NOT-RAISE) | 'error' (AttributeError/TypeError/... — the check mis-uses the API,
+    e.g. a hallucinated function, so it fails EVERY implementation and can never discriminate)."""
+    import os
+    import subprocess
+    ws = _build_ws(root, module_path, module_src, extra_files, tag)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    out: list[str] = []
+    for i, (_kind, src) in enumerate(checks):
+        name = f"test_battery_{i}.py"
+        (ws / name).write_text(src)
+        try:
+            p = subprocess.run(["python", "-m", "pytest", "-q", "--tb=line", "-p", "no:cacheprovider",
+                                "-o", "addopts=", name], cwd=ws, capture_output=True, text=True,
+                               timeout=120, check=False, env=env)
+            text = p.stdout + "\n" + p.stderr
+            if p.returncode == 0:
+                out.append("pass")
+            elif any(m in text for m in _ERROR_MARKERS) and "AssertionError" not in text:
+                out.append("error")
+            else:
+                out.append("assert")
+        except subprocess.TimeoutExpired:
+            # a hang IS behavioural (e.g. the infinite-loop bug itself) — treat as assert-class
+            out.append("assert")
+        (ws / name).unlink(missing_ok=True)
+    shutil.rmtree(ws, ignore_errors=True)
+    return out
+
+
 def _public_passes(module_src: str, public_test: str, *, module_path: str,
                    extra_files: dict[str, str], root: Path, tag: str) -> bool:
     ws = _build_ws(root, module_path, module_src, extra_files, f"pub_{tag}")
@@ -347,16 +384,19 @@ def build_battery(spec: SpecLike, *, client, module_path: str, extra_files: dict
 
 def _keep_by_baseline(cands: list[str], *, want_fail: bool, module_path: str, baseline_src: str,
                       extra_files: dict[str, str], root: Path, kind: str) -> list[tuple[str, str]]:
-    """Collect-filter then execution-gate candidate checks against the buggy baseline: keep only the
-    ones whose baseline verdict matches `want_fail` (Otter fail-to-pass / AssertFlip pass-pin)."""
+    """Collect-filter then execution-gate candidate checks against the buggy baseline.
+    want_fail=True (Otter fail-to-pass): keep only ASSERT-class failures — an error-class failure
+    (hallucinated API, wrong call) fails every implementation and can never discriminate.
+    want_fail=False (AssertFlip pins): keep only passes."""
     ok = [(kind, c) for c in cands
           if _collects_cleanly(c, module_path=module_path, baseline_src=baseline_src,
                                extra_files=extra_files, root=root)]
     if not ok:
         return []
-    res = _run_checks(baseline_src, ok, module_path=module_path, extra_files=extra_files,
-                      root=root, tag=f"gate_{kind}")
-    return [c for c, passed in zip(ok, res, strict=True) if passed != want_fail]
+    kinds = _run_check_kinds(baseline_src, ok, module_path=module_path, extra_files=extra_files,
+                             root=root, tag=f"gate_{kind}")
+    want = "assert" if want_fail else "pass"
+    return [c for c, kk in zip(ok, kinds, strict=True) if kk == want]
 
 
 def _entailment_filter(spec: SpecLike, checks: list[tuple[str, str]], idxs: list[int], *,
@@ -429,9 +469,13 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
     checks = [(k, s) for k, s in raw
               if _collects_cleanly(s, module_path=module_path, baseline_src=baseline_src,
                                    extra_files=extra_files, root=workspace_root)]
-    baseline_pass = (_run_checks(baseline_src, checks, module_path=module_path,
-                                 extra_files=extra_files, root=workspace_root, tag="base")
-                     if checks else [])
+    # kind-aware baseline triage: 'pass' -> guard; 'assert' -> discriminating; 'error' -> DROP (the
+    # check mis-uses the API — hallucinated function/wrong signature — so it fails gold too)
+    kinds = (_run_check_kinds(baseline_src, checks, module_path=module_path,
+                              extra_files=extra_files, root=workspace_root, tag="base")
+             if checks else [])
+    checks = [chk for chk, kk in zip(checks, kinds, strict=True) if kk != "error"]
+    baseline_pass = [kk == "pass" for kk in kinds if kk != "error"]
 
     def n_disc() -> int:
         return sum(1 for p in baseline_pass if not p)
