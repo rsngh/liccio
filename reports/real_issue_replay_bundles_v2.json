@@ -1,0 +1,21 @@
+{
+  "experiment": "real_issue_replay_bundles",
+  "n_bundles": 1,
+  "source": "real_issue_replay",
+  "via": "direct git clone of public repos (no GitHub API/token; api.github.com is proxy-blocked here)",
+  "repos": [
+    "okunishinishi/python-stringcase"
+  ],
+  "fairness": "each bundle validated offline-fair (buggy fails the repo's own test file; gold passes)",
+  "bundles": [
+    {
+      "repo_name": "okunishinishi/python-stringcase",
+      "base_sha": "fdf27a6734^",
+      "issue_title": "Fix alphanumcase for Python 3",
+      "module_path": "stringcase.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history okunishinishi/python-stringcase@fdf27a6734; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "dd47814b2e6c9ac7"
+    }
+  ]
+}
