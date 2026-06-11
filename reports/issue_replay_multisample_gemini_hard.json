@@ -3,15 +3,15 @@
   "agent": "gemini_cli",
   "n_samples": 3,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 8,
+  "completed": 10,
   "best_of_k_solved": {
     "1": 8,
-    "2": 8,
-    "3": 8
+    "2": 9,
+    "3": 9
   },
   "single_shot_solved": 8,
-  "best_of_n_solved": 8,
-  "elapsed_s": 1977.4,
+  "best_of_n_solved": 9,
+  "elapsed_s": 3274.9,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -99,10 +99,23 @@
       "repo": "more-itertools/more-itertools",
       "issue": "Issue 1096: Concurrent tee",
       "samples": [
+        0,
+        0,
         0
       ],
       "solved": false,
       "samples_to_success": null
+    },
+    {
+      "idx": 9,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1093: Add serialize()",
+      "samples": [
+        0,
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 2
     }
   ]
 }
