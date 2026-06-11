@@ -1,0 +1,237 @@
+{
+  "experiment": "issue_replay_skill_bank_ab",
+  "family": "more-itertools/more-itertools",
+  "n_bundles": 22,
+  "control": {
+    "2": false,
+    "3": true,
+    "4": false,
+    "5": true,
+    "6": true,
+    "7": false,
+    "8": false,
+    "9": false,
+    "10": true,
+    "11": true,
+    "12": true,
+    "13": true,
+    "14": false,
+    "15": false,
+    "16": true,
+    "17": true,
+    "18": true,
+    "19": false,
+    "20": false,
+    "21": false,
+    "22": false,
+    "23": true
+  },
+  "playbooks": {
+    "2": [
+      "- Validate input sizes early; `windowed` requires `n > 0` and `exactly_n` must handle `n < 0` by returning `False`.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- When handling iterables with a `repeat` factor, convert inputs to tuples *before* multiplying to avoid exhausting iterators prematurely.",
+      "- Ensure `reduce` calls include an explicit initializer (e.g., `1`) to handle empty sequences without raising errors.",
+      "- Handle edge cases for combinatorial functions (like `nth_combination_with_replacement`) where the pool size `n` might be zero.",
+      "- Avoid modifying existing `__repr__` or `__init__` logic in core classes unless explicitly required, as this often breaks internal state or tests."
+    ],
+    "3": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- When handling `repeat` arguments, convert input iterables to tuples before multiplication to avoid exhausting iterators prematurely.",
+      "- Ensure `reduce` calls include an explicit initializer (e.g., `1`) to handle empty sequences without raising errors.",
+      "- Handle empty input cases in combinatorial functions (like `nth_combination_with_replacement`) by explicitly checking if the pool length `n` is zero.",
+      "- Implement strict size equality for iterables by manually iterating and catching `StopIteration` rather than relying on `zip_longest` with a fillvalue.",
+      "- Validate input ranges and indices early (e.g., `if n < 0: return False`) to prevent incorrect logic execution in predicate-based filters."
+    ],
+    "4": [
+      "- Always convert input iterables to tuples before multiplying by `repeat` to avoid incorrect iterator exhaustion or repetition.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reversible support and avoid Python-specific bugs.",
+      "- Ensure `reduce` calls include an explicit initializer (e.g., `1`) to handle empty sequences without raising errors.",
+      "- Validate input sizes strictly: `windowed` requires `n > 0`, and `exactly_n` must return `False` for negative `n`.",
+      "- When calculating combinations or products with empty pools, explicitly handle edge cases (e.g., `n=0`) to prevent math errors or incorrect yields.",
+      "- Prefer `islice` and `ilen` for efficient size-based checks on iterables rather than consuming the entire stream."
+    ],
+    "5": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for optional reverse iteration support.",
+      "- When handling multiple iterables (e.g., in `product` variants), convert inputs to `tuple` pools before applying `repeat` to avoid exhausting iterators prematurely.",
+      "- Ensure `reduce` calls include an explicit initializer (e.g., `reduce(mul, ns, 1)`) to handle empty sequences without raising `TypeError`.",
+      "- Validate input sizes strictly: functions like `windowed` should raise `ValueError` for `n <= 0`, and `exactly_n` should return `False` for negative `n`.",
+      "- Avoid `O(n^2)` fallbacks for unhashable items in \"everseen\" or \"unique\" logic; prioritize performance and document hashability requirements.",
+      "- For equality checks across multiple iterables (like `iequals`), manually iterate and catch `StopIteration` to detect size mismatches instead of relying on `zip_longest` with a sentinel."
+    ],
+    "6": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iterability.",
+      "- Ensure `ValueError` is raised for non-positive sizes in windowing/grouping functions (e.g., `n <= 0`).",
+      "- Handle empty input cases in combinatorial functions (e.g., `nth_combination_with_replacement`) by checking if the pool length `n` is zero.",
+      "- Return `False` immediately for negative count requirements in predicate checkers like `exactly_n`.",
+      "- Convert input iterables to `tuple` or `list` early if they need to be consumed multiple times or indexed (e.g., in `product_index` or `random_product`).",
+      "- Avoid `zip_longest` with a sentinel for strict size equality; manually iterate and check `StopIteration` to ensure all iterables are exhausted simultaneously."
+    ],
+    "7": [
+      "- Ensure `__reversed__` availability using `getattr(obj, '__reversed__', None) is not None` to avoid issues with classes that define the attribute as `None`.",
+      "- When handling `repeat` arguments in combinatoric functions, convert `iterables` to a `tuple` of `tuples` *before* multiplying by `repeat` to avoid exhausting iterators.",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to safely handle empty input sequences in product/combination calculations.",
+      "- Validate input sizes strictly: `windowed` and similar tools should raise `ValueError` for `n <= 0`, and `exactly_n` should return `False` for negative `n`.",
+      "- Prefer `groupby` for `all_equal` implementations to maintain efficiency and support `key` arguments.",
+      "- Avoid `O(n^2)` fallbacks for unhashable items in `unique_everseen`; maintain the expectation of hashable elements for performance."
+    ],
+    "8": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iterator support.",
+      "- Convert input iterables to `tuple` or `list` before applying a `repeat` factor to avoid exhausting iterators or incorrect multiplication.",
+      "- Ensure `ValueError` is raised for non-positive sizes in windowing or grouping functions (e.g., `n <= 0`).",
+      "- Handle empty input cases in combinatorial functions (e.g., `nth_combination_with_replacement`) by checking if the pool length `n` is zero.",
+      "- Use `groupby` for `all_equal` implementations and ensure the `key` argument is passed through if provided.",
+      "- When implementing index-based lookups on products, ensure `zip(reversed(pools), reversed(ns))` logic is used to correctly map the index to the nested structure."
+    ],
+    "9": [
+      "- Ensure `__reversed__` presence is checked via `getattr(obj, '__reversed__', None) is not None` to avoid issues where the attribute exists but is set to `None`.",
+      "- When handling iterables that might be consumed, convert them to `tuple` or `list` before multiplication by `repeat` to ensure consistent behavior.",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to safely handle empty sequences in product-related calculations.",
+      "- Validate input sizes strictly; for example, `windowed` should raise `ValueError` if `n <= 0`, and `exactly_n` should return `False` for negative `n`.",
+      "- For combinatorial functions (like `nth_combination_with_replacement`), explicitly handle cases where the pool size `n` is 0 to avoid incorrect `comb` calculations or exceptions.",
+      "- Prefer `groupby` for `all_equal` implementations and ensure `key` arguments are passed through to the underlying `groupby` call."
+    ],
+    "10": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- Convert input iterables to tuples before applying `repeat` to ensure consistency and avoid consuming iterators prematurely.",
+      "- When calculating combinatorial indices (e.g., `product_index`), ensure `reduce` has an initializer (e.g., `1`) to handle empty inputs.",
+      "- Prefer `groupby` for `all_equal` implementations and ensure `key` arguments are passed through to the underlying `groupby` call.",
+      "- Use `zip_longest` with a unique `object()` sentinel or manual `next()` loops to strictly validate that multiple iterables have equal lengths.",
+      "- Ensure `ValueError` is raised for non-positive sizes (e.g., `n <= 0`) in windowing or batching functions."
+    ],
+    "11": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- When multiplying iterables by `repeat`, convert to tuples first (`tuple(map(tuple, iterables)) * repeat`) to avoid unintended iterator exhaustion or incorrect nesting.",
+      "- Ensure `reduce` calls include an explicit initializer (e.g., `reduce(mul, ns, 1)`) to handle empty sequences correctly.",
+      "- Validate input sizes strictly; functions like `windowed` should raise `ValueError` for `n <= 0` rather than yielding empty tuples.",
+      "- Handle edge cases for combinatorial functions (like `nth_combination_with_replacement`) where the pool size `n` is 0 or the index is out of bounds.",
+      "- For functions checking counts (like `exactly_n`), explicitly return `False` for negative target values `n` before processing the iterable."
+    ],
+    "12": [
+      "- Ensure `__reversed__` presence is checked via `getattr(obj, '__reversed__', None) is not None` rather than `hasattr` to avoid issues with classes that define it as `None`.",
+      "- When handling iterables that may be consumed, convert them to `tuple` or `list` before multiplication or repeated access (e.g., `tuple(map(tuple, iterables)) * repeat`).",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to safely handle empty sequences in combinatorial calculations.",
+      "- Validate input constraints early: `windowed` requires `n > 0`, and combinatorial functions should handle `n=0` or `r=0` cases (e.g., `comb(n + r - 1, r) if n else (1 if r == 0 else 0)`).",
+      "- For functions like `exactly_n`, handle negative count inputs by returning `False` immediately rather than proceeding with iteration.",
+      "- Maintain consistency between docstring examples and implementation; use `list()` in examples to demonstrate output for generators."
+    ],
+    "13": [
+      "- Ensure input iterables are converted to tuples before applying `repeat` to avoid exhausting iterators prematurely.",
+      "- Use `itertools.groupby` for `all_equal` logic to maintain efficiency and support optional `key` arguments.",
+      "- When calculating indices for combinatorial functions (like `product_index`), handle empty pools or `n=0` cases to avoid division by zero or incorrect counts.",
+      "- Prefer `ilen(islice(...))` over full list conversion when checking for a specific number of elements (e.g., in `exactly_n`).",
+      "- Validate input sizes (like `n` in `windowed`) strictly; raise `ValueError` for non-positive values if the logic requires at least one element.",
+      "- Avoid `zip_longest` with a sentinel `fillvalue` for equality checks; manually iterate and check `StopIteration` to ensure all iterables have identical lengths."
+    ],
+    "14": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- When handling combinatorial indices (e.g., `product_index`), convert input iterables to tuples immediately to support one-time iterators.",
+      "- Ensure `repeat` parameters are applied to the materialized pools (e.g., `tuple(map(tuple, iterables)) * repeat`) rather than the iterators themselves.",
+      "- Return `False` for negative count requirements in predicates like `exactly_n(n, ...)` instead of raising errors or processing the iterable.",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to handle empty input sequences in product calculations.",
+      "- Prefer `groupby` for `all_equal` implementations to maintain the \"short-circuit\" invariant and support optional `key` arguments."
+    ],
+    "15": [
+      "- Ensure input iterables are consumed into tuples (e.g., via `tuple(map(tuple, ...))`) before indexing or repeating to support one-time iterators.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reversible support and avoid bugs in specific Python versions.",
+      "- When implementing combinatorial functions (like `product_index` or `nth_combination`), handle empty input pools or `n=0` cases explicitly to avoid `ZeroDivisionError` or incorrect math.",
+      "- Validate input sizes strictly: `windowed` requires `n > 0`, and `exactly_n` should return `False` for negative `n` rather than raising or proceeding.",
+      "- Prefer `groupby` for `all_equal` logic to maintain efficiency, and ensure the `key` parameter is passed through if provided.",
+      "- Avoid quadratic fallbacks for unhashable items in `unique_everseen`; prioritize documentation and standard hashable-path performance."
+    ],
+    "16": [
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reversible support.",
+      "- Ensure `repeat` logic multiplies the `tuple` of pools, not the `iterables` generator, to avoid exhausting iterators.",
+      "- Return `False` for negative `n` in counting predicates like `exactly_n` rather than raising exceptions.",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to handle empty input sequences in combinatorial functions.",
+      "- Validate `n > 0` for windowing/batching functions; `n=0` should raise `ValueError` rather than yielding empty tuples.",
+      "- Handle empty pools in combinatorial indexing (e.g., `nth_combination_with_replacement`) by checking `if n` before calculating combinations."
+    ],
+    "17": [
+      "- Ensure `__reversed__` presence via `getattr(obj, '__reversed__', None) is not None` to avoid issues where the attribute exists but is set to `None`.",
+      "- When handling combinatorial indices (e.g., `product_index`), convert input iterables to tuples immediately to support one-time iterators and avoid `repeat` multiplication bugs.",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to safely handle empty input sequences in mathematical product calculations.",
+      "- Validate input sizes strictly: `windowed` and similar tools should raise `ValueError` for `n <= 0`, and `exactly_n` must return `False` for negative `n`.",
+      "- In combinatorial functions like `nth_combination_with_replacement`, explicitly handle cases where the pool `n` is 0 to avoid incorrect `comb` calculations or `IndexError`.",
+      "- Avoid `O(n^2)` fallbacks for unhashable items in `unique_everseen`; prioritize performance and documentation alignment over supporting mixed-hashability types."
+    ],
+    "18": [
+      "- Ensure input iterables are consumed into tuples before multiplication or repetition to avoid exhausting iterators prematurely.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- Validate size arguments (like `n` in `windowed`) strictly; raise `ValueError` for `n <= 0` if the function requires a positive window.",
+      "- Handle empty input cases in combinatorial functions (e.g., `product_index`, `nth_combination`) by checking `len` and returning specific defaults (0 or 1) based on `r`.",
+      "- When checking if all iterables are of equal length (e.g., `iequals`), manually iterate and catch `StopIteration` to detect size mismatches without using `fillvalue`.",
+      "- Return `False` immediately for negative count requirements in functions like `exactly_n` rather than attempting iteration."
+    ],
+    "19": [
+      "- Ensure input iterables are consumed into tuples before multiplication by `repeat` to support one-time iterators.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- Handle empty pools or zero-length inputs in combinatorial functions (e.g., `nth_combination_with_replacement`) to avoid division or index errors.",
+      "- Validate size arguments (like `n` in `windowed`) strictly; raise `ValueError` for `n <= 0` if the function requires a positive window.",
+      "- Prefer `groupby` for `all_equal` implementations and ensure the `key` argument is passed through to the underlying `groupby` call.",
+      "- Use `reduce(mul, ns, 1)` with an explicit initializer of `1` to handle empty sequences correctly in product calculations."
+    ],
+    "20": [
+      "- Ensure input iterables are consumed into tuples before multiplication by `repeat` to avoid iterator exhaustion.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- Validate `n` strictly; for `windowed`, `n <= 0` must raise `ValueError`, and for `exactly_n`, negative `n` should return `False`.",
+      "- Handle empty pools in combinatorial functions (e.g., `nth_combination_with_replacement`) by checking `if n` before calling `math.comb`.",
+      "- Avoid `zip_longest` with `fillvalue` for strict size equality checks; manually iterate and catch `StopIteration` to detect length mismatches.",
+      "- Maintain docstring examples and `__repr__` accuracy, ensuring they reflect the current state of the object or function parameters."
+    ],
+    "21": [
+      "- Ensure input iterables are consumed into tuples before multiplication by `repeat` to support one-time iterators.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reversible support.",
+      "- Handle empty pools or edge cases in combinatorial functions (e.g., `nth_combination_with_replacement`) by checking `if n` before calculating `comb`.",
+      "- Validate input sizes strictly; for example, `windowed` should raise `ValueError` if `n <= 0`, not just negative.",
+      "- When implementing index-to-element lookups (like `product_index`), ensure the `elements` length matches the number of `pools` to prevent out-of-bounds errors.",
+      "- Prefer `groupby` for `all_equal` logic and `ilen(islice(...))` for counting predicates to maintain performance and memory efficiency."
+    ],
+    "22": [
+      "- Ensure input iterables are consumed into tuples before multiplication by `repeat` to avoid iterator exhaustion.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- Handle empty input cases in combinatorial functions (e.g., `nth_combination_with_replacement`) by checking if `n` is zero before calculating combinations.",
+      "- Validate size arguments (like `n` in `windowed`) strictly; raise `ValueError` for `n <= 0` if the logic requires at least one element.",
+      "- Return `False` immediately for negative count checks (e.g., `exactly_n`) rather than attempting to slice or iterate.",
+      "- When comparing multiple iterables for equality or length (e.g., `iequals`), manually iterate and catch `StopIteration` to detect size mismatches without using `fillvalue`."
+    ],
+    "23": [
+      "- Ensure `iterables * repeat` is handled by converting `iterables` to a list/tuple before multiplication to avoid exhausting iterators.",
+      "- Use `getattr(obj, '__reversed__', None) is not None` instead of `hasattr` to safely check for reverse iteration support.",
+      "- When calculating combinations or products with empty pools, explicitly handle cases where `n=0` to avoid `ValueError` or incorrect math.",
+      "- Validate input sizes strictly: `windowed` and similar tools should raise `ValueError` for `n <= 0`, not just negative values.",
+      "- For index-based lookups in combinatorial functions (like `product_index`), ensure all input iterables are materialized into tuples immediately.",
+      "- Return `False` or empty results for negative count requirements (e.g., `exactly_n(iterable, n)` where `n < 0`) rather than raising exceptions."
+    ]
+  },
+  "treatment": {
+    "2": false,
+    "3": true,
+    "4": false
+  },
+  "cost_usd": 0.28349110000000005,
+  "traces": {
+    "2": "ISSUE: Fix empty ranges in numeric_range.__reversed__\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "3": "ISSUE: Issue #1057: Raise exception for invalid size in windowed()\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -1047,7 +1047,4 @@\n     \"\"\"\n-    if n < 0:\n-        raise ValueError('n must be >= 0')\n-    if n == 0:\n-        yield ()\n-        return\n+    if n <= 0:\n+        raise ValueError('n must be > 0')\n     if step < 1:\n",
+    "4": "ISSUE: Issue #1134: Add running_statistics (#1135)\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n@@ -2911,3 +2911,7 @@\n     def __repr__(self):\n-        return f'{self.__class__.__name__}({self._target!r})'\n+                return (\n+                    f'{self.__class__.__name__}(count={self.count!r}, '\n+                    f'mean={self.mean!r}, variance={self.variance!r}, '\n+                    f'stddev={self.stddev!r}, min={self.min!r}, max={self.max!r})'\n+                )\n \n@@ -5421,11 +5425,8 @@\n \n-    def __init__(self, iterable):\n-        if isinstance(iterable, _concurrent_tee):\n-            self.iterator = iterable.iterator\n-            self.link = iterable.link\n-            self.lock = iterable.lock\n-        else:\n-            self.iterator = iter(iterable)\n",
+    "5": "ISSUE: Simplify nth_combination_with_replacement. Fix incorrect exception.\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -4269,4 +4269,3 @@\n \n-    ``ValueError`` will be raised If *r* is negative or greater than the length\n-    of *iterable*.\n+    ``ValueError`` will be raised If *r* is negative.\n     ``IndexError`` will be raised if the given *index* is invalid.\n@@ -4275,6 +4274,6 @@\n     n = len(pool)\n-    if (r < 0) or (r > n):\n+    if r < 0:\n         raise ValueError\n \n-    c = comb(n + r - 1, r)\n+    c = comb(n + r - 1, r) if n else (1 if r == 0 else 0)\n \n@@ -4290,3 +4289,3 @@\n         r -= 1\n-        while n >= 0:\n",
+    "6": "ISSUE: Fix support for iterators using \"repeat\"\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -4200,6 +4200,6 @@\n     \"\"\"\n-    pools = tuple(map(tuple, reversed(iterables * repeat)))\n+    pools = tuple(map(tuple, iterables)) * repeat\n     ns = tuple(map(len, pools))\n \n-    c = reduce(mul, ns)\n+    c = reduce(mul, ns, 1)\n \n@@ -4212,3 +4212,3 @@\n     result = []\n-    for pool, n in zip(pools, ns):\n+    for pool, n in zip(reversed(pools), reversed(ns)):\n         result.append(pool[index % n])\n@@ -4364,3 +4364,3 @@\n     elements = tuple(element)\n-    pools = tuple(map(tuple, iterables * repeat))\n+    pools = tuple(map(tuple, iterables)) * repeat\n",
+    "7": "ISSUE: Issue 1098: Add synchronized decorator\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n@@ -503,7 +503,5 @@\n \n-    @wraps(func)\n     def wrapper(*args, **kwargs):\n-        gen = func(*args, **kwargs)\n-        next(gen)\n-        return gen\n+            with lock:\n+                return func(*args, **kwargs)\n \n",
+    "8": "ISSUE: Issue 1096: Concurrent tee\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "9": "ISSUE: Issue 1093: Add serialize()\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "10": "ISSUE: Fix bug for negative inputs to exactly_n(). Optimize code.\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -3082,2 +3082,4 @@\n     \"\"\"\n+    if n < 0:\n+        return False\n     return ilen(islice(filter(predicate, iterable), n + 1)) == n\n",
+    "11": "ISSUE: Fix product_index() with iterator input\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -4333,3 +4333,3 @@\n     pools = tuple(map(tuple, args))\n-    if len(element) != len(args):\n+    if len(elements) != len(pools):\n         raise ValueError('element is not a product of args')\n",
+    "12": "ISSUE: Issue 900: Replace iequals fillvalue logic with strict size test\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -3629,3 +3629,19 @@\n     \"\"\"\n-    return all(map(all_equal, zip_longest(*iterables, fillvalue=object())))\n+    iterators = [iter(it) for it in iterables]\n+    while True:\n+        items = []\n+        for it in iterators:\n+            try:\n+                items.append(next(it))\n+            except StopIteration:\n+                pass\n+\n+        if not items:\n+            return True\n+\n+        if len(items) != len(iterators):\n+            return False\n+\n",
+    "13": "ISSUE: fix last() when __reversed__ is None\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -285,3 +285,3 @@\n         # Work around https://bugs.python.org/issue38525\n-        if hasattr(iterable, '__reversed__'):\n+        if getattr(iterable, '__reversed__', None) is not None:\n             return next(reversed(iterable))\n",
+    "14": "ISSUE: Issue 986: argmin and argmax\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "15": "ISSUE: Fix __all__ error due to forgotton comma\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "16": "ISSUE: Issue: #898: Sync recipe with main docs. Eliminate quadratic fallback.\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -451,4 +451,3 @@\n def unique_everseen(iterable, key=None):\n-    \"\"\"\n-    Yield unique elements, preserving order.\n+    \"\"\"Yield unique elements, preserving order.\n \n@@ -459,35 +458,16 @@\n \n-    Sequences with a mix of hashable and unhashable items can be used.\n-    The function will be slower (i.e., `O(n^2)`) for unhashable items.\n-\n-    Remember that ``list`` objects are unhashable - you can use the *key*\n-    parameter to transform the list to a tuple (which is hashable) to\n-    avoid a slowdown.\n-\n-        >>> iterable = ([1, 2], [2, 3], [1, 2])\n-        >>> list(unique_everseen(iterable))  # Slow\n-        [[1, 2], [2, 3]]\n",
+    "17": "ISSUE: Issue #1134: Add running_statistics (#1135)\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -1410,3 +1410,3 @@\n \n-def running_mean(iterable):\n+def running_mean(iterable, maxlen=None):\n     \"\"\"Yield the average of all values seen so far.\n@@ -1414,11 +1414,28 @@\n     >>> iterable = [100, 200, 600]\n-    >>> all_means = running_mean(iterable)\n-    >>> next(all_means)\n-    100.0\n-    >>> next(all_means)\n-    150.0\n-    >>> next(all_means)\n-    300.0\n-    \"\"\"\n-    return map(truediv, accumulate(iterable), count(1))\n+    >>> list(running_mean(iterable))\n+    [100.0, 150.0, 300.0]\n",
+    "18": "ISSUE: Fix random_product() as well\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -582,3 +582,3 @@\n     \"\"\"\n-    pools = tuple(map(tuple, iterables * repeat))\n+    pools = [tuple(pool) for pool in iterables] * repeat\n     return tuple(map(choice, pools))\n",
+    "19": "ISSUE: Issue 1070: Add random derangements\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "20": "ISSUE: Issue 1003: Multidimensional reshape() (#1062)\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n@@ -1026,11 +1026,35 @@\n \n-def reshape(matrix, cols):\n-    \"\"\"Reshape the 2-D input *matrix* to have a column count given by *cols*.\n-\n-    >>> matrix = [(0, 1), (2, 3), (4, 5)]\n-    >>> cols = 3\n-    >>> list(reshape(matrix, cols))\n+def reshape(iterable, shape):\n+    \"\"\"Reshape the *iterable* to have the given *shape*.\n+\n+    >>> list(reshape(range(6), (2, 3)))\n     [(0, 1, 2), (3, 4, 5)]\n-    \"\"\"\n-    return batched(chain.from_iterable(matrix), cols)\n+\n+    >>> list(reshape(range(12), (2, 3, 2)))\n+    [((0, 1), (2, 3), (4, 5)), ((6, 7), (8, 9), (10, 11))]\n",
+    "21": "ISSUE: Fix formatting\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "22": "ISSUE: Issue 920: Add is_prime recipe\nOUTCOME: FAILED the suite\nATTEMPTED DIFF:\n(no change)\n",
+    "23": "ISSUE: Issue 821: key argument for all_equal\nOUTCOME: PASSED the suite\nATTEMPTED DIFF:\n@@ -201,3 +201,3 @@\n \n-def all_equal(iterable):\n+def all_equal(iterable, key=None):\n     \"\"\"\n@@ -211,3 +211,3 @@\n     \"\"\"\n-    g = groupby(iterable)\n+    g = groupby(iterable, key)\n     return next(g, True) and not next(g, False)\n"
+  }
+}
