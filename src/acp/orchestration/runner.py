@@ -124,10 +124,18 @@ class WorkflowRunner:
         fail_before_node: str | None = None,
         backend: str | None = None,
         allow_local_harness: bool | None = None,
+        solution_cache=None,
+        tenant: str = "tenant_a",
     ) -> None:
         self.repo = repo
         self.registry = registry
         self.policy = policy  # optional RoutingPolicy (bandit/supervised); else heuristic
+        # Optional production solution memory (memory.diff_cache.DiffCache). When set AND the task
+        # carries metadata["failure_signature"], a verified cached diff for (repo_id, signature) is
+        # applied into a fresh workspace as a zero-agent-cost candidate before live agents, then
+        # re-verified through the normal nodes. Default None -> behaviour unchanged.
+        self.solution_cache = solution_cache
+        self.tenant = tenant
         # Execution-backend governance (round-4 Block B). Defaults from settings;
         # a true harness must run on Docker unless allow_local_harness overrides.
         from acp.core.config import get_settings
@@ -380,11 +388,23 @@ class WorkflowRunner:
             state.scratch["routed_context_strategy"] = chosen_strategy
         return False
 
+    def _solution_signature(self, state: WorkflowState) -> str | None:
+        """Failure signature for the solution cache, supplied by the caller (e.g. CI knows the
+        failing-test id). Absent it, the cache never fires."""
+        if self.solution_cache is None:
+            return None
+        return (self._task(state).metadata or {}).get("failure_signature")
+
     async def _node_launch_agent_attempts(self, state: WorkflowState) -> bool:
         decision = self.artifacts.routing_decision
         assert decision is not None
         assert self.artifacts.snapshot is not None
         assert self.artifacts.context_pack is not None
+        # RUNG 0 (production solution memory): a verified cached diff that applies cleanly becomes a
+        # zero-agent-cost candidate, re-verified by the normal capture_diff/run_verification nodes.
+        sig = self._solution_signature(state)
+        if sig and self._launch_cached_solution(state, decision, sig):
+            return False   # skip live agents; the cached fix flows through verification
         agents = self._agents_for(decision)
         snap = self.artifacts.snapshot
         pack = self.artifacts.context_pack
@@ -464,6 +484,34 @@ class WorkflowRunner:
             f"{len(self.artifacts.attempts)} attempts"
         )
         return False
+
+    def _launch_cached_solution(self, state: WorkflowState, decision, sig: str) -> bool:
+        """Apply a verified cached diff into a fresh workspace as a synthetic SUCCEEDED attempt.
+        Returns True iff a cache hit applied cleanly (then live agents are skipped); else False."""
+        from acp.agents.trace import build_agent_trace
+        from acp.core.enums import AgentKind, RunStatus
+        from acp.schemas.agent import AgentAttempt, AgentAttemptResult
+
+        ws = self.workspace_mgr.create(self.repo, self.artifacts.snapshot, WorkspacePolicy())
+        if not self.solution_cache.replay(tenant=self.tenant, repo_id=self.repo.id,
+                                          failure_signature=sig, workspace=ws.path):
+            return False
+        attempt = AgentAttempt(
+            task_id=state.task_id, routing_decision_id=decision.id, workspace_id=ws.spec.id,
+            agent_kind=AgentKind.SIMPLE_LLM, agent_name="solution_cache", trace_id=state.trace_id)
+        attempt.status = RunStatus.SUCCEEDED
+        attempt.estimated_cost_usd = 0.0
+        result = AgentAttemptResult(status=RunStatus.SUCCEEDED, metadata={"solution_cache": True})
+        self.artifacts.attempts.append(attempt)
+        state.attempt_ids.append(attempt.id)
+        state.scratch.setdefault("workspaces", {})[attempt.id] = str(ws.path)
+        state.scratch["solution_cache_hit"] = True
+        self.artifacts.agent_traces.append(build_agent_trace(
+            attempt, result, is_harness=False, task_id=state.task_id))
+        self.artifacts.audit_events.append(self.policy_engine.audit.record(
+            "solution_cache_hit", actor="solution_cache", target=attempt.id,
+            detail={"repo_id": self.repo.id, "failure_signature": sig}, trace_id=state.trace_id))
+        return True
 
     def _agents_for(self, decision: RoutingDecision) -> list[AgentAdapter]:
         names = [decision.action.agent_name]
