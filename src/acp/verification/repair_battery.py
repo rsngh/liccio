@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Protocol
 
 from acp.verification.adversarial import has_high_severity, scan_diff
-from acp.verification.independent_proof import _parse_check_array, _run_pytest, generate_checks
+from acp.verification.independent_proof import _parse_check_array, _run_pytest
 
 
 class SpecLike(Protocol):
@@ -118,25 +118,54 @@ class RepairBattery:
         return sum(1 for p in self.baseline_pass if p)
 
 
-_PROP_PROMPT = (
-    "You are a senior test engineer writing PROPERTY-BASED / metamorphic tests. Given an issue spec "
-    "and one public test (for the import), write {n} NEW pytest tests that assert INVARIANTS implied "
-    "by the spec rather than single input/output pairs — e.g. idempotence (f(f(x))==f(x)), round-trip "
-    "(decode(encode(x))==x), monotonicity, bounds/range, type-stability, or behaviour on empty / "
-    "singleton / boundary inputs. Each test must be fully self-contained (include the import), must "
-    "NOT reference any hidden/secret test, and must only use behaviour the spec guarantees.\n\n"
+# CRITICAL import-pinning: bundles are often flattened (e.g. boltons/dictutils.py -> dictutils.py,
+# imported as `import dictutils`). Generators left to their own devices use the real-world package
+# path (`from boltons import dictutils`) -> ModuleNotFoundError -> the check ERRORS on buggy AND gold
+# and is mis-counted as discriminating. Pinning the import to the public test's convention + a
+# collect-only validity filter is what makes the battery score a real gradient (gold must pass).
+_IMPORT_RULE = (
+    "CRITICAL: import the module under test EXACTLY as the public test does — use ONLY these import "
+    "line(s) verbatim and NO other module import (do NOT import from any package such as `from "
+    "<pkg> import ...`):\n{imports}\n"
+)
+
+_EXAMPLE_PROMPT = (
+    "You are a senior test engineer. Write {n} NEW, diverse pytest tests that check whether an "
+    "implementation meets this specification. Cover edge cases, boundaries, and tricky inputs implied "
+    "by the spec; write DIFFERENT tests than the public one. Each test must be fully self-contained, "
+    "must NOT reference any hidden/secret test, and must only assert behaviour the spec guarantees.\n\n"
+    "{import_rule}\n"
     "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
-    "`def test_...`).\n\nISSUE:\n{issue}\n\nEXISTING PUBLIC TEST (for the import):\n{public}\n"
+    "`def test_...`).\n\nISSUE:\n{issue}\n\nEXISTING PUBLIC TEST:\n{public}\n"
+)
+
+_PROP_PROMPT = (
+    "You are a senior test engineer writing PROPERTY-BASED / metamorphic tests. Write {n} NEW pytest "
+    "tests that assert INVARIANTS implied by the spec rather than single input/output pairs — e.g. "
+    "idempotence (f(f(x))==f(x)), round-trip (decode(encode(x))==x), monotonicity, bounds/range, "
+    "type-stability, or behaviour on empty / singleton / boundary inputs. Each test must be fully "
+    "self-contained, must NOT reference any hidden/secret test, and must only use behaviour the spec "
+    "guarantees.\n\n{import_rule}\n"
+    "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
+    "`def test_...`).\n\nISSUE:\n{issue}\n\nEXISTING PUBLIC TEST:\n{public}\n"
 )
 
 
-def _generate_properties(spec: SpecLike, *, client, model: str = "claude-haiku-4-5", n: int = 4):
-    """Property/metamorphic checks. Mirrors generate_checks but with the invariant-focused prompt."""
+def _extract_imports(public_test: str) -> str:
+    """The import line(s) the public test uses — the bundle's real import convention."""
+    lines = [ln for ln in public_test.splitlines()
+             if ln.strip().startswith(("import ", "from ")) and "import" in ln]
+    return "\n".join(lines) if lines else "(use the import shown in the public test)"
+
+
+def _generate(spec: SpecLike, *, client, model: str, n: int, template: str) -> tuple[list[str], float]:
+    """Generate checks with the import pinned to the public test's convention."""
     if client is None or n <= 0:
         return [], 0.0
-    prompt = _PROP_PROMPT.format(n=n, issue=spec.issue_text, public=spec.public_test)
+    import_rule = _IMPORT_RULE.format(imports=_extract_imports(spec.public_test))
+    prompt = template.format(n=n, issue=spec.issue_text, public=spec.public_test, import_rule=import_rule)
     try:
-        msg = client.messages.create(model=model, max_tokens=1500,
+        msg = client.messages.create(model=model, max_tokens=1600,
                                      messages=[{"role": "user", "content": prompt}])
         text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
         checks = _parse_check_array(text)[:n]
@@ -146,6 +175,28 @@ def _generate_properties(spec: SpecLike, *, client, model: str = "claude-haiku-4
         return checks, cost
     except Exception:  # noqa: BLE001 - generation is best-effort
         return [], 0.0
+
+
+def _collects_cleanly(check_src: str, *, module_path: str, baseline_src: str,
+                      extra_files: dict[str, str], root: Path) -> bool:
+    """Validity filter: a check that cannot even IMPORT/collect (e.g. wrong package path) is broken,
+    not discriminating. Run pytest --collect-only against the baseline; keep only checks that collect."""
+    import os
+    import subprocess
+    ws = _build_ws(root, module_path, baseline_src, extra_files, "collect")
+    (ws / "test_collect.py").write_text(check_src)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    try:
+        p = subprocess.run(["python", "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider",
+                            "-o", "addopts=", "test_collect.py"], cwd=ws, capture_output=True,
+                           text=True, timeout=30, check=False, env=env)
+        ok = p.returncode == 0
+    except subprocess.TimeoutExpired:
+        ok = False
+    finally:
+        shutil.rmtree(ws, ignore_errors=True)
+    return ok
 
 
 def _build_ws(root: Path, module_path: str, module_src: str, extra_files: dict[str, str], tag: str) -> Path:
@@ -193,15 +244,23 @@ def build_battery(spec: SpecLike, *, client, module_path: str, extra_files: dict
                   n_example: int = 8, n_property: int = 4,
                   model: str = "claude-haiku-4-5") -> RepairBattery:
     """Synthesize the dense battery (example + property checks) and compute the buggy-baseline pass
-    vector once (this defines the discriminating/guard split). Fair: spec + public test only."""
-    gen = generate_checks(spec, client=client, n=n_example, model=model)
-    props, prop_cost = _generate_properties(spec, client=client, n=n_property, model=model)
-    checks: list[tuple[str, str]] = [("example", c) for c in gen.checks] + [("property", c) for c in props]
+    vector once (this defines the discriminating/guard split). Fair: spec + public test only.
+
+    Two safeguards make the battery score a real gradient (validated by: gold should pass it): the
+    generators pin the import to the public test's convention, and a collect-only validity filter
+    drops any check that cannot import/collect (the dominant failure on flattened package bundles)."""
+    ex, ex_cost = _generate(spec, client=client, model=model, n=n_example, template=_EXAMPLE_PROMPT)
+    props, prop_cost = _generate(spec, client=client, model=model, n=n_property, template=_PROP_PROMPT)
+    raw: list[tuple[str, str]] = [("example", c) for c in ex] + [("property", c) for c in props]
+    # drop checks that don't even import/collect against the baseline (broken, not discriminating)
+    checks = [(kind, src) for kind, src in raw
+              if _collects_cleanly(src, module_path=module_path, baseline_src=baseline_src,
+                                   extra_files=extra_files, root=workspace_root)]
     baseline_pass = (_run_checks(baseline_src, checks, module_path=module_path, extra_files=extra_files,
                                  root=workspace_root, tag="base") if checks else [])
     return RepairBattery(checks=checks, baseline_pass=baseline_pass, public_test=public_test,
                          module_path=module_path, extra_files=extra_files,
-                         gen_cost_usd=round(gen.cost_usd + prop_cost, 6), model=model)
+                         gen_cost_usd=round(ex_cost + prop_cost, 6), model=model)
 
 
 def score_candidate(battery: RepairBattery, *, candidate_src: str, workspace_root: Path,
