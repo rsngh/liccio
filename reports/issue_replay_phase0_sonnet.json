@@ -1,0 +1,287 @@
+{
+  "experiment": "issue_replay_phase0_guided_battery",
+  "thesis": "a dense, FAIR, continuous battery score is a climbable gradient the binary hidden test never gave",
+  "n_targets": 11,
+  "n_no_progress": 8,
+  "recovered_no_progress": 1,
+  "regressed_solved": 1,
+  "score_vs_hidden_point_biserial": 0.526,
+  "n_candidates_scored": 21,
+  "battery_gold_accepted": 3,
+  "battery_buggy_rejected": 11,
+  "n_battery": 11,
+  "proxy_precision": 1.0,
+  "proxy_recall": 0.375,
+  "decision": "PROCEED",
+  "kill_criterion": "0/8 recovered AND r<0.2",
+  "proceed_criterion": ">=2/8 recovered OR r>=0.3",
+  "per_bundle": [
+    {
+      "category": "solved",
+      "repo": "python-stringcase",
+      "module": "stringcase.py",
+      "issue": "Fix alphanumcase for Python 3",
+      "hidden_pass": true,
+      "best_score": 1.0,
+      "best_proxy_pass": true,
+      "score_trajectory": [
+        0.4,
+        1.0
+      ],
+      "n_checks": 12,
+      "n_discriminating": 12,
+      "gold_proxy_pass": true,
+      "gold_score": 1.0,
+      "gold_discrim": "12/12",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "alphanumcase"
+      ],
+      "cost_usd": 0.016836
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "strutils.py",
+      "issue": "Fix warnings in python3.7",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 6,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/6",
+      "buggy_proxy_pass": false,
+      "focus_names": [],
+      "cost_usd": 0.716234
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "dictutils.py",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 11,
+      "gold_proxy_pass": false,
+      "gold_score": 0.6727,
+      "gold_discrim": "5/11",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "update"
+      ],
+      "cost_usd": 0.123448
+    },
+    {
+      "category": "solved",
+      "repo": "boltons",
+      "module": "timeutils.py",
+      "issue": "Fix infinite daterange issue when start and stop i",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 11,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/11",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "daterange"
+      ],
+      "cost_usd": 0.246322
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "setutils.py",
+      "issue": "add more IndexedSet.index() tests and fix typo in ",
+      "hidden_pass": false,
+      "best_score": 1.0,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "n_checks": 12,
+      "n_discriminating": 0,
+      "gold_proxy_pass": false,
+      "gold_score": 1.0,
+      "gold_discrim": "0/0",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "add",
+        "index"
+      ],
+      "cost_usd": 0.121461
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "setutils.py",
+      "issue": "fix IndexedSet.index() to account for removals, fi",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 1,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/1",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "index"
+      ],
+      "cost_usd": 0.076866
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "listutils.py",
+      "issue": "Fix barrellist sort with multiple lists",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 11,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/11",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "sort"
+      ],
+      "cost_usd": 0.055391
+    },
+    {
+      "category": "solved",
+      "repo": "boltons",
+      "module": "mathutils.py",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "hidden_pass": true,
+      "best_score": 1.0,
+      "best_proxy_pass": true,
+      "score_trajectory": [
+        0.4,
+        1.0
+      ],
+      "n_checks": 12,
+      "n_discriminating": 7,
+      "gold_proxy_pass": true,
+      "gold_score": 1.0,
+      "gold_discrim": "7/7",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "clamp"
+      ],
+      "cost_usd": 0.029456
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "formatutils.py",
+      "issue": "DeferredValue: fix get_value and caching",
+      "hidden_pass": true,
+      "best_score": 1.0,
+      "best_proxy_pass": true,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        1.0
+      ],
+      "n_checks": 12,
+      "n_discriminating": 8,
+      "gold_proxy_pass": true,
+      "gold_score": 1.0,
+      "gold_discrim": "8/8",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "get_value"
+      ],
+      "cost_usd": 0.067952
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "ioutils.py",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 12,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/12",
+      "buggy_proxy_pass": false,
+      "focus_names": [],
+      "cost_usd": 0.705549
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "ioutils.py",
+      "issue": "Fix call to non-existant attribute",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 12,
+      "n_discriminating": 4,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_discrim": "0/4",
+      "buggy_proxy_pass": false,
+      "focus_names": [],
+      "cost_usd": 0.524453
+    }
+  ],
+  "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
+}
