@@ -1,10 +1,12 @@
 {
   "experiment": "real_issue_replay_bundles",
-  "n_bundles": 22,
+  "n_bundles": 52,
   "source": "real_issue_replay",
   "via": "direct git clone of public repos (no GitHub API/token; api.github.com is proxy-blocked here)",
   "repos": [
+    "arrow-py/arrow",
     "mahmoud/boltons",
+    "more-itertools/more-itertools",
     "okunishinishi/python-stringcase",
     "pytoolz/toolz",
     "r1chardj0n3s/parse"
@@ -208,6 +210,276 @@
       "source": "real_issue_replay",
       "leakage_notes": "real history r1chardj0n3s/parse@ba6803d571; whole repo test file as hidden oracle; gold withheld from agent",
       "gold_patch_hash": "2698dc9972e19d83"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "edb3346f83^",
+      "issue_title": "Fix empty ranges in numeric_range.__reversed__",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@edb3346f83; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "ba7159b4dbb69ddd"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "71b46b06fb^",
+      "issue_title": "Issue #1057: Raise exception for invalid size in windowed()",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@71b46b06fb; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "72e7baf4b454dabd"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "18c57c720f^",
+      "issue_title": "Issue #1134: Add running_statistics (#1135)",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@18c57c720f; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "4f6c34b8074b0664"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "06f3181912^",
+      "issue_title": "Simplify nth_combination_with_replacement. Fix incorrect exception.",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@06f3181912; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "f582c52623883d97"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "073d23421b^",
+      "issue_title": "Fix support for iterators using \"repeat\"",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@073d23421b; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "85a6562704169082"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "428a0a2c8d^",
+      "issue_title": "Issue 1098: Add synchronized decorator",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@428a0a2c8d; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "95e9eec1ce999c97"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "1b7f033d50^",
+      "issue_title": "Issue 1096: Concurrent tee",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@1b7f033d50; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "4edbe31f747a633e"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "4f399222d0^",
+      "issue_title": "Issue 1093: Add serialize()",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@4f399222d0; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "82846b7beabf83c8"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "adeda34bd1^",
+      "issue_title": "Fix bug for negative inputs to exactly_n(). Optimize code.",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@adeda34bd1; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "b2c899a284a5b4ae"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "cf186b5de4^",
+      "issue_title": "Fix product_index() with iterator input",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@cf186b5de4; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "b4e00e0bb2f1cb9e"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "120ee0a599^",
+      "issue_title": "Issue 900: Replace iequals fillvalue logic with strict size test",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@120ee0a599; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "a8fa1f93c9b066a6"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "cca32949f1^",
+      "issue_title": "fix last() when __reversed__ is None",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@cca32949f1; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "74dd72ab9b618060"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "fb33cf2c24^",
+      "issue_title": "Issue 986: argmin and argmax",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@fb33cf2c24; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "216f3fa200a83b8f"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "7d5d553065^",
+      "issue_title": "Fix __all__ error due to forgotton comma",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@7d5d553065; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "1334178c6c5f1af5"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "449dee231e^",
+      "issue_title": "Fix unique pool by not using a set",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@449dee231e; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "0a2ed5c511e14f7d"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "ae37eb38a1^",
+      "issue_title": "Add more sample() tests and fix bug in strict option with counts",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@ae37eb38a1; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "7c07ac614a509f86"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "8ee69910e8^",
+      "issue_title": "remove string.format(); fix tests",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@8ee69910e8; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "aca7c9d9ae063605"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "e733192454^",
+      "issue_title": "Issue 916: lt only for is_sorted (#917)",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@e733192454; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "a2f731b3fc626846"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "bbe6c8f7f3^",
+      "issue_title": "Issue 870: counts parameter for sample",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@bbe6c8f7f3; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "394cd9bbabf2edb0"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "fb95291e8f^",
+      "issue_title": "Issue 869: Add a steps argument to circular_shifts",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@fb95291e8f; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "aabedcd10125bc3b"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "080fb1397f^",
+      "issue_title": "Issue 862: change relative_seek() behaviour",
+      "module_path": "more_itertools/more.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@080fb1397f; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "fb12f2a04726fbbd"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "8089263d23^",
+      "issue_title": "Issue: #898: Sync recipe with main docs. Eliminate quadratic fallback.",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@8089263d23; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "623be19d61d5b978"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "18c57c720f^",
+      "issue_title": "Issue #1134: Add running_statistics (#1135)",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@18c57c720f; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "f22355d0fe7a2884"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "b0aa91efbb^",
+      "issue_title": "Fix random_product() as well",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@b0aa91efbb; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "d37f4ebf9c1a3d50"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "ccf96ac64c^",
+      "issue_title": "Issue 1070: Add random derangements",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@ccf96ac64c; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "bd4aa7bd7361884d"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "21d3d88359^",
+      "issue_title": "Issue 1003: Multidimensional reshape() (#1062)",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@21d3d88359; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "e8ad733f875399a8"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "d1db73fa8b^",
+      "issue_title": "Fix formatting",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@d1db73fa8b; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "ea2631a0dd8dd480"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "a7236314cd^",
+      "issue_title": "Issue 920: Add is_prime recipe",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@a7236314cd; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "c58819f8d4ba339b"
+    },
+    {
+      "repo_name": "more-itertools/more-itertools",
+      "base_sha": "de81c47f7f^",
+      "issue_title": "Issue 821: key argument for all_equal",
+      "module_path": "more_itertools/recipes.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history more-itertools/more-itertools@de81c47f7f; PACKAGE bundle (more_itertools laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "f209b5fbbb95b472"
+    },
+    {
+      "repo_name": "arrow-py/arrow",
+      "base_sha": "3b54885409^",
+      "issue_title": "Fix arrow.get functionality when weekday is parsed alone (#823)",
+      "module_path": "arrow/util.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history arrow-py/arrow@3b54885409; PACKAGE bundle (arrow laid down read-only); whole test file as hidden oracle; gold withheld",
+      "gold_patch_hash": "378856d5720c4d44"
     }
   ]
 }
