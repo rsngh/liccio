@@ -1,9 +1,10 @@
 {
   "experiment": "real_issue_replay_bundles",
-  "n_bundles": 1,
+  "n_bundles": 20,
   "source": "real_issue_replay",
   "via": "direct git clone of public repos (no GitHub API/token; api.github.com is proxy-blocked here)",
   "repos": [
+    "mahmoud/boltons",
     "okunishinishi/python-stringcase"
   ],
   "fairness": "each bundle validated offline-fair (buggy fails the repo's own test file; gold passes)",
@@ -16,6 +17,177 @@
       "source": "real_issue_replay",
       "leakage_notes": "real history okunishinishi/python-stringcase@fdf27a6734; whole repo test file as hidden oracle; gold withheld from agent",
       "gold_patch_hash": "dd47814b2e6c9ac7"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "ce7c7d2b15^",
+      "issue_title": "fix(human_readable_list): altering f-string syntax to have backwards compatibility with Python <3.12",
+      "module_path": "strutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@ce7c7d2b15; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "fa99defd503b443a"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "b47171245c^",
+      "issue_title": "fix strutils",
+      "module_path": "strutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@b47171245c; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "5a88680d7d261211"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "ed2f5dcad1^",
+      "issue_title": "Fix warnings in python3.7",
+      "module_path": "strutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@ed2f5dcad1; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "7e7eda29b5c04490"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "6cac49ce4e^",
+      "issue_title": "fix OneToOne.update behavior with empty iterables",
+      "module_path": "dictutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@6cac49ce4e; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "bb37dd36386c2b72"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "4815fc8dd1^",
+      "issue_title": "Test and fix for #348 (#349)",
+      "module_path": "cacheutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@4815fc8dd1; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "fda154267859a32c"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "b1cd936409^",
+      "issue_title": "cacheutils: (breaking change) adding the scoped argument to @cached and @cachedmethod (and removing selfish from cachedmethod). also fixed a bug in a cachedmethod test, as well as added docs for scoped and key arguments. all of this to fix #83.",
+      "module_path": "cacheutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@b1cd936409; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "cadec2acf79a62ea"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "93185b224e^",
+      "issue_title": "Fix infinite daterange issue when start and stop is same (#302)",
+      "module_path": "timeutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@93185b224e; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "115f8e4901f5d016"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "64e6430024^",
+      "issue_title": "add more IndexedSet.index() tests and fix typo in get_apparent_index, redressing #240",
+      "module_path": "setutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@64e6430024; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "1ee492bcf283c6d0"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "4457decc61^",
+      "issue_title": "fix IndexedSet.index() to account for removals, fixes #240",
+      "module_path": "setutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@4457decc61; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "03fdc1f4161f0c91"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "ed2f5dcad1^",
+      "issue_title": "Fix warnings in python3.7",
+      "module_path": "setutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@ed2f5dcad1; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "dc27979f5569a8db"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "f9c4f30511^",
+      "issue_title": "Fix barrellist sort with multiple lists",
+      "module_path": "listutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@f9c4f30511; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "36878b747da9de8a"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "4bae3f5589^",
+      "issue_title": "fix default arguments of mathutitls.clamp",
+      "module_path": "mathutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@4bae3f5589; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "a1c954878a57ca99"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "f3c6ff202b^",
+      "issue_title": "DeferredValue: fix get_value and caching",
+      "module_path": "formatutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@f3c6ff202b; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "16320545384d6501"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "ed2f5dcad1^",
+      "issue_title": "Fix warnings in python3.7",
+      "module_path": "tableutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@ed2f5dcad1; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "966da7598b98085c"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "55a2791b77^",
+      "issue_title": "Fix line-by-line file iteration in ioutils modules",
+      "module_path": "ioutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@55a2791b77; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "af26cc546eed304e"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "fbc7933a41^",
+      "issue_title": "Fix call to non-existant attribute",
+      "module_path": "ioutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@fbc7933a41; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "83a018a5c60b718e"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "ed2f5dcad1^",
+      "issue_title": "Fix warnings in python3.7",
+      "module_path": "urlutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@ed2f5dcad1; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "f7c0c685d95a03e1"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "0a20b37cc9^",
+      "issue_title": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+      "module_path": "socketutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@0a20b37cc9; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "a8b3efda22d19b31"
+    },
+    {
+      "repo_name": "mahmoud/boltons",
+      "base_sha": "270e974975^",
+      "issue_title": "address ecoutils import issue, fixes #294",
+      "module_path": "ecoutils.py",
+      "source": "real_issue_replay",
+      "leakage_notes": "real history mahmoud/boltons@270e974975; whole repo test file as hidden oracle; gold withheld from agent",
+      "gold_patch_hash": "02a353f89c038037"
     }
   ]
 }
