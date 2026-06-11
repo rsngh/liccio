@@ -1,0 +1,26 @@
+{
+  "experiment": "issue_replay_multisample",
+  "agent": "gemini_cli",
+  "n_samples": 1,
+  "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
+  "completed": 1,
+  "best_of_k_solved": {
+    "1": 1
+  },
+  "single_shot_solved": 1,
+  "best_of_n_solved": 1,
+  "elapsed_s": 26.9,
+  "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
+  "per_bundle": [
+    {
+      "idx": 0,
+      "repo": "okunishinishi/python-stringcase",
+      "issue": "Fix alphanumcase for Python 3",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    }
+  ]
+}

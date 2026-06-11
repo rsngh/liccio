@@ -3,13 +3,13 @@
   "agent": "codex_cli",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 20,
+  "completed": 22,
   "best_of_k_solved": {
-    "1": 20
+    "1": 22
   },
-  "single_shot_solved": 20,
-  "best_of_n_solved": 20,
-  "elapsed_s": 1835.8,
+  "single_shot_solved": 22,
+  "best_of_n_solved": 22,
+  "elapsed_s": 2032.4,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -206,6 +206,26 @@
       "idx": 19,
       "repo": "mahmoud/boltons",
       "issue": "address ecoutils import issue, fixes #294",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 20,
+      "repo": "pytoolz/toolz",
+      "issue": "FIX: compatibility with python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 21,
+      "repo": "r1chardj0n3s/parse",
+      "issue": "Fix microsecond precision loss in timestamp parsing",
       "samples": [
         1
       ],
