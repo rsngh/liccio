@@ -72,6 +72,17 @@ class BatteryScore:
     n_guard_surviving: int
     n_guard_passed: int
     results: list[CheckResult] = field(default_factory=list)
+    disc_frac: float = 0.0               # weighted fraction of surviving discriminating checks passed
+    guard_frac: float = 0.0              # weighted fraction of surviving guard checks passed
+    battery_valid: bool = True
+
+    def accept(self, *, disc_floor: float = 0.8, guard_floor: float = 0.9) -> bool:
+        """Relaxed acceptance bar (replaces the all-checks `proxy_pass` that rejected gold 11/11):
+        a minority of WRONG generated checks must not poison the verdict. Mutant-sensitivity weights
+        already damp weak checks, so weighted fractions over the floors = accept."""
+        return (self.battery_valid and self.public_pass and not self.adversarial_high
+                and self.n_discrim_surviving >= 2
+                and self.disc_frac >= disc_floor and self.guard_frac >= guard_floor)
 
     @property
     def proxy_pass(self) -> bool:
@@ -108,6 +119,13 @@ class RepairBattery:
     extra_files: dict[str, str]
     gen_cost_usd: float = 0.0
     model: str = ""
+    valid: bool = True                   # False => no discriminating checks could be produced; the
+    invalid_reason: str = ""             # score is then capped (never 1.0) and callers must escalate
+    check_weights: list[float] = field(default_factory=list)  # mutant-sensitivity weights (v2)
+    mutation_info: dict = field(default_factory=dict)
+
+    def weight(self, j: int) -> float:
+        return self.check_weights[j] if j < len(self.check_weights) else 1.0
 
     @property
     def n_discriminating(self) -> int:
@@ -158,12 +176,51 @@ def _extract_imports(public_test: str) -> str:
     return "\n".join(lines) if lines else "(use the import shown in the public test)"
 
 
-def _generate(spec: SpecLike, *, client, model: str, n: int, template: str) -> tuple[list[str], float]:
+# ---- v2 (discriminating-by-construction) prompts -------------------------------------------------
+# The generator may see the BUGGY focus region: the repair model sees the exact same region, gold and
+# the hidden test stay withheld, and every emitted check is execution-validated (must FAIL on the
+# buggy baseline), so showing buggy code cannot pin buggy behaviour into the battery.
+
+_REGEN_PROMPT = (
+    "You are a senior test engineer. The code below contains a BUG described by the issue. Every test "
+    "written so far PASSES on this buggy code — they fail to exercise the bug at all. Write {n} NEW "
+    "pytest tests that FAIL on the code below precisely because of the described bug, and that would "
+    "pass once the bug is fixed per the issue. Target the specific wrong behaviour; assert the "
+    "spec-correct expectation. Each test must be fully self-contained and must NOT reference any "
+    "hidden/secret test.\n\n{import_rule}\n"
+    "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
+    "`def test_...`).\n\nISSUE:\n{issue}\n\nBUGGY CODE (the suspected region):\n```python\n{focus}\n```\n\n"
+    "EXISTING PUBLIC TEST:\n{public}\n"
+)
+
+_PIN_PROMPT = (
+    "You are a senior test engineer documenting CURRENT behaviour. The code below has a bug described "
+    "by the issue. Write {n} pytest tests that PASS on the code AS IT IS NOW, each pinning a concrete "
+    "input/output of the very behaviour the issue says is wrong (call the affected function with "
+    "inputs the issue implicates and assert what the buggy code ACTUALLY returns/does today). Each "
+    "test must be fully self-contained.\n\n{import_rule}\n"
+    "Return ONLY a JSON array of strings; each string is a complete test file (import + one "
+    "`def test_...`).\n\nISSUE:\n{issue}\n\nCURRENT (BUGGY) CODE:\n```python\n{focus}\n```\n\n"
+    "EXISTING PUBLIC TEST:\n{public}\n"
+)
+
+_FLIP_PROMPT = (
+    "Each pytest test below currently PASSES on a buggy implementation — its assertions pin the WRONG "
+    "behaviour described by the issue. Rewrite EACH test so its assertions state the SPEC-CORRECT "
+    "expected behaviour instead (what a fixed implementation should do per the issue). Keep the same "
+    "imports, function calls and inputs; change ONLY the expected values/assertions. Return ONLY a "
+    "JSON array of the rewritten test files, same length and order as the input.\n\n"
+    "ISSUE:\n{issue}\n\nTESTS PINNING BUGGY BEHAVIOUR:\n{tests_json}\n"
+)
+
+
+def _generate(spec: SpecLike, *, client, model: str, n: int, template: str, **extra) -> tuple[list[str], float]:
     """Generate checks with the import pinned to the public test's convention."""
     if client is None or n <= 0:
         return [], 0.0
     import_rule = _IMPORT_RULE.format(imports=_extract_imports(spec.public_test))
-    prompt = template.format(n=n, issue=spec.issue_text, public=spec.public_test, import_rule=import_rule)
+    prompt = template.format(n=n, issue=spec.issue_text, public=spec.public_test,
+                             import_rule=import_rule, **extra)
     try:
         msg = client.messages.create(model=model, max_tokens=1600,
                                      messages=[{"role": "user", "content": prompt}])
@@ -263,6 +320,115 @@ def build_battery(spec: SpecLike, *, client, module_path: str, extra_files: dict
                          gen_cost_usd=round(ex_cost + prop_cost, 6), model=model)
 
 
+def _keep_by_baseline(cands: list[str], *, want_fail: bool, module_path: str, baseline_src: str,
+                      extra_files: dict[str, str], root: Path, kind: str) -> list[tuple[str, str]]:
+    """Collect-filter then execution-gate candidate checks against the buggy baseline: keep only the
+    ones whose baseline verdict matches `want_fail` (Otter fail-to-pass / AssertFlip pass-pin)."""
+    ok = [(kind, c) for c in cands
+          if _collects_cleanly(c, module_path=module_path, baseline_src=baseline_src,
+                               extra_files=extra_files, root=root)]
+    if not ok:
+        return []
+    res = _run_checks(baseline_src, ok, module_path=module_path, extra_files=extra_files,
+                      root=root, tag=f"gate_{kind}")
+    return [c for c, passed in zip(ok, res, strict=True) if passed != want_fail]
+
+
+def _flip_assertions(spec: SpecLike, pins: list[str], *, client, model: str) -> tuple[list[str], float]:
+    """AssertFlip step 2: rewrite passing buggy-behaviour pins into spec-correct expectations."""
+    if client is None or not pins:
+        return [], 0.0
+    import json as _json
+    prompt = _FLIP_PROMPT.format(issue=spec.issue_text, tests_json=_json.dumps(pins))
+    try:
+        msg = client.messages.create(model=model, max_tokens=2000,
+                                     messages=[{"role": "user", "content": prompt}])
+        text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+        flipped = _parse_check_array(text)[:len(pins)]
+        usage = getattr(msg, "usage", None)
+        cost = round((getattr(usage, "input_tokens", 0) or 0) * 1.0 / 1e6
+                     + (getattr(usage, "output_tokens", 0) or 0) * 5.0 / 1e6, 6)
+        return flipped, cost
+    except Exception:  # noqa: BLE001
+        return [], 0.0
+
+
+def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: dict[str, str],
+                     baseline_src: str, public_test: str, workspace_root: Path,
+                     focus_src: str = "", focus_spans: list[tuple[int, int]] | None = None,
+                     n_example: int = 6, n_property: int = 3, n_invert: int = 4,
+                     max_regen_rounds: int = 2, mutant_cap: int = 24,
+                     model: str = "claude-haiku-4-5") -> RepairBattery:
+    """Discriminating-by-construction battery (P7 W1). On top of v1's import-pin + collect filter:
+
+    * Otter fail-to-pass gate — while the battery has <2 discriminating checks, regenerate showing
+      the BUGGY focus region ("every check so far PASSES this buggy code; write checks it FAILS"),
+      keeping ONLY checks that execute-and-fail on the baseline.
+    * AssertFlip — generate tests that PASS on buggy pinning the implicated behaviour (execution-
+      verified), then flip their assertions to the spec-correct expectation; keep only flips that now
+      FAIL on buggy. Rejected pins/flips are dropped entirely (a pin kept as a guard would punish the
+      true fix).
+    * MuTAP sensitivity weights — focus-region mutants; checks whose verdicts never react to the
+      region get the floor weight (CPU-only).
+    * `valid=False` (never a vacuous 1.0 score) when <2 discriminating checks survive everything.
+    """
+    focus = focus_src or baseline_src[:6000]
+    ex, c1 = _generate(spec, client=client, model=model, n=n_example, template=_EXAMPLE_PROMPT)
+    props, c2 = _generate(spec, client=client, model=model, n=n_property, template=_PROP_PROMPT)
+    cost = c1 + c2
+    raw: list[tuple[str, str]] = [("example", c) for c in ex] + [("property", c) for c in props]
+    checks = [(k, s) for k, s in raw
+              if _collects_cleanly(s, module_path=module_path, baseline_src=baseline_src,
+                                   extra_files=extra_files, root=workspace_root)]
+    baseline_pass = (_run_checks(baseline_src, checks, module_path=module_path,
+                                 extra_files=extra_files, root=workspace_root, tag="base")
+                     if checks else [])
+
+    def n_disc() -> int:
+        return sum(1 for p in baseline_pass if not p)
+
+    # Otter fail-to-pass regen: only checks that FAIL on buggy are admitted (kind="f2p")
+    for _ in range(max_regen_rounds):
+        if n_disc() >= 2:
+            break
+        regen, c = _generate(spec, client=client, model=model, n=4, template=_REGEN_PROMPT, focus=focus)
+        cost += c
+        kept = _keep_by_baseline(regen, want_fail=True, module_path=module_path,
+                                 baseline_src=baseline_src, extra_files=extra_files,
+                                 root=workspace_root, kind="f2p")
+        checks += kept
+        baseline_pass += [False] * len(kept)
+
+    # AssertFlip: pins must PASS on buggy; flips must FAIL on buggy (discriminating by construction)
+    if n_disc() < 4 and n_invert > 0:
+        pins_raw, c = _generate(spec, client=client, model=model, n=n_invert, template=_PIN_PROMPT, focus=focus)
+        cost += c
+        pins = [s for _k, s in _keep_by_baseline(pins_raw, want_fail=False, module_path=module_path,
+                                                 baseline_src=baseline_src, extra_files=extra_files,
+                                                 root=workspace_root, kind="pin")]
+        flipped, c = _flip_assertions(spec, pins, client=client, model=model)
+        cost += c
+        kept = _keep_by_baseline(flipped, want_fail=True, module_path=module_path,
+                                 baseline_src=baseline_src, extra_files=extra_files,
+                                 root=workspace_root, kind="flip")
+        checks += kept
+        baseline_pass += [False] * len(kept)
+
+    valid = n_disc() >= 2
+    weights: list[float] = []
+    mut_info: dict = {}
+    if valid and checks:
+        from acp.verification.battery_mutation import sensitivity_weights
+        weights, mut_info = sensitivity_weights(baseline_src, checks, baseline_pass,
+                                                module_path=module_path, extra_files=extra_files,
+                                                root=workspace_root, spans=focus_spans, cap=mutant_cap)
+    return RepairBattery(checks=checks, baseline_pass=baseline_pass, public_test=public_test,
+                         module_path=module_path, extra_files=extra_files,
+                         gen_cost_usd=round(cost, 6), model=model, valid=valid,
+                         invalid_reason=("" if valid else "non_discriminating"),
+                         check_weights=weights, mutation_info=mut_info)
+
+
 def score_candidate(battery: RepairBattery, *, candidate_src: str, workspace_root: Path,
                     candidate_id: str, diff: str | None = None,
                     surviving_mask: list[bool] | None = None) -> BatteryScore:
@@ -279,6 +445,7 @@ def score_candidate(battery: RepairBattery, *, candidate_src: str, workspace_roo
                  if battery.checks else [])
     results: list[CheckResult] = []
     d_surv = d_pass = g_surv = g_pass = 0
+    dw_sum = dw_hit = gw_sum = gw_hit = 0.0      # mutant-sensitivity-weighted tallies (v2)
     for j, (kind, _src) in enumerate(battery.checks):
         surviving = True if surviving_mask is None else surviving_mask[j]
         base_ok = battery.baseline_pass[j]
@@ -291,35 +458,48 @@ def score_candidate(battery: RepairBattery, *, candidate_src: str, workspace_roo
                                            else "ok")))
         if not surviving:
             continue
+        w = battery.weight(j)
         if role == "discriminating":
             d_surv += 1
             d_pass += int(passed)
+            dw_sum += w
+            dw_hit += w * int(passed)
         else:
             g_surv += 1
             g_pass += int(passed)
+            gw_sum += w
+            gw_hit += w * int(passed)
+    disc = (dw_hit / dw_sum) if dw_sum else 1.0
+    guard = (gw_hit / gw_sum) if gw_sum else 1.0
     if adv_high or not public_pass:
         score = 0.0
+    elif not battery.valid:
+        # an invalid (non-discriminating) battery can never emit a vacuous 1.0 — cap at the public
+        # contribution so the search degrades to public-test-driven and telemetry/routers escalate
+        score = round(_W_PUBLIC * 1.0, 4)
     else:
-        disc = (d_pass / d_surv) if d_surv else 1.0
-        guard = (g_pass / g_surv) if g_surv else 1.0
         score = round(_W_DISCRIM * disc + _W_GUARD * guard + _W_PUBLIC * 1.0, 4)
     return BatteryScore(candidate_id=candidate_id, score=score, public_pass=public_pass,
                         adversarial_high=adv_high, n_discrim_surviving=d_surv, n_discrim_passed=d_pass,
-                        n_guard_surviving=g_surv, n_guard_passed=g_pass, results=results)
+                        n_guard_surviving=g_surv, n_guard_passed=g_pass, results=results,
+                        disc_frac=round(disc, 4), guard_frac=round(guard, 4),
+                        battery_valid=battery.valid)
 
 
 def score_pool(battery: RepairBattery, candidates: list[dict], *, workspace_root: Path,
                consensus_floor: float = 0.5) -> dict[str, BatteryScore]:
-    """Score several candidates and apply cross-candidate consensus (a check < `consensus_floor` of
-    candidates pass is dropped as likely-wrong — lifted from independent_proof.proxy_evaluate). Used
-    by the search (Phase 1) where multiple candidates exist; hardens the signal against bad checks."""
+    """Score several candidates and apply cross-candidate consensus to GUARD checks only (a guard
+    check < `consensus_floor` of candidates pass is dropped as likely-wrong). Discriminating checks
+    are exempt: most candidates are wrong fixes, so a buggy-like majority would vote out exactly the
+    checks that detect the bug (Kimi-Dev W4 fix)."""
     raw = {c["id"]: _run_checks(c["src"], battery.checks, module_path=battery.module_path,
                                 extra_files=battery.extra_files, root=workspace_root, tag=c["id"])
            for c in candidates} if battery.checks else {c["id"]: [] for c in candidates}
     n = len(battery.checks)
     ids = [c["id"] for c in candidates]
     floor = max(1, int(round(consensus_floor * len(ids))))
-    mask = [sum(1 for cid in ids if raw[cid][j]) >= floor for j in range(n)]
+    mask = [(not battery.baseline_pass[j])             # discriminating: always survives consensus
+            or sum(1 for cid in ids if raw[cid][j]) >= floor for j in range(n)]
     out: dict[str, BatteryScore] = {}
     for c in candidates:
         out[c["id"]] = score_candidate(battery, candidate_src=c["src"], workspace_root=workspace_root,
