@@ -4,14 +4,14 @@
   "n_targets": 11,
   "n_no_progress": 8,
   "recovered_no_progress": 1,
-  "regressed_solved": 1,
-  "score_vs_hidden_point_biserial": -0.051,
-  "n_candidates_scored": 18,
+  "regressed_solved": 2,
+  "score_vs_hidden_point_biserial": 0.024,
+  "n_candidates_scored": 21,
   "battery_gold_accepted": 2,
-  "battery_buggy_rejected": 7,
-  "n_battery": 7,
+  "battery_buggy_rejected": 8,
+  "n_battery": 8,
   "proxy_precision": 1.0,
-  "proxy_recall": 0.176,
+  "proxy_recall": 0.158,
   "decision": "INCONCLUSIVE",
   "kill_criterion": "0/8 recovered AND r<0.2",
   "proceed_criterion": ">=2/8 recovered OR r>=0.3",
@@ -224,6 +224,41 @@
       "best_accept": false,
       "escalations": [],
       "cost_usd": 0.119267
+    },
+    {
+      "category": "solved",
+      "repo": "boltons",
+      "module": "mathutils.py",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "hidden_pass": false,
+      "best_score": 0.1,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "n_checks": 11,
+      "n_discriminating": 0,
+      "gold_proxy_pass": false,
+      "gold_score": 0.1,
+      "gold_discrim": "0/0",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "clamp"
+      ],
+      "class_mode": false,
+      "battery_valid": false,
+      "best_accept": false,
+      "escalations": [
+        {
+          "round": 1,
+          "to": "haiku",
+          "spend": 0.0333
+        }
+      ],
+      "cost_usd": 0.051
     }
   ],
   "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
