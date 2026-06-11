@@ -27,6 +27,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 | Independent-proof gate catches what slips through | on the 2 fooling cases: 1 cleanly detected (gold accepted, overfit rejected); 1 exposed a **vacuous-pass hole** (all checks consensus-dropped → trivial pass) — FIXED with `strict_pass` (0 surviving checks = inconclusive = human review). Under the strict rule: **0/2 overfit auto-commit, gold false-rejection 0** (old probe: 95%) | **solid — gate shippable for the high-stakes lane (fail-closed wired into the router)** |
 | Solution memory frees recurrences | exact-recurrence replay **17/17 = 100%** at zero agent calls; ~50% workload cost saved at 50% recurrence | **solid (offline)** |
 | Memory drives cost down over sessions | over a recurring workload: rung-memory saves **33–36%**, solution-memory **75%** vs blind re-escalation — **independent of cost prior**, rescuing the shallow-gradient regime | **solid (offline)** |
+| Solution-memory wired into the PRODUCTION runner | DiffCache (repo-level verified-diff cache, git-apply replay) opt-in in WorkflowRunner: integration test shows a recurrence solved with **zero agent calls** (only attempt = solution_cache, re-verified through the normal nodes), cache-miss falls through to live agents | **solid — top plan item shipped, default-off so no behaviour change** |
 | Diagnosis hand-off lifts the union | flipped 1 Gemini miss; did **not** crack the universal-miss bug | **modest** |
 | Boosted cheap repair (repair_v2) | hard cheap rung 2/10 → 3/10 (+1 feature-add), higher per-attempt cost | **modest** |
 | SkillBank family playbooks lift the cheap rung | LOO A/B on the 22-bundle more-itertools family: control 11/22 → treatment 11/22, **zero flips either way** ($0.50) | **null — third convergent datapoint that prompt-side levers don't move the cheap rung's capability wall** |
@@ -59,9 +60,7 @@ whose output passes the repo's test. It learns per-`(repo_family, failure_signat
 - No GitHub API (clone-only). Gemini live; Codex/Claude on subscription ($0 metered).
 
 ## What to try next (ranked; updated after the Plan A/B round)
-1. **Solution-memory in production loops** — biggest realistic payoff (repeated work on one codebase);
-   all router plumbing (rung-0 replay, family memory, fail-closed high-stakes gate) is now in place.
-2. **Scale the corpus to ~100+ bundles** — still the binding constraint on the learned components;
+1. **Scale the corpus to ~100+ bundles** — still the binding constraint on the learned components;
    yield is repo-dependent (more-itertools-class repos work; data-file/complex-import repos don't).
 3. **Unsaturated-corpus live ladder** — the gated-resampling + diagnosis-handoff mechanisms only show
    their value where the top agent has misses; needs harder bundles than the current saturated set.
@@ -110,3 +109,6 @@ Built per the approved plan (research: budget-aware TTS 2510.14913, cascade rout
   cost/quota. Worth running only on an UNSATURATED corpus (where the strongest agent has stochastic
   misses). Net: ship the gated capability; enable resampling selectively at the strong/top rung, never
   uniformly, never on persistent-miss rungs (the gate handles this).
+
+## Known pre-existing issues (not from this work)
+- `tests/integration/test_crash_resume.py` (5 cases): after resume the run ends `waiting_for_human` instead of `succeeded` — the fixture's verification yields `selected_passed: False` in this environment, routing to human review. Confirmed pre-existing (fails with the solution-cache change stashed; runner core untouched by this session). Happy-path e2e + eval-ladder tests pass. Worth a separate fix; out of scope for the memory round.
