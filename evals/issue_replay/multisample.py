@@ -25,7 +25,18 @@ from pathlib import Path
 
 from evals.issue_replay.replay_runner import verify
 from evals.issue_replay.replay_task import IssueReplayTask
-from evals.issue_replay.run import _produce_vendor
+from evals.issue_replay.run import _MODELS, _produce_vendor
+
+
+def _produce(agent: str, task, root, *, vendor_timeout: int):
+    """One sample: the in-process repair2 rung (gemini-API, cheap/fast) or a vendor CLI agent.
+    Returns (produced_module_src, cost). Both paths return the produced module source."""
+    if agent == "repair2":
+        from evals.issue_replay.repair_v2 import repair_v2
+        src, cost, _ = repair_v2(task, root, model_id=_MODELS["gemini"][0], rate=_MODELS["gemini"][1])
+        return src, cost
+    produced, cost, _ = _produce_vendor(task, agent, root, timeout_s=vendor_timeout)
+    return produced, cost
 
 
 def run_multisample(bundles: list[IssueReplayTask], agent: str, n: int, *, out: Path | None = None,
@@ -51,7 +62,7 @@ def run_multisample(bundles: list[IssueReplayTask], agent: str, n: int, *, out: 
                 continue
             while len(rec["samples"]) < n and not rec["solved"]:
                 s = len(rec["samples"])
-                produced, cost, _ = _produce_vendor(b, agent, root / f"b{bi}_s{s}_{time.time_ns()}", timeout_s=vendor_timeout)
+                produced, cost = _produce(agent, b, root / f"b{bi}_s{s}_{time.time_ns()}", vendor_timeout=vendor_timeout)
                 hidden, _ = verify(b, root / f"v{bi}_s{s}_{time.time_ns()}", module_src=produced)
                 rec["samples"].append(int(hidden))
                 if hidden:
@@ -83,7 +94,7 @@ def _summary(by_idx: dict[int, dict], agent: str, n: int, t0: float) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--agent", default="codex_cli", choices=["codex_cli", "claude_code", "gemini_cli"])
+    ap.add_argument("--agent", default="codex_cli", choices=["codex_cli", "claude_code", "gemini_cli", "repair2"])
     ap.add_argument("--n", type=int, default=3)
     ap.add_argument("--bundle-file", required=True)
     ap.add_argument("--limit", type=int, default=0)
