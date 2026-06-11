@@ -11,7 +11,7 @@
   },
   "single_shot_solved": 0,
   "best_of_n_solved": 0,
-  "elapsed_s": 306.2,
+  "elapsed_s": 612.1,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -19,6 +19,7 @@
       "repo": "pytoolz/toolz",
       "issue": "FIX: compatibility with python3.7",
       "samples": [
+        0,
         0
       ],
       "solved": false,
