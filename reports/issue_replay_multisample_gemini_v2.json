@@ -3,13 +3,13 @@
   "agent": "gemini_cli",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 20,
+  "completed": 31,
   "best_of_k_solved": {
-    "1": 18
+    "1": 28
   },
-  "single_shot_solved": 18,
-  "best_of_n_solved": 18,
-  "elapsed_s": 1601.6,
+  "single_shot_solved": 28,
+  "best_of_n_solved": 28,
+  "elapsed_s": 3428.8,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -211,6 +211,116 @@
       ],
       "solved": false,
       "samples_to_success": null
+    },
+    {
+      "idx": 20,
+      "repo": "pytoolz/toolz",
+      "issue": "FIX: compatibility with python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 21,
+      "repo": "r1chardj0n3s/parse",
+      "issue": "Fix microsecond precision loss in timestamp parsing",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 22,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix empty ranges in numeric_range.__reversed__",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 23,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1057: Raise exception for invalid size in windowed()",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 24,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 25,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Simplify nth_combination_with_replacement. Fix incorrect exception.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 26,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix support for iterators using \"repeat\"",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 27,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1098: Add synchronized decorator",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 28,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1096: Concurrent tee",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 29,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1093: Add serialize()",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 30,
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix bug for negative inputs to exactly_n(). Optimize code.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
     }
   ]
 }
