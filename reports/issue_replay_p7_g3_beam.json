@@ -5,13 +5,13 @@
   "n_no_progress": 8,
   "recovered_no_progress": 1,
   "regressed_solved": 1,
-  "score_vs_hidden_point_biserial": -0.006,
-  "n_candidates_scored": 13,
+  "score_vs_hidden_point_biserial": -0.051,
+  "n_candidates_scored": 18,
   "battery_gold_accepted": 2,
-  "battery_buggy_rejected": 6,
-  "n_battery": 6,
+  "battery_buggy_rejected": 7,
+  "n_battery": 7,
   "proxy_precision": 1.0,
-  "proxy_recall": 0.25,
+  "proxy_recall": 0.176,
   "decision": "INCONCLUSIVE",
   "kill_criterion": "0/8 recovered AND r<0.2",
   "proceed_criterion": ">=2/8 recovered OR r>=0.3",
@@ -195,6 +195,35 @@
         }
       ],
       "cost_usd": 0.059126
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "listutils.py",
+      "issue": "Fix barrellist sort with multiple lists",
+      "hidden_pass": false,
+      "best_score": 0.1,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "n_checks": 1,
+      "n_discriminating": 0,
+      "gold_proxy_pass": false,
+      "gold_score": 0.1,
+      "gold_discrim": "0/0",
+      "buggy_proxy_pass": false,
+      "focus_names": [
+        "BarrelList"
+      ],
+      "class_mode": true,
+      "battery_valid": false,
+      "best_accept": false,
+      "escalations": [],
+      "cost_usd": 0.119267
     }
   ],
   "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
