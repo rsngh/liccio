@@ -3,13 +3,13 @@
   "agent": "gemini_cli",
   "n_samples": 1,
   "question": "does best-of-N on a single strong agent crack what single-shot misses (coverage scaling)?",
-  "completed": 1,
+  "completed": 20,
   "best_of_k_solved": {
-    "1": 1
+    "1": 18
   },
-  "single_shot_solved": 1,
-  "best_of_n_solved": 1,
-  "elapsed_s": 26.9,
+  "single_shot_solved": 18,
+  "best_of_n_solved": 18,
+  "elapsed_s": 1601.6,
   "evidence_tier": "live; N independent stateful-agent runs; pristine held-out test selects; agent cannot edit the oracle",
   "per_bundle": [
     {
@@ -21,6 +21,196 @@
       ],
       "solved": true,
       "samples_to_success": 1
+    },
+    {
+      "idx": 1,
+      "repo": "mahmoud/boltons",
+      "issue": "fix(human_readable_list): altering f-string syntax to have backwards c",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 2,
+      "repo": "mahmoud/boltons",
+      "issue": "fix strutils",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 3,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 4,
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 5,
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 6,
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to @cached an",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
+    },
+    {
+      "idx": 7,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#302)",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 8,
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_apparent_index, ",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 9,
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 10,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 11,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 12,
+      "repo": "mahmoud/boltons",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 13,
+      "repo": "mahmoud/boltons",
+      "issue": "DeferredValue: fix get_value and caching",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 14,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 15,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 16,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix call to non-existant attribute",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 17,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 18,
+      "repo": "mahmoud/boltons",
+      "issue": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+      "samples": [
+        1
+      ],
+      "solved": true,
+      "samples_to_success": 1
+    },
+    {
+      "idx": 19,
+      "repo": "mahmoud/boltons",
+      "issue": "address ecoutils import issue, fixes #294",
+      "samples": [
+        0
+      ],
+      "solved": false,
+      "samples_to_success": null
     }
   ]
 }
