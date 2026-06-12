@@ -43,7 +43,13 @@
       "issue": "Test and fix for #348 (#349)",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "6": {
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to ",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.0610303
+  "cost_usd": 0.07100630000000001
 }
