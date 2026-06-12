@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "claude_code",
-  "n": 5,
-  "solved": 3,
-  "solve_rate": 0.6,
+  "n": 12,
+  "solved": 6,
+  "solve_rate": 0.5,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -64,6 +64,90 @@
       "pass_to_pass_kept": true,
       "solved": true,
       "wall_s": 137.8
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7228",
+      "family": "pylint",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 75,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 201.8
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7114",
+      "family": "pylint",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 14,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 411.8
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "family": "sphinx",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 42,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 40.2
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "family": "pylint",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 32,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 135.3
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10325",
+      "family": "sphinx",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 25,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 33.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-9359",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 14,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 61.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-8906",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 60,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 52.8
     }
   ]
 }
