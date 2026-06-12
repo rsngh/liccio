@@ -1,0 +1,21 @@
+{
+  "experiment": "swebench_solve",
+  "agent": "codex_cli",
+  "n": 1,
+  "solved": 1,
+  "solve_rate": 1.0,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 72,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 213.0
+    }
+  ]
+}
