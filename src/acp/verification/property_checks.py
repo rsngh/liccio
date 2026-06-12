@@ -53,11 +53,75 @@ _PBT_PROMPT = (
 )
 
 
+_PBT_GROUNDED_PROMPT = _PBT_PROMPT.replace(
+    "EXISTING PUBLIC TEST:\n{public}\n",
+    "EXISTING PUBLIC TEST:\n{public}\n\nOBSERVED BUGGY BEHAVIOUR (what the code ABOVE actually does "
+    "now — write properties this behaviour VIOLATES but a spec-correct implementation satisfies):\n{trace}\n")
+
+
 def generate_properties(spec: SpecLike, *, client, model: str = "claude-haiku-4-5",
-                        n_prop: int = 6, focus: str = "") -> tuple[list[str], float]:
+                        n_prop: int = 6, focus: str = "", trace: str = "") -> tuple[list[str], float]:
     """LLM proposes metamorphic/invariant Hypothesis properties (import-pinned + spec-entailed via the
-    shared `_generate`). Returns (raw_property_sources, cost_usd)."""
+    shared `_generate`). If `trace` (observed buggy behaviour) is given, generation is execution-grounded
+    (AutoVerus-style: condition on what the buggy code actually does). Returns (sources, cost_usd)."""
+    if trace:
+        return _generate(spec, client=client, model=model, n=n_prop, template=_PBT_GROUNDED_PROMPT,
+                         focus=focus or "", trace=trace)
     return _generate(spec, client=client, model=model, n=n_prop, template=_PBT_PROMPT, focus=focus or "")
+
+
+def behavior_trace(buggy_src: str, focus_names: list[str], public_test: str, *, module_path: str,
+                   extra_files: dict[str, str], root: Path) -> str:
+    """Reference-free grounding: run the buggy module on the call inputs the PUBLIC test already uses
+    against the focus functions, and record each call's actual return/exception. No input synthesis,
+    no gold/hidden — just 'here is what the buggy code does today'."""
+    import os
+    import subprocess
+    try:
+        ttree = ast.parse(public_test)
+    except SyntaxError:
+        return ""
+    calls: list[str] = []
+    for node in ast.walk(ttree):
+        if isinstance(node, ast.Call):
+            fn = node.func
+            name = fn.attr if isinstance(fn, ast.Attribute) else (fn.id if isinstance(fn, ast.Name) else "")
+            if name in focus_names:
+                seg = ast.get_source_segment(public_test, node)
+                if seg and seg not in calls:
+                    calls.append(seg)
+    if not calls:
+        return ""
+    mod = module_path[:-3].replace("/", ".")
+    ws = _build_ws_local(root, module_path, buggy_src, extra_files)
+    probe = "import json\nimport " + mod + " as _m\n_o=[]\n"
+    for c in calls[:8]:
+        expr = c if not c.lstrip().startswith(focus_names[0]) else c   # call as written in the test
+        probe += (f"try:\n    _o.append({expr!r} + ' -> ' + repr(eval({expr!r}, "
+                  f"{{'__builtins__': __builtins__, **vars(_m)}})))\n"
+                  f"except Exception as _e:\n    _o.append({expr!r} + ' -> raises ' + type(_e).__name__)\n")
+    probe += "print(chr(10).join(_o))\n"
+    (ws / "_trace.py").write_text(probe)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
+    try:
+        r = subprocess.run(["python", "_trace.py"], cwd=ws, capture_output=True, text=True,
+                           timeout=30, check=False, env=env)
+        return r.stdout.strip()[:1500]
+    except subprocess.TimeoutExpired:
+        return ""
+
+
+def _build_ws_local(root: Path, module_path: str, src: str, extra_files: dict[str, str]) -> Path:
+    import time
+    ws = root / f"trace_{time.time_ns()}"
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / module_path).parent.mkdir(parents=True, exist_ok=True)
+    (ws / module_path).write_text(src)
+    for p, c in extra_files.items():
+        (ws / p).parent.mkdir(parents=True, exist_ok=True)
+        (ws / p).write_text(c)
+    (ws / "conftest.py").write_text("import os,sys\nsys.path.insert(0,os.path.dirname(__file__))\n")
+    return ws
 
 
 def harden_property(src: str) -> str:

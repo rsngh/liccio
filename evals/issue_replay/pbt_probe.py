@@ -24,7 +24,11 @@ from evals.issue_replay.guided_repair_phase0 import _client, _select_targets
 from evals.issue_replay.repair_harness import _extract, _func_table, _localize
 from evals.issue_replay.replay_task import IssueReplayTask
 
-from acp.verification.property_checks import admit_discriminating, generate_properties
+from acp.verification.property_checks import (
+    admit_discriminating,
+    behavior_trace,
+    generate_properties,
+)
 from acp.verification.repair_battery import _run_check_kinds
 
 
@@ -48,6 +52,8 @@ def main() -> int:
     ap.add_argument("--g1", default="reports/issue_replay_p7_g1.json")
     ap.add_argument("--out", default="reports/issue_replay_p8_probe.json")
     ap.add_argument("--n-prop", type=int, default=6)
+    ap.add_argument("--grounded", action="store_true",
+                    help="execution-grounded generation: feed the buggy code's observed behaviour")
     args = ap.parse_args()
 
     bundles = [IssueReplayTask(**d) for d in json.loads(Path(args.corpus).read_text())]
@@ -75,7 +81,9 @@ def main() -> int:
             tbl = _func_table(b.buggy)
             fn = _localize(b.buggy, b.issue_title, b.public_test, "")
             focus = _extract(b.buggy, fn, tbl) if fn else b.buggy[:6000]
-            props, cost = generate_properties(spec, client=client, n_prop=args.n_prop, focus=focus)
+            trace = (behavior_trace(b.buggy, fn, b.public_test, module_path=b.module_path,
+                                    extra_files=b.extra_files, root=root / f"tr{bi}") if args.grounded else "")
+            props, cost = generate_properties(spec, client=client, n_prop=args.n_prop, focus=focus, trace=trace)
             disc, guard = admit_discriminating(props, baseline_src=b.buggy, module_path=b.module_path,
                                                extra_files=b.extra_files, root=root / f"adm{bi}")
             # of the buggy-falsified properties, how many does GOLD satisfy? (valid discriminating)

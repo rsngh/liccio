@@ -424,3 +424,45 @@ subtle bugs the binary loop could not, on exactly the bundles where a fair verif
 gate role chosen accordingly. Artifacts: `reports/issue_replay_p7_g1.json` (battery validity),
 `issue_replay_p7_g3_beam.json` / `issue_replay_p7_g3_greedy.json` (recovery + attribution),
 `issue_replay_p7_redteam_v2.json` (gameability).
+
+## P8 — pushing the verifier-discrimination ceiling (and finding it is structural)
+
+P7 left recovery gated 1:1 by battery *validity* (~4/11). P8 asked: can a stronger verifier discriminate
+the subtle bugs LLM example-tests miss? We built **property/metamorphic checks via Hypothesis**
+(`src/acp/verification/property_checks.py`): the LLM proposes an invariant/metamorphic relation and
+Hypothesis *searches the inputs*; a property is admitted as discriminating **only if Hypothesis finds a
+falsifying input on the buggy baseline** (proven to exercise the bug, not guessed). Unit-proven on a toy
+commutativity bug.
+
+**Go/no-go probe (`evals/issue_replay/pbt_probe.py`, $0.07, no repair calls):** PBT cleanly **rescued
+2/7** example-non-discriminating bundles — timeutils (a *bounded-termination* property catches the
+infinite `daterange(x,x)` an exact-value example never could) and setutils#2 — and gave 5/11 bundles a
+buggy-falsifying + gold-passing property. But 2/7 **failed** the pre-registered ≥3 bar, and the union
+with example-tests is ~6/11, short of the ≥8/11 "high-coverage oracle" target.
+
+**Then we pushed the ceiling with the literature's strongest general methods, and it held — for
+identifiable, structural reasons:**
+- **CrossHair concolic execution** (`diffbehavior`, Z3): on **mathutils** it found **no behavioral
+  difference between buggy and gold over 148 symbolic iterations** — because the bug is *default-argument
+  binding*, not behavior on explicit inputs, so **no input-search method, random or symbolic, can
+  discriminate it**. On **setutils** CrossHair *crashed* symbolically constructing the stateful
+  `IndexedSet`.
+- **Execution-grounding** was impossible: the harvested **public tests are degenerate** (`assert module
+  is not None`) — the verifier works from the issue title + a trivial import, with no behavioral seed.
+- **Doctest/docstring mining** (free, gold-aligned): the modules' own doctests **pass on buggy** — the
+  bug lives in behavior the illustrative doctests don't cover.
+
+**The ceiling is structural, with a clean bug taxonomy.** Bugs un-discriminable by *any* fair synthesized
+verifier without the hidden test: **non-behavioral** (mathutils default args; strutils py3.7 warnings —
+no input distinguishes buggy from fixed), **stateful-class-construction** (setutils/listutils — defeats
+concolic, hard to articulate as properties), and **uncovered-behavior** (the triggering case appears in
+no available artifact). This is the honest answer to "make the verifier stronger": PBT is a real but
+*complementary* +2 (worth folding in cheaply), yet the dominant ~5/11 remain dark by construction.
+
+**Breakthrough implication (now evidence-backed, not assumed):** you cannot synthesize a fair
+discriminating verifier for a meaningful class of real bugs. So the optimal system must be
+**verifier-confidence-aware** — climb the cheap battery where it is *valid* (~6/11 with PBT, recovering
+bugs the binary loop can't, P7-proven) and **escalate the verifier-undiscriminable classes to a strong
+agent** (which solves them via whole-repo context). That is the P8 W2 router, and the ceiling analysis is
+exactly what tells it *when* to trust the cheap path. Artifacts: `reports/issue_replay_p8_probe.json`;
+code `src/acp/verification/property_checks.py`, `evals/issue_replay/pbt_probe.py`.
