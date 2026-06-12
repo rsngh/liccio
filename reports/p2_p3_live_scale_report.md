@@ -466,3 +466,54 @@ bugs the binary loop can't, P7-proven) and **escalate the verifier-undiscriminab
 agent** (which solves them via whole-repo context). That is the P8 W2 router, and the ceiling analysis is
 exactly what tells it *when* to trust the cheap path. Artifacts: `reports/issue_replay_p8_probe.json`;
 code `src/acp/verification/property_checks.py`, `evals/issue_replay/pbt_probe.py`.
+
+## P9 — a real DE-SATURATED benchmark (SWE-bench Lite, no Docker) + honest routing re-measurement
+
+P8 hit two walls: the synthesized-verifier discrimination ceiling is structural, and our 52-bundle
+corpus is **saturated** (Codex 51/52) so nothing we build can *show* a breakthrough. P9 fixes the
+measurement: stand up the recognized de-saturated benchmark and re-test the orchestration thesis where
+the best agent genuinely misses.
+
+**Infrastructure (built + validated, no Docker):** `datasets` loads SWE-bench Lite (300 tasks);
+`swebench_adapter.py` clones @ base_commit into a per-instance venv, applies the dataset `test_patch`,
+and grades by the held-out named FAIL_TO_PASS / PASS_TO_PASS (proved hermetic end-to-end:
+pytest-11148 fails on buggy, passes on gold). `swebench_solve.py` drives a vendor CLI agent on a
+base-only checkout (FAIL_TO_PASS held out), captures its `git diff` (test-file hunks stripped for
+fairness), and grades it. Vendor agents are subscription-metered ($0).
+
+**Honest yield limit:** of 71 prepared Lite tasks, only **12 are hermetically fair** — the other ~59
+(incl. all 30 sympy) fail because gold needs SWE-bench's *per-task pinned dependency versions* (what
+their Docker images pin and a latest-deps venv can't). 12 real tasks across pytest/pylint/sphinx/flask
+is a small but genuinely de-saturated slice.
+
+**Result (n=12 fair tasks, held-out grading):**
+
+| agent | solved | rate |
+|---|---|---|
+| gemini_cli | 4/12 | 0.33 |
+| **claude_code** | **6/12** | **0.50** (best single) |
+| codex_cli | 4/12 | 0.33 |
+| **oracle union (any agent)** | **6/12** | 0.50 |
+| cheapest-first escalation (g→c→x, oracle stop) | 6/12 | stops: gemini 4, claude 2, codex 0 |
+
+- **De-saturation confirmed:** best single agent solves **50%, not 98%** — real headroom. (And note
+  codex, dominant on our easy corpus at 17/17, drops to 4/12 here — easy-corpus saturation was hiding
+  true difficulty.)
+- **Routing cost-thesis holds:** cheapest-first reaches the best-single coverage (6/12) while the cheap
+  agent handles **4 of the 6 solves** and the strong agent is never needed to *solve* — the P3 cost
+  win, reproduced on hard real tasks.
+- **Diversity/ensemble thesis does NOT hold at this n:** the oracle union (6) equals the best single
+  agent — claude_code **strictly dominates** (every gemini/codex solve ⊆ claude's set). No
+  complementarity on these 12; an ensemble adds nothing. This needs a larger, more heterogeneous slice
+  to test fairly — an honest underpowered negative, not a refutation.
+- **The binding gap is the same one P8 isolated:** a *fair verify-stop*. The escalation economics above
+  assume an **oracle** stop (we used the held-out test to know when to stop) — in production you can't,
+  and P8 showed a synthesized verifier can't reliably certify a cheap fix. So the cost win is an upper
+  bound until a trustworthy stop signal exists; that — not more agents or more search — remains the
+  one thing standing between liccio and a defensible breakthrough.
+
+**Net:** liccio's orchestration runs on the recognized hard benchmark; the cheap-routing cost story
+reproduces (best-single coverage, cheap agent doing most of the work); the diversity story is
+unproven at n=12; and the decisive open problem is a calibrated verify-stop. Artifacts:
+`reports/swebench_lite_slice.json`, `reports/swebench_solve_{gemini_cli,claude_code,codex_cli}.json`,
+`reports/swebench_router_eval.json`.
