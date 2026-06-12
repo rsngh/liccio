@@ -5,14 +5,14 @@
   "n_no_progress": 8,
   "recovered_no_progress": 0,
   "regressed_solved": 0,
-  "score_vs_hidden_point_biserial": 1.0,
-  "n_candidates_scored": 3,
+  "score_vs_hidden_point_biserial": 0.0,
+  "n_candidates_scored": 1,
   "battery_gold_accepted": 1,
-  "battery_buggy_rejected": 2,
-  "n_battery": 2,
+  "battery_buggy_rejected": 1,
+  "n_battery": 1,
   "proxy_precision": 1.0,
   "proxy_recall": 1.0,
-  "decision": "PROCEED",
+  "decision": "KILL",
   "kill_criterion": "0/8 recovered AND r<0.2",
   "proceed_criterion": ">=2/8 recovered OR r>=0.3",
   "per_bundle": [
@@ -28,11 +28,11 @@
         0.4,
         1.0
       ],
-      "n_checks": 12,
-      "n_discriminating": 11,
+      "n_checks": 10,
+      "n_discriminating": 9,
       "gold_proxy_pass": true,
       "gold_score": 1.0,
-      "gold_discrim": "11/11",
+      "gold_discrim": "9/9",
       "buggy_proxy_pass": false,
       "focus_names": [
         "alphanumcase"
@@ -41,34 +41,7 @@
       "battery_valid": true,
       "best_accept": true,
       "escalations": [],
-      "cost_usd": 0.011986
-    },
-    {
-      "category": "no_progress",
-      "repo": "boltons",
-      "module": "strutils.py",
-      "issue": "Fix warnings in python3.7",
-      "hidden_pass": false,
-      "best_score": 0.4,
-      "best_proxy_pass": false,
-      "score_trajectory": [
-        0.4,
-        0.4,
-        0.4,
-        0.4
-      ],
-      "n_checks": 15,
-      "n_discriminating": 6,
-      "gold_proxy_pass": false,
-      "gold_score": 0.4,
-      "gold_discrim": "0/6",
-      "buggy_proxy_pass": false,
-      "focus_names": [],
-      "class_mode": false,
-      "battery_valid": true,
-      "best_accept": false,
-      "escalations": [],
-      "cost_usd": 0.141092
+      "cost_usd": 0.012716
     }
   ],
   "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"

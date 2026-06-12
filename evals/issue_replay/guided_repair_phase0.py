@@ -91,6 +91,7 @@ def main() -> int:
     ap.add_argument("--search-mode", default="greedy", choices=["greedy", "beam", "mcts"])
     ap.add_argument("--ladder", action="store_true",
                     help="enable in-loop model escalation (gemini->haiku->sonnet) on flat trajectories")
+    ap.add_argument("--no-resume", action="store_true", help="ignore an existing --out and start fresh")
     args = ap.parse_args()
 
     from evals.issue_replay.run import _MODELS
@@ -102,16 +103,23 @@ def main() -> int:
     if client is None:
         print("WARN: no Anthropic client (battery generation needs it) — set ANTHROPIC_API_KEY", flush=True)
 
-    all_scores: list[float] = []
-    all_labels: list[int] = []
-    prec_tp = prec_fp = rec_fn = 0           # proxy_pass vs hidden over candidate pool
-    gold_accepted = buggy_rejected = n_battery = 0
-    per_bundle = []
-    recovered = regressed = 0
+    # RESUME (container reclamation on idle kills detached jobs ~2.4h in): reload prior per-bundle
+    # rows and skip targets already done, so re-invoking accumulates instead of restarting.
+    per_bundle: list = []
+    done: set = set()
+    if not args.no_resume and Path(args.out).exists():
+        try:
+            per_bundle = json.loads(Path(args.out).read_text()).get("per_bundle", [])
+            done = {(r["module"], r["issue"]) for r in per_bundle}
+            print(f"resume: {len(done)} bundles already done in {args.out}", flush=True)
+        except Exception:  # noqa: BLE001
+            per_bundle, done = [], set()
 
     with tempfile.TemporaryDirectory() as d:
         root = Path(d)
         for bi, (cat, b) in enumerate(targets):
+            if (Path(b.module_path).name, b.issue_title[:50]) in done:
+                continue
             # build the battery ONCE and reuse for the solve + the gold/buggy sanity (consistent labels)
             bench = root / f"bench{bi}"
             bench.mkdir(parents=True, exist_ok=True)
@@ -147,7 +155,7 @@ def main() -> int:
                        "buggy_score": buggy_sc.score, "buggy_accept": buggy_sc.accept(),
                        "gen_cost_usd": battery.gen_cost_usd}
                 per_bundle.append(row)
-                print(f"[{bi+1}/{len(targets)}] {cat:11} {row['module']:14} valid={row['battery_valid']} "
+                print(f"[{len(per_bundle)}/{len(targets)}] {cat:11} {row['module']:14} valid={row['battery_valid']} "
                       f"disc={row['n_discriminating']} gold_accept={row['gold_accept']} "
                       f"gold_score={row['gold_score']} buggy_accept={row['buggy_accept']}", flush=True)
                 _persist_g1(args.out, per_bundle, len(targets))
@@ -156,31 +164,10 @@ def main() -> int:
                                 search_mode=args.search_mode, k=args.k, rounds=args.rounds,
                                 ladder=args.ladder, battery=battery, record_candidates=True)
             hidden_pass, _public = verify(b, root / f"ver{bi}", module_src=res.module_src)
-            # value-function quality: grade every scored candidate with the hidden oracle
-            for c in res.telemetry.get("candidates", []):
-                hp, _ = verify(b, root / f"vc{bi}_{len(all_scores)}", module_src=c["src"])
-                all_scores.append(c["score"])
-                all_labels.append(int(hp))
-                if c["proxy_pass"] and hp:
-                    prec_tp += 1
-                elif c["proxy_pass"] and not hp:
-                    prec_fp += 1
-                elif (not c["proxy_pass"]) and hp:
-                    rec_fn += 1
-            # battery sanity: does it ACCEPT gold and REJECT the buggy baseline? (precision/recall anchors)
-            if battery.checks:
-                n_battery += 1
-                gold_sc = score_candidate(battery, candidate_src=b.gold_patch, workspace_root=bench, candidate_id="gold")
-                buggy_sc = score_candidate(battery, candidate_src=b.buggy, workspace_root=bench, candidate_id="buggy")
-                gold_accepted += int(gold_sc.proxy_pass)
-                buggy_rejected += int(not buggy_sc.proxy_pass)
-            else:
-                gold_sc = buggy_sc = None
-
-            if cat == "no_progress" and hidden_pass:
-                recovered += 1
-            if cat == "solved" and not hidden_pass:
-                regressed += 1
+            gold_sc = score_candidate(battery, candidate_src=b.gold_patch, workspace_root=bench,
+                                      candidate_id="gold") if battery.checks else None
+            buggy_sc = score_candidate(battery, candidate_src=b.buggy, workspace_root=bench,
+                                       candidate_id="buggy") if battery.checks else None
             per_bundle.append({
                 "category": cat, "repo": b.repo_name.split("/")[-1], "module": Path(b.module_path).name,
                 "issue": b.issue_title[:50], "hidden_pass": hidden_pass,
@@ -189,18 +176,19 @@ def main() -> int:
                 "n_checks": res.telemetry["n_checks"], "n_discriminating": res.telemetry["n_discriminating"],
                 "gold_proxy_pass": (gold_sc.proxy_pass if gold_sc else None),
                 "gold_score": (gold_sc.score if gold_sc else None),
-                "gold_discrim": (f"{gold_sc.n_discrim_passed}/{gold_sc.n_discrim_surviving}" if gold_sc else None),
+                "gold_accept": (gold_sc.accept() if gold_sc else None),
                 "buggy_proxy_pass": (buggy_sc.proxy_pass if buggy_sc else None),
+                # battery false positive: search satisfied the proxy (accept) but the hidden test fails
+                "battery_false_positive": bool(res.telemetry.get("best_accept") and not hidden_pass),
                 "focus_names": res.telemetry.get("focus_names"),
                 "class_mode": res.telemetry.get("class_mode"),
                 "battery_valid": res.telemetry.get("battery_valid"),
                 "best_accept": res.telemetry.get("best_accept"),
                 "escalations": res.telemetry.get("escalations", []),
                 "cost_usd": res.cost_usd})
-            print(f"[{bi+1}/{len(targets)}] {cat:11} {Path(b.module_path).name:14} hidden_pass={hidden_pass} "
+            print(f"[{len(per_bundle)}/{len(targets)}] {cat:11} {Path(b.module_path).name:14} hidden_pass={hidden_pass} "
                   f"best_score={res.telemetry['best_score']} traj={res.telemetry['score_trajectory']}", flush=True)
-            _persist(args.out, per_bundle, targets, recovered, regressed, all_scores, all_labels,
-                     prec_tp, prec_fp, rec_fn, gold_accepted, buggy_rejected, n_battery)
+            _persist(args.out, per_bundle, targets)
 
     if args.g1_only:
         n = len(per_bundle)
@@ -212,14 +200,11 @@ def main() -> int:
         print(f"\n=== G1 === valid {nv}/{n} | gold_accept {ga_}/{n} | buggy_rejected {br_}/{n} | "
               f"gold_stuck_at_0.4 {stuck} | GATE {'PASS' if g1 else 'FAIL'}", flush=True)
         return 0
-    n_np = sum(1 for c, _ in targets if c == "no_progress")
-    r = _point_biserial(all_scores, all_labels)
-    decision = ("PROCEED" if (recovered >= 2 or r >= 0.3) else
-                "KILL" if (recovered == 0 and r < 0.2) else "INCONCLUSIVE")
-    print(f"\n=== PHASE 0 === recovered {recovered}/{n_np} no_progress | regressed {regressed}/3 solved | "
-          f"score<->hidden r={r} | decision={decision}", flush=True)
-    print(f"battery: gold_accepted {gold_accepted}/{n_battery}, buggy_rejected {buggy_rejected}/{n_battery}; "
-          f"proxy precision {prec_tp}/{prec_tp+prec_fp or 1}, recall {prec_tp}/{prec_tp+rec_fn or 1}", flush=True)
+    m = _metrics(per_bundle)
+    print(f"\n=== PHASE 0 === recovered {m['recovered_no_progress']}/{m['n_no_progress']} no_progress | "
+          f"regressed {m['regressed_solved']}/{m['n_solved']} solved | battery_false_positives "
+          f"{m['battery_false_positives']} | score<->hidden r={m['score_vs_hidden_point_biserial']} | "
+          f"decision={m['decision']}", flush=True)
     return 0
 
 
@@ -242,22 +227,35 @@ def _persist_g1(out, per_bundle, n_targets):
     Path(out).write_text(json.dumps(rep, indent=2) + "\n")
 
 
-def _persist(out, per_bundle, targets, recovered, regressed, scores, labels, tp, fp, fn, ga, br, nb):
-    n_np = sum(1 for c, _ in targets if c == "no_progress")
+def _metrics(per_bundle: list) -> dict:
+    """All headline metrics derived from the persisted per-bundle rows (resume-safe)."""
+    np_rows = [r for r in per_bundle if r["category"] == "no_progress"]
+    solved_rows = [r for r in per_bundle if r["category"] == "solved"]
+    recovered = sum(1 for r in np_rows if r["hidden_pass"])
+    regressed = sum(1 for r in solved_rows if not r["hidden_pass"])
+    fps = sum(1 for r in per_bundle if r.get("battery_false_positive"))
+    scores = [r["best_score"] for r in per_bundle if r.get("best_score") is not None]
+    labels = [int(r["hidden_pass"]) for r in per_bundle if r.get("best_score") is not None]
     r = _point_biserial(scores, labels)
+    valid = sum(1 for r in per_bundle if r.get("battery_valid"))
+    return {"recovered_no_progress": recovered, "n_no_progress": len(np_rows),
+            "regressed_solved": regressed, "n_solved": len(solved_rows),
+            "battery_false_positives": fps, "battery_valid": valid,
+            "score_vs_hidden_point_biserial": r,
+            "decision": ("PROCEED" if (recovered >= 2 or r >= 0.3)
+                         else "KILL" if (recovered == 0 and r < 0.2) else "INCONCLUSIVE")}
+
+
+def _persist(out, per_bundle, targets):
+    m = _metrics(per_bundle)
     rep = {
-        "experiment": "issue_replay_phase0_guided_battery",
-        "thesis": "a dense, FAIR, continuous battery score is a climbable gradient the binary hidden test never gave",
-        "n_targets": len(targets), "n_no_progress": n_np,
-        "recovered_no_progress": recovered, "regressed_solved": regressed,
-        "score_vs_hidden_point_biserial": r, "n_candidates_scored": len(scores),
-        "battery_gold_accepted": ga, "battery_buggy_rejected": br, "n_battery": nb,
-        "proxy_precision": round(tp / (tp + fp), 3) if (tp + fp) else None,
-        "proxy_recall": round(tp / (tp + fn), 3) if (tp + fn) else None,
-        "decision": ("PROCEED" if (recovered >= 2 or r >= 0.3) else "KILL" if (recovered == 0 and r < 0.2) else "INCONCLUSIVE"),
-        "kill_criterion": "0/8 recovered AND r<0.2", "proceed_criterion": ">=2/8 recovered OR r>=0.3",
+        "experiment": "issue_replay_p7_guided_battery_v2",
+        "thesis": "a discriminating-by-construction battery + search recovers no_progress bugs the binary loop could not",
+        "n_targets": len(targets), "n_done": len(per_bundle),
+        **m,
+        "total_cost_usd": round(sum(r.get("cost_usd", 0) for r in per_bundle), 4),
         "per_bundle": per_bundle,
-        "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only",
+        "evidence_tier": "live: battery-v2 in-loop oracle (spec+public+buggy only); search per --search-mode; hidden test for grading only",
     }
     Path(out).write_text(json.dumps(rep, indent=2) + "\n")
 
