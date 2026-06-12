@@ -1,0 +1,144 @@
+{
+  "n_tasks": 12,
+  "per_agent_solved": {
+    "gemini_cli": 4,
+    "claude_code": 6,
+    "codex_cli": 4
+  },
+  "per_agent_solve_rate": {
+    "gemini_cli": 0.333,
+    "claude_code": 0.5,
+    "codex_cli": 0.333
+  },
+  "best_single_agent": {
+    "agent": "claude_code",
+    "solved": 6,
+    "rate": 0.5
+  },
+  "oracle_union_solved": 6,
+  "oracle_union_rate": 0.5,
+  "escalation_cheapest_first": {
+    "solved": 6,
+    "rate": 0.5,
+    "stops_by_rung": {
+      "gemini_cli": 4,
+      "claude_code": 2,
+      "codex_cli": 0
+    },
+    "strong_agent_invocations": 6,
+    "strong_agent_invocations_vs_alwaysbest": "6/12",
+    "total_wall_s": 6036.4
+  },
+  "headline": "escalation solves 6/12 (= union 6) using codex on 6/12; best single agent claude_code solves 6/12",
+  "evidence_tier": "real SWE-bench Lite fair slice; held-out FAIL_TO_PASS grading; vendor agents subscription-metered ($0); wall-time as cost proxy",
+  "per_task": [
+    {
+      "instance_id": "pallets__flask-5063",
+      "gemini_cli": false,
+      "gemini_cli_wall": 134.5,
+      "claude_code": false,
+      "claude_code_wall": 40.2,
+      "codex_cli": false,
+      "codex_cli_wall": 247.5
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "gemini_cli": false,
+      "gemini_cli_wall": 224.1,
+      "claude_code": false,
+      "claude_code_wall": 135.3,
+      "codex_cli": false,
+      "codex_cli_wall": 215.2
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7114",
+      "gemini_cli": false,
+      "gemini_cli_wall": 497.4,
+      "claude_code": false,
+      "claude_code_wall": 411.8,
+      "codex_cli": false,
+      "codex_cli_wall": 317.5
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7228",
+      "gemini_cli": false,
+      "gemini_cli_wall": 602.3,
+      "claude_code": true,
+      "claude_code_wall": 201.8,
+      "codex_cli": false,
+      "codex_cli_wall": 353.4
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7993",
+      "gemini_cli": true,
+      "gemini_cli_wall": 152.7,
+      "claude_code": true,
+      "claude_code_wall": 137.8,
+      "codex_cli": true,
+      "codex_cli_wall": 243.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "gemini_cli": false,
+      "gemini_cli_wall": 136.7,
+      "claude_code": false,
+      "claude_code_wall": 23.8,
+      "codex_cli": false,
+      "codex_cli_wall": 55.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "gemini_cli": false,
+      "gemini_cli_wall": 502.1,
+      "claude_code": true,
+      "claude_code_wall": 476.4,
+      "codex_cli": true,
+      "codex_cli_wall": 539.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-8906",
+      "gemini_cli": false,
+      "gemini_cli_wall": 149.1,
+      "claude_code": false,
+      "claude_code_wall": 52.8,
+      "codex_cli": false,
+      "codex_cli_wall": 143.0
+    },
+    {
+      "instance_id": "pytest-dev__pytest-9359",
+      "gemini_cli": true,
+      "gemini_cli_wall": 368.9,
+      "claude_code": true,
+      "claude_code_wall": 61.7,
+      "codex_cli": false,
+      "codex_cli_wall": 253.2
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10325",
+      "gemini_cli": true,
+      "gemini_cli_wall": 348.4,
+      "claude_code": true,
+      "claude_code_wall": 33.7,
+      "codex_cli": true,
+      "codex_cli_wall": 150.1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "gemini_cli": false,
+      "gemini_cli_wall": 215.1,
+      "claude_code": false,
+      "claude_code_wall": 40.2,
+      "codex_cli": false,
+      "codex_cli_wall": 194.3
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "gemini_cli": true,
+      "gemini_cli_wall": 149.6,
+      "claude_code": true,
+      "claude_code_wall": 36.1,
+      "codex_cli": true,
+      "codex_cli_wall": 318.7
+    }
+  ]
+}
