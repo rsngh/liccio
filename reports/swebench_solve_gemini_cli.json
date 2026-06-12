@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "gemini_cli",
-  "n": 6,
+  "n": 8,
   "solved": 2,
-  "solve_rate": 0.333,
+  "solve_rate": 0.25,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -76,6 +76,30 @@
       "pass_to_pass_kept": true,
       "solved": false,
       "wall_s": 602.3
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7114",
+      "family": "pylint",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 18,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 497.4
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "family": "sphinx",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 131,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 215.1
     }
   ]
 }
