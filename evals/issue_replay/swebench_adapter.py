@@ -129,7 +129,9 @@ def prepare(inst: SweInstance, *, install_timeout: int = 480) -> Prepared:
 def _run_named(p: Prepared, names: list[str], *, timeout: int = 300) -> bool:
     if not names:
         return True
-    rc, _ = _sh([p.py, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts=", *names],
+    # NB: do NOT pass `-o addopts=` — real repos (esp. pytest-testing-pytest) require their own pytest
+    # config (testpaths/plugins) or collection INTERNALERRORs ("no tests ran"). rc 0 == all named pass.
+    rc, _ = _sh([p.py, "-m", "pytest", "-q", "-p", "no:cacheprovider", *names],
                 cwd=p.repo_dir, timeout=timeout)
     return rc == 0
 
@@ -158,12 +160,15 @@ def verify(p: Prepared, candidate_diff: str | None) -> tuple[bool, bool]:
 
 
 def check_fairness(p: Prepared) -> dict:
-    """Buggy (base+test_patch, no candidate) must FAIL FAIL_TO_PASS; gold patch must make FAIL_TO_PASS
-    pass AND keep PASS_TO_PASS passing."""
+    """Core fairness = buggy fails FAIL_TO_PASS AND gold passes FAIL_TO_PASS (the bug-specific oracle).
+    PASS_TO_PASS is only a regression GUARD and is env-flaky outside SWE-bench's Docker images, so it is
+    ADVISORY here (reported, not gating) — at candidate-grading time the guard is calibrated to the
+    gold-passing P2P subset, which can't be over-strict. Old tasks where gold doesn't pass F2P in our
+    venv (e.g. ancient requests on modern Python) are correctly excluded."""
     bug_f2p, _ = verify(p, None)
     gold_f2p, gold_p2p = verify(p, p.inst.gold_patch)
     return {"buggy_fails_f2p": not bug_f2p, "gold_passes_f2p": gold_f2p, "gold_keeps_p2p": gold_p2p,
-            "fair": (not bug_f2p) and gold_f2p and gold_p2p}
+            "fair": (not bug_f2p) and gold_f2p}
 
 
 def main() -> int:
