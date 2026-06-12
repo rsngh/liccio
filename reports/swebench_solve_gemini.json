@@ -1,0 +1,81 @@
+{
+  "experiment": "swebench_solve",
+  "agent": "gemini_cli",
+  "n": 6,
+  "solved": 2,
+  "solve_rate": 0.333,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": false,
+      "diff_lines": 0,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 603.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 21,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 192.3
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 296.6
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 98,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 187.9
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7993",
+      "family": "pylint",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 53,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 188.5
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7228",
+      "family": "pylint",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 188,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 343.9
+    }
+  ]
+}

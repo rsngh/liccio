@@ -38,13 +38,14 @@ _SOLVE_PROMPT = (
 )
 
 
-def _solve_checkout(inst: SweInstance, *, install_timeout: int = 480) -> tuple[Path, str] | None:
+def _solve_checkout(inst: SweInstance, agent: str, *, install_timeout: int = 480) -> tuple[Path, str] | None:
     """A base-commit checkout WITHOUT test_patch, in its own venv, for the agent to edit. Returns
-    (repo_dir, venv_python) or None on failure. Cached per instance under <cache>/<id>/solve."""
+    (repo_dir, venv_python) or None on failure. Scoped per (instance, agent) so concurrent agents on
+    the same task don't clobber each other's working tree (the venv is shared — same deps)."""
     work = _CACHE / inst.instance_id
-    repo = work / "solve"
+    repo = work / f"solve_{agent}"
     py = str(work / ".venv" / "bin" / "python")   # reuse the prepared venv (same deps)
-    if (work / ".solve_ready").exists() and repo.exists():
+    if (work / f".solve_{agent}_ready").exists() and repo.exists():
         _sh(["git", "reset", "--hard", "-q", "HEAD"], cwd=repo)
         _sh(["git", "clean", "-qfd"], cwd=repo)
         return repo, py
@@ -58,7 +59,7 @@ def _solve_checkout(inst: SweInstance, *, install_timeout: int = 480) -> tuple[P
     _sh(["git", "clean", "-qfdx", "-e", ".venv"], cwd=repo)
     _sh(["git", "-c", "user.email=acp@local", "-c", "user.name=acp", "commit", "-q",
          "--allow-empty", "-am", "base"], cwd=repo)
-    (work / ".solve_ready").write_text("ok")
+    (work / f".solve_{agent}_ready").write_text("ok")
     return repo, py
 
 
