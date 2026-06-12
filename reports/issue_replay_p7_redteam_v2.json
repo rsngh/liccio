@@ -68,7 +68,24 @@
       "issue": "add more IndexedSet.index() tests and fix typo in get_appare",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "9": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.0998697
+  "cost_usd": 0.10834550000000001,
+  "summary": {
+    "bundles_attempted": 10,
+    "overfit_fooled_primary": 2,
+    "gate_detected_overfit": 2,
+    "gate_detection_rate": 1.0,
+    "gold_accepted": 1,
+    "gold_false_rejection_rate": 0.5,
+    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
+    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
+  },
+  "elapsed_s": 202.3
 }
