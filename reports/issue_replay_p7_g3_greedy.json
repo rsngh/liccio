@@ -2,16 +2,16 @@
   "experiment": "issue_replay_p7_guided_battery_v2",
   "thesis": "a discriminating-by-construction battery + search recovers no_progress bugs the binary loop could not",
   "n_targets": 11,
-  "n_done": 3,
+  "n_done": 4,
   "recovered_no_progress": 1,
   "n_no_progress": 2,
-  "regressed_solved": 0,
-  "n_solved": 1,
+  "regressed_solved": 1,
+  "n_solved": 2,
   "battery_false_positives": 0,
-  "battery_valid": 2,
-  "score_vs_hidden_point_biserial": 0.954,
+  "battery_valid": 3,
+  "score_vs_hidden_point_biserial": 0.904,
   "decision": "PROCEED",
-  "total_cost_usd": 0.2202,
+  "total_cost_usd": 0.2663,
   "per_bundle": [
     {
       "category": "solved",
@@ -97,6 +97,36 @@
       "best_accept": false,
       "escalations": [],
       "cost_usd": 0.03254
+    },
+    {
+      "category": "solved",
+      "repo": "boltons",
+      "module": "timeutils.py",
+      "issue": "Fix infinite daterange issue when start and stop i",
+      "hidden_pass": false,
+      "best_score": 0.4,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "n_checks": 14,
+      "n_discriminating": 10,
+      "gold_proxy_pass": false,
+      "gold_score": 0.4,
+      "gold_accept": false,
+      "buggy_proxy_pass": false,
+      "battery_false_positive": false,
+      "focus_names": [
+        "daterange"
+      ],
+      "class_mode": false,
+      "battery_valid": true,
+      "best_accept": false,
+      "escalations": [],
+      "cost_usd": 0.046026
     }
   ],
   "evidence_tier": "live: battery-v2 in-loop oracle (spec+public+buggy only); search per --search-mode; hidden test for grading only"
