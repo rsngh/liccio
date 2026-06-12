@@ -1,20 +1,17 @@
 {
-  "experiment": "issue_replay_phase0_guided_battery",
-  "thesis": "a dense, FAIR, continuous battery score is a climbable gradient the binary hidden test never gave",
+  "experiment": "issue_replay_p7_guided_battery_v2",
+  "thesis": "a discriminating-by-construction battery + search recovers no_progress bugs the binary loop could not",
   "n_targets": 11,
-  "n_no_progress": 8,
+  "n_done": 2,
   "recovered_no_progress": 0,
+  "n_no_progress": 1,
   "regressed_solved": 0,
+  "n_solved": 1,
+  "battery_false_positives": 0,
+  "battery_valid": 1,
   "score_vs_hidden_point_biserial": 0.0,
-  "n_candidates_scored": 1,
-  "battery_gold_accepted": 1,
-  "battery_buggy_rejected": 1,
-  "n_battery": 1,
-  "proxy_precision": 1.0,
-  "proxy_recall": 1.0,
   "decision": "KILL",
-  "kill_criterion": "0/8 recovered AND r<0.2",
-  "proceed_criterion": ">=2/8 recovered OR r>=0.3",
+  "total_cost_usd": 0.1877,
   "per_bundle": [
     {
       "category": "solved",
@@ -42,7 +39,35 @@
       "best_accept": true,
       "escalations": [],
       "cost_usd": 0.012716
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "strutils.py",
+      "issue": "Fix warnings in python3.7",
+      "hidden_pass": false,
+      "best_score": 0.1,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "n_checks": 13,
+      "n_discriminating": 2,
+      "gold_proxy_pass": false,
+      "gold_score": 0.1,
+      "gold_accept": false,
+      "buggy_proxy_pass": false,
+      "battery_false_positive": false,
+      "focus_names": [],
+      "class_mode": false,
+      "battery_valid": false,
+      "best_accept": false,
+      "escalations": [],
+      "cost_usd": 0.174988
     }
   ],
-  "evidence_tier": "live: dense battery (haiku-generated, spec+public only) as in-loop oracle; gemini cheap rung; hidden test for grading only"
+  "evidence_tier": "live: battery-v2 in-loop oracle (spec+public+buggy only); search per --search-mode; hidden test for grading only"
 }
