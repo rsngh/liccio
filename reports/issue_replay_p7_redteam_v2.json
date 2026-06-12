@@ -25,7 +25,25 @@
       "issue": "fix strutils",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "3": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "4": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "5": {
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.040722
+  "cost_usd": 0.0610303
 }
