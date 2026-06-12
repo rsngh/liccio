@@ -2,16 +2,16 @@
   "experiment": "issue_replay_p7_guided_battery_v2",
   "thesis": "a discriminating-by-construction battery + search recovers no_progress bugs the binary loop could not",
   "n_targets": 11,
-  "n_done": 10,
+  "n_done": 11,
   "recovered_no_progress": 3,
-  "n_no_progress": 7,
+  "n_no_progress": 8,
   "regressed_solved": 2,
   "n_solved": 3,
   "battery_false_positives": 1,
   "battery_valid": 6,
-  "score_vs_hidden_point_biserial": 0.715,
+  "score_vs_hidden_point_biserial": 0.735,
   "decision": "PROCEED",
-  "total_cost_usd": 0.6688,
+  "total_cost_usd": 0.7947,
   "per_bundle": [
     {
       "category": "solved",
@@ -301,6 +301,34 @@
       "best_accept": true,
       "escalations": [],
       "cost_usd": 0.099363
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "ioutils.py",
+      "issue": "Fix call to non-existant attribute",
+      "hidden_pass": false,
+      "best_score": 0.1,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "n_checks": 14,
+      "n_discriminating": 0,
+      "gold_proxy_pass": false,
+      "gold_score": 0.1,
+      "gold_accept": false,
+      "buggy_proxy_pass": false,
+      "battery_false_positive": false,
+      "focus_names": [],
+      "class_mode": false,
+      "battery_valid": false,
+      "best_accept": false,
+      "escalations": [],
+      "cost_usd": 0.125852
     }
   ],
   "evidence_tier": "live: battery-v2 in-loop oracle (spec+public+buggy only); search per --search-mode; hidden test for grading only"
