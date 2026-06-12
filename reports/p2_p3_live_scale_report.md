@@ -367,3 +367,60 @@ MCTS/beam over the value function (the original Phase 2) only pays once (1)–(3
 valid and reachable. Artifacts: `reports/issue_replay_phase0_battery.json` (cheap rung),
 `reports/issue_replay_phase0_sonnet.json` (capable rung); code in `src/acp/verification/repair_battery.py`
 + `evals/issue_replay/guided_repair.py`.
+
+## P7 — discriminating-by-construction verifier + search: what recovered, what didn't, honestly
+
+P6 proved the dense battery is a real value function but flagged the binding constraint: ~64% of
+batteries were *non-discriminating* (the synthesized checks didn't exercise the subtle bug), and the
+localized-splice scaffold was too narrow for whole-class bugs. P7 built the full stack against those
+measured failures (all inference-only, research-grounded): **Otter** fail-to-pass gating, **AssertFlip**
+pin-then-invert generation, **MuTAP** mutation-sensitivity weights, an AutoVerus-style strategy library,
+a **VerMCTS**-style MCTS + beam, an in-loop model ladder (gemini→haiku→sonnet on flat trajectories), and
+**Kimi-Dev** patch×check cross-ranking. Code: `src/acp/verification/repair_battery.py` (`build_battery_v2`)
++ `battery_mutation.py`; `evals/issue_replay/guided_repair.py` (beam/mcts/ladder) + `repair_strategies.py`;
+class-scope splice in `repair_harness.py`.
+
+**What works (recovery).** On the 8 `no_progress` bundles the binary loop solved 0/8. The P7 stack
+recovers **2–3/8 reproducibly** — dictutils and formatutils every run, listutils some runs — graded by
+the held-out hidden test. dictutils is the headline: it resisted the binary loop, greedy-gemini, *and*
+greedy-sonnet in P6; the **class-scope scaffold** (promoting `update`→`OneToOne`, disambiguated by the
+issue title) plus a disc=13 battery cracked it. The value function is informative: score↔hidden
+point-biserial **r=0.735** (greedy-ladder) on the 11-bundle slice.
+
+**What didn't matter (search topology).** Greedy-ladder (3/8) **matched/beat** beam (2/8) at equal budget;
+both hit the same recoveries and the same failures. Per our pre-registered gate (beam must beat greedy to
+justify tree search), the disposition is **ship greedy-ladder + battery-v2 + class-scaffold**; beam/MCTS
+add no measurable recovery at this scale. The MCTS machinery remains for larger expansion budgets but is
+not on the shipping path.
+
+**The real bottleneck, precisely located.** Recovery tracks **battery validity** one-to-one. After five
+hardening iterations (each fixing a measured failure — package-import mismatch → import-pin + collect
+filter; guessed exact values on ambiguous specs → spec-entailment audit; hallucinated-API checks →
+error-class drop; fragile tiny check-sets → dilution to disc≥5 + validity floor disc≥3), the battery is
+*valid* on ~4/11 of these deliberately-hard bundles and **honestly flagged invalid on the rest** (disc<3 →
+score capped, never a vacuous 1.0 → the router escalates). buggy is rejected 11/11. So the system no
+longer mis-scores; where a fair verifier can't be synthesized from the spec, it says so. Some bundles are
+genuinely unsolvable from their spec (timeutils: "fix infinite `daterange(x,x)`" never states 0 vs 1
+elements — any fair oracle must guess).
+
+**Gameability (honest, small-n).** Red-teamed `build_battery_v2.accept()` vs the production
+`independent_proof` proxy on the synthesizable overfits (n=2 on the easy v1 corpus): battery-v2 **detects
+2/2** overfits (proxy 1/2) but **false-rejects gold 1/2** (proxy 0/2) — a more aggressive operating point,
+not a strict improvement. And the search produced **one reproducible battery false-positive** (ioutils#1:
+proxy score 1.0, hidden fails — a Goodhart instance, stable across greedy and beam). Conclusion: battery-v2
+is the right **in-loop gradient + escalation trigger** (a false-rejection merely forgoes early-stop; the
+search still found hidden-correct fixes), but the existing proxy stays the production **ship gate**.
+
+**Robustness lessons (ops).** Long background eval jobs were silently reclaimed on session idle (~2.4h,
+a tell-tale constant duration — not code hangs). Fixes now in place: per-phase wall-clock budgets on the
+battery build *and* candidate scoring (a hung generated check fails closed), and a **resumable** harness
+(`guided_repair_phase0.py` reloads completed per-bundle rows and skips them; metrics recomputed from the
+persisted rows). Generation stochasticity (the same bundle oscillating valid↔invalid) is damped by a
+rebuild-on-invalid retry.
+
+**Net.** P7 converts the P6 proof-of-mechanism into a working, fair, self-aware repair stack: it recovers
+subtle bugs the binary loop could not, on exactly the bundles where a fair verifier is constructible, and
+*detects-and-escalates* rather than guessing where it isn't — with the gameability cost measured and the
+gate role chosen accordingly. Artifacts: `reports/issue_replay_p7_g1.json` (battery validity),
+`issue_replay_p7_g3_beam.json` / `issue_replay_p7_g3_greedy.json` (recovery + attribution),
+`issue_replay_p7_redteam_v2.json` (gameability).
