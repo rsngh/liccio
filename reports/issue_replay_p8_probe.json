@@ -1,11 +1,11 @@
 {
   "experiment": "issue_replay_p8_pbt_probe",
-  "n_done": 3,
+  "n_done": 5,
   "summary": {
-    "n_example_nondiscriminating": 1,
-    "rescued_of_nondiscriminating": 0,
+    "n_example_nondiscriminating": 3,
+    "rescued_of_nondiscriminating": 1,
     "gate_pass": false,
-    "total_gen_cost_usd": 0.0161
+    "total_gen_cost_usd": 0.0293
   },
   "per_bundle": [
     {
@@ -43,6 +43,30 @@
       "gold_passing_discriminating": 2,
       "pbt_rescued": true,
       "gen_cost_usd": 0.005471
+    },
+    {
+      "category": "solved",
+      "module": "timeutils.py",
+      "issue": "Fix infinite daterange issue when start and stop i",
+      "example_nondiscriminating": true,
+      "n_props_generated": 6,
+      "n_admitted_discriminating": 2,
+      "n_guard": 4,
+      "gold_passing_discriminating": 1,
+      "pbt_rescued": true,
+      "gen_cost_usd": 0.007702
+    },
+    {
+      "category": "no_progress",
+      "module": "setutils.py",
+      "issue": "add more IndexedSet.index() tests and fix typo in ",
+      "example_nondiscriminating": true,
+      "n_props_generated": 6,
+      "n_admitted_discriminating": 0,
+      "n_guard": 6,
+      "gold_passing_discriminating": 0,
+      "pbt_rescued": false,
+      "gen_cost_usd": 0.005466
     }
   ]
 }
