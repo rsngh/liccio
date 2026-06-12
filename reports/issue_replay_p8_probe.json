@@ -1,11 +1,11 @@
 {
   "experiment": "issue_replay_p8_pbt_probe",
-  "n_done": 7,
+  "n_done": 8,
   "summary": {
-    "n_example_nondiscriminating": 5,
+    "n_example_nondiscriminating": 6,
     "rescued_of_nondiscriminating": 2,
     "gate_pass": false,
-    "total_gen_cost_usd": 0.0406
+    "total_gen_cost_usd": 0.0464
   },
   "per_bundle": [
     {
@@ -91,6 +91,18 @@
       "gold_passing_discriminating": 0,
       "pbt_rescued": false,
       "gen_cost_usd": 0.005146
+    },
+    {
+      "category": "solved",
+      "module": "mathutils.py",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "example_nondiscriminating": true,
+      "n_props_generated": 6,
+      "n_admitted_discriminating": 0,
+      "n_guard": 6,
+      "gold_passing_discriminating": 0,
+      "pbt_rescued": false,
+      "gen_cost_usd": 0.005789
     }
   ]
 }
