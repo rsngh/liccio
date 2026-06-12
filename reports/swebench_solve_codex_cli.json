@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "codex_cli",
-  "n": 2,
-  "solved": 1,
-  "solve_rate": 0.5,
+  "n": 10,
+  "solved": 4,
+  "solve_rate": 0.4,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -28,6 +28,102 @@
       "pass_to_pass_kept": false,
       "solved": false,
       "wall_s": 55.7
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 318.7
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 82,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 247.5
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7993",
+      "family": "pylint",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 70,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 243.4
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7228",
+      "family": "pylint",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 91,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 353.4
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7114",
+      "family": "pylint",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 20,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 317.5
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "family": "sphinx",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 135,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 194.3
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "family": "pylint",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 35,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 215.2
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10325",
+      "family": "sphinx",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 33,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 150.1
     }
   ]
 }
