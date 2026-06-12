@@ -294,15 +294,34 @@ def _build_ws(root: Path, module_path: str, module_src: str, extra_files: dict[s
 
 
 def _run_checks(module_src: str, checks: list[tuple[str, str]], *, module_path: str,
-                extra_files: dict[str, str], root: Path, tag: str) -> list[bool]:
-    """Build one workspace for `module_src`, run each check file, return per-check pass flags."""
+                extra_files: dict[str, str], root: Path, tag: str,
+                per_check_timeout: int = 15, budget_s: float = 90.0) -> list[bool]:
+    """Build one workspace for `module_src`, run each check file, return per-check pass flags.
+
+    Bounded (the stall fix): each generated check is a tiny unit test, so a short per-check timeout
+    (a hang fails closed) plus an overall budget keep candidate SCORING from stalling — a battery of
+    ~20 checks at the old 60s ceiling could take minutes/candidate and hours over a greedy run."""
+    import os
+    import subprocess
+    import time as _time
     ws = _build_ws(root, module_path, module_src, extra_files, tag)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST")}
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     out: list[bool] = []
+    deadline = _time.monotonic() + budget_s
     for i, (_kind, src) in enumerate(checks):
+        if _time.monotonic() > deadline:
+            out.append(False)            # unrun under budget -> fail closed (never a false pass)
+            continue
         name = f"test_battery_{i}.py"
         (ws / name).write_text(src)
         try:
-            out.append(_run_pytest(ws, name))
+            p = subprocess.run(["python", "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                                "-o", "addopts=", name], cwd=ws, capture_output=True, text=True,
+                               timeout=per_check_timeout, check=False, env=env)
+            out.append(p.returncode == 0)
+        except subprocess.TimeoutExpired:
+            out.append(False)            # a hanging generated check fails closed
         except Exception:  # noqa: BLE001 - malformed generated test counts as not-passed
             out.append(False)
         (ws / name).unlink(missing_ok=True)
