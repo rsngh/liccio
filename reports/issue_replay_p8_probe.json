@@ -1,11 +1,11 @@
 {
   "experiment": "issue_replay_p8_pbt_probe",
-  "n_done": 9,
+  "n_done": 10,
   "summary": {
     "n_example_nondiscriminating": 6,
     "rescued_of_nondiscriminating": 2,
     "gate_pass": false,
-    "total_gen_cost_usd": 0.0532
+    "total_gen_cost_usd": 0.0634
   },
   "per_bundle": [
     {
@@ -115,6 +115,18 @@
       "gold_passing_discriminating": 1,
       "pbt_rescued": true,
       "gen_cost_usd": 0.0068
+    },
+    {
+      "category": "no_progress",
+      "module": "ioutils.py",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "example_nondiscriminating": false,
+      "n_props_generated": 0,
+      "n_admitted_discriminating": 0,
+      "n_guard": 0,
+      "gold_passing_discriminating": 0,
+      "pbt_rescued": false,
+      "gen_cost_usd": 0.01019
     }
   ]
 }
