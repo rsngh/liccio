@@ -187,7 +187,7 @@ def main() -> int:
         except Exception:  # noqa: BLE001
             rows, done = [], set()
 
-    for i, inst in enumerate(insts):
+    for inst in insts:
         if inst.instance_id in done:
             continue
         prep = prepare(inst)
