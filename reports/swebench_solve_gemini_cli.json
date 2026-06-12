@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "gemini_cli",
-  "n": 3,
+  "n": 4,
   "solved": 1,
-  "solve_rate": 0.333,
+  "solve_rate": 0.25,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -40,6 +40,18 @@
       "pass_to_pass_kept": true,
       "solved": true,
       "wall_s": 149.6
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 60,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 134.5
     }
   ]
 }
