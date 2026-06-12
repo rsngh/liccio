@@ -36,7 +36,7 @@ def test_harden_injects_bounded_profile_after_imports() -> None:
 
 
 def test_admit_discriminating_via_input_search(tmp_path: Path) -> None:
-    # Hypothesis must FIND the input breaking commutativity on the buggy code (proven discriminating)
+    # Hypothesis must FIND the input breaking commutativity on buggy code (proven discriminating)
     disc, guard = admit_discriminating([_COMMUTE], baseline_src=_BUGGY, module_path="m.py",
                                        extra_files={}, root=tmp_path)
     assert len(disc) == 1 and len(guard) == 0
