@@ -1,11 +1,11 @@
 {
   "experiment": "issue_replay_p8_pbt_probe",
-  "n_done": 10,
+  "n_done": 11,
   "summary": {
-    "n_example_nondiscriminating": 6,
+    "n_example_nondiscriminating": 7,
     "rescued_of_nondiscriminating": 2,
     "gate_pass": false,
-    "total_gen_cost_usd": 0.0634
+    "total_gen_cost_usd": 0.0716
   },
   "per_bundle": [
     {
@@ -127,6 +127,18 @@
       "gold_passing_discriminating": 0,
       "pbt_rescued": false,
       "gen_cost_usd": 0.01019
+    },
+    {
+      "category": "no_progress",
+      "module": "ioutils.py",
+      "issue": "Fix call to non-existant attribute",
+      "example_nondiscriminating": true,
+      "n_props_generated": 6,
+      "n_admitted_discriminating": 0,
+      "n_guard": 6,
+      "gold_passing_discriminating": 0,
+      "pbt_rescued": false,
+      "gen_cost_usd": 0.008194
     }
   ]
 }
