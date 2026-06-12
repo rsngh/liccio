@@ -27,7 +27,8 @@ import venv
 from dataclasses import dataclass
 from pathlib import Path
 
-_LIGHT = ("pytest-dev/pytest", "psf/requests", "pallets/flask", "pylint-dev/pylint", "sphinx-doc/sphinx")
+_LIGHT = ("pytest-dev/pytest", "psf/requests", "pallets/flask", "pylint-dev/pylint",
+          "sphinx-doc/sphinx", "sympy/sympy")
 _CACHE = Path(os.environ.get("ACP_SWE_CACHE", "/tmp/swebench_cache"))
 
 
