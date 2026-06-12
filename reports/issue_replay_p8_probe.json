@@ -1,0 +1,36 @@
+{
+  "experiment": "issue_replay_p8_pbt_probe",
+  "n_done": 2,
+  "summary": {
+    "n_example_nondiscriminating": 1,
+    "rescued_of_nondiscriminating": 0,
+    "gate_pass": false,
+    "total_gen_cost_usd": 0.0106
+  },
+  "per_bundle": [
+    {
+      "category": "solved",
+      "module": "stringcase.py",
+      "issue": "Fix alphanumcase for Python 3",
+      "example_nondiscriminating": false,
+      "n_props_generated": 6,
+      "n_admitted_discriminating": 4,
+      "n_guard": 1,
+      "gold_passing_discriminating": 4,
+      "pbt_rescued": true,
+      "gen_cost_usd": 0.004679
+    },
+    {
+      "category": "no_progress",
+      "module": "strutils.py",
+      "issue": "Fix warnings in python3.7",
+      "example_nondiscriminating": true,
+      "n_props_generated": 6,
+      "n_admitted_discriminating": 0,
+      "n_guard": 6,
+      "gold_passing_discriminating": 0,
+      "pbt_rescued": false,
+      "gen_cost_usd": 0.00596
+    }
+  ]
+}
