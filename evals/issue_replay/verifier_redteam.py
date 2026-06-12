@@ -57,6 +57,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=10)
     ap.add_argument("--out", default="reports/issue_replay_verifier_redteam.json")
+    ap.add_argument("--battery-v2", action="store_true",
+                    help="gate with repair_battery.build_battery_v2 + accept() (P7) instead of proxy_evaluate")
     args = ap.parse_args()
     out = Path(args.out)
     model_id, rate = _MODELS["gemini"]
@@ -111,19 +113,45 @@ def main() -> int:
             # 2) independent gate: fresh checks from issue text only; consensus across {gold, overfit}
             spec = _Spec(issue_text=f"{b.issue_title}\n{b.issue_body}", public_test=b.public_test,
                          module_path=b.module_path)
-            gen = generate_checks(spec, client=client, n=6)
-            state["cost_usd"] += gen.cost_usd
-            rec["n_checks_generated"] = len(gen.checks)
-            gold_ws = build_repo(b, root / f"g{bi}", module_src=b.gold_patch)
-            over_ws = build_repo(b, root / f"o{bi}", module_src=overfit)
-            verdicts = proxy_evaluate(spec, [
-                {"id": "gold", "workspace": gold_ws, "public_pass": True, "diff": None},
-                {"id": "overfit", "workspace": over_ws, "public_pass": True, "diff": None},
-            ], root / f"p{bi}", checks=gen.checks)
-            rec["gold_pass"] = verdicts["gold"].independent_pass
-            rec["overfit_pass"] = verdicts["overfit"].independent_pass
-            rec["checks_surviving"] = verdicts["gold"].n_checks_surviving
-            rec["detected"] = (not verdicts["overfit"].independent_pass) and verdicts["gold"].independent_pass
+            if args.battery_v2:
+                # P7 gate: build the discriminating-by-construction battery from the buggy focus and
+                # require accept() — overfit must be REJECTED (it special-cases the test inputs, so
+                # it should fail the fresh discriminating checks), gold must be ACCEPTED.
+                from evals.issue_replay.repair_harness import _extract, _func_table, _localize
+                from acp.verification.repair_battery import build_battery_v2, score_candidate
+                tbl = _func_table(b.buggy)
+                fn = _localize(b.buggy, b.issue_title, b.public_test, "")
+                fsrc = _extract(b.buggy, fn, tbl) if fn else ""
+                spans = [(tbl[n][0], tbl[n][1]) for n in fn if n in tbl] or None
+                bat = build_battery_v2(spec, client=client, module_path=b.module_path,
+                                       extra_files=b.extra_files, baseline_src=b.buggy,
+                                       public_test=b.public_test, workspace_root=root / f"bw{bi}",
+                                       focus_src=fsrc, focus_spans=spans)
+                state["cost_usd"] += bat.gen_cost_usd
+                gold_sc = score_candidate(bat, candidate_src=b.gold_patch, workspace_root=root / f"gs{bi}", candidate_id="gold")
+                over_sc = score_candidate(bat, candidate_src=overfit, workspace_root=root / f"os{bi}", candidate_id="overfit")
+                rec["battery_valid"] = bat.valid
+                rec["n_checks_generated"] = len(bat.checks)
+                rec["checks_surviving"] = bat.n_discriminating
+                rec["gold_pass"] = gold_sc.accept()
+                rec["overfit_pass"] = over_sc.accept()
+                rec["overfit_score"] = over_sc.score
+                rec["gold_score"] = gold_sc.score
+                rec["detected"] = gold_sc.accept() and not over_sc.accept()
+            else:
+                gen = generate_checks(spec, client=client, n=6)
+                state["cost_usd"] += gen.cost_usd
+                rec["n_checks_generated"] = len(gen.checks)
+                gold_ws = build_repo(b, root / f"g{bi}", module_src=b.gold_patch)
+                over_ws = build_repo(b, root / f"o{bi}", module_src=overfit)
+                verdicts = proxy_evaluate(spec, [
+                    {"id": "gold", "workspace": gold_ws, "public_pass": True, "diff": None},
+                    {"id": "overfit", "workspace": over_ws, "public_pass": True, "diff": None},
+                ], root / f"p{bi}", checks=gen.checks)
+                rec["gold_pass"] = verdicts["gold"].independent_pass
+                rec["overfit_pass"] = verdicts["overfit"].independent_pass
+                rec["checks_surviving"] = verdicts["gold"].n_checks_surviving
+                rec["detected"] = (not verdicts["overfit"].independent_pass) and verdicts["gold"].independent_pass
             state["per_bundle"][key] = rec
             print(f"[#{bi}] fooled_primary=True gate: gold={rec['gold_pass']} overfit={rec['overfit_pass']} "
                   f"checks={rec['n_checks_generated']}/{rec['checks_surviving']} ({round(time.time()-t0)}s)", flush=True)
