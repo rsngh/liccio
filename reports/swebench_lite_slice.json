@@ -1,8 +1,8 @@
 {
   "experiment": "swebench_lite_slice",
   "n_loaded": 30,
-  "n_done": 46,
-  "n_prepared": 45,
+  "n_done": 47,
+  "n_prepared": 46,
   "n_fair": 12,
   "families": [
     "flask",
@@ -511,6 +511,17 @@
       "buggy_fails_f2p": true,
       "gold_passes_f2p": false,
       "gold_keeps_p2p": true,
+      "fair": false
+    },
+    {
+      "instance_id": "sympy__sympy-24066",
+      "family": "sympy",
+      "prepared": true,
+      "n_f2p": 1,
+      "n_p2p": 30,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": false,
+      "gold_keeps_p2p": false,
       "fair": false
     }
   ],
