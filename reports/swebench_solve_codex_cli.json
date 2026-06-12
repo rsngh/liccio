@@ -1,0 +1,33 @@
+{
+  "experiment": "swebench_solve",
+  "agent": "codex_cli",
+  "n": 2,
+  "solved": 1,
+  "solve_rate": 0.5,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 199,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 539.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 12,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 55.7
+    }
+  ]
+}
