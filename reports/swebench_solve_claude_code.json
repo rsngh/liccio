@@ -1,0 +1,69 @@
+{
+  "experiment": "swebench_solve",
+  "agent": "claude_code",
+  "n": 5,
+  "solved": 3,
+  "solve_rate": 0.6,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 476.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 12,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 23.8
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 36.1
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 39,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 40.2
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7993",
+      "family": "pylint",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 137.8
+    }
+  ]
+}
