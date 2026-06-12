@@ -56,7 +56,7 @@ def main() -> int:
 
     # cheapest-first escalation, oracle verify-stop (stop at the first rung that actually solves)
     esc_solved = 0
-    rung_stops = {a: 0 for a in _LADDER}
+    rung_stops = dict.fromkeys(_LADDER, 0)
     strong_calls = 0          # how often the strongest rung (codex) is invoked
     esc_wall = 0.0
     for r in rows:

@@ -82,7 +82,7 @@ def _strip_test_changes(diff: str) -> str:
 def run_agent(inst: SweInstance, agent: str, *, timeout_s: int = 420) -> tuple[str, bool, float]:
     """Run the vendor CLI agent on a base checkout; return (candidate_diff, ran, wall_s)."""
     from acp.agents.vendor_native import VendorNativeHarness
-    co = _solve_checkout(inst)
+    co = _solve_checkout(inst, agent)
     if co is None:
         return "", False, 0.0
     repo, _py = co
