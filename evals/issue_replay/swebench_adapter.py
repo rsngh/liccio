@@ -43,6 +43,7 @@ class SweInstance:
     fail_to_pass: list[str]
     pass_to_pass: list[str]
     created_at: str = ""
+    version: str = ""
 
     @property
     def family(self) -> str:
@@ -65,15 +66,15 @@ def load_lite(whitelist: tuple[str, ...] = _LIGHT, limit: int = 0, newest_first:
             problem_statement=r["problem_statement"], test_patch=r["test_patch"], gold_patch=r["patch"],
             fail_to_pass=json.loads(f2p) if isinstance(f2p, str) else list(f2p),
             pass_to_pass=json.loads(p2p) if isinstance(p2p, str) else list(p2p),
-            created_at=r.get("created_at", "")))
+            created_at=r.get("created_at", ""), version=str(r.get("version", ""))))
     out.sort(key=lambda t: t.created_at, reverse=newest_first)  # newer commits install on modern Python
     return out[:limit] if limit else out
 
 
-def _sh(cmd: list[str], *, cwd: Path | None = None, timeout: int = 300) -> tuple[int, str]:
+def _sh(cmd: list[str], *, cwd: Path | None = None, timeout: int = 300, env: dict | None = None) -> tuple[int, str]:
     try:
         p = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout,
-                           env={**os.environ, "GIT_TERMINAL_PROMPT": "0", "PYTHONDONTWRITEBYTECODE": "1"})
+                           env=env or {**os.environ, "GIT_TERMINAL_PROMPT": "0", "PYTHONDONTWRITEBYTECODE": "1"})
         return p.returncode, p.stdout + "\n" + p.stderr
     except subprocess.TimeoutExpired:
         return 124, "TIMEOUT"
@@ -88,12 +89,29 @@ class Prepared:
     note: str = ""
 
 
-def prepare(inst: SweInstance, *, install_timeout: int = 480) -> Prepared:
-    """Clone @ base_commit into a per-instance dir, build a venv, pip install -e ., apply test_patch.
-    Cached per instance_id so re-runs/agent-grading reuse it. The repo is left at base+test_patch
-    (i.e. the FAIL_TO_PASS tests present, code still buggy) — ready for a candidate patch."""
+def _spec_for(inst: SweInstance) -> dict | None:
+    """SWE-bench's pinned per-(repo,version) env spec: python, pip_packages, install, pre_install,
+    test_cmd. This is what reconstructs the env so the gold patch passes (the no-Docker fairness gap)."""
+    try:
+        from swebench.harness.constants import MAP_REPO_VERSION_TO_SPECS
+        return MAP_REPO_VERSION_TO_SPECS.get(inst.repo, {}).get(inst.version)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _venv_env(venv_dir: Path) -> dict:
+    import os
+    return {**os.environ, "PATH": f"{venv_dir}/bin:/usr/bin:/bin",
+            "GIT_TERMINAL_PROMPT": "0", "PYTHONDONTWRITEBYTECODE": "1", "VIRTUAL_ENV": str(venv_dir)}
+
+
+def prepare(inst: SweInstance, *, install_timeout: int = 900) -> Prepared:
+    """Clone @ base_commit, build the PINNED per-task env (swebench spec: python version + pinned
+    pip_packages + install cmd), apply test_patch. Cached per instance_id. Leaves the repo at
+    base+test_patch (FAIL_TO_PASS present, code still buggy) — ready for a candidate patch."""
     work = _CACHE / inst.instance_id
-    py = str(work / ".venv" / "bin" / "python")
+    venv_dir = work / ".venv"
+    py = str(venv_dir / "bin" / "python")
     stamp = work / ".prepared"
     if stamp.exists() and Path(py).exists():
         return Prepared(inst, work / "repo", py, ok=True, note="cached")
@@ -107,11 +125,27 @@ def prepare(inst: SweInstance, *, install_timeout: int = 480) -> Prepared:
     if rc:
         return Prepared(inst, repo_dir, py, ok=False, note=f"checkout failed: {log[-200:]}")
     _sh(["git", "clean", "-qfdx"], cwd=repo_dir)
-    if not Path(py).exists():
-        venv.create(work / ".venv", with_pip=True)
-    rc, log = _sh([py, "-m", "pip", "install", "-q", "-e", ".", "pytest"], cwd=repo_dir, timeout=install_timeout)
+    # build the venv at the spec's pinned python (uv fetches it); fall back to the host interpreter
+    spec = _spec_for(inst)
+    pyver = (spec or {}).get("python", "3.11")
+    import shutil as _sh_mod
+    if Path(py).exists():
+        _sh_mod.rmtree(venv_dir, ignore_errors=True)
+    rc, log = _sh(["uv", "venv", "--seed", "--python", str(pyver), str(venv_dir)], timeout=300)
+    if rc or not Path(py).exists():
+        venv.create(venv_dir, with_pip=True)   # fallback: host python
+    env = _venv_env(venv_dir)
+    _sh(["python", "-m", "pip", "install", "-q", "-U", "pip", "setuptools", "wheel"], cwd=repo_dir, timeout=300, env=env)
+    for pre in (spec or {}).get("pre_install", []) or []:
+        _sh(["bash", "-lc", pre], cwd=repo_dir, timeout=install_timeout, env=env)
+    pinned = (spec or {}).get("pip_packages") or []
+    if pinned:
+        rc, log = _sh(["python", "-m", "pip", "install", "-q", *pinned], cwd=repo_dir, timeout=install_timeout, env=env)
+    install_cmd = (spec or {}).get("install") or "python -m pip install -e ."
+    rc, log = _sh(["bash", "-lc", install_cmd], cwd=repo_dir, timeout=install_timeout, env=env)
     if rc:
         return Prepared(inst, repo_dir, py, ok=False, note=f"install failed: {log[-300:]}")
+    _sh(["python", "-m", "pip", "install", "-q", "pytest"], cwd=repo_dir, timeout=300, env=env)  # ensure runner
     (repo_dir / "_test.patch").write_text(inst.test_patch)
     rc, log = _sh(["git", "apply", "_test.patch"], cwd=repo_dir)
     if rc:
