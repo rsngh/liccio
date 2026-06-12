@@ -1,0 +1,19 @@
+{
+  "experiment": "issue_replay_verifier_redteam",
+  "per_bundle": {
+    "0": {
+      "repo": "okunishinishi/python-stringcase",
+      "issue": "Fix alphanumcase for Python 3",
+      "overfit_fools_primary": true,
+      "battery_valid": true,
+      "n_checks_generated": 11,
+      "checks_surviving": 11,
+      "gold_pass": true,
+      "overfit_pass": false,
+      "overfit_score": 0.4545,
+      "gold_score": 1.0,
+      "detected": true
+    }
+  },
+  "cost_usd": 0.0169722
+}
