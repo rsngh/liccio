@@ -2,16 +2,16 @@
   "experiment": "issue_replay_p7_guided_battery_v2",
   "thesis": "a discriminating-by-construction battery + search recovers no_progress bugs the binary loop could not",
   "n_targets": 11,
-  "n_done": 2,
-  "recovered_no_progress": 0,
-  "n_no_progress": 1,
+  "n_done": 3,
+  "recovered_no_progress": 1,
+  "n_no_progress": 2,
   "regressed_solved": 0,
   "n_solved": 1,
   "battery_false_positives": 0,
-  "battery_valid": 1,
-  "score_vs_hidden_point_biserial": 0.0,
-  "decision": "KILL",
-  "total_cost_usd": 0.1877,
+  "battery_valid": 2,
+  "score_vs_hidden_point_biserial": 0.954,
+  "decision": "PROCEED",
+  "total_cost_usd": 0.2202,
   "per_bundle": [
     {
       "category": "solved",
@@ -67,6 +67,36 @@
       "best_accept": false,
       "escalations": [],
       "cost_usd": 0.174988
+    },
+    {
+      "category": "no_progress",
+      "repo": "boltons",
+      "module": "dictutils.py",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "hidden_pass": true,
+      "best_score": 0.7231,
+      "best_proxy_pass": false,
+      "score_trajectory": [
+        0.4,
+        0.7231,
+        0.7231,
+        0.7231
+      ],
+      "n_checks": 13,
+      "n_discriminating": 13,
+      "gold_proxy_pass": false,
+      "gold_score": 0.7231,
+      "gold_accept": false,
+      "buggy_proxy_pass": false,
+      "battery_false_positive": false,
+      "focus_names": [
+        "OneToOne"
+      ],
+      "class_mode": true,
+      "battery_valid": true,
+      "best_accept": false,
+      "escalations": [],
+      "cost_usd": 0.03254
     }
   ],
   "evidence_tier": "live: battery-v2 in-loop oracle (spec+public+buggy only); search per --search-mode; hidden test for grading only"
