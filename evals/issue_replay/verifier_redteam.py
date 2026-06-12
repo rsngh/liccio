@@ -118,6 +118,7 @@ def main() -> int:
                 # require accept() — overfit must be REJECTED (it special-cases the test inputs, so
                 # it should fail the fresh discriminating checks), gold must be ACCEPTED.
                 from evals.issue_replay.repair_harness import _extract, _func_table, _localize
+
                 from acp.verification.repair_battery import build_battery_v2, score_candidate
                 tbl = _func_table(b.buggy)
                 fn = _localize(b.buggy, b.issue_title, b.public_test, "")
