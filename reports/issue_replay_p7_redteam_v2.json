@@ -49,7 +49,26 @@
       "issue": "cacheutils: (breaking change) adding the scoped argument to ",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "7": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#3",
+      "overfit_fools_primary": true,
+      "battery_valid": true,
+      "n_checks_generated": 9,
+      "checks_surviving": 4,
+      "gold_pass": false,
+      "overfit_pass": false,
+      "overfit_score": 0.2,
+      "gold_score": 0.4,
+      "detected": false
+    },
+    "8": {
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_appare",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.07100630000000001
+  "cost_usd": 0.0998697
 }
