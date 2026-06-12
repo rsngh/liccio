@@ -1,8 +1,8 @@
 {
   "experiment": "swebench_lite_slice",
   "n_loaded": 30,
-  "n_done": 66,
-  "n_prepared": 65,
+  "n_done": 68,
+  "n_prepared": 67,
   "n_fair": 12,
   "families": [
     "flask",
@@ -728,6 +728,28 @@
       "prepared": true,
       "n_f2p": 2,
       "n_p2p": 40,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": false,
+      "gold_keeps_p2p": false,
+      "fair": false
+    },
+    {
+      "instance_id": "sympy__sympy-20049",
+      "family": "sympy",
+      "prepared": true,
+      "n_f2p": 4,
+      "n_p2p": 9,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": false,
+      "gold_keeps_p2p": false,
+      "fair": false
+    },
+    {
+      "instance_id": "sympy__sympy-19487",
+      "family": "sympy",
+      "prepared": true,
+      "n_f2p": 1,
+      "n_p2p": 90,
       "buggy_fails_f2p": true,
       "gold_passes_f2p": false,
       "gold_keeps_p2p": false,
