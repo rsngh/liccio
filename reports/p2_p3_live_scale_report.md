@@ -666,3 +666,42 @@ over-specified properties a correct impl could violate. Gated by `use_pbt` (defa
   generation variance, not PBT). The direction is positive and the mechanism is fail-safe (vet never wipes
   the discriminating set; no client ⇒ exact example-only behaviour), so PBT stays default-on. Code:
   `repair_battery.build_battery_v2` (`use_pbt`), `property_checks.{generate_properties,admit_discriminating,vet_properties}`.
+
+### W2 — referee-as-selector + fair best-of-k on the cheap rung (cost lever) — code DONE, measuring
+
+The k=1 referee ladder commits with 0 false-commit but ABSTAINS heavily (missed 15/20). W2 lets the cheap
+in-process rung emit *k* candidates and the referee *select+ratify* the best, converting cheap compute into
+cheap commits. Implemented `ladder_live._attempt_k` + `_select_best`: the cheap rung samples k via
+`guided_repair` (scores by the battery, **never reads the hidden test** — so selection stays fair, unlike
+`repair_v2` which peeks it), `score_pool` applies cross-candidate guard consensus, and `_select_best` ranks
+by (referee-acceptable, disc×guard, score); the referee then ratifies. Unit-tested (acceptance dominates raw
+score; tie-break by disc×guard). **k=1 baseline (20/20):** solved 5, committed 5, **false-commit 0**, missed
+15, 1 cheap-rung commit, \$0.046/committed-correct. The k=3 arm is running (slow: the full ladder includes
+vendor-CLI rungs; resumable). **Gate:** cheap-rung commits ↑ and cost/verified-success ↓ vs k=1 with
+false-commit held at 0. Code: `ladder_live.{_attempt_k,_select_best}`, `--k`.
+
+### W3 — grow the agent pool: sonnet in-process rung (coverage ceiling) — code DONE, measuring
+
+Added `inproc_sonnet` to `RUNGS` (a second, uncorrelated in-process solver — sonnet localizes/repairs
+differently from gemini-flash, so the solvable *union* rises). `_INPROC_MODEL` maps in-process rungs to their
+repair model. This also tightened referee-mode fairness: every in-process rung now routes through
+`guided_repair` (battery-scored, hidden-test-blind) even at k=1, closing a P11 leak where the inproc rung
+used `repair_v2` (which peeks the hidden test). **Gate:** oracle-union / referee solve-rate rises at
+acceptable cost; report the per-agent complementarity either way. SWE-bench pool growth (Aider/OpenHands)
+is deferred pending vendor availability.
+
+### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE + validated, measuring
+
+The single-module battery doesn't apply to SWE-bench, so the de-saturated routing win (P9: pool union 48% vs
+best-single 32%) was only proven under an *oracle* stop. New `swebench_referee.py` decides commit/escalate on
+a multi-file diff from FAIR signals only (held-out FAIL_TO_PASS = grader): (1) **regression guard** — discover
+the repo's OWN existing tests referencing the changed modules (present at base, not the test_patch), fail iff a
+test that PASSED at base now fails on the candidate (differential, fail-closed when no baseline runs);
+(2) **reproduction** — `generate_repro`/`admit_repro` (fails-on-base) must pass on the candidate, skipped when
+none admissible; (3) **diff-debate**. Accept iff all hold. **Validated end-to-end on a cached real repo
+(`pallets__flask-5063`):** the gold patch is regression-clean (`guard_ok=True` over **127** base-passing
+tests) and a diff injecting `raise RuntimeError` is **caught** (`guard_ok=False`) — the novel mechanism works
+on real multi-file diffs. Unit-tested pure core (`changed_files`, `_changed_modules`, `decide` truth table).
+`swebench_solve` now persists `candidate_diff` text so the referee can consume real agent diffs. **Gate (25-task
+fair slice):** false-commit ≤ ~0.15 and committed-correct ≥ best single agent vs the oracle upper bound; the
+full sweep needs the solve diffs regenerated (now that the text is persisted). Code: `swebench_referee.py`.
