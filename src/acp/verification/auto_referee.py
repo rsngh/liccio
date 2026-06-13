@@ -54,20 +54,27 @@ def referee(battery: RepairBattery, candidate_src: str, *, workspace_root: Path,
                          candidate_id=candidate_id, diff=diff)
     battery_accept = sc.accept()
     mscore = float(battery.mutation_info.get("mutation_score", 0.0) or 0.0)
+    # the battery is TRUSTWORTHY (worth deciding on) iff it is valid, has enough discriminating checks,
+    # AND its checks actually kill focus-region mutants — a weak/vacuous battery (the P7/P8 ceiling)
+    # fails here and the referee abstains rather than guessing.
     mutation_validated = battery.valid and battery.n_discriminating >= min_disc and mscore >= mutation_floor
 
-    # Only spend the debate when the cheaper gates already agree the patch looks correct — debate then
-    # serves to CONFIRM (catch overfit / overrule a stray wrong check), not to rescue a failing battery.
-    if not (battery_accept and mutation_validated):
-        why = ("battery rejected" if not battery_accept else
-               f"weak battery (mutation_score {mscore:.2f} < {mutation_floor} or disc {battery.n_discriminating} < {min_disc})")
+    # hard floors the candidate must clear regardless (cheap, sound): public test passes, no adversarial
+    if not sc.public_pass or sc.adversarial_high:
         return RefereeVerdict(accept=False, battery_accept=battery_accept, mutation_score=mscore,
                               mutation_validated=mutation_validated,
-                              debate=DebateVerdict(False, 0.0, "not reached"), reason=f"abstain: {why}")
+                              debate=DebateVerdict(False, 0.0, "not reached"),
+                              reason="abstain: public-test fails or adversarial-high")
+    if not mutation_validated:   # can't trust this battery's evidence -> escalate, don't decide
+        return RefereeVerdict(accept=False, battery_accept=battery_accept, mutation_score=mscore,
+                              mutation_validated=False, debate=DebateVerdict(False, 0.0, "not reached"),
+                              reason=f"abstain: weak battery (mutation_score {mscore:.2f}<{mutation_floor} or disc {battery.n_discriminating}<{min_disc})")
 
+    # battery is trustworthy -> the DEBATE is the decider over its evidence. This lets the judge OVERRULE
+    # a stray wrong check (rescuing a gold the relaxed accept() bar rejected) AND reject an overfit the
+    # bar accepted (the critic flags input-special-casing). battery_accept is recorded, not a veto.
     dv = debate_verdict(spec, candidate_src, client=client, check_summary=_check_summary(sc),
                         diff=diff, model=debate_model)
-    accept = battery_accept and mutation_validated and dv.accept
-    return RefereeVerdict(accept=accept, battery_accept=battery_accept, mutation_score=mscore,
-                          mutation_validated=mutation_validated, debate=dv,
-                          reason=("accepted" if accept else f"debate rejected: {dv.critic_counterexample[:120] or dv.rationale[:120]}"))
+    return RefereeVerdict(accept=dv.accept, battery_accept=battery_accept, mutation_score=mscore,
+                          mutation_validated=True, debate=dv,
+                          reason=("accepted" if dv.accept else f"debate rejected: {dv.critic_counterexample[:120] or dv.rationale[:120]}"))

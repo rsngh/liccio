@@ -79,3 +79,16 @@ def test_referee_invalid_battery_abstains(tmp_path: Path) -> None:
     rv = referee(_battery(valid=False), _GOLD, workspace_root=tmp_path, candidate_id="g", diff=None,
                  client=_StubClient([]), spec=spec)
     assert not rv.accept and not rv.mutation_validated
+
+
+def test_referee_debate_is_decider_when_mutation_validated(tmp_path: Path) -> None:
+    spec = type("S", (), {"issue_text": "add must be commutative", "public_test": _PUBLIC, "module_path": "m.py"})()
+    bat = _battery(mutation_score=0.9)        # trustworthy battery
+    # debate ACCEPTS (critic finds nothing) -> referee accepts (debate is the decider)
+    yes = _StubClient(["defence", "NO DEFECT FOUND", '{"accept": true, "confidence": 0.9}'])
+    assert referee(bat, _GOLD, workspace_root=tmp_path / "a", candidate_id="g", diff=None,
+                   client=yes, spec=spec).accept
+    # same trustworthy battery, but debate REJECTS (critic names a defect) -> referee rejects
+    no = _StubClient(["defence", "FAILS on add(2,1)=1", '{"accept": false, "confidence": 0.8}'])
+    assert not referee(bat, _GOLD, workspace_root=tmp_path / "b", candidate_id="g", diff=None,
+                       client=no, spec=spec).accept
