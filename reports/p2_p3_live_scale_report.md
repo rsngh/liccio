@@ -622,3 +622,47 @@ strong-battery golds, and *abstains→escalates* instead of false-committing on 
 which is exactly the trustworthy stop-signal liccio's routing cost-win needs; a larger overfit-
 synthesizable corpus is required to nail the gold-FR number. Artifacts:
 `reports/issue_replay_referee_redteam.json`; code `debate.py`, `auto_referee.py`, `battery_mutation.py`.
+
+## P11 — referee-gated live ladder: the auto-referee as the FAIR stop (`reports/issue_replay_ladder_referee.json`)
+
+P10 proved the referee sound on a red-team; P11 runs it as the LIVE stop-signal of the escalation ladder
+(`ladder_live --referee`): per rung the auto-referee (mutation-validated battery + diff-debate) decides
+commit/escalate, and the held-out test is used **only as an offline grader** to score false-commit / missed
+/ solved — never to make the stop decision. On the 20-bundle v2 slice (run in progress, ≥12 done): **solved
+4, committed 4, false-commit 0, missed 8.** The trust axis is exactly what the routing cost-win needs — a
+**0 false-commit rate** — but the referee is *conservative*: 8 "missed" solves (a rung produced a
+hidden-passing fix the referee never committed) trace to **batteries it could not make discriminating**, so
+it abstained→escalated→ran out of rungs. That abstention-driven miss rate is the direct motivation for P12-W1.
+
+## P12 — four performance levers on the referee-gated stack (coverage, cost, trust)
+
+### W1 — PBT/Hypothesis admission wired into the battery (coverage lever) — DONE
+
+The referee's missed solves come from non-discriminating batteries: LLM-written EXAMPLE tests can't guess
+the input that triggers a subtle bug. W1 adds a **property-based phase** to `build_battery_v2`: when the
+example/flip checks leave the battery thin, generate metamorphic/invariant Hypothesis properties and admit
+only those **falsified on the buggy baseline** (proven discriminators) — letting Hypothesis *search* the
+breaking input. A property-specific **entailment vet** (`property_checks.vet_properties`) then drops
+over-specified properties a correct impl could violate. Gated by `use_pbt` (default on), fail-open.
+
+**G1 coverage gate, 11-bundle set, three paired arms (`issue_replay_p7_g1_{nopbt,pbt,pbt_tightened}.json`):**
+
+| arm | valid batteries | gold-accept | buggy rejected | false-accepts |
+|---|---|---|---|---|
+| example-only (baseline) | 6/11 | 5/11 | 11/11 | 0 |
+| PBT (raw) | 6/11 | 5/11 | 11/11 | 0 |
+| **PBT + property-vet** | **7/11** | **6/11** | 11/11 | 0 |
+
+- **The win is real and located:** `listutils` goes invalid → valid + gold-accepted via 4 admitted PBT
+  discriminators (a solve-enabling battery that example tests alone never produced), preserved through the vet.
+- **PBT does not introduce gold-rejection:** the one valid-but-gold-rejecting bundle (`strutils`) has
+  `pbt=0` in the tightened arm — the vet dropped its over-specified properties, and its gold-rejection comes
+  from EXAMPLE/flip checks on a genuinely ambiguous issue, not from PBT. The raw-PBT arm's apparent harm was
+  this same bundle; the vet exonerates PBT.
+- **No false-accepts** (buggy rejected 11/11 in every arm); the harness's absolute 9/11 GATE banner stays
+  FAIL, but the plan's **relative** gate — valid-rate and gold-accept rise vs example-only with buggy still
+  rejected and no new false-accepts — is **met (6→7 valid, 5→6 gold-accept)**.
+- **Honest limit:** single n=11 run on a stochastic generator (timeutils flips valid↔invalid across arms on
+  generation variance, not PBT). The direction is positive and the mechanism is fail-safe (vet never wipes
+  the discriminating set; no client ⇒ exact example-only behaviour), so PBT stays default-on. Code:
+  `repair_battery.build_battery_v2` (`use_pbt`), `property_checks.{generate_properties,admit_discriminating,vet_properties}`.
