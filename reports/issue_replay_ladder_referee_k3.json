@@ -5,15 +5,15 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 8,
+  "completed": 10,
   "stop_rung": {
     "inproc_repair2": 1,
     "gemini_cli": 2,
     "claude_code": 1,
     "codex_cli": 1,
-    "unsolved": 3
+    "unsolved": 5
   },
-  "elapsed_s": 4086.8,
+  "elapsed_s": 4932.2,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -391,11 +391,129 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 6
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_apparent_index, ",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.067104,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 22.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 47.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 36.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 123.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.091494,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 20.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 56.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 49.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 76.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 2
     }
   ],
   "solved": 5,
   "committed": 5,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 3
+  "missed": 5
 }
