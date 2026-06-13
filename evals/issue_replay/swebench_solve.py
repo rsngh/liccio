@@ -103,6 +103,7 @@ def solve_and_grade(inst: SweInstance, agent: str, *, timeout_s: int = 420) -> d
     f2p, p2p = verify(prep, diff) if diff.strip() else (False, True)
     return {"instance_id": inst.instance_id, "family": inst.family, "agent": agent, "ran": ran,
             "produced_diff": bool(diff.strip()), "diff_lines": len(diff.splitlines()),
+            "candidate_diff": diff,        # persist the diff text so the repo-level referee (W4) can consume it
             "fail_to_pass": f2p, "pass_to_pass_kept": p2p, "solved": bool(f2p and p2p), "wall_s": wall}
 
 
