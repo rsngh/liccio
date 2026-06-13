@@ -88,6 +88,8 @@ def main() -> int:
                     help="use build_battery_v2 (fail-to-pass gate + AssertFlip + mutation weights)")
     ap.add_argument("--g1-only", action="store_true",
                     help="G1 gate: build batteries + score gold/buggy only — no repair LLM calls")
+    ap.add_argument("--no-pbt", action="store_true",
+                    help="ablation: disable the PBT/Hypothesis phase in build_battery_v2 (example-only)")
     ap.add_argument("--search-mode", default="greedy", choices=["greedy", "beam", "mcts"])
     ap.add_argument("--ladder", action="store_true",
                     help="enable in-loop model escalation (gemini->haiku->sonnet) on flat trajectories")
@@ -134,7 +136,8 @@ def main() -> int:
                 battery = build_battery_v2(spec, client=client, module_path=b.module_path,
                                            extra_files=b.extra_files, baseline_src=b.buggy,
                                            public_test=b.public_test, workspace_root=bench,
-                                           focus_src=focus_src, focus_spans=spans)
+                                           focus_src=focus_src, focus_spans=spans,
+                                           use_pbt=not args.no_pbt)
             else:
                 battery = build_battery(spec, client=client, module_path=b.module_path,
                                         extra_files=b.extra_files, baseline_src=b.buggy,
