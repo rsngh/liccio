@@ -73,7 +73,17 @@ def _spec_focus(b: IssueReplayTask):
 def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path | None = None,
                referee: bool = False, client=None) -> dict:
     per_bundle = []
+    done_keys: set = set()
+    if out is not None and out.exists():        # resume (container reclaims idle jobs): skip done bundles
+        try:
+            per_bundle = json.loads(out.read_text()).get("per_bundle", [])
+            done_keys = {(r["repo"], r["issue"]) for r in per_bundle}
+            print(f"resume: {len(done_keys)} bundles already done", flush=True)
+        except Exception:  # noqa: BLE001
+            per_bundle, done_keys = [], set()
     stop_rung: dict[str, int] = dict.fromkeys([*RUNGS, "unsolved"], 0)
+    for r in per_bundle:                         # rebuild stop-rung tally from resumed rows
+        stop_rung[r.get("solved_at", "unsolved")] = stop_rung.get(r.get("solved_at", "unsolved"), 0) + 1
     t0 = time.time()
     import tempfile
 
@@ -111,6 +121,8 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
     with tempfile.TemporaryDirectory(prefix="ladder_live_") as d:
         root = Path(d)
         for bi, b in enumerate(bundles):
+            if (b.repo_name, b.issue_title[:70]) in done_keys:
+                continue
             hint = ""
             path: list[dict] = []
             solved_at = "unsolved"
