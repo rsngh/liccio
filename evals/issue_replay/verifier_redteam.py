@@ -132,11 +132,16 @@ def main() -> int:
                                        focus_src=fsrc, focus_spans=spans)
                 state["cost_usd"] += bat.gen_cost_usd
                 if args.referee:
+                    import difflib
+
                     from acp.verification.auto_referee import referee
+                    def _diff(cand: str) -> str:
+                        return "".join(difflib.unified_diff(b.buggy.splitlines(keepends=True),
+                                                            cand.splitlines(keepends=True), "buggy", "proposed"))
                     gold_rv = referee(bat, b.gold_patch, workspace_root=root / f"gs{bi}", candidate_id="gold",
-                                      diff=None, client=client, spec=spec)
+                                      diff=_diff(b.gold_patch), client=client, spec=spec)
                     over_rv = referee(bat, overfit, workspace_root=root / f"os{bi}", candidate_id="overfit",
-                                      diff=None, client=client, spec=spec)
+                                      diff=_diff(overfit), client=client, spec=spec)
                     rec["mutation_score"] = round(float(bat.mutation_info.get("mutation_score", 0.0) or 0.0), 3)
                     rec["gold_pass"] = gold_rv.accept
                     rec["overfit_pass"] = over_rv.accept

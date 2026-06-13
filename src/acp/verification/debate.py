@@ -30,15 +30,18 @@ class DebateVerdict:
 _PROPOSER = (
     "You are defending a proposed code fix. In <=6 sentences, argue concretely that it CORRECTLY resolves "
     "the issue: what it changes and why that matches the spec, and address the failing checks (if any) as "
-    "false alarms only if you can justify it. Be specific; do not hand-wave.\n\n"
-    "ISSUE:\n{issue}\n\nPROPOSED FIX:\n```python\n{cand}\n```\n\nINDEPENDENT CHECK RESULTS:\n{checks}\n"
+    "false alarms only if you can justify it. Be specific; do not hand-wave. The {label} below may be a "
+    "diff or an excerpt — judge the CHANGE, and do NOT treat an excerpt/diff as 'incomplete code'.\n\n"
+    "ISSUE:\n{issue}\n\n{label}:\n```\n{cand}\n```\n\nINDEPENDENT CHECK RESULTS:\n{checks}\n"
 )
 _CRITIC = (
     "You are a skeptical reviewer trying to PROVE this fix is wrong or merely overfit. Give the single "
     "strongest concrete objection in <=6 sentences: name an input on which it would produce a wrong "
     "result, a spec requirement it violates, or evidence it special-cases the tests instead of fixing "
-    "the cause. If you genuinely cannot find a real defect, say 'NO DEFECT FOUND'.\n\n"
-    "ISSUE:\n{issue}\n\nPROPOSED FIX:\n```python\n{cand}\n```\n\nINDEPENDENT CHECK RESULTS:\n{checks}\n"
+    "the cause. The {label} below may be a diff or an excerpt — judge the CHANGE only; do NOT object that "
+    "the code is 'truncated/incomplete' (that is just the view). If you cannot find a real behavioural "
+    "defect, say 'NO DEFECT FOUND'.\n\n"
+    "ISSUE:\n{issue}\n\n{label}:\n```\n{cand}\n```\n\nINDEPENDENT CHECK RESULTS:\n{checks}\n"
     "{adversarial}PROPOSER'S DEFENCE:\n{defence}\n"
 )
 _JUDGE = (
@@ -62,7 +65,12 @@ def debate_verdict(spec, candidate_src: str, *, client, check_summary: str, diff
     if client is None:
         return DebateVerdict(accept=False, confidence=0.0, rationale="no client (fail-closed)")
     issue = getattr(spec, "issue_text", str(spec))[:4000]
-    cand = candidate_src[:20000]   # don't truncate real modules mid-function (a false "incomplete" tell)
+    # Prefer the DIFF as the artifact under review — compact and complete (never truncated mid-function,
+    # which on large real modules produced false 'incomplete code' rejections of correct fixes).
+    if diff and diff.strip():
+        cand, label = diff[:16000], "THE CHANGE (unified diff, buggy -> proposed)"
+    else:
+        cand, label = candidate_src[:20000], "PROPOSED FIX (module excerpt)"
     adversarial = ""
     if diff:
         try:
@@ -75,8 +83,8 @@ def debate_verdict(spec, candidate_src: str, *, client, check_summary: str, diff
         except Exception:  # noqa: BLE001
             adversarial = ""
     try:
-        defence = _ask(client, model, _PROPOSER.format(issue=issue, cand=cand, checks=check_summary))
-        objection = _ask(client, model, _CRITIC.format(issue=issue, cand=cand, checks=check_summary,
+        defence = _ask(client, model, _PROPOSER.format(issue=issue, cand=cand, label=label, checks=check_summary))
+        objection = _ask(client, model, _CRITIC.format(issue=issue, cand=cand, label=label, checks=check_summary,
                                                        adversarial=adversarial, defence=defence))
         verdict_txt = _ask(client, model, _JUDGE.format(issue=issue, defence=defence,
                                                         objection=objection, checks=check_summary), max_tokens=300)
