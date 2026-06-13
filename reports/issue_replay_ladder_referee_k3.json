@@ -5,16 +5,16 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 16,
+  "completed": 17,
   "stop_rung": {
     "inproc_repair2": 2,
     "inproc_sonnet": 1,
     "gemini_cli": 3,
     "claude_code": 1,
     "codex_cli": 1,
-    "unsolved": 8
+    "unsolved": 9
   },
-  "elapsed_s": 1962.1,
+  "elapsed_s": 2449.8,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -804,11 +804,82 @@
       "commit_hidden_pass": false,
       "battery_valid": true,
       "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.099945,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 24.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.165274,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 41.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 80.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 39.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 157.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
     }
   ],
   "solved": 8,
   "committed": 8,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 8
+  "missed": 9
 }
