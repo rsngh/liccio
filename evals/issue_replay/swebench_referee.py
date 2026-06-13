@@ -125,8 +125,10 @@ def _per_test_outcomes(repo: Path, py: str, test_files: list[str], *, timeout: i
     env = _venv_env(Path(py).parent.parent)
     try:
         import subprocess
-        p = subprocess.run([py, "-m", "pytest", "-p", "no:cacheprovider", "--tb=no", "-q",
-                            "-rN", "--no-header", *test_files],
+        # -v prints one "nodeid PASSED|FAILED|ERROR" line per test (quiet mode only prints dots,
+        # which carry no per-test outcome to diff base-vs-candidate against)
+        p = subprocess.run([py, "-m", "pytest", "-p", "no:cacheprovider", "--tb=no", "-v",
+                            "--no-header", *test_files],
                            cwd=repo, capture_output=True, text=True, timeout=timeout, env=env)
     except Exception:  # noqa: BLE001
         return None
