@@ -5,15 +5,15 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 5,
+  "completed": 6,
   "stop_rung": {
     "inproc_repair2": 1,
     "gemini_cli": 1,
     "claude_code": 0,
     "codex_cli": 1,
-    "unsolved": 2
+    "unsolved": 3
   },
-  "elapsed_s": 1877.5,
+  "elapsed_s": 2552.8,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -250,11 +250,70 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 11
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.156281,
+          "hinted": false,
+          "n_candidates": 3,
+          "elapsed_s": 170.3,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe diff deletes ~460 lines of functional code including entire classes (`Cac",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 74.9,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix fails to make any of the 4 discriminating checks pass (0/5 w",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 70.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix adds a redundant `super(LRI, self).__setitem__(key, value)` call in t",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 95.4,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest concrete objection is:\n\n**All four discriminating checks (disc_3\u2013disc_6) still fail ident",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
     }
   ],
   "solved": 3,
   "committed": 3,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 2
+  "missed": 3
 }
