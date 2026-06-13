@@ -179,6 +179,8 @@ def sensitivity_weights(baseline_src: str, checks: list[tuple[str, str]],
     if not mutants:
         return [1.0] * n, info
     flips = [0] * n
+    disc_idx = [j for j in range(n) if not baseline_pass[j]]  # discriminating checks (baseline fails)
+    n_killed = 0                                               # mutants caught by >=1 discriminating check
     deadline = time.monotonic() + time_budget_s
     for m in mutants:
         if time.monotonic() > deadline:
@@ -192,8 +194,12 @@ def sensitivity_weights(baseline_src: str, checks: list[tuple[str, str]],
         for j in range(n):
             if res[j] != baseline_pass[j]:
                 flips[j] += 1
+        if any(res[j] != baseline_pass[j] for j in disc_idx):  # a discriminating check reacted
+            n_killed += 1
     top = max(flips)
     info["flips"] = flips
+    info["n_mutants_killed"] = n_killed
+    info["mutation_score"] = round(n_killed / info["n_runs_ok"], 3) if info["n_runs_ok"] else 0.0
     if top == 0 or info["n_runs_ok"] == 0:
         return [1.0] * n, info   # no signal -> don't punish anyone
     return [max(_EPS, f / top) for f in flips], info
