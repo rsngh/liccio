@@ -30,7 +30,11 @@ from pathlib import Path
 from evals.issue_replay.replay_runner import verify
 from evals.issue_replay.replay_task import IssueReplayTask
 
-RUNGS = ("inproc_repair2", "gemini_cli", "claude_code", "codex_cli")
+RUNGS = ("inproc_repair2", "inproc_sonnet", "gemini_cli", "claude_code", "codex_cli")
+
+# in-process rungs and their repair model (P12 W3: a second, uncorrelated in-process solver grows the
+# pool's solvable union — sonnet localizes/repairs differently from gemini-flash)
+_INPROC_MODEL = {"inproc_repair2": "gemini", "inproc_sonnet": "sonnet"}
 
 
 def _unified(buggy: str, produced: str) -> str:
@@ -46,11 +50,11 @@ def _brief(rung: str, buggy: str, attempt: str, failure: str, *, cap: int = 40) 
 
 
 def _attempt(rung: str, task: IssueReplayTask, root: Path, hint: str) -> tuple[str, float]:
-    if rung == "inproc_repair2":
+    if rung in _INPROC_MODEL:
         from evals.issue_replay.repair_v2 import repair_v2
         from evals.issue_replay.run import _MODELS
-        produced, cost, _ = repair_v2(task, root, model_id=_MODELS["gemini"][0],
-                                      rate=_MODELS["gemini"][1])
+        mk = _INPROC_MODEL[rung]
+        produced, cost, _ = repair_v2(task, root, model_id=_MODELS[mk][0], rate=_MODELS[mk][1])
         return produced, cost
     from evals.issue_replay.run import _produce_vendor
     produced, cost, _ = _produce_vendor(task, rung, root, hint=hint)
@@ -72,15 +76,18 @@ def _attempt_k(rung: str, task: IssueReplayTask, root: Path, hint: str, *, k: in
     battery — it NEVER reads the hidden test, so selection stays fair — then score_pool applies
     cross-candidate guard consensus and _select_best picks the candidate the referee then ratifies.
     Vendor rungs / k<=1 fall back to a single fair attempt. Returns (selected_src, cost, n_candidates)."""
-    if rung != "inproc_repair2" or k <= 1 or battery is None:
-        produced, cost = _attempt(rung, task, root, hint)
+    if rung not in _INPROC_MODEL or battery is None:
+        produced, cost = _attempt(rung, task, root, hint)      # vendor rungs (k=1)
         return produced, cost, 1
+    # in-process rung in referee mode: ALWAYS use guided_repair (scores by battery, NEVER reads the
+    # hidden test) so selection stays fair even at k=1 (repair_v2's internal loop peeks the hidden test)
     from evals.issue_replay.guided_repair import guided_repair
     from evals.issue_replay.run import _MODELS
 
     from acp.verification.repair_battery import score_pool
-    res = guided_repair(task, root / "gr", model_id=_MODELS["gemini"][0], rate=_MODELS["gemini"][1],
-                        client=client, search_mode="greedy", k=k, rounds=2, battery=battery,
+    mk = _INPROC_MODEL[rung]
+    res = guided_repair(task, root / "gr", model_id=_MODELS[mk][0], rate=_MODELS[mk][1],
+                        client=client, search_mode="greedy", k=max(k, 1), rounds=2, battery=battery,
                         record_candidates=True)
     cands = res.telemetry.get("candidates", [])
     if not cands:
