@@ -135,8 +135,8 @@ def main() -> int:
                     import difflib
 
                     from acp.verification.auto_referee import referee
-                    def _diff(cand: str) -> str:
-                        return "".join(difflib.unified_diff(b.buggy.splitlines(keepends=True),
+                    def _diff(cand: str, buggy: str = b.buggy) -> str:
+                        return "".join(difflib.unified_diff(buggy.splitlines(keepends=True),
                                                             cand.splitlines(keepends=True), "buggy", "proposed"))
                     gold_rv = referee(bat, b.gold_patch, workspace_root=root / f"gs{bi}", candidate_id="gold",
                                       diff=_diff(b.gold_patch), client=client, spec=spec)
