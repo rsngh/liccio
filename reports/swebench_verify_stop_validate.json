@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_verify_stop",
-  "n": 2,
-  "n_with_admitted_repro": 2,
+  "n": 3,
+  "n_with_admitted_repro": 3,
   "n_discriminating": 0,
-  "total_gen_cost_usd": 0.032,
+  "total_gen_cost_usd": 0.0481,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -21,6 +21,16 @@
       "n_repros": 3,
       "n_admitted": 3,
       "gen_cost_usd": 0.016055,
+      "verified_on_gold": false,
+      "verified_on_buggy": false,
+      "repro_discriminates": false
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "n_repros": 3,
+      "n_admitted": 3,
+      "gen_cost_usd": 0.016089,
       "verified_on_gold": false,
       "verified_on_buggy": false,
       "repro_discriminates": false
