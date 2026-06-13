@@ -182,7 +182,12 @@ def _run_probe(repo_dir: Path, py: str, probe_src: str, *, timeout: int = 90) ->
     try:
         p = subprocess.run([py, "_acp_probe.py"], cwd=repo_dir, capture_output=True, text=True, timeout=timeout, env=env)
         out = (p.stdout or "").strip()
-        return out or None
+        if not out:
+            return None
+        # normalize non-deterministic noise (object ids, set ordering) so only real behaviour change counts
+        import re as _re
+        out = _re.sub(r"0x[0-9a-fA-F]+", "0xADDR", out)
+        return "\n".join(sorted(out.splitlines()))
     except subprocess.TimeoutExpired:
         return None
     finally:
@@ -282,16 +287,16 @@ def main() -> int:
 def _persist(out: str, rows: list) -> None:
     disc = [r for r in rows if r.get("repro_discriminates")]
     Path(out).write_text(json.dumps({"experiment": "swebench_verify_stop", "n": len(rows),
-                                     "n_with_admitted_repro": sum(1 for r in rows if r["n_admitted"]),
+                                     "n_signal_available": sum(1 for r in rows if r.get("n_admitted") or r.get("probe_runs_on_buggy")),
                                      "n_discriminating": len(disc),
                                      "total_gen_cost_usd": round(sum(r["gen_cost_usd"] for r in rows), 4),
                                      "per_task": rows}, indent=2) + "\n")
 
 
 def _summary(rows: list) -> None:
-    adm = sum(1 for r in rows if r["n_admitted"])
+    avail = sum(1 for r in rows if r.get("n_admitted") or r.get("probe_runs_on_buggy"))
     disc = sum(1 for r in rows if r.get("repro_discriminates"))
-    print(f"\n=== VERIFY-STOP === {len(rows)} tasks | admitted repro {adm} | discriminates gold-vs-buggy {disc} "
+    print(f"\n=== VERIFY-STOP === {len(rows)} tasks | signal available {avail} | discriminates gold-vs-buggy {disc} "
           f"=> fair stop signal available on {disc}/{len(rows)}", flush=True)
 
 
