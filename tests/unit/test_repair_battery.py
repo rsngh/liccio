@@ -5,11 +5,13 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+from acp.verification import property_checks, repair_battery
 from acp.verification.battery_mutation import gen_mutants, sensitivity_weights
 from acp.verification.repair_battery import (
     BatteryScore,
     RepairBattery,
     _keep_by_baseline,
+    build_battery_v2,
     score_candidate,
 )
 
@@ -80,6 +82,69 @@ def test_sensitivity_weights_flag_insensitive_checks(tmp_path: Path) -> None:
     assert info["n_mutants"] > 0
     # the a-b -> a+b mutant flips the discriminating check to PASS; junk never reacts
     assert weights[0] > weights[1]
+
+
+class _Spec:
+    def __init__(self) -> None:
+        self.issue_text = "add(a, b) should return the sum a + b"
+        self.public_test = _PUBLIC
+        self.module_path = "m.py"
+
+
+# three distinct metamorphic properties, each FALSIFIED by the a-b bug but satisfied by a+b gold
+_P_COMMUTE = (
+    "from hypothesis import given, strategies as st\nimport m\n"
+    "@given(st.integers(min_value=-50, max_value=50), st.integers(min_value=-50, max_value=50))\n"
+    "def test_commute(a, b):\n    assert m.add(a, b) == m.add(b, a)\n"
+)
+_P_SHIFT = (   # add(a, b-1) + 1 == add(a, b) on gold; on buggy a-(b-1)+1 = a-b+2 != a-b
+    "from hypothesis import given, strategies as st\nimport m\n"
+    "@given(st.integers(min_value=-50, max_value=50), st.integers(min_value=-50, max_value=50))\n"
+    "def test_shift(a, b):\n    assert m.add(a, b - 1) + 1 == m.add(a, b)\n"
+)
+_P_DIFF = (   # add(a,b)-add(a,c) == b-c on gold; on buggy (a-b)-(a-c) = c-b
+    "from hypothesis import given, strategies as st\nimport m\n"
+    "@given(st.integers(min_value=-50, max_value=50), st.integers(min_value=-50, max_value=50),\n"
+    "       st.integers(min_value=-50, max_value=50))\n"
+    "def test_diff(a, b, c):\n    assert m.add(a, b) - m.add(a, c) == b - c\n"
+)
+
+
+def test_pbt_phase_admits_discriminating_props_and_gold_accepts(tmp_path, monkeypatch) -> None:
+    # P12 W1: when example/flip generation leaves the battery thin, the PBT phase lets Hypothesis
+    # search the inputs that break a property — admitting only those FALSIFIED on buggy — so the
+    # battery becomes valid and the gold fix still accepts (buggy must not).
+    monkeypatch.setattr(repair_battery, "_generate", lambda *a, **k: ([], 0.0))  # no example checks
+    monkeypatch.setattr(repair_battery, "_entailment_filter", lambda *a, **k: ([], 0.0))  # no flags
+    monkeypatch.setattr(property_checks, "generate_properties",
+                        lambda *a, **k: ([_P_COMMUTE, _P_SHIFT, _P_DIFF], 0.0))
+    bat = build_battery_v2(_Spec(), client=object(), module_path="m.py", extra_files={},
+                           baseline_src=_BUGGY, public_test=_PUBLIC,
+                           workspace_root=tmp_path / "b", focus_src=_BUGGY,
+                           mutant_cap=6, rebuilds_on_invalid=0)
+    assert any(k == "pbt" for k, _ in bat.checks)      # PBT phase wired into the battery
+    assert bat.n_discriminating >= 3 and bat.valid     # proven discriminators -> valid
+    gold = "def add(a, b):\n    return a + b\n"
+    gsc = score_candidate(bat, candidate_src=gold, workspace_root=tmp_path / "g",
+                          candidate_id="g")
+    assert gsc.accept()
+    bsc = score_candidate(bat, candidate_src=_BUGGY, workspace_root=tmp_path / "x",
+                          candidate_id="x")
+    assert not bsc.accept()
+
+
+def test_pbt_phase_off_skips_property_search(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(repair_battery, "_generate", lambda *a, **k: ([], 0.0))
+    monkeypatch.setattr(repair_battery, "_entailment_filter", lambda *a, **k: ([], 0.0))
+    called = {"n": 0}
+    def _spy(*a, **k):
+        called["n"] += 1
+        return ([_P_COMMUTE], 0.0)
+    monkeypatch.setattr(property_checks, "generate_properties", _spy)
+    build_battery_v2(_Spec(), client=object(), module_path="m.py", extra_files={},
+                     baseline_src=_BUGGY, public_test=_PUBLIC, workspace_root=tmp_path / "b",
+                     focus_src=_BUGGY, mutant_cap=4, rebuilds_on_invalid=0, use_pbt=False)
+    assert called["n"] == 0       # use_pbt=False fully gates the property search off
 
 
 def test_fail_to_pass_gate(tmp_path: Path) -> None:

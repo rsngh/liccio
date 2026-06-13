@@ -476,7 +476,7 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
                      n_example: int = 10, n_property: int = 4, n_invert: int = 6,
                      max_regen_rounds: int = 2, mutant_cap: int = 16,
                      min_disc: int = 5, model: str = "claude-haiku-4-5",
-                     rebuilds_on_invalid: int = 1) -> RepairBattery:
+                     use_pbt: bool = True, rebuilds_on_invalid: int = 1) -> RepairBattery:
     """build_battery_v2 with variance control (P7 G3 finding): generation is stochastic — the same
     bundle oscillates useful<->invalid across builds (mathutils/ioutils were useful in one run,
     invalid the next, costing recoveries). An invalid battery triggers up to `rebuilds_on_invalid`
@@ -490,7 +490,7 @@ def build_battery_v2(spec: SpecLike, *, client, module_path: str, extra_files: d
             baseline_src=baseline_src, public_test=public_test, workspace_root=workspace_root,
             focus_src=focus_src, focus_spans=focus_spans, n_example=n_example,
             n_property=n_property, n_invert=n_invert, max_regen_rounds=max_regen_rounds,
-            mutant_cap=mutant_cap, min_disc=min_disc, model=model)
+            mutant_cap=mutant_cap, min_disc=min_disc, model=model, use_pbt=use_pbt)
         total_cost += bat.gen_cost_usd
         if best is None or bat.n_discriminating > best.n_discriminating:
             best = bat
@@ -506,7 +506,8 @@ def _build_battery_v2_once(spec: SpecLike, *, client, module_path: str, extra_fi
                      focus_src: str = "", focus_spans: list[tuple[int, int]] | None = None,
                      n_example: int = 10, n_property: int = 4, n_invert: int = 6,
                      max_regen_rounds: int = 2, mutant_cap: int = 16,
-                     min_disc: int = 5, model: str = "claude-haiku-4-5") -> RepairBattery:
+                     min_disc: int = 5, model: str = "claude-haiku-4-5",
+                     use_pbt: bool = True) -> RepairBattery:
     """Discriminating-by-construction battery (P7 W1). On top of v1's import-pin + collect filter:
 
     * Otter fail-to-pass gate — while the battery has <2 discriminating checks, regenerate showing
@@ -567,6 +568,23 @@ def _build_battery_v2_once(spec: SpecLike, *, client, module_path: str, extra_fi
                                  root=workspace_root, kind="flip")
         checks += kept
         baseline_pass += [False] * len(kept)
+
+    # PBT phase (P12 W1): when EXAMPLE/flip tests still left the battery thin, let Hypothesis SEARCH the
+    # inputs that break a metamorphic/invariant property. Admitted ONLY when the property is FALSIFIED on
+    # the buggy baseline (proven discriminator) — properties that hold become guards. This is the lever
+    # for the bugs whose triggering input the LLM can't guess by hand (P7's non-discriminating ~64%).
+    if use_pbt and n_disc() < min_disc + 2:
+        from acp.verification.property_checks import (  # lazy: property_checks imports from this module
+            admit_discriminating,
+            generate_properties,
+        )
+        props, c = generate_properties(spec, client=client, model=model, n_prop=n_property, focus=focus)
+        cost += c
+        pbt_disc, pbt_guard = admit_discriminating(
+            props, baseline_src=baseline_src, module_path=module_path,
+            extra_files=extra_files, root=workspace_root, tag="pbt")
+        checks += pbt_disc + pbt_guard
+        baseline_pass += [False] * len(pbt_disc) + [True] * len(pbt_guard)
 
     # entailment self-filter: drop discriminating checks whose expectations are guesses the spec
     # never states (G1 finding: ambiguous issues -> plausible-but-wrong exact values fail the true fix)
