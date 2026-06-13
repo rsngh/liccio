@@ -70,7 +70,25 @@
       "issue": "add more IndexedSet.index() tests and fix typo in get_appare",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "9": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "10": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "11": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.10936720000000001
+  "cost_usd": 0.13532270000000002
 }
