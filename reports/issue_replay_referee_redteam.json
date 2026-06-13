@@ -1,16 +1,20 @@
 {
   "experiment": "issue_replay_verifier_redteam",
-  "per_bundle": {},
-  "cost_usd": 0.0,
-  "summary": {
-    "bundles_attempted": 0,
-    "overfit_fooled_primary": 0,
-    "gate_detected_overfit": 0,
-    "gate_detection_rate": null,
-    "gold_accepted": 0,
-    "gold_false_rejection_rate": null,
-    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
-    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
+  "per_bundle": {
+    "0": {
+      "repo": "okunishinishi/python-stringcase",
+      "issue": "Fix alphanumcase for Python 3",
+      "overfit_fools_primary": true,
+      "mutation_score": 0.0,
+      "gold_pass": true,
+      "overfit_pass": false,
+      "gold_reason": "accepted",
+      "overfit_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed change replaces all algorithmic implementations with hardcoded lookup tables that",
+      "battery_valid": true,
+      "n_checks_generated": 8,
+      "checks_surviving": 3,
+      "detected": true
+    }
   },
-  "elapsed_s": 0.0
+  "cost_usd": 0.0165322
 }
