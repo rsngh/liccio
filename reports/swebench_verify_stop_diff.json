@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_verify_stop",
-  "n": 2,
-  "n_signal_available": 2,
+  "n": 4,
+  "n_signal_available": 4,
   "n_discriminating": 0,
-  "total_gen_cost_usd": 0.0136,
+  "total_gen_cost_usd": 0.025,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -21,6 +21,24 @@
       "gen_cost_usd": 0.006734,
       "gold_diverges": false,
       "buggy_diverges": false,
+      "repro_discriminates": false
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "probe_runs_on_buggy": true,
+      "gen_cost_usd": 0.004997,
+      "gold_diverges": true,
+      "buggy_diverges": true,
+      "repro_discriminates": false
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "probe_runs_on_buggy": true,
+      "gen_cost_usd": 0.006401,
+      "gold_diverges": true,
+      "buggy_diverges": true,
       "repro_discriminates": false
     }
   ]
