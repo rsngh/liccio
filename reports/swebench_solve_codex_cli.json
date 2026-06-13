@@ -1,0 +1,81 @@
+{
+  "experiment": "swebench_solve",
+  "agent": "codex_cli",
+  "n": 6,
+  "solved": 1,
+  "solve_rate": 0.167,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 74,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 319.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 12,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 125.7
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 32,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 141.3
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 88,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 149.8
+    },
+    {
+      "instance_id": "pallets__flask-4992",
+      "family": "flask",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 33,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 162.0
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "family": "sphinx",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 134,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 168.7
+    }
+  ]
+}
