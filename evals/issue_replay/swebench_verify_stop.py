@@ -145,12 +145,83 @@ def verify_stop(inst: SweInstance, candidate_diff: str, admitted: list[str]) -> 
         _sh(["git", "clean", "-qfd"], cwd=repo)
 
 
+# ---- DIFFERENTIAL verify-stop (the salvage for absolute-repro's 0/6) -------------------------------
+# Absolute repros fail because the LLM guesses the wrong *correct* value. The differential signal needs
+# no correct value: capture the buggy output on the issue-implicated inputs, and a candidate is
+# "verified" iff its behaviour DIVERGES from buggy there (the fix changed the implicated behaviour).
+# Trade-off: it false-commits on wrong-but-different fixes — measured against the held-out grader.
+_PROBE_PROMPT = (
+    "Write a STANDALONE python script (no pytest, no asserts) that exercises the behaviour the issue "
+    "describes: import the package, call the affected API on the specific inputs the issue implicates, "
+    "and `print(repr(result))` for each (wrap each in try/except and print 'RAISES <ExcType>' on error). "
+    "Deterministic output only. Return ONLY the script as one ```python block.\n\nREPO: {repo}\n\nISSUE:\n{problem}\n"
+)
+
+
+def generate_probe(inst: SweInstance, *, client, model: str = "claude-haiku-4-5") -> tuple[str, float]:
+    if client is None:
+        return "", 0.0
+    try:
+        msg = client.messages.create(model=model, max_tokens=1200,
+                                     messages=[{"role": "user", "content": _PROBE_PROMPT.format(repo=inst.repo, problem=inst.problem_statement[:6000])}])
+        text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+        u = getattr(msg, "usage", None)
+        cost = round((getattr(u, "input_tokens", 0) or 0) / 1e6 + (getattr(u, "output_tokens", 0) or 0) * 5 / 1e6, 6)
+        body = text.split("```")[1] if "```" in text else text
+        body = body[7:] if body.startswith("python") else body
+        return body, cost
+    except Exception:  # noqa: BLE001
+        return "", 0.0
+
+
+def _run_probe(repo_dir: Path, py: str, probe_src: str, *, timeout: int = 90) -> str | None:
+    """Run the probe script; return its stdout (the captured behaviour) or None if it can't run."""
+    f = repo_dir / "_acp_probe.py"
+    f.write_text(probe_src)
+    env = _venv_env(Path(py).parent.parent)
+    try:
+        p = subprocess.run([py, "_acp_probe.py"], cwd=repo_dir, capture_output=True, text=True, timeout=timeout, env=env)
+        out = (p.stdout or "").strip()
+        return out or None
+    except subprocess.TimeoutExpired:
+        return None
+    finally:
+        f.unlink(missing_ok=True)
+
+
+def differential_verify(inst: SweInstance, candidate_diff: str, probe_src: str,
+                        baseline_out: str | None) -> bool:
+    """Verified-differential iff the candidate's probe output DIVERGES from the buggy baseline's
+    (the fix changed the implicated behaviour). No correct value required."""
+    if not probe_src.strip() or baseline_out is None:
+        return False
+    co = _base_checkout(inst)
+    if co is None:
+        return False
+    repo, py = co
+    if candidate_diff.strip():
+        (repo / "_c.patch").write_text(candidate_diff)
+        rc, _ = _sh(["git", "apply", "_c.patch"], cwd=repo)
+        if rc:
+            rc, _ = _sh(["git", "apply", "--3way", "_c.patch"], cwd=repo)
+        if rc:
+            return False
+    try:
+        out = _run_probe(repo, py, probe_src)
+        return out is not None and out != baseline_out
+    finally:
+        _sh(["git", "reset", "--hard", "-q", "HEAD"], cwd=repo)
+        _sh(["git", "clean", "-qfd"], cwd=repo)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--slice", default="reports/swebench_lite_slice_pinned.json")
     ap.add_argument("--out", default="reports/swebench_verify_stop.json")
     ap.add_argument("--validate", action="store_true",
                     help="gold-vs-buggy sanity: admitted repro should be verified on gold, NOT on buggy")
+    ap.add_argument("--mode", default="absolute", choices=["absolute", "differential"],
+                    help="absolute: repro must pass (needs correct value); differential: candidate must DIVERGE from buggy")
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
     fair_ids = {r["instance_id"] for r in json.loads(Path(args.slice).read_text())["per_task"] if r.get("fair")}
@@ -172,6 +243,23 @@ def main() -> int:
         if inst.instance_id in done:
             continue
         if not prepare(inst).ok:
+            continue
+        if args.mode == "differential":
+            probe, cost = generate_probe(inst, client=client)
+            co = _base_checkout(inst)
+            base_out = _run_probe(co[0], co[1], probe) if (co and probe.strip()) else None
+            row = {"instance_id": inst.instance_id, "family": inst.family,
+                   "probe_runs_on_buggy": base_out is not None, "gen_cost_usd": round(cost, 6)}
+            if args.validate:
+                # gold must DIVERGE from buggy on the probe (verified-differential); buggy must NOT
+                row["gold_diverges"] = differential_verify(inst, inst.gold_patch, probe, base_out)
+                row["buggy_diverges"] = differential_verify(inst, "", probe, base_out)
+                row["repro_discriminates"] = bool(base_out) and row["gold_diverges"] and not row["buggy_diverges"]
+            rows.append(row)
+            print(f"[{len(rows)}/{len(insts)}] {inst.instance_id:30} probe_ok={row['probe_runs_on_buggy']} "
+                  f"gold_diverges={row.get('gold_diverges')} buggy_diverges={row.get('buggy_diverges')} "
+                  f"discriminates={row.get('repro_discriminates')}", flush=True)
+            _persist(args.out, rows)
             continue
         repros, cost = generate_repro(inst, client=client)
         admitted = admit_repro(inst, repros)
