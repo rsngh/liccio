@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_lite_slice",
   "n_loaded": 42,
-  "n_done": 15,
-  "n_prepared": 12,
-  "n_fair": 11,
+  "n_done": 17,
+  "n_prepared": 14,
+  "n_fair": 13,
   "families": [
     "flask",
     "pylint",
@@ -159,6 +159,28 @@
       "prepared": true,
       "n_f2p": 1,
       "n_p2p": 84,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": true,
+      "gold_keeps_p2p": true,
+      "fair": true
+    },
+    {
+      "instance_id": "pallets__flask-4045",
+      "family": "flask",
+      "prepared": true,
+      "n_f2p": 2,
+      "n_p2p": 50,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": true,
+      "gold_keeps_p2p": true,
+      "fair": true
+    },
+    {
+      "instance_id": "pytest-dev__pytest-8365",
+      "family": "pytest",
+      "prepared": true,
+      "n_f2p": 1,
+      "n_p2p": 32,
       "buggy_fails_f2p": true,
       "gold_passes_f2p": true,
       "gold_keeps_p2p": true,
