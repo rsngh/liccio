@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "gemini_cli",
-  "n": 24,
-  "solved": 6,
-  "solve_rate": 0.25,
+  "n": 25,
+  "solved": 7,
+  "solve_rate": 0.28,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -292,6 +292,18 @@
       "pass_to_pass_kept": true,
       "solved": true,
       "wall_s": 449.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 193,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 419.3
     }
   ]
 }
