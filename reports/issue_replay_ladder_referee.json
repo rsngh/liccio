@@ -1,0 +1,1037 @@
+{
+  "experiment": "issue_replay_ladder_referee",
+  "question": "does the live ladder with the AUTO-REFEREE as the FAIR stop-signal solve at low cost with a bounded false-commit rate (hidden test = offline grader only)?",
+  "hints": true,
+  "fair_stop_referee": true,
+  "n_bundles": 20,
+  "completed": 20,
+  "stop_rung": {
+    "inproc_repair2": 1,
+    "gemini_cli": 2,
+    "claude_code": 1,
+    "codex_cli": 1,
+    "unsolved": 15
+  },
+  "elapsed_s": 7902.5,
+  "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
+  "per_bundle": [
+    {
+      "repo": "okunishinishi/python-stringcase",
+      "issue": "Fix alphanumcase for Python 3",
+      "solved_at": "inproc_repair2",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.000382,
+          "hinted": false,
+          "elapsed_s": 3.5,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "inproc_repair2",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 11
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix(human_readable_list): altering f-string syntax to have backwards c",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.069507,
+          "hinted": false,
+          "elapsed_s": 89.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 97.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 32.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 105.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix strutils",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.069444,
+          "hinted": false,
+          "elapsed_s": 85.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 41.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 33.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 63.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.003914,
+          "hinted": false,
+          "elapsed_s": 11.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 304.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 50.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 71.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "solved_at": "gemini_cli",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.004337,
+          "hinted": false,
+          "elapsed_s": 8.6,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix is entirely a documentation/boilerplate excerpt\u2014it contains ",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 96.4,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "gemini_cli",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 13
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.003961,
+          "hinted": false,
+          "elapsed_s": 8.6,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest concrete objection is:\n\n**All four discriminating checks still fail with \"baseline+candid",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 51.5,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest concrete objection is that **all four discriminating checks (disc_2 through disc_5) fail ",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 261.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix fails all seven discriminating checks (0/7 passed), with the",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 77.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix fails to resolve the underlying bug\u2014all four discriminating checks (d",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 7
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to @cached an",
+      "solved_at": "claude_code",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.021896,
+          "hinted": false,
+          "elapsed_s": 34.5,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe `CachedMethod.__call__` method at lines 543\u2013549 is gutted and replaced wi",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 303.9,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed code is missing the `scoped` parameter that the issue explicitly",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 74.4,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "claude_code",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#302)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.003336,
+          "hinted": false,
+          "elapsed_s": 6.4,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix fails all 8 discriminating checks designed to test the exact issue it",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 101.9,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed change fails all 8 discriminating checks (disc_0 through disc_3 ",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 44.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix is demonstrably ineffective: all 8 discriminating checks fail identic",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 81.1,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposer's own defense admits the fix fails all 4 discriminating checks t",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 8
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_apparent_index, ",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.004111,
+          "hinted": false,
+          "elapsed_s": 12.9,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 81.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 77.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 110.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.003964,
+          "hinted": false,
+          "elapsed_s": 7.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The proposer's defence is correct and constitutes the strongest objection: **the `index()` method conta",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 51.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix assumes `dead_indices` is a sorted list of non-overlapping ranges and",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 221.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe loop condition `if d_start >= raw: break` is incorrect for overlapping or",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 99.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest concrete objection is: **The fix has an off-by-one error in its loop condition.** The con",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.002723,
+          "hinted": false,
+          "elapsed_s": 11.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 37.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 29.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 70.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "solved_at": "codex_cli",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.006146,
+          "hinted": false,
+          "elapsed_s": 13.4,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix contains zero changes to the `sort()` method despite the iss",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 51.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: The fix assumes the intended behavior is to collapse all lists into a single mer",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 45.5,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposer's defense contains a fatal logical flaw: if the buggy code `del ",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 69.5,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "codex_cli",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 4
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.000896,
+          "hinted": false,
+          "elapsed_s": 4.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 75.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 48.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 106.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "DeferredValue: fix get_value and caching",
+      "solved_at": "gemini_cli",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.003073,
+          "hinted": false,
+          "elapsed_s": 9.6,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest concrete objection:\n\n**Line in `__init__`: `self.cache_value = True` unconditionally over",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 48.1,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "gemini_cli",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 9
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.003999,
+          "hinted": false,
+          "elapsed_s": 8.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 50.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 37.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 77.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.00277,
+          "hinted": false,
+          "elapsed_s": 8.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 53.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 44.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 76.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 2
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix call to non-existant attribute",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.002879,
+          "hinted": false,
+          "elapsed_s": 7.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 38.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 34.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 58.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.005169,
+          "hinted": false,
+          "elapsed_s": 7.9,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 304.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 304.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 139.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.00541,
+          "hinted": false,
+          "elapsed_s": 31.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The excerpt does not contain the NetstringSocket class or .read_ns() method that the issue explicitly t",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 65.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: Incorrect `msgsize_maxsize` calculation introduces a silent bug.**\n\nWhen `maxsiz",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 47.5,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: The `msgsize_maxsize` computation is incorrect and will silently fail on valid i",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 177.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix computes `msgsize_maxsize = len(str(maxsize)) + 1` when `maxsize` is ",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "address ecoutils import issue, fixes #294",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.014461,
+          "hinted": false,
+          "elapsed_s": 25.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 174.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 52.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "elapsed_s": 109.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    }
+  ],
+  "solved": 5,
+  "committed": 5,
+  "false_commit": 0,
+  "false_commit_rate": 0.0,
+  "missed": 15,
+  "rate": 0.25
+}
