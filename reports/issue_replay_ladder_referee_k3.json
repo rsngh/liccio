@@ -5,15 +5,16 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 13,
+  "completed": 14,
   "stop_rung": {
     "inproc_repair2": 2,
+    "inproc_sonnet": 1,
     "gemini_cli": 2,
     "claude_code": 1,
     "codex_cli": 1,
     "unsolved": 7
   },
-  "elapsed_s": 6111.5,
+  "elapsed_s": 213.8,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -650,10 +651,45 @@
       "commit_hidden_pass": false,
       "battery_valid": false,
       "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "DeferredValue: fix get_value and caching",
+      "solved_at": "inproc_sonnet",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.020662,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 65.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed logic has a critical flaw: when `self.cache_value` is True and `",
+          "mutation_validated": true
+        },
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.059559,
+          "hinted": true,
+          "n_candidates": 2,
+          "elapsed_s": 82.4,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "inproc_sonnet",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 8
     }
   ],
-  "solved": 6,
-  "committed": 6,
+  "solved": 7,
+  "committed": 7,
   "false_commit": 0,
   "false_commit_rate": 0.0,
   "missed": 7
