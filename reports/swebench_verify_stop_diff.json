@@ -1,0 +1,27 @@
+{
+  "experiment": "swebench_verify_stop",
+  "n": 2,
+  "n_signal_available": 2,
+  "n_discriminating": 0,
+  "total_gen_cost_usd": 0.0136,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "probe_runs_on_buggy": true,
+      "gen_cost_usd": 0.006875,
+      "gold_diverges": true,
+      "buggy_diverges": true,
+      "repro_discriminates": false
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "probe_runs_on_buggy": true,
+      "gen_cost_usd": 0.006734,
+      "gold_diverges": false,
+      "buggy_diverges": false,
+      "repro_discriminates": false
+    }
+  ]
+}
