@@ -5,16 +5,16 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 15,
+  "completed": 16,
   "stop_rung": {
     "inproc_repair2": 2,
     "inproc_sonnet": 1,
     "gemini_cli": 3,
     "claude_code": 1,
     "codex_cli": 1,
-    "unsolved": 7
+    "unsolved": 8
   },
-  "elapsed_s": 1011.1,
+  "elapsed_s": 1962.1,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -733,11 +733,82 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 6
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix call to non-existant attribute",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.077698,
+          "hinted": false,
+          "n_candidates": 6,
+          "elapsed_s": 274.3,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe `_set_softspace` change silently ignores writes when `softspace` doesn't ",
+          "mutation_validated": true
+        },
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.36883,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 269.7,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix fails to address the root cause: all four discriminating checks (disc",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 108.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix fails to pass any of the 5 discriminating checks (0/5 weighted 0.00),",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 32.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix changes `self._buffer` to `self.buffer`, but this lacks evidence that",
+          "mutation_validated": true
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 88.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposer's claim that `buffer` is \"the correct public property accessor\" ",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
     }
   ],
   "solved": 8,
   "committed": 8,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 7
+  "missed": 8
 }
