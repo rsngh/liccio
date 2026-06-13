@@ -1,8 +1,8 @@
 {
   "experiment": "swebench_lite_slice",
   "n_loaded": 42,
-  "n_done": 20,
-  "n_prepared": 17,
+  "n_done": 23,
+  "n_prepared": 20,
   "n_fair": 13,
   "families": [
     "flask",
@@ -214,6 +214,39 @@
       "prepared": true,
       "n_f2p": 1,
       "n_p2p": 45,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": false,
+      "gold_keeps_p2p": false,
+      "fair": false
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8627",
+      "family": "sphinx",
+      "prepared": true,
+      "n_f2p": 2,
+      "n_p2p": 17,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": false,
+      "gold_keeps_p2p": false,
+      "fair": false
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8595",
+      "family": "sphinx",
+      "prepared": true,
+      "n_f2p": 1,
+      "n_p2p": 0,
+      "buggy_fails_f2p": true,
+      "gold_passes_f2p": false,
+      "gold_keeps_p2p": true,
+      "fair": false
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8506",
+      "family": "sphinx",
+      "prepared": true,
+      "n_f2p": 1,
+      "n_p2p": 14,
       "buggy_fails_f2p": true,
       "gold_passes_f2p": false,
       "gold_keeps_p2p": false,
