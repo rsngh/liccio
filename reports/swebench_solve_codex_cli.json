@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "codex_cli",
-  "n": 15,
-  "solved": 5,
-  "solve_rate": 0.333,
+  "n": 23,
+  "solved": 7,
+  "solve_rate": 0.304,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -184,6 +184,102 @@
       "pass_to_pass_kept": false,
       "solved": false,
       "wall_s": 164.3
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7373",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 51,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 178.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7220",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 60,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 217.1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7168",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 129.9
+    },
+    {
+      "instance_id": "pytest-dev__pytest-6116",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 12,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 125.8
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5692",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 43,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 126.1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5495",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 55,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 241.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5413",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 15,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 125.6
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5227",
+      "family": "pytest",
+      "agent": "codex_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 64.5
     }
   ]
 }
