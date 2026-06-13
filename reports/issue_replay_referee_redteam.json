@@ -122,7 +122,30 @@
       "issue": "Fix warnings in python3.7",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "15": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
+    },
+    "16": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix call to non-existant attribute",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.22197940000000002
+  "cost_usd": 0.23348950000000002,
+  "summary": {
+    "bundles_attempted": 17,
+    "overfit_fooled_primary": 4,
+    "gate_detected_overfit": 4,
+    "gate_detection_rate": 1.0,
+    "gold_accepted": 2,
+    "gold_false_rejection_rate": 0.5,
+    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
+    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
+  },
+  "elapsed_s": 657.7
 }

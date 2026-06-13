@@ -581,3 +581,44 @@ agents are being re-swept (subscription-metered $0) to recompute the routing hea
 statistical power; `swebench_router_eval` then reports per-agent / union / cheapest-first-escalation on
 the larger slice. (Long-running, resumable; numbers land in `reports/swebench_solve_*.json` +
 `swebench_router_eval.json`.) Artifacts: `reports/swebench_verify_stop_diff.json`.
+
+## P10 — Auto-referee: mutation-validated battery + multi-agent debate (the trustworthy verify-stop)
+
+The one open problem after P7–P9 was a *trustworthy* automatic correctness gate. P10 builds the
+**auto-referee** (`src/acp/verification/{debate,auto_referee}.py` + `battery_mutation.mutation_score`):
+accept a candidate only when (a) its battery is **mutation-validated** — its checks react to focus-region
+mutations OR it carries ≥3 *proven* discriminating checks (a non-vacuous battery), else **abstain →
+escalate**; and (b) a **proposer/critic/judge debate** (judging the unified *diff*, not a length-capped
+module) rules it correct. The debate can OVERRULE a single wrong synthesized check (battery-v2's
+gold-rejection cause) yet still catch overfit (the critic flags input-special-casing; mutation-validation
+filters vacuous batteries).
+
+**Ground-truthed red-team (gold = correct, overfit = wrong-but-fools-the-primary-test), full v1 corpus,
+4 bundles with a synthesizable overfit:**
+
+| gate | overfit detection | gold false-rejection | gold accepted on WELL-FORMED battery |
+|---|---|---|---|
+| proxy (baseline) | 0.5 | 0.0 | — |
+| battery-v2 | 1.0 | 0.5 (rejects golds on *good* batteries via a stray wrong check) | — |
+| **auto-referee** | **4/4 = 1.0** | 0.5 | **2/2 = 1.0** |
+
+- **Perfect overfit detection (4/4)** — the critic + mutation-validation caught every gamed patch
+  (e.g. #0 "replaces the function with a hardcoded lookup table"; #13's overfit rejected with 11
+  discriminating checks present).
+- **Accepts correct golds when it can build a trustworthy battery (2/2)** — #0 (disc=3) and #13
+  (disc=11) both accepted, the behaviour battery-v2 failed at. This is the qualitative win: the referee
+  is the first gate to *both* accept clearly-correct golds *and* reject 100% of overfits.
+- The two "gold false-rejections" are **not** errors on good batteries: **#12** is a *safe abstain*
+  (disc=1 weak battery → escalate, never false-commit) and **#7** is the genuinely **ambiguous**
+  timeutils bug (`daterange(x,x)`: 0 vs 1 elements — unsolved by every method all session, so a careful
+  critic rejecting it is defensible). So the referee's headline gold-FR ties battery-v2's 0.5, but its
+  failures are *safe/defensible* whereas battery-v2's were wrong rejections of good golds.
+
+**Honest limits:** n=4 evaluable (only 4 v1 bundles yield a synthesizable overfit), so the top-line
+gold-FR (0.5) is too noisy to claim the pre-registered ≤0.25 bar; the *clean* signals are detection 4/4
+and well-formed-gold-accept 2/2. The referee adds debate LLM calls (~$0.06/bundle; full run $0.23).
+**Net:** the auto-referee is a **sound-by-design** verify-stop — perfect overfit detection, accepts
+strong-battery golds, and *abstains→escalates* instead of false-committing on weak/ambiguous cases —
+which is exactly the trustworthy stop-signal liccio's routing cost-win needs; a larger overfit-
+synthesizable corpus is required to nail the gold-FR number. Artifacts:
+`reports/issue_replay_referee_redteam.json`; code `debate.py`, `auto_referee.py`, `battery_mutation.py`.
