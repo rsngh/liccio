@@ -554,3 +554,30 @@ for false-commits rather than needing the exact correct value, but P8 shows this
 it pinpoints, for the third time and now on the recognized benchmark, the one open problem that actually
 gates breakthrough: a trustworthy, fair verifier for subtle bugs. Artifacts:
 `reports/swebench_lite_slice_pinned.json`, `reports/swebench_verify_stop_validate.json`.
+
+## P9 addendum-2 — differential verify-stop + n=25 re-sweep (the two follow-ups, completed)
+
+**Differential verify-stop (salvaging Track B's 0/6).** The absolute repro failed because the LLM
+guesses the wrong *correct value*. The differential variant (`--mode differential`) needs no correct
+value: capture the buggy output on the issue-implicated inputs (a generated probe script), and verify a
+candidate iff its behaviour DIVERGES from buggy. Validation (gold must diverge, buggy must not), n=8:
+
+  **1/8 discriminate** (vs absolute 0/6). The single win (pylint-6506) had a deterministic probe that
+  gold changed and buggy didn't. The 7 failures split into **5 non-deterministic probes** (buggy
+  "diverges" from its own baseline even after stripping object-ids and sorting — pytest/sphinx/flask
+  internals are path/order dependent) and **2 too-shallow probes** (gold doesn't diverge — the probe
+  didn't exercise the behaviour the fix changes).
+
+**Conclusion — the ceiling is framing-independent.** Absolute (needs correct value) and differential
+(needs only divergence) both fail for the same root reason: from the problem statement alone, the LLM
+cannot reliably produce a test/probe that is BOTH deterministic AND actually exercises the specific
+subtle bug. This is the same synthesized-verifier discrimination ceiling measured in P7/P8 (single
+module) and P9 (multi-file) — now confirmed a **third** way. A trustworthy fair verifier for subtle real
+bugs is the one open problem gating the meta-router's production cost-win; it is not closed by more
+agents, more search, bigger corpora, or absolute-vs-differential test framing.
+
+**n=25 re-sweep (routing economics at 2× power).** With the fair slice doubled to 25, the three vendor
+agents are being re-swept (subscription-metered $0) to recompute the routing head-to-head at higher
+statistical power; `swebench_router_eval` then reports per-agent / union / cheapest-first-escalation on
+the larger slice. (Long-running, resumable; numbers land in `reports/swebench_solve_*.json` +
+`swebench_router_eval.json`.) Artifacts: `reports/swebench_verify_stop_diff.json`.

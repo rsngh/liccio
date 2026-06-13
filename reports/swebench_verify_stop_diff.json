@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_verify_stop",
-  "n": 6,
-  "n_signal_available": 6,
-  "n_discriminating": 0,
-  "total_gen_cost_usd": 0.034,
+  "n": 8,
+  "n_signal_available": 8,
+  "n_discriminating": 1,
+  "total_gen_cost_usd": 0.044,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -57,6 +57,24 @@
       "gen_cost_usd": 0.00478,
       "gold_diverges": true,
       "buggy_diverges": true,
+      "repro_discriminates": false
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "family": "pylint",
+      "probe_runs_on_buggy": true,
+      "gen_cost_usd": 0.003881,
+      "gold_diverges": true,
+      "buggy_diverges": false,
+      "repro_discriminates": true
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10325",
+      "family": "sphinx",
+      "probe_runs_on_buggy": true,
+      "gen_cost_usd": 0.006077,
+      "gold_diverges": false,
+      "buggy_diverges": false,
       "repro_discriminates": false
     }
   ]
