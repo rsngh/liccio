@@ -577,12 +577,17 @@ def _build_battery_v2_once(spec: SpecLike, *, client, module_path: str, extra_fi
         from acp.verification.property_checks import (  # lazy: property_checks imports from this module
             admit_discriminating,
             generate_properties,
+            vet_properties,
         )
         props, c = generate_properties(spec, client=client, model=model, n_prop=n_property, focus=focus)
         cost += c
         pbt_disc, pbt_guard = admit_discriminating(
             props, baseline_src=baseline_src, module_path=module_path,
             extra_files=extra_files, root=workspace_root, tag="pbt")
+        # property-specific entailment vet: drop over-specified PBT discriminators a CORRECT impl could
+        # violate (the strutils harm — a discriminating-by-falsification check that also rejects gold)
+        pbt_disc, _dropped, vc = vet_properties(spec, pbt_disc, client=client, model=model)
+        cost += vc
         checks += pbt_disc + pbt_guard
         baseline_pass += [False] * len(pbt_disc) + [True] * len(pbt_guard)
 

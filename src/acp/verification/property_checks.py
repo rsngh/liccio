@@ -141,6 +141,52 @@ def harden_property(src: str) -> str:
     return "\n".join(lines[:last_import] + _HARDEN.splitlines() + lines[last_import:]) + "\n"
 
 
+_PROP_ENTAIL_PROMPT = (
+    "You are auditing PROPERTY-BASED (Hypothesis) tests for SPEC ENTAILMENT. Each test below asserts an "
+    "INVARIANT or METAMORPHIC RELATION over a search space of inputs. A property is only trustworthy if "
+    "EVERY spec-correct implementation MUST satisfy it. Flag a property as OVER-SPECIFIED if a correct "
+    "implementation of the issue's spec could legitimately VIOLATE it — e.g. it assumes an invariant the "
+    "spec never guarantees (a relation that holds for one valid design but not all), constrains output "
+    "beyond what the spec states, or asserts behaviour on inputs the spec leaves unspecified. Judge the "
+    "ASSERTED RELATION against the spec, not the style.\n\n"
+    "Return ONLY a JSON array of the NUMBERS of OVER-SPECIFIED properties (empty array if all are sound).\n\n"
+    "ISSUE:\n{issue}\n\nPUBLIC TEST (authoritative):\n{public}\n\nPROPERTIES:\n{tests}\n"
+)
+
+
+def vet_properties(spec: SpecLike, disc_props: list[tuple[str, str]], *, client,
+                   model: str = "claude-haiku-4-5") -> tuple[list[tuple[str, str]], int, float]:
+    """Drop over-specified PBT discriminators (P12 W1 tightening). A property admitted only because it
+    FALSIFIES on buggy can still be WRONG (assert an invariant the spec doesn't guarantee) — and being
+    discriminating-by-falsification it then also rejects the gold fix (the strutils harm). This asks a
+    property-specific question the generic value-guess filter misses: 'could a CORRECT implementation
+    violate this invariant?'. Never drops the whole set (consistency with _entailment_filter). Fail-open.
+    Returns (kept, n_dropped, cost_usd)."""
+    if client is None or not disc_props:
+        return disc_props, 0, 0.0
+    import json as _json
+    import re as _re
+    numbered = "\n\n".join(f"### {j}\n{src}" for j, (_k, src) in enumerate(disc_props))
+    prompt = _PROP_ENTAIL_PROMPT.format(issue=getattr(spec, "issue_text", str(spec)),
+                                        public=getattr(spec, "public_test", ""), tests=numbered)
+    try:
+        msg = client.messages.create(model=model, max_tokens=300,
+                                     messages=[{"role": "user", "content": prompt}])
+        text = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+        m = _re.search(r"\[[\d,\s]*\]", text)
+        flagged = {j for j in (set(_json.loads(m.group(0))) if m else set())
+                   if isinstance(j, int) and 0 <= j < len(disc_props)}
+        usage = getattr(msg, "usage", None)
+        cost = round((getattr(usage, "input_tokens", 0) or 0) * 1.0 / 1e6
+                     + (getattr(usage, "output_tokens", 0) or 0) * 5.0 / 1e6, 6)
+        if flagged and len(flagged) < len(disc_props):     # never drop the whole discriminating set
+            kept = [p for j, p in enumerate(disc_props) if j not in flagged]
+            return kept, len(disc_props) - len(kept), cost
+        return disc_props, 0, cost
+    except Exception:  # noqa: BLE001
+        return disc_props, 0, 0.0
+
+
 def admit_discriminating(props: list[str], *, baseline_src: str, module_path: str,
                          extra_files: dict[str, str], root: Path,
                          tag: str = "pbt") -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
