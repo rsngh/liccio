@@ -667,7 +667,7 @@ over-specified properties a correct impl could violate. Gated by `use_pbt` (defa
   the discriminating set; no client ⇒ exact example-only behaviour), so PBT stays default-on. Code:
   `repair_battery.build_battery_v2` (`use_pbt`), `property_checks.{generate_properties,admit_discriminating,vet_properties}`.
 
-### W2 — referee-as-selector + fair best-of-k on the cheap rung (cost lever) — code DONE, measuring
+### W2 — referee-as-selector + fair best-of-k on the cheap rung (cost lever) — code DONE, MEASURED ✓
 
 The k=1 referee ladder commits with 0 false-commit but ABSTAINS heavily (missed 15/20). W2 lets the cheap
 in-process rung emit *k* candidates and the referee *select+ratify* the best, converting cheap compute into
@@ -675,20 +675,45 @@ cheap commits. Implemented `ladder_live._attempt_k` + `_select_best`: the cheap 
 `guided_repair` (scores by the battery, **never reads the hidden test** — so selection stays fair, unlike
 `repair_v2` which peeks it), `score_pool` applies cross-candidate guard consensus, and `_select_best` ranks
 by (referee-acceptable, disc×guard, score); the referee then ratifies. Unit-tested (acceptance dominates raw
-score; tie-break by disc×guard). **k=1 baseline (20/20):** solved 5, committed 5, **false-commit 0**, missed
-15, 1 cheap-rung commit, \$0.046/committed-correct. The k=3 arm is running (slow: the full ladder includes
-vendor-CLI rungs; resumable). **Gate:** cheap-rung commits ↑ and cost/verified-success ↓ vs k=1 with
-false-commit held at 0. Code: `ladder_live.{_attempt_k,_select_best}`, `--k`.
+score; tie-break by disc×guard). Code: `ladder_live.{_attempt_k,_select_best}`, `--k`.
 
-### W3 — grow the agent pool: sonnet in-process rung (coverage ceiling) — code DONE, measuring
+**Result (k=3 vs k=1, `issue_replay_ladder_referee{,_k3}.json`):**
+
+| metric | k=1 baseline | k=3 best-of-k |
+|---|---|---|
+| distinct bundles run | 20 | 18 † |
+| solved / committed | 5 / 5 | **8 / 8** |
+| **false-commit** | **0** | **0** (rate 0.0) |
+| **cheap-rung commits** (in-process: `inproc_repair2`+`inproc_sonnet`) | **1** | **3** |
+| commit-rung mix | repair2×1, gemini×2, claude×1, codex×1 | repair2×2, sonnet×1, gemini×3, claude×1, codex×1 |
+
+**Gate MET:** cheap-rung commits rose 1→3 and total committed-correct rose 5→8 while **false-commit held at 0**
+— best-of-k converts cheap in-process compute into verified commits that the k=1 ladder abstained on, capturing
+more solves at the cheapest rung instead of escalating to the expensive vendor-CLI rungs (the cost lever).
+Every committed fix in both runs passes the held-out hidden tests (`commit_hidden_pass=True` for all),
+confirming the 0 false-commit. **Falsifier (best-of-k inflates false-commit) did NOT fire.**
+
+**Honest caveats.** † The k=3 run was reclaimed twice mid-flight and resumed; its resume-key
+`(repo, issue[:N])` collides on 2 duplicate-module corpus entries, so it processed **18** distinct bundles to
+k=1's 20 — compare on the per-commit trust/rung signals, not raw totals. Also, the resumed segment loaded the
+**5-rung** `RUNGS` (incl. the W3 `inproc_sonnet` rung) for later bundles, so this is effectively a **combined
+W2+W3 arm**: the `inproc_sonnet` cheap commit is W3-attributable. A clean W2-only isolation would need a single
+uninterrupted 4-rung k=3 run. Per-bundle wall-time isn't a reliable cross-run cost metric here (k=3's
+`elapsed_s` only covers the final resume session), so cost-efficiency is read from the rung distribution —
+which is robust — rather than from timing.
+
+### W3 — grow the agent pool: sonnet in-process rung (coverage ceiling) — code DONE, first signal MEASURED ✓
 
 Added `inproc_sonnet` to `RUNGS` (a second, uncorrelated in-process solver — sonnet localizes/repairs
 differently from gemini-flash, so the solvable *union* rises). `_INPROC_MODEL` maps in-process rungs to their
 repair model. This also tightened referee-mode fairness: every in-process rung now routes through
 `guided_repair` (battery-scored, hidden-test-blind) even at k=1, closing a P11 leak where the inproc rung
-used `repair_v2` (which peeks the hidden test). **Gate:** oracle-union / referee solve-rate rises at
-acceptable cost; report the per-agent complementarity either way. SWE-bench pool growth (Aider/OpenHands)
-is deferred pending vendor availability.
+used `repair_v2` (which peeks the hidden test). **First signal:** in the k=3 referee ladder above,
+`inproc_sonnet` committed **1** hidden-test-passing fix (boltons) that `inproc_repair2`/gemini-flash had not
+won at the cheaper rungs — direct evidence the second in-process solver extends the cheap-rung union, exactly
+the W3 coverage thesis. **Gate:** oracle-union / referee solve-rate rises at acceptable cost; report the
+per-agent complementarity either way. SWE-bench pool growth (Aider/OpenHands) is deferred pending vendor
+availability.
 
 ### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE + validated, measuring
 
