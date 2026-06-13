@@ -54,10 +54,13 @@ def referee(battery: RepairBattery, candidate_src: str, *, workspace_root: Path,
                          candidate_id=candidate_id, diff=diff)
     battery_accept = sc.accept()
     mscore = float(battery.mutation_info.get("mutation_score", 0.0) or 0.0)
-    # the battery is TRUSTWORTHY (worth deciding on) iff it is valid, has enough discriminating checks,
-    # AND its checks actually kill focus-region mutants — a weak/vacuous battery (the P7/P8 ceiling)
-    # fails here and the referee abstains rather than guessing.
-    mutation_validated = battery.valid and battery.n_discriminating >= min_disc and mscore >= mutation_floor
+    # the battery is TRUSTWORTHY (worth deciding on) iff it is valid AND has discrimination evidence:
+    # either its checks REACT to focus-region mutations (mutation_score >= floor) OR it carries enough
+    # proven discriminating checks (each ADMITTED only because the buggy baseline fails it — itself a
+    # discrimination proof). Discriminating-heavy batteries rarely flip on buggy-mutants, so requiring
+    # BOTH over-abstains; requiring valid + (mutation OR enough discriminating) keeps the gate honest.
+    mutation_validated = battery.valid and battery.n_discriminating >= min_disc and \
+        (mscore >= mutation_floor or battery.n_discriminating >= 3)
 
     # hard floors the candidate must clear regardless (cheap, sound): public test passes, no adversarial
     if not sc.public_pass or sc.adversarial_high:

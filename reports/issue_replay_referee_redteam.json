@@ -90,7 +90,32 @@
       "issue": "Fix warnings in python3.7",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "11": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "overfit_fools_primary": true,
+      "mutation_score": 0.6,
+      "gold_pass": false,
+      "overfit_pass": false,
+      "gold_reason": "debate rejected: **THE CODE IS SYNTACTICALLY INVALID AND INCOMPLETE.**\n\nThe `pop` method terminates mid-statement with `ret =` on the las",
+      "overfit_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix is incomplete and truncated mid-function (ends abruptly in `pop()`), making i",
+      "battery_valid": true,
+      "n_checks_generated": 7,
+      "checks_surviving": 4,
+      "detected": false
     }
   },
-  "cost_usd": 0.1940046
+  "cost_usd": 0.2307627,
+  "summary": {
+    "bundles_attempted": 12,
+    "overfit_fooled_primary": 4,
+    "gate_detected_overfit": 4,
+    "gate_detection_rate": 1.0,
+    "gold_accepted": 0,
+    "gold_false_rejection_rate": 1.0,
+    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
+    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
+  },
+  "elapsed_s": 98.5
 }

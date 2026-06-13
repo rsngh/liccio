@@ -67,7 +67,7 @@ def test_debate_rejects_on_concrete_objection() -> None:
 
 def test_referee_abstains_on_weak_battery(tmp_path: Path) -> None:
     spec = type("S", (), {"issue_text": "x", "public_test": _PUBLIC, "module_path": "m.py"})()
-    weak = _battery(mutation_score=0.1)          # below floor -> not trusted
+    weak = _battery(mutation_score=0.1, n_disc=2)   # low mutation AND few disc -> not trusted
     rv = referee(weak, _GOLD, workspace_root=tmp_path, candidate_id="g", diff=None,
                  client=_StubClient(["d", "NO DEFECT FOUND", '{"accept":true}']),
                  spec=spec, mutation_floor=0.5)

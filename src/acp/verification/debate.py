@@ -62,7 +62,7 @@ def debate_verdict(spec, candidate_src: str, *, client, check_summary: str, diff
     if client is None:
         return DebateVerdict(accept=False, confidence=0.0, rationale="no client (fail-closed)")
     issue = getattr(spec, "issue_text", str(spec))[:4000]
-    cand = candidate_src[:6000]
+    cand = candidate_src[:20000]   # don't truncate real modules mid-function (a false "incomplete" tell)
     adversarial = ""
     if diff:
         try:
