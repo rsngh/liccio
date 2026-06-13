@@ -20,7 +20,13 @@
       "issue": "fix(human_readable_list): altering f-string syntax to have b",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
+    },
+    "2": {
+      "repo": "mahmoud/boltons",
+      "issue": "fix strutils",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.0381751
+  "cost_usd": 0.050425
 }

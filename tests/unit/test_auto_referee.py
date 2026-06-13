@@ -54,7 +54,7 @@ def test_debate_parses_and_fail_closed() -> None:
                           '{"accept": true, "confidence": 0.9, "rationale": "sound"}'])
     v = debate_verdict(spec, _GOLD, client=client, check_summary="all pass")
     assert v.accept and v.confidence == 0.9
-    assert not debate_verdict(spec, _GOLD, client=None, check_summary="x").accept  # no client=reject
+    assert not debate_verdict(spec, _GOLD, client=None, check_summary="x").accept  # no-client=reject
 
 
 def test_debate_rejects_on_concrete_objection() -> None:
@@ -82,7 +82,8 @@ def test_referee_invalid_battery_abstains(tmp_path: Path) -> None:
 
 
 def test_referee_debate_is_decider_when_mutation_validated(tmp_path: Path) -> None:
-    spec = type("S", (), {"issue_text": "add must be commutative", "public_test": _PUBLIC, "module_path": "m.py"})()
+    spec = type("S", (), {"issue_text": "add must be commutative", "public_test": _PUBLIC,
+                          "module_path": "m.py"})()
     bat = _battery(mutation_score=0.9)        # trustworthy battery
     # debate ACCEPTS (critic finds nothing) -> referee accepts (debate is the decider)
     yes = _StubClient(["defence", "NO DEFECT FOUND", '{"accept": true, "confidence": 0.9}'])
