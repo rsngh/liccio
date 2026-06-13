@@ -527,7 +527,7 @@ gold needs SWE-bench's per-task pinned dependency versions. Fix: `prepare()` now
 `swebench.harness.constants.MAP_REPO_VERSION_TO_SPECS[repo][version]` and builds the venv at the spec's
 **pinned python** (`uv venv --seed --python X.Y`) + installs the **pinned pip_packages** + runs the spec
 install cmd — no Docker. Effect: the hermetic-fair rate jumped from **~29% → ~65–90%** of prepared tasks;
-the pytest/sphinx/flask/pylint slice expands to **~25 fair tasks** (from 12) — 2× the statistical power.
+the pytest/sphinx/flask/pylint slice expands to **25 fair tasks** (from 12) — 2× the statistical power.
 (sympy is excluded: its FAIL_TO_PASS are bare test names run by a custom runner, not pytest nodeids — a
 separate grading path.)
 
