@@ -6,116 +6,21 @@
       "issue": "Fix alphanumcase for Python 3",
       "overfit_fools_primary": true,
       "mutation_score": 0.0,
-      "gold_pass": false,
+      "gold_pass": true,
       "overfit_pass": false,
-      "gold_reason": "abstain: weak battery (mutation_score 0.00 < 0.5 or disc 7 < 2)",
-      "overfit_reason": "abstain: battery rejected",
+      "gold_reason": "accepted",
+      "overfit_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix replaces the entire `alphanumcase` function with a hardcoded lookup table that only ha",
       "battery_valid": true,
       "n_checks_generated": 10,
-      "checks_surviving": 7,
-      "detected": false
+      "checks_surviving": 8,
+      "detected": true
     },
     "1": {
       "repo": "mahmoud/boltons",
       "issue": "fix(human_readable_list): altering f-string syntax to have b",
       "overfit_fools_primary": false,
       "skipped": "could not synthesize a fooling patch"
-    },
-    "2": {
-      "repo": "mahmoud/boltons",
-      "issue": "fix strutils",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "3": {
-      "repo": "mahmoud/boltons",
-      "issue": "Fix warnings in python3.7",
-      "overfit_fools_primary": true,
-      "mutation_score": 0.067,
-      "gold_pass": false,
-      "overfit_pass": false,
-      "gold_reason": "abstain: weak battery (mutation_score 0.07<0.5 or disc 8<2)",
-      "overfit_reason": "abstain: weak battery (mutation_score 0.07<0.5 or disc 8<2)",
-      "battery_valid": true,
-      "n_checks_generated": 17,
-      "checks_surviving": 8,
-      "detected": false
-    },
-    "4": {
-      "repo": "mahmoud/boltons",
-      "issue": "fix OneToOne.update behavior with empty iterables",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "5": {
-      "repo": "mahmoud/boltons",
-      "issue": "Test and fix for #348 (#349)",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "6": {
-      "repo": "mahmoud/boltons",
-      "issue": "cacheutils: (breaking change) adding the scoped argument to ",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "7": {
-      "repo": "mahmoud/boltons",
-      "issue": "Fix infinite daterange issue when start and stop is same (#3",
-      "overfit_fools_primary": true,
-      "mutation_score": 0.0,
-      "gold_pass": false,
-      "overfit_pass": false,
-      "gold_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 4<2)",
-      "overfit_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 4<2)",
-      "battery_valid": true,
-      "n_checks_generated": 5,
-      "checks_surviving": 4,
-      "detected": false
-    },
-    "8": {
-      "repo": "mahmoud/boltons",
-      "issue": "add more IndexedSet.index() tests and fix typo in get_appare",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "9": {
-      "repo": "mahmoud/boltons",
-      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "10": {
-      "repo": "mahmoud/boltons",
-      "issue": "Fix warnings in python3.7",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "11": {
-      "repo": "mahmoud/boltons",
-      "issue": "Fix barrellist sort with multiple lists",
-      "overfit_fools_primary": true,
-      "mutation_score": 0.6,
-      "gold_pass": false,
-      "overfit_pass": false,
-      "gold_reason": "debate rejected: **THE CODE IS SYNTACTICALLY INVALID AND INCOMPLETE.**\n\nThe `pop` method terminates mid-statement with `ret =` on the las",
-      "overfit_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix is incomplete and truncated mid-function (ends abruptly in `pop()`), making i",
-      "battery_valid": true,
-      "n_checks_generated": 7,
-      "checks_surviving": 4,
-      "detected": false
     }
   },
-  "cost_usd": 0.2307627,
-  "summary": {
-    "bundles_attempted": 12,
-    "overfit_fooled_primary": 4,
-    "gate_detected_overfit": 4,
-    "gate_detection_rate": 1.0,
-    "gold_accepted": 0,
-    "gold_false_rejection_rate": 1.0,
-    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
-    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
-  },
-  "elapsed_s": 0.0
+  "cost_usd": 0.0293391
 }
