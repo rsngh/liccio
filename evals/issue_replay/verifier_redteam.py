@@ -59,6 +59,8 @@ def main() -> int:
     ap.add_argument("--out", default="reports/issue_replay_verifier_redteam.json")
     ap.add_argument("--battery-v2", action="store_true",
                     help="gate with repair_battery.build_battery_v2 + accept() (P7) instead of proxy_evaluate")
+    ap.add_argument("--referee", action="store_true",
+                    help="gate with auto_referee (battery-v2 accept + mutation-validation + multi-agent debate)")
     args = ap.parse_args()
     out = Path(args.out)
     model_id, rate = _MODELS["gemini"]
@@ -113,10 +115,10 @@ def main() -> int:
             # 2) independent gate: fresh checks from issue text only; consensus across {gold, overfit}
             spec = _Spec(issue_text=f"{b.issue_title}\n{b.issue_body}", public_test=b.public_test,
                          module_path=b.module_path)
-            if args.battery_v2:
-                # P7 gate: build the discriminating-by-construction battery from the buggy focus and
-                # require accept() — overfit must be REJECTED (it special-cases the test inputs, so
-                # it should fail the fresh discriminating checks), gold must be ACCEPTED.
+            if args.battery_v2 or args.referee:
+                # P7/auto-referee gate: build the discriminating-by-construction battery from the buggy
+                # focus. battery-v2 = require accept(); referee also requires mutation-validation + a
+                # multi-agent-debate verdict. overfit must be REJECTED, gold ACCEPTED.
                 from evals.issue_replay.repair_harness import _extract, _func_table, _localize
 
                 from acp.verification.repair_battery import build_battery_v2, score_candidate
@@ -129,16 +131,28 @@ def main() -> int:
                                        public_test=b.public_test, workspace_root=root / f"bw{bi}",
                                        focus_src=fsrc, focus_spans=spans)
                 state["cost_usd"] += bat.gen_cost_usd
-                gold_sc = score_candidate(bat, candidate_src=b.gold_patch, workspace_root=root / f"gs{bi}", candidate_id="gold")
-                over_sc = score_candidate(bat, candidate_src=overfit, workspace_root=root / f"os{bi}", candidate_id="overfit")
+                if args.referee:
+                    from acp.verification.auto_referee import referee
+                    gold_rv = referee(bat, b.gold_patch, workspace_root=root / f"gs{bi}", candidate_id="gold",
+                                      diff=None, client=client, spec=spec)
+                    over_rv = referee(bat, overfit, workspace_root=root / f"os{bi}", candidate_id="overfit",
+                                      diff=None, client=client, spec=spec)
+                    rec["mutation_score"] = round(float(bat.mutation_info.get("mutation_score", 0.0) or 0.0), 3)
+                    rec["gold_pass"] = gold_rv.accept
+                    rec["overfit_pass"] = over_rv.accept
+                    rec["gold_reason"] = gold_rv.reason
+                    rec["overfit_reason"] = over_rv.reason
+                else:
+                    gold_sc = score_candidate(bat, candidate_src=b.gold_patch, workspace_root=root / f"gs{bi}", candidate_id="gold")
+                    over_sc = score_candidate(bat, candidate_src=overfit, workspace_root=root / f"os{bi}", candidate_id="overfit")
+                    rec["gold_pass"] = gold_sc.accept()
+                    rec["overfit_pass"] = over_sc.accept()
+                    rec["overfit_score"] = over_sc.score
+                    rec["gold_score"] = gold_sc.score
                 rec["battery_valid"] = bat.valid
                 rec["n_checks_generated"] = len(bat.checks)
                 rec["checks_surviving"] = bat.n_discriminating
-                rec["gold_pass"] = gold_sc.accept()
-                rec["overfit_pass"] = over_sc.accept()
-                rec["overfit_score"] = over_sc.score
-                rec["gold_score"] = gold_sc.score
-                rec["detected"] = gold_sc.accept() and not over_sc.accept()
+                rec["detected"] = rec["gold_pass"] and not rec["overfit_pass"]
             else:
                 gen = generate_checks(spec, client=client, n=6)
                 state["cost_usd"] += gen.cost_usd

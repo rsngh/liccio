@@ -54,7 +54,7 @@ def test_debate_parses_and_fail_closed() -> None:
                           '{"accept": true, "confidence": 0.9, "rationale": "sound"}'])
     v = debate_verdict(spec, _GOLD, client=client, check_summary="all pass")
     assert v.accept and v.confidence == 0.9
-    assert not debate_verdict(spec, _GOLD, client=None, check_summary="x").accept  # no client -> reject
+    assert not debate_verdict(spec, _GOLD, client=None, check_summary="x").accept  # no client=reject
 
 
 def test_debate_rejects_on_concrete_objection() -> None:
