@@ -5,16 +5,16 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 14,
+  "completed": 15,
   "stop_rung": {
     "inproc_repair2": 2,
     "inproc_sonnet": 1,
-    "gemini_cli": 2,
+    "gemini_cli": 3,
     "claude_code": 1,
     "codex_cli": 1,
     "unsolved": 7
   },
-  "elapsed_s": 213.8,
+  "elapsed_s": 1011.1,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -686,10 +686,57 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 8
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "solved_at": "gemini_cli",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.095433,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 70.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe `seek()` method change is fundamentally broken. The original code allowed",
+          "mutation_validated": true
+        },
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.28894,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 315.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: The `read()` method return value change breaks the contract.**\n\nThe proposed cha",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 118.8,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "gemini_cli",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 6
     }
   ],
-  "solved": 7,
-  "committed": 7,
+  "solved": 8,
+  "committed": 8,
   "false_commit": 0,
   "false_commit_rate": 0.0,
   "missed": 7
