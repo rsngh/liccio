@@ -1,0 +1,261 @@
+{
+  "n_tasks": 25,
+  "per_agent_solved": {
+    "gemini_cli": 7,
+    "claude_code": 8,
+    "codex_cli": 7
+  },
+  "per_agent_solve_rate": {
+    "gemini_cli": 0.28,
+    "claude_code": 0.32,
+    "codex_cli": 0.28
+  },
+  "best_single_agent": {
+    "agent": "claude_code",
+    "solved": 8,
+    "rate": 0.32
+  },
+  "oracle_union_solved": 12,
+  "oracle_union_rate": 0.48,
+  "escalation_cheapest_first": {
+    "solved": 12,
+    "rate": 0.48,
+    "stops_by_rung": {
+      "gemini_cli": 7,
+      "claude_code": 3,
+      "codex_cli": 2
+    },
+    "strong_agent_invocations": 15,
+    "strong_agent_invocations_vs_alwaysbest": "15/25",
+    "total_wall_s": 11469.4
+  },
+  "headline": "escalation solves 12/25 (= union 12) using codex on 15/25; best single agent claude_code solves 8/25",
+  "evidence_tier": "real SWE-bench Lite fair slice; held-out FAIL_TO_PASS grading; vendor agents subscription-metered ($0); wall-time as cost proxy",
+  "per_task": [
+    {
+      "instance_id": "pallets__flask-4045",
+      "gemini_cli": false,
+      "gemini_cli_wall": 141.3,
+      "claude_code": false,
+      "claude_code_wall": 27.1,
+      "codex_cli": false,
+      "codex_cli_wall": 95.5
+    },
+    {
+      "instance_id": "pallets__flask-4992",
+      "gemini_cli": false,
+      "gemini_cli_wall": 611.7,
+      "claude_code": false,
+      "claude_code_wall": 34.2,
+      "codex_cli": false,
+      "codex_cli_wall": 162.0
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "gemini_cli": false,
+      "gemini_cli_wall": 91.7,
+      "claude_code": false,
+      "claude_code_wall": 41.2,
+      "codex_cli": false,
+      "codex_cli_wall": 149.8
+    },
+    {
+      "instance_id": "pylint-dev__pylint-5859",
+      "gemini_cli": true,
+      "gemini_cli_wall": 191.1,
+      "claude_code": true,
+      "claude_code_wall": 107.0,
+      "codex_cli": true,
+      "codex_cli_wall": 230.2
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "gemini_cli": false,
+      "gemini_cli_wall": 255.4,
+      "claude_code": false,
+      "claude_code_wall": 116.0,
+      "codex_cli": false,
+      "codex_cli_wall": 252.6
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "gemini_cli": false,
+      "gemini_cli_wall": 217.3,
+      "claude_code": false,
+      "claude_code_wall": 26.1,
+      "codex_cli": false,
+      "codex_cli_wall": 125.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "gemini_cli": false,
+      "gemini_cli_wall": 621.0,
+      "claude_code": true,
+      "claude_code_wall": 436.4,
+      "codex_cli": false,
+      "codex_cli_wall": 319.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "gemini_cli": true,
+      "gemini_cli_wall": 419.3,
+      "claude_code": true,
+      "claude_code_wall": 203.1,
+      "codex_cli": false,
+      "codex_cli_wall": 364.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5221",
+      "gemini_cli": true,
+      "gemini_cli_wall": 449.4,
+      "claude_code": false,
+      "claude_code_wall": 55.5,
+      "codex_cli": false,
+      "codex_cli_wall": 216.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5227",
+      "gemini_cli": false,
+      "gemini_cli_wall": 225.3,
+      "claude_code": false,
+      "claude_code_wall": 21.0,
+      "codex_cli": false,
+      "codex_cli_wall": 64.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5413",
+      "gemini_cli": true,
+      "gemini_cli_wall": 602.0,
+      "claude_code": false,
+      "claude_code_wall": 20.9,
+      "codex_cli": false,
+      "codex_cli_wall": 125.6
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5495",
+      "gemini_cli": false,
+      "gemini_cli_wall": 162.1,
+      "claude_code": false,
+      "claude_code_wall": 43.0,
+      "codex_cli": false,
+      "codex_cli_wall": 241.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5692",
+      "gemini_cli": false,
+      "gemini_cli_wall": 602.2,
+      "claude_code": true,
+      "claude_code_wall": 36.7,
+      "codex_cli": false,
+      "codex_cli_wall": 126.1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-6116",
+      "gemini_cli": false,
+      "gemini_cli_wall": 602.0,
+      "claude_code": false,
+      "claude_code_wall": 21.2,
+      "codex_cli": true,
+      "codex_cli_wall": 125.8
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7168",
+      "gemini_cli": true,
+      "gemini_cli_wall": 168.5,
+      "claude_code": true,
+      "claude_code_wall": 20.0,
+      "codex_cli": true,
+      "codex_cli_wall": 129.9
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7220",
+      "gemini_cli": false,
+      "gemini_cli_wall": 295.8,
+      "claude_code": false,
+      "claude_code_wall": 51.6,
+      "codex_cli": false,
+      "codex_cli_wall": 217.1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7373",
+      "gemini_cli": false,
+      "gemini_cli_wall": 156.6,
+      "claude_code": false,
+      "claude_code_wall": 34.4,
+      "codex_cli": false,
+      "codex_cli_wall": 178.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7432",
+      "gemini_cli": false,
+      "gemini_cli_wall": 196.9,
+      "claude_code": false,
+      "claude_code_wall": 21.7,
+      "codex_cli": false,
+      "codex_cli_wall": 164.3
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7490",
+      "gemini_cli": false,
+      "gemini_cli_wall": 156.2,
+      "claude_code": false,
+      "claude_code_wall": 26.4,
+      "codex_cli": false,
+      "codex_cli_wall": 260.9
+    },
+    {
+      "instance_id": "pytest-dev__pytest-8365",
+      "gemini_cli": false,
+      "gemini_cli_wall": 88.5,
+      "claude_code": false,
+      "claude_code_wall": 25.8,
+      "codex_cli": false,
+      "codex_cli_wall": 138.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-8906",
+      "gemini_cli": false,
+      "gemini_cli_wall": 175.4,
+      "claude_code": false,
+      "claude_code_wall": 59.5,
+      "codex_cli": true,
+      "codex_cli_wall": 117.3
+    },
+    {
+      "instance_id": "pytest-dev__pytest-9359",
+      "gemini_cli": false,
+      "gemini_cli_wall": 605.1,
+      "claude_code": true,
+      "claude_code_wall": 387.2,
+      "codex_cli": true,
+      "codex_cli_wall": 183.0
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10325",
+      "gemini_cli": true,
+      "gemini_cli_wall": 190.9,
+      "claude_code": true,
+      "claude_code_wall": 52.2,
+      "codex_cli": true,
+      "codex_cli_wall": 304.7
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "gemini_cli": false,
+      "gemini_cli_wall": 197.7,
+      "claude_code": false,
+      "claude_code_wall": 47.6,
+      "codex_cli": false,
+      "codex_cli_wall": 168.7
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "gemini_cli": true,
+      "gemini_cli_wall": 126.1,
+      "claude_code": true,
+      "claude_code_wall": 29.8,
+      "codex_cli": true,
+      "codex_cli_wall": 141.3
+    }
+  ]
+}
