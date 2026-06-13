@@ -102,7 +102,27 @@
       "n_checks_generated": 5,
       "checks_surviving": 1,
       "detected": false
+    },
+    "13": {
+      "repo": "mahmoud/boltons",
+      "issue": "DeferredValue: fix get_value and caching",
+      "overfit_fools_primary": true,
+      "mutation_score": 1.0,
+      "gold_pass": true,
+      "overfit_pass": false,
+      "gold_reason": "accepted",
+      "overfit_reason": "abstain: public-test fails or adversarial-high",
+      "battery_valid": true,
+      "n_checks_generated": 14,
+      "checks_surviving": 11,
+      "detected": true
+    },
+    "14": {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "overfit_fools_primary": false,
+      "skipped": "could not synthesize a fooling patch"
     }
   },
-  "cost_usd": 0.19455590000000003
+  "cost_usd": 0.22197940000000002
 }
