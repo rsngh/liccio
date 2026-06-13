@@ -179,8 +179,10 @@ def sensitivity_weights(baseline_src: str, checks: list[tuple[str, str]],
     if not mutants:
         return [1.0] * n, info
     flips = [0] * n
-    disc_idx = [j for j in range(n) if not baseline_pass[j]]  # discriminating checks (baseline fails)
-    n_killed = 0                                               # mutants caught by >=1 discriminating check
+    n_killed = 0   # mutants the battery is SENSITIVE to: >=1 check changes verdict vs the baseline.
+    # (Sensitivity, not "discriminating-check passes": mutating the buggy region rarely makes a
+    # discriminating check pass — it would have to coincidentally fix the bug — so the right measure of
+    # a non-vacuous battery is that SOME check reacts to a region change, guard or discriminating.)
     deadline = time.monotonic() + time_budget_s
     for m in mutants:
         if time.monotonic() > deadline:
@@ -191,10 +193,12 @@ def sensitivity_weights(baseline_src: str, checks: list[tuple[str, str]],
         if res is None:
             continue
         info["n_runs_ok"] += 1
+        flipped_any = False
         for j in range(n):
             if res[j] != baseline_pass[j]:
                 flips[j] += 1
-        if any(res[j] != baseline_pass[j] for j in disc_idx):  # a discriminating check reacted
+                flipped_any = True
+        if flipped_any:
             n_killed += 1
     top = max(flips)
     info["flips"] = flips
