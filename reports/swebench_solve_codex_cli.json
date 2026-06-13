@@ -291,7 +291,7 @@
       "fail_to_pass": false,
       "pass_to_pass_kept": true,
       "solved": false,
-      "wall_s": 216.7
+      "wall_s": 269.6
     },
     {
       "instance_id": "pytest-dev__pytest-5103",
@@ -299,11 +299,11 @@
       "agent": "codex_cli",
       "ran": true,
       "produced_diff": true,
-      "diff_lines": 236,
+      "diff_lines": 238,
       "fail_to_pass": false,
       "pass_to_pass_kept": true,
       "solved": false,
-      "wall_s": 364.7
+      "wall_s": 498.8
     }
   ]
 }
