@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "claude_code",
-  "n": 15,
-  "solved": 5,
-  "solve_rate": 0.333,
+  "n": 25,
+  "solved": 8,
+  "solve_rate": 0.32,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -184,6 +184,126 @@
       "pass_to_pass_kept": false,
       "solved": false,
       "wall_s": 21.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7373",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 51,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 34.4
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7220",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 14,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 51.6
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7168",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 18,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 20.0
+    },
+    {
+      "instance_id": "pytest-dev__pytest-6116",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 12,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 21.2
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5692",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 24,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 36.7
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5495",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 43.0
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5413",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 15,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 20.9
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5227",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 21.0
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5221",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 28,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 55.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "family": "pytest",
+      "agent": "claude_code",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 74,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 203.1
     }
   ]
 }
