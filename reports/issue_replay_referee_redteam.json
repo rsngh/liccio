@@ -117,5 +117,5 @@
     "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
     "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
   },
-  "elapsed_s": 98.5
+  "elapsed_s": 0.0
 }
