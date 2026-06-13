@@ -5,15 +5,15 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 12,
+  "completed": 13,
   "stop_rung": {
     "inproc_repair2": 2,
     "gemini_cli": 2,
     "claude_code": 1,
     "codex_cli": 1,
-    "unsolved": 6
+    "unsolved": 7
   },
-  "elapsed_s": 5518.8,
+  "elapsed_s": 6111.5,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -591,11 +591,70 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 6
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.067712,
+          "hinted": false,
+          "n_candidates": 5,
+          "elapsed_s": 186.9,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 41.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 44.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 102.1,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
     }
   ],
   "solved": 6,
   "committed": 6,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 6
+  "missed": 7
 }
