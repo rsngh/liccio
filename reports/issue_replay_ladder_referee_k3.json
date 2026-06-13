@@ -5,15 +5,15 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 10,
+  "completed": 12,
   "stop_rung": {
-    "inproc_repair2": 1,
+    "inproc_repair2": 2,
     "gemini_cli": 2,
     "claude_code": 1,
     "codex_cli": 1,
-    "unsolved": 5
+    "unsolved": 6
   },
-  "elapsed_s": 4932.2,
+  "elapsed_s": 5518.8,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -509,11 +509,93 @@
       "commit_hidden_pass": false,
       "battery_valid": false,
       "n_discriminating": 2
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.141519,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 76.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 70.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 35.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        },
+        {
+          "rung": "codex_cli",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 98.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "solved_at": "inproc_repair2",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.042144,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 56.7,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "inproc_repair2",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 6
     }
   ],
-  "solved": 5,
-  "committed": 5,
+  "solved": 6,
+  "committed": 6,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 5
+  "missed": 6
 }
