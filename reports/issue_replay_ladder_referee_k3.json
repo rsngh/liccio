@@ -5,15 +5,15 @@
   "fair_stop_referee": true,
   "best_of_k": 3,
   "n_bundles": 20,
-  "completed": 6,
+  "completed": 7,
   "stop_rung": {
     "inproc_repair2": 1,
     "gemini_cli": 1,
-    "claude_code": 0,
+    "claude_code": 1,
     "codex_cli": 1,
     "unsolved": 3
   },
-  "elapsed_s": 2552.8,
+  "elapsed_s": 3454.9,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -309,10 +309,57 @@
       "commit_hidden_pass": false,
       "battery_valid": true,
       "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to @cached an",
+      "solved_at": "claude_code",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.052504,
+          "hinted": false,
+          "n_candidates": 6,
+          "elapsed_s": 378.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe change replaces the `selfish` parameter with `scoped`, but these have fun",
+          "mutation_validated": true
+        },
+        {
+          "rung": "gemini_cli",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 304.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: The fix is incomplete and doesn't implement the stated breaking changes.**\n\nThe ",
+          "mutation_validated": true
+        },
+        {
+          "rung": "claude_code",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.0,
+          "hinted": true,
+          "n_candidates": 1,
+          "elapsed_s": 70.2,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "claude_code",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 6
     }
   ],
-  "solved": 3,
-  "committed": 3,
+  "solved": 4,
+  "committed": 4,
   "false_commit": 0,
   "false_commit_rate": 0.0,
   "missed": 3
