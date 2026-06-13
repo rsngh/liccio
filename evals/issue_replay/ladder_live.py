@@ -57,6 +57,42 @@ def _attempt(rung: str, task: IssueReplayTask, root: Path, hint: str) -> tuple[s
     return produced, cost
 
 
+def _select_best(scores: dict) -> str:
+    """Rank pooled candidates: prefer referee-acceptable (battery accept()), then weighted
+    discrimination×guard, then raw score (P12 W2 selector). Returns the winning candidate id."""
+    def rank(item):
+        _id, s = item
+        return (s.accept(), round(s.disc_frac * s.guard_frac, 4), s.score)
+    return max(scores.items(), key=rank)[0]
+
+
+def _attempt_k(rung: str, task: IssueReplayTask, root: Path, hint: str, *, k: int = 1,
+               battery=None, client=None) -> tuple[str, float, int]:
+    """Fair best-of-k for the CHEAP rung (P12 W2). guided_repair samples k candidates scored by the
+    battery — it NEVER reads the hidden test, so selection stays fair — then score_pool applies
+    cross-candidate guard consensus and _select_best picks the candidate the referee then ratifies.
+    Vendor rungs / k<=1 fall back to a single fair attempt. Returns (selected_src, cost, n_candidates)."""
+    if rung != "inproc_repair2" or k <= 1 or battery is None:
+        produced, cost = _attempt(rung, task, root, hint)
+        return produced, cost, 1
+    from evals.issue_replay.guided_repair import guided_repair
+    from evals.issue_replay.run import _MODELS
+
+    from acp.verification.repair_battery import score_pool
+    res = guided_repair(task, root / "gr", model_id=_MODELS["gemini"][0], rate=_MODELS["gemini"][1],
+                        client=client, search_mode="greedy", k=k, rounds=2, battery=battery,
+                        record_candidates=True)
+    cands = res.telemetry.get("candidates", [])
+    if not cands:
+        return res.module_src, res.cost_usd, 0
+    pool = [{"id": f"c{i}", "src": c["src"], "diff": _unified(task.buggy, c["src"])}
+            for i, c in enumerate(cands)]
+    scores = score_pool(battery, pool, workspace_root=root / "pool")
+    best_id = _select_best(scores)
+    best_src = next(c["src"] for c in pool if c["id"] == best_id)
+    return best_src, res.cost_usd, len(pool)
+
+
 def _spec_focus(b: IssueReplayTask):
     """(spec, focus_src, focus_spans) for a bundle — reuses the localize/extract path (fair: spec +
     public test + buggy focus only, never the hidden test)."""
@@ -71,7 +107,7 @@ def _spec_focus(b: IssueReplayTask):
 
 
 def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path | None = None,
-               referee: bool = False, client=None) -> dict:
+               referee: bool = False, client=None, k: int = 1) -> dict:
     per_bundle = []
     done_keys: set = set()
     if out is not None and out.exists():        # resume (container reclaims idle jobs): skip done bundles
@@ -101,7 +137,8 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
                              "low cost with a bounded false-commit rate (hidden test = offline grader only)?"
                              if referee else
                              "does the live verify-stop ladder with diagnosis handoff match offline economics and lift the union?"),
-                "hints": hints, "fair_stop_referee": referee, "n_bundles": len(bundles), "completed": done,
+                "hints": hints, "fair_stop_referee": referee, "best_of_k": k,
+                "n_bundles": len(bundles), "completed": done,
                 "stop_rung": stop_rung, "elapsed_s": round(time.time() - t0, 1),
                 "evidence_tier": ("live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; "
                                   "hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop"
@@ -138,10 +175,15 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
                                        focus_src=focus, focus_spans=spans)
             for rung in RUNGS:
                 t1 = time.time()
-                produced, cost = _attempt(rung, b, root / f"b{bi}_{rung}", hint)
+                n_cand = 1
+                if referee:
+                    produced, cost, n_cand = _attempt_k(rung, b, root / f"b{bi}_{rung}", hint,
+                                                        k=k, battery=bat, client=client)
+                else:
+                    produced, cost = _attempt(rung, b, root / f"b{bi}_{rung}", hint)
                 hidden, public = verify(b, root / f"v{bi}_{rung}", module_src=produced)  # GRADER only in referee mode
                 row = {"rung": rung, "hidden_pass": hidden, "public_pass": public,
-                       "cost_usd": round(cost, 6), "hinted": bool(hint),
+                       "cost_usd": round(cost, 6), "hinted": bool(hint), "n_candidates": n_cand,
                        "elapsed_s": round(time.time() - t1, 1)}
                 stop = hidden
                 if referee:
@@ -200,6 +242,8 @@ def main() -> int:
     ap.add_argument("--no-hints", action="store_true", help="ablation: plain relay without handoff")
     ap.add_argument("--referee", action="store_true",
                     help="use the AUTO-REFEREE as the FAIR stop-signal (hidden test = offline grader only)")
+    ap.add_argument("--k", type=int, default=1,
+                    help="best-of-k on the cheap rung in referee mode (fair: guided_repair + score_pool select)")
     ap.add_argument("--out", default="reports/issue_replay_ladder_live.json")
     args = ap.parse_args()
     bundles = [IssueReplayTask(**d) for d in json.loads(Path(args.bundle_file).read_text())]
@@ -210,7 +254,7 @@ def main() -> int:
         from evals.issue_replay.guided_repair_phase0 import _client
         client = _client()
     rep = run_ladder(bundles, hints=not args.no_hints, out=Path(args.out),
-                     referee=args.referee, client=client)
+                     referee=args.referee, client=client, k=args.k)
     Path(args.out).write_text(json.dumps(rep, indent=2) + "\n")
     if rep.get("fair_stop_referee"):
         print(f"\n=== LADDER REFEREE === solved {rep['solved']}/{rep['n_bundles']} | committed {rep['committed']} | "
