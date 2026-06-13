@@ -517,3 +517,40 @@ reproduces (best-single coverage, cheap agent doing most of the work); the diver
 unproven at n=12; and the decisive open problem is a calibrated verify-stop. Artifacts:
 `reports/swebench_lite_slice.json`, `reports/swebench_solve_{gemini_cli,claude_code,codex_cli}.json`,
 `reports/swebench_router_eval.json`.
+
+## P9 addendum — both follow-ups: pinned-env corpus expansion + the fair verify-stop (honest)
+
+Two tracks requested after the initial P9 slice.
+
+**Track A — lift the fair-task count (pinned per-task envs).** Root cause of the 12-task cap was that
+gold needs SWE-bench's per-task pinned dependency versions. Fix: `prepare()` now reads
+`swebench.harness.constants.MAP_REPO_VERSION_TO_SPECS[repo][version]` and builds the venv at the spec's
+**pinned python** (`uv venv --seed --python X.Y`) + installs the **pinned pip_packages** + runs the spec
+install cmd — no Docker. Effect: the hermetic-fair rate jumped from **~29% → ~65–90%** of prepared tasks;
+the pytest/sphinx/flask/pylint slice expands to **~25 fair tasks** (from 12) — 2× the statistical power.
+(sympy is excluded: its FAIL_TO_PASS are bare test names run by a custom runner, not pytest nodeids — a
+separate grading path.)
+
+**Track B — the fair verify-stop (the actual breakthrough lever).** The P9 routing economics used an
+*oracle* stop. The fair version (`swebench_verify_stop.py`): an LLM writes a reproduction test from the
+problem_statement only; it is admitted iff it **fails on the buggy base** (proven to reproduce, P8's
+discipline); a candidate is "verified" iff the admitted repros pass. Validation on 6 fair tasks (does the
+signal verify gold but not buggy?):
+
+  **0/6 discriminate.** All 6 produced repros that reproduce the bug on buggy (admitted 6/6) — but
+  **gold fails them too** (gold_ok=False everywhere). The synthesized repro reproduces the *symptom* yet
+  encodes a slightly-wrong *expected behaviour* the true fix doesn't satisfy. As a stop signal it would
+  **reject every correct fix**.
+
+This is the unifying finding of the whole investigation: **the synthesized-verifier discrimination
+ceiling (P8) is the binding constraint at every level** — single-module repair (P7/P8) and now
+multi-file SWE-bench routing (P9). The meta-router's *cost* win is real under an oracle stop, but in
+production it is gated by a fair verify-stop that, with current LLM test-synthesis, is not trustworthy on
+subtle real bugs. (Caveats: n=6 validation, haiku repro-generation; the next lever is a *differential*
+repro — "candidate behaviour differs from buggy on the bug-triggering input" — which trades missed-solves
+for false-commits rather than needing the exact correct value, but P8 shows this too has a ceiling.)
+
+**Net:** Track A succeeded (bigger, real, de-saturated slice). Track B honestly did not — and in failing
+it pinpoints, for the third time and now on the recognized benchmark, the one open problem that actually
+gates breakthrough: a trustworthy, fair verifier for subtle bugs. Artifacts:
+`reports/swebench_lite_slice_pinned.json`, `reports/swebench_verify_stop_validate.json`.
