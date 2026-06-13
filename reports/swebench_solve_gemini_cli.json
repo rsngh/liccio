@@ -1,9 +1,9 @@
 {
   "experiment": "swebench_solve",
   "agent": "gemini_cli",
-  "n": 14,
-  "solved": 3,
-  "solve_rate": 0.214,
+  "n": 19,
+  "solved": 4,
+  "solve_rate": 0.211,
   "per_task": [
     {
       "instance_id": "pytest-dev__pytest-11148",
@@ -172,6 +172,66 @@
       "pass_to_pass_kept": false,
       "solved": false,
       "wall_s": 156.2
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7432",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 14,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 196.9
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7373",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 21,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 156.6
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7220",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 111,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 295.8
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7168",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 168.5
+    },
+    {
+      "instance_id": "pytest-dev__pytest-6116",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": false,
+      "diff_lines": 0,
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 602.0
     }
   ]
 }
