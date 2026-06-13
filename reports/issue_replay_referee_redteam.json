@@ -1,52 +1,16 @@
 {
   "experiment": "issue_replay_verifier_redteam",
-  "per_bundle": {
-    "0": {
-      "repo": "okunishinishi/python-stringcase",
-      "issue": "Fix alphanumcase for Python 3",
-      "overfit_fools_primary": true,
-      "mutation_score": 0.0,
-      "gold_pass": true,
-      "overfit_pass": false,
-      "gold_reason": "accepted",
-      "overfit_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed change replaces all algorithmic implementations with hardcoded lookup tables that",
-      "battery_valid": true,
-      "n_checks_generated": 8,
-      "checks_surviving": 6,
-      "detected": true
-    },
-    "1": {
-      "repo": "mahmoud/boltons",
-      "issue": "fix(human_readable_list): altering f-string syntax to have b",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "2": {
-      "repo": "mahmoud/boltons",
-      "issue": "fix strutils",
-      "overfit_fools_primary": true,
-      "mutation_score": 0.0,
-      "gold_pass": false,
-      "overfit_pass": false,
-      "gold_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
-      "overfit_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
-      "battery_valid": false,
-      "n_checks_generated": 0,
-      "checks_surviving": 0,
-      "detected": false
-    },
-    "3": {
-      "repo": "mahmoud/boltons",
-      "issue": "Fix warnings in python3.7",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    },
-    "4": {
-      "repo": "mahmoud/boltons",
-      "issue": "fix OneToOne.update behavior with empty iterables",
-      "overfit_fools_primary": false,
-      "skipped": "could not synthesize a fooling patch"
-    }
+  "per_bundle": {},
+  "cost_usd": 0.0,
+  "summary": {
+    "bundles_attempted": 0,
+    "overfit_fooled_primary": 0,
+    "gate_detected_overfit": 0,
+    "gate_detection_rate": null,
+    "gold_accepted": 0,
+    "gold_false_rejection_rate": null,
+    "comparison": "the old patch-equivalence probe had 95% false rejection; this gate must beat that to be shippable",
+    "evidence_tier": "live red-team; overfit patches verified to fool the primary signal; gate checks generated from issue text only (haiku), differential consensus"
   },
-  "cost_usd": 0.1004507
+  "elapsed_s": 0.0
 }
