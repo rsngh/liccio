@@ -5,12 +5,12 @@
   "fair_stop_referee": true,
   "best_of_k": 1,
   "n_bundles": 52,
-  "completed": 1,
+  "completed": 12,
   "stop_rung": {
     "inproc_repair2": 1,
-    "unsolved": 0
+    "unsolved": 11
   },
-  "elapsed_s": 71.7,
+  "elapsed_s": 2001.9,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -35,11 +35,264 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix(human_readable_list): altering f-string syntax to have backwards c",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.089597,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 37.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix strutils",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.079445,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 35.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.063666,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 44.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **DEFECT FOUND:**\n\nThe code excerpt is truncated mid-function at line `self.result.app` in `HTMLTextExt",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.017589,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 45.2,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix moves `keys_vals.extend(kw.items())` outside the conditional",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 12
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.1212,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 38.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to @cached an",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.031317,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 68.1,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe change replaces `selfish=True` (default) with `scoped=True` (default) for",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 6
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#302)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.033427,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 115.1,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe fix contains a logical inconsistency that produces wrong results: lines 3",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 8
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_apparent_index, ",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.067683,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 19.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix IndexedSet.index() to account for removals, fixes #240",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.083168,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 18.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 2
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.094956,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 32.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix barrellist sort with multiple lists",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.068959,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 31.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
     }
   ],
   "solved": 1,
   "committed": 1,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 0
+  "missed": 3
 }

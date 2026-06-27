@@ -5,12 +5,12 @@
   "fair_stop_referee": true,
   "best_of_k": 1,
   "n_bundles": 52,
-  "completed": 1,
+  "completed": 9,
   "stop_rung": {
     "inproc_sonnet": 1,
-    "unsolved": 0
+    "unsolved": 8
   },
-  "elapsed_s": 73.1,
+  "elapsed_s": 1908.2,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -35,11 +35,195 @@
       "commit_hidden_pass": true,
       "battery_valid": true,
       "n_discriminating": 4
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix(human_readable_list): altering f-string syntax to have backwards c",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.210178,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 120.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix strutils",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.208239,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 120.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.231435,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 126.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix OneToOne.update behavior with empty iterables",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.034457,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 20.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest objection is that **all 13 discriminating checks still fail with status \"still-buggy\"**, ",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 13
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Test and fix for #348 (#349)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.254939,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 112.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "cacheutils: (breaking change) adding the scoped argument to @cached an",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.106044,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 52.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: Semantic inversion bug in the parameter mapping.**\n\nOn line 629, the code maps `",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 4
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix infinite daterange issue when start and stop is same (#302)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.099709,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 139.4,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix removes the entire docstring without replacing it, which vio",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 7
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "add more IndexedSet.index() tests and fix typo in get_apparent_index, ",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_sonnet",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.091572,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 22.9,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
     }
   ],
   "solved": 1,
   "committed": 1,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 0
+  "missed": 2
 }
