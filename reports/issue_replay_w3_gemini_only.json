@@ -1,0 +1,45 @@
+{
+  "experiment": "issue_replay_ladder_referee",
+  "question": "does the live ladder with the AUTO-REFEREE as the FAIR stop-signal solve at low cost with a bounded false-commit rate (hidden test = offline grader only)?",
+  "hints": true,
+  "fair_stop_referee": true,
+  "best_of_k": 1,
+  "n_bundles": 52,
+  "completed": 1,
+  "stop_rung": {
+    "inproc_repair2": 1,
+    "unsolved": 0
+  },
+  "elapsed_s": 71.7,
+  "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
+  "per_bundle": [
+    {
+      "repo": "okunishinishi/python-stringcase",
+      "issue": "Fix alphanumcase for Python 3",
+      "solved_at": "inproc_repair2",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.013597,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 26.7,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "inproc_repair2",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 5
+    }
+  ],
+  "solved": 1,
+  "committed": 1,
+  "false_commit": 0,
+  "false_commit_rate": 0.0,
+  "missed": 0
+}
