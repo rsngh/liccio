@@ -114,7 +114,9 @@ def _spec_focus(b: IssueReplayTask):
 
 
 def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path | None = None,
-               referee: bool = False, client=None, k: int = 1) -> dict:
+               referee: bool = False, client=None, k: int = 1,
+               rungs: tuple[str, ...] | None = None) -> dict:
+    rungs = rungs or RUNGS                       # P12 W3: optional rung subset (e.g. in-process A/B)
     per_bundle = []
     done_keys: set = set()
     if out is not None and out.exists():        # resume (container reclaims idle jobs): skip done bundles
@@ -124,7 +126,7 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
             print(f"resume: {len(done_keys)} bundles already done", flush=True)
         except Exception:  # noqa: BLE001
             per_bundle, done_keys = [], set()
-    stop_rung: dict[str, int] = dict.fromkeys([*RUNGS, "unsolved"], 0)
+    stop_rung: dict[str, int] = dict.fromkeys([*rungs, "unsolved"], 0)
     for r in per_bundle:                         # rebuild stop-rung tally from resumed rows
         stop_rung[r.get("solved_at", "unsolved")] = stop_rung.get(r.get("solved_at", "unsolved"), 0) + 1
     t0 = time.time()
@@ -180,7 +182,7 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
                                        extra_files=b.extra_files, baseline_src=b.buggy,
                                        public_test=b.public_test, workspace_root=root / f"bat{bi}",
                                        focus_src=focus, focus_spans=spans)
-            for rung in RUNGS:
+            for rung in rungs:
                 t1 = time.time()
                 n_cand = 1
                 if referee:
@@ -242,6 +244,23 @@ def run_ladder(bundles: list[IssueReplayTask], *, hints: bool = True, out: Path 
     return rep
 
 
+def _resolve_rungs(rungs_arg: str | None, exclude_arg: str | None) -> tuple[str, ...]:
+    """Resolve the active rung subset from CLI args (P12 W3). Pure/testable; raises ValueError on
+    conflicting/unknown input. Default (both None) = the full RUNGS ladder."""
+    if rungs_arg and exclude_arg:
+        raise ValueError("use --rungs OR --exclude-rungs, not both")
+    if rungs_arg:
+        rungs = tuple(r.strip() for r in rungs_arg.split(",") if r.strip())
+        unknown = [r for r in rungs if r not in RUNGS]
+        if unknown:
+            raise ValueError(f"unknown rung(s): {unknown}; valid: {list(RUNGS)}")
+        return rungs
+    if exclude_arg:
+        drop = {r.strip() for r in exclude_arg.split(",")}
+        return tuple(r for r in RUNGS if r not in drop)
+    return RUNGS
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--bundle-file", required=True)
@@ -251,8 +270,16 @@ def main() -> int:
                     help="use the AUTO-REFEREE as the FAIR stop-signal (hidden test = offline grader only)")
     ap.add_argument("--k", type=int, default=1,
                     help="best-of-k on the cheap rung in referee mode (fair: guided_repair + score_pool select)")
+    ap.add_argument("--rungs", default=None,
+                    help="comma-separated rung subset to run (default: all RUNGS); e.g. 'inproc_repair2,inproc_sonnet'")
+    ap.add_argument("--exclude-rungs", default=None,
+                    help="comma-separated rungs to drop from the default RUNGS (alternative to --rungs)")
     ap.add_argument("--out", default="reports/issue_replay_ladder_live.json")
     args = ap.parse_args()
+    try:
+        rungs = _resolve_rungs(args.rungs, args.exclude_rungs)
+    except ValueError as e:
+        ap.error(str(e))
     bundles = [IssueReplayTask(**d) for d in json.loads(Path(args.bundle_file).read_text())]
     if args.limit:
         bundles = bundles[:args.limit]
@@ -261,7 +288,7 @@ def main() -> int:
         from evals.issue_replay.guided_repair_phase0 import _client
         client = _client()
     rep = run_ladder(bundles, hints=not args.no_hints, out=Path(args.out),
-                     referee=args.referee, client=client, k=args.k)
+                     referee=args.referee, client=client, k=args.k, rungs=rungs)
     Path(args.out).write_text(json.dumps(rep, indent=2) + "\n")
     if rep.get("fair_stop_referee"):
         print(f"\n=== LADDER REFEREE === solved {rep['solved']}/{rep['n_bundles']} | committed {rep['committed']} | "
