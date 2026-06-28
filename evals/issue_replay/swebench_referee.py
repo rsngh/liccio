@@ -153,11 +153,13 @@ def _parse_outcomes(text: str) -> dict[str, str] | None:
     \\S+::\\S+ pattern truncated at the first space, so PARAMETRIZED tests were invisible -> the guard
     silently missed regressions in them. Capture the full id up to the right-aligned verdict."""
     outcomes: dict[str, str] = {}
-    for m in re.finditer(r"^(\S.*?::.+?)\s+(PASSED|FAILED|ERROR)\b", text, re.MULTILINE):
+    # [ \t]+ (not \s+) between id and verdict: \s+ matches newlines and would pair a node id on one line
+    # with a verdict on the next.
+    for m in re.finditer(r"^(\S.*?::.+?)[ \t]+(PASSED|FAILED|ERROR)\b", text, re.MULTILINE):
         outcomes[m.group(1)] = m.group(2)
     if not outcomes:
         # fall back to the summary verb form "PASSED path::test" (older pytest -v formats)
-        for m in re.finditer(r"^(PASSED|FAILED|ERROR)\s+(\S.*::.+?)\s*$", text, re.MULTILINE):
+        for m in re.finditer(r"^(PASSED|FAILED|ERROR)[ \t]+(\S.*::.+?)[ \t]*$", text, re.MULTILINE):
             outcomes[m.group(2).strip()] = m.group(1)
     return outcomes or None
 
