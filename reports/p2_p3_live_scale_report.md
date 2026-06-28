@@ -738,7 +738,7 @@ in `reports/issue_replay_w3_{gemini,sonnet}_only.json`.
   committed counts are tiny (n=48, 2 vs 4) → wide CIs; the robust signal is the raw-capability overlap (solvers
   correlated) and the abstention rate. SWE-bench pool growth (Aider/OpenHands) remains deferred pending vendors.
 
-### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✗ (honest grading: false-commit 0.50 — no trustworthy positive verify signal yet; do NOT scale)
+### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✓ (honest grading: false-commit 0, committed-correct 1, missed 1 after fixing 3 mechanical bugs; recall partial; ready to scale)
 
 The single-module battery doesn't apply to SWE-bench, so the de-saturated routing win (P9: pool union 48% vs
 best-single 32%) was only proven under an *oracle* stop. New `swebench_referee.py` decides commit/escalate on
@@ -799,24 +799,36 @@ grader to the full SWE-bench criterion (`graded_solved = F2P AND P2P`; persist b
 | sphinx-10451 | ✗ (T/F) | ✓ (128) | ✗ | ✗ | ✗ | correct abstain (breaks P2P) |
 | pylint-6506 | ✗ (F/T) | ✓ (35) | ✗ | ✗ | ✗ | correct abstain |
 
-**Honest verdict — mechanism NOT yet trustworthy at the repo level; do NOT scale to 25.** The earlier "false-commit
-0" (v1–v4) was a grading artifact. Under full grading the referee commits a P2P-breaker and rejects a correct fix —
-false-commit rate 0.50, and debate this run was *anti-correlated* with correctness (accepted the wrong diff, rejected
-the right one). Three structural problems, now clearly ranked:
-1. **No reliable positive "fixes-without-breaking" signal.** Repro (the intended one) is dead — `repro_pass` 0/6
-   across every iteration, now correctly non-binding. That leaves only debate as the positive gate.
-2. **Debate is noisy and miscalibrated** for multi-file diffs: it accepts ~1–2/6, varies run-to-run, and does not
-   track correctness (v5: accepted pytest-11143/wrong, rejected pylint-5859/correct).
-3. **Regression guard under-covers PASS_TO_PASS.** Its module-name-matched ≤6-file discovery misses the tests that
-   actually break (pytest-11143: 424 guard tests clean, yet P2P breaks), so a clean guard does NOT imply no regression.
-   It is a *negative* signal with coverage holes, not a correctness signal.
+v5's 0.50 false-commit traced to two more bugs, now fixed:
 
-**What was fixed and what it bought:** the infra fixes are real and committed (guard clones from the local repo;
-survives collection errors; honest F2P+P2P grading) — the guard now *runs* everywhere and the metric no longer lies.
-But they revealed that the repo-level referee's hard part is unsolved: there is no trustworthy fair "is this fix
-correct" signal. **Next work (a real workstream, not a quick fix):** (a) repair the repro generator so it passes on
-correct fixes (then it becomes the positive signal); and/or (b) widen guard discovery toward the repo's full
-relevant test set; and (c) recalibrate or replace diff-debate. Only then is a 25-task sweep meaningful. This sharpens
-the cross-stack theme: the bottleneck is the **trustworthiness of the positive verify signal**, not solver capability
-or infra. Snapshots: `reports/swebench_referee_eval_gemini_pilot_v{1..4}.json` (+ current v5). Code:
-`swebench_referee.py`, `swebench_solve._solve_checkout`; pilot slice `reports/swebench_lite_slice_pilot.json`.
+**v6 — the repro was CORRUPTED, not "the LLM guesses wrong values".** `repro_pass` was 0/6 across v1–v5 because
+`_first_block` sliced `p[9:]` to strip ` ```python\n ` (7 chars, not 9) and `p[7:]` for ` ```python ` (6 chars) —
+chopping 1–2 leading **code** characters off every fenced repro → `SyntaxError`. `_run_repro_on` then misread the
+collection failure (`"1 error during collection"`, singular) as `fail`, so corrupted repros were *admitted* as
+bug-reproductions and could never pass. Fixed `_strip_lang` (drop the language tag line, eat no code) and the
+verdict classifier (syntax/import/collection → `error`, not `fail`; +4 regression tests). Effect: sphinx-11445's
+repro went 0 → **2/2 passing on the correct diff** (it now discriminates); pylint-5859 still 0/3 (genuine LLM
+over-specification of exact CLI output — a separate, harder problem).
+
+**v7 — with the repro working, require it again; demote debate to fallback.** v6 still showed false-commit 0.50:
+the now-trustworthy repro correctly withheld pytest-11143 (`repro_pass=False`), but the temporary "repro non-veto"
+rule let **debate alone** commit it. Reverted to `accept = regression_ok AND (repro_pass when admissible, else
+debate_accept)`. **v7 result: committed 1 / correct 1 / false-commit 0 (rate 0.0) / missed 1 — trust gate MET on
+the pilot.** Decisively: pytest-11143 *and* pylint-6506 both had `debate=True` but `repro_pass=False` and were
+correctly **rejected** — debate would have committed two wrong diffs; the required repro blocked both.
+
+**Verdict — mechanism trustworthy on the pilot (false-commit 0), recall partial; the earlier failure was three
+mechanical bugs, not a dead end.** Full arc: v1 0/0/0 (guard fail-closed via github 403) → v3 guard clones local →
+v4 guard survives collection errors (runs everywhere) → "honest grading" exposed F2P-only hid a P2P-breaker →
+v6 fixed repro corruption → v7 repro-required ⇒ **false-commit 0, committed-correct 1, missed 1**. Remaining limits,
+honestly: (1) **recall is low** — pylint-5859 (correct) is missed because its LLM repro over-specifies exact CLI
+output (`repro_pass=False`); improving repro robustness lifts recall. (2) **a known residual trust hole** — the
+repro tests *bug-fixed* (F2P), not *no-regression* (P2P); a P2P-breaker whose repro happens to pass could still slip
+through, since the guard's module-matched ≤6-file discovery can miss the breaking P2P test (pytest-11143's break was
+caught only because its repro failed this run, not by the guard). Widening guard discovery closes that hole.
+**Now a 25-task sweep is meaningful** (pilot meets the trust gate); it needs gemini_cli solve diffs regenerated for
+all 25 (~4–5h) then the referee. This sharpens the cross-stack theme: the bottleneck was the **trustworthiness of
+the positive verify signal** — and it was a corruption bug suppressing it, now fixed. Snapshots:
+`reports/swebench_referee_eval_gemini_pilot_v{1..6}.json` (+ current v7). Code: `swebench_referee.py`,
+`swebench_solve._solve_checkout`, `swebench_verify_stop.{_first_block,_run_repro_on}`; pilot slice
+`reports/swebench_lite_slice_pilot.json`.
