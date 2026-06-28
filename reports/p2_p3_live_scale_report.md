@@ -738,7 +738,7 @@ in `reports/issue_replay_w3_{gemini,sonnet}_only.json`.
   committed counts are tiny (n=48, 2 vs 4) → wide CIs; the robust signal is the raw-capability overlap (solvers
   correlated) and the abstention rate. SWE-bench pool growth (Aider/OpenHands) remains deferred pending vendors.
 
-### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✓ (honest grading: false-commit 0, committed-correct 1, missed 1 after fixing 3 mechanical bugs; recall partial; ready to scale)
+### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✓ (trust SOLID: false-commit 0 stable; recall is the open problem — bottlenecked by stochastic LLM repro generation)
 
 The single-module battery doesn't apply to SWE-bench, so the de-saturated routing win (P9: pool union 48% vs
 best-single 32%) was only proven under an *oracle* stop. New `swebench_referee.py` decides commit/escalate on
@@ -828,7 +828,25 @@ through, since the guard's module-matched ≤6-file discovery can miss the break
 caught only because its repro failed this run, not by the guard). Widening guard discovery closes that hole.
 **Now a 25-task sweep is meaningful** (pilot meets the trust gate); it needs gemini_cli solve diffs regenerated for
 all 25 (~4–5h) then the referee. This sharpens the cross-stack theme: the bottleneck was the **trustworthiness of
-the positive verify signal** — and it was a corruption bug suppressing it, now fixed. Snapshots:
-`reports/swebench_referee_eval_gemini_pilot_v{1..6}.json` (+ current v7). Code: `swebench_referee.py`,
-`swebench_solve._solve_checkout`, `swebench_verify_stop.{_first_block,_run_repro_on}`; pilot slice
-`reports/swebench_lite_slice_pilot.json`.
+the positive verify signal** — and it was a corruption bug suppressing it, now fixed.
+
+**v8 (recall/guard hardening) — recall is NOISE-BOUND, not just over-specification.** Two fixes: (a) **guard
+parametrized parsing** — `_per_test_outcomes`/`_parse_outcomes` used `\S+::\S+`, which truncated parametrized
+node ids at the first space (`test_x[assert a == b]`), making parametrized tests *invisible* to the guard so it
+silently missed regressions in them (pytest-11143 now parses 22 such tests it had dropped); (b) **de-biased the
+repro prompt** away from asserting exact CLI/log output. Result: committed 0 / correct 0 / **false-commit 0** /
+missed 2 — and the key observation is that **sphinx-11445's `repro_pass` flipped True (v7) → False (v8) on the
+same diff.** The LLM repro generator is **stochastic**, so recall is not merely low, it is *unstable* run-to-run;
+the prompt change didn't help (and `verify_stop`'s ALL-admitted-must-pass rule compounds it — one over-strict
+repro of N sinks the candidate). Trust still holds (false-commit 0) because the repro requirement is conservative.
+**Honest residual on the guard:** parametrized parsing is a real fix, but pytest-11143's specific P2P break is
+*still* not caught — beyond parsing, the guard's whole-file run and the grader's per-nodeid invocation disagree on
+that test's outcome (ordering/fixtures), a fundamental limit of replicating a grader with a generic pytest run.
+
+**Net honest verdict:** **trust is solid (false-commit 0, stable across v7–v8); recall is the open problem and it is
+bottlenecked by LLM repro-generation variance** — a deeper synthesis problem, not a quick fix. Candidate next
+levers (unproven): majority-vote instead of ALL-must-pass in `verify_stop` (tolerate one over-strict repro) + higher
+`n`; or a non-LLM/metamorphic positive signal. A 25-task sweep would faithfully report this profile (high precision,
+low+noisy recall). Snapshots: `reports/swebench_referee_eval_gemini_pilot_v{1..7}.json` (+ current v8). Code:
+`swebench_referee.{decide,_parse_outcomes,regression_guard}`, `swebench_solve._solve_checkout`,
+`swebench_verify_stop.{_first_block,_run_repro_on,_REPRO_PROMPT}`; pilot slice `reports/swebench_lite_slice_pilot.json`.
