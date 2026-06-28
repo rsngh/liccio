@@ -738,7 +738,7 @@ in `reports/issue_replay_w3_{gemini,sonnet}_only.json`.
   committed counts are tiny (n=48, 2 vs 4) → wide CIs; the robust signal is the raw-capability overlap (solvers
   correlated) and the abstention rate. SWE-bench pool growth (Aider/OpenHands) remains deferred pending vendors.
 
-### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✓ (mechanism proven: 1 correct commit, false-commit 0; throughput gated by per-repo guard infra)
+### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✗ (honest grading: false-commit 0.50 — no trustworthy positive verify signal yet; do NOT scale)
 
 The single-module battery doesn't apply to SWE-bench, so the de-saturated routing win (P9: pool union 48% vs
 best-single 32%) was only proven under an *oracle* stop. New `swebench_referee.py` decides commit/escalate on
@@ -781,14 +781,42 @@ history) made the guard actually run.
 | pylint-5859 | ✓ | ✗ (0) | ✗ | ✓ | ✗ | **miss** — correct diff, guard fail-closed on pylint suite |
 | pylint-6506 | ✗ | ✗ (0) | ✗ | ✗ | ✗ | abstain (wrong diff) |
 
-**Verdict — trust gate MET, throughput partial, mechanism PROVEN.** The repo-level fair referee now commits a
-correct multi-file diff with **false-commit 0** (≤0.15 gate met), proving the mechanism generalises beyond
-flask-5063 once the guard can run. Committed-correct is 1 vs best-single-agent's 2 fully-solved on these 6 — the
-gap is **one fixable miss** (pylint-5859: a correct diff whose only blocker is the guard fail-closing on pylint's
-test suite under our plain `pytest` invocation). The repro signal remains weak (`repro_pass` 0/6, now correctly
-non-binding); debate is the load-bearing positive signal and behaves sensibly (commits the clean fix, rejects the
-wrong diffs and the P2P-breaker). **Remaining work before the full 25:** per-repo guard test-running robustness so
-pylint/pytest-self suites don't fail-close (the throughput ceiling), then scale. This still echoes the W3 theme —
-abstention, not solver capability, gates throughput — but the repo-level abstention is now mostly **infra
-fail-close**, not over-strict logic. Code: `swebench_referee.py`, `swebench_solve._solve_checkout`; pilot slice
-`reports/swebench_lite_slice_pilot.json`.
+**v4 (guard now runs on every repo) → exposed a hidden trust bug.** `--continue-on-collection-errors` fixed the
+fail-close (a single unimportable test file — missing dev dep like GitPython/attrs — was aborting the whole pytest
+session); `reg` is now computed on all 6 (n = 35–424). But v4 still showed "committed-correct 1 / false-commit 0"
+**only because the eval graded FAIL_TO_PASS alone.** Its one commit, `pytest-11143`, *breaks PASS_TO_PASS*
+(`f2p=True, p2p=False`) — a real regression the guard's module-matched ≤6-file discovery never sampled. Fixed the
+grader to the full SWE-bench criterion (`graded_solved = F2P AND P2P`; persist both).
+
+**v5 (honest grading) — trust gate FAILS.** committed 2 / **committed-correct 1 / false-commit 1 (rate 0.50)** / missed 1:
+
+| task | solved (f2p/p2p) | reg-guard (n) | repro | debate | accept | outcome |
+|---|---|---|---|---|---|---|
+| sphinx-11445 | ✓ (T/T) | ✓ (53) | ✗ | ✓ | ✓ | correct commit |
+| **pytest-11143** | ✗ (T/**F**) | ✓ (424) | ✗ | ✓ | **✓** | **FALSE-COMMIT — breaks P2P, guard didn't sample it** |
+| pylint-5859 | ✓ (T/T) | ✓ (59) | ✗ | ✗ | ✗ | **miss** — correct diff, debate rejected it |
+| flask-5063 | ✗ (F/F) | ✓ (127) | ✗ | ✗ | ✗ | correct abstain |
+| sphinx-10451 | ✗ (T/F) | ✓ (128) | ✗ | ✗ | ✗ | correct abstain (breaks P2P) |
+| pylint-6506 | ✗ (F/T) | ✓ (35) | ✗ | ✗ | ✗ | correct abstain |
+
+**Honest verdict — mechanism NOT yet trustworthy at the repo level; do NOT scale to 25.** The earlier "false-commit
+0" (v1–v4) was a grading artifact. Under full grading the referee commits a P2P-breaker and rejects a correct fix —
+false-commit rate 0.50, and debate this run was *anti-correlated* with correctness (accepted the wrong diff, rejected
+the right one). Three structural problems, now clearly ranked:
+1. **No reliable positive "fixes-without-breaking" signal.** Repro (the intended one) is dead — `repro_pass` 0/6
+   across every iteration, now correctly non-binding. That leaves only debate as the positive gate.
+2. **Debate is noisy and miscalibrated** for multi-file diffs: it accepts ~1–2/6, varies run-to-run, and does not
+   track correctness (v5: accepted pytest-11143/wrong, rejected pylint-5859/correct).
+3. **Regression guard under-covers PASS_TO_PASS.** Its module-name-matched ≤6-file discovery misses the tests that
+   actually break (pytest-11143: 424 guard tests clean, yet P2P breaks), so a clean guard does NOT imply no regression.
+   It is a *negative* signal with coverage holes, not a correctness signal.
+
+**What was fixed and what it bought:** the infra fixes are real and committed (guard clones from the local repo;
+survives collection errors; honest F2P+P2P grading) — the guard now *runs* everywhere and the metric no longer lies.
+But they revealed that the repo-level referee's hard part is unsolved: there is no trustworthy fair "is this fix
+correct" signal. **Next work (a real workstream, not a quick fix):** (a) repair the repro generator so it passes on
+correct fixes (then it becomes the positive signal); and/or (b) widen guard discovery toward the repo's full
+relevant test set; and (c) recalibrate or replace diff-debate. Only then is a 25-task sweep meaningful. This sharpens
+the cross-stack theme: the bottleneck is the **trustworthiness of the positive verify signal**, not solver capability
+or infra. Snapshots: `reports/swebench_referee_eval_gemini_pilot_v{1..4}.json` (+ current v5). Code:
+`swebench_referee.py`, `swebench_solve._solve_checkout`; pilot slice `reports/swebench_lite_slice_pilot.json`.
