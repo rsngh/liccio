@@ -1,0 +1,28 @@
+{
+  "experiment": "swebench_referee_eval",
+  "question": "does the repo-level FAIR referee (regression-guard + admitted-repro + diff-debate) commit correct multi-file diffs with a bounded false-commit rate? (FAIL_TO_PASS = grader only)",
+  "evidence_tier": "real SWE-bench Lite, no Docker; fair signals only in the decision; held-out FAIL_TO_PASS used solely to grade commits",
+  "diffs_source": "reports/swebench_solve_gemini_cli_pilot.json",
+  "n": 1,
+  "committed": 0,
+  "committed_correct": 0,
+  "false_commit": 0,
+  "false_commit_rate": 0.0,
+  "missed": 1,
+  "solvable_in_diffs": 1,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "accept": false,
+      "graded_solved": true,
+      "regression_ok": false,
+      "repro_admissible": true,
+      "repro_pass": false,
+      "debate_accept": true,
+      "n_repro_admitted": 3,
+      "guard_tests_run": 0,
+      "reason": "regression guard: candidate breaks an existing passing test (or unverifiable)"
+    }
+  ]
+}
