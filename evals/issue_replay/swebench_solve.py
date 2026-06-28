@@ -52,7 +52,11 @@ def _solve_checkout(inst: SweInstance, agent: str, *, install_timeout: int = 480
     if not Path(py).exists() and not prepare(inst, install_timeout=install_timeout).ok:
         return None          # ensure the env exists (prepare builds + installs it)
     if not repo.exists():
-        rc, log = _sh(["git", "clone", "--quiet", f"https://github.com/{inst.repo}", str(repo)], timeout=300)
+        # clone from the LOCAL prepared repo when present (offline + fast, and the sandbox blocks the
+        # github clone) — it already holds base_commit in history; fall back to github otherwise.
+        local = work / "repo"
+        src = str(local) if (local / ".git").exists() else f"https://github.com/{inst.repo}"
+        rc, log = _sh(["git", "clone", "--quiet", src, str(repo)], timeout=300)
         if rc:
             return None
     _sh(["git", "checkout", "-q", "-f", inst.base_commit], cwd=repo)
