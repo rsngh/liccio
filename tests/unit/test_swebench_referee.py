@@ -43,24 +43,18 @@ def test_is_test_path() -> None:
 
 
 def test_decide_truth_table() -> None:
-    # accept iff regression_ok AND (debate_accept OR repro_pass)
+    # accept iff regression_ok AND (repro_pass when admissible, else debate_accept)
     # regression failure is the hard fail-closed gate -> dominates everything
     ok, _ = decide(regression_ok=False, repro_admissible=True, repro_pass=True, debate_accept=True)
     assert not ok
-    # W4 fix: an admitted repro that still FAILS no longer vetoes — debate-accept carries it
-    ok, why = decide(regression_ok=True, repro_admissible=True, repro_pass=False, debate_accept=True)
-    assert ok and "repro-fail-nonblocking" in why
-    # passing repro + debate-accept -> accept
-    ok, why = decide(regression_ok=True, repro_admissible=True, repro_pass=True, debate_accept=True)
-    assert ok and "repro-pass" in why
-    # no admissible repro -> decision rests on guard + debate
-    ok, why = decide(regression_ok=True, repro_admissible=False, repro_pass=False, debate_accept=True)
-    assert ok and "no-admissible-repro" in why
-    # W4 fix: a PASSING repro ratifies the fix over a debate rejection
+    # repro admissible -> it is REQUIRED: a passing repro commits regardless of debate
     ok, why = decide(regression_ok=True, repro_admissible=True, repro_pass=True, debate_accept=False)
-    assert ok and "repro-confirmed" in why
-    # debate veto with no passing repro -> reject
-    ok, _ = decide(regression_ok=True, repro_admissible=True, repro_pass=False, debate_accept=False)
+    assert ok and "repro" in why
+    # repro admissible but FAILS -> reject even if debate accepts (debate alone commits P2P-breakers)
+    ok, _ = decide(regression_ok=True, repro_admissible=True, repro_pass=False, debate_accept=True)
     assert not ok
+    # no admissible repro -> fall back to debate
+    ok, why = decide(regression_ok=True, repro_admissible=False, repro_pass=False, debate_accept=True)
+    assert ok and "debate-accept" in why
     ok, _ = decide(regression_ok=True, repro_admissible=False, repro_pass=False, debate_accept=False)
     assert not ok

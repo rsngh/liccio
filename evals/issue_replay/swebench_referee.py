@@ -18,10 +18,10 @@ FAIL_TO_PASS is the GRADER, never an input to the decision:
      the candidate. Skipped when no repro is admissible (then the decision rests on guard + debate).
   3. DIFF-DEBATE: debate.debate_verdict (proposer/critic/judge) on the unified diff.
 
-Accept iff regression_ok AND (debate_accept OR repro_pass): the regression guard is the hard fail-closed
-gate, debate is the primary positive signal, and a PASSING repro can ratify a fix over a debate rejection.
-An admitted-but-failing repro does NOT veto (W4 pilot: synthesized repros fail even on correct fixes). The
-guard confirms regressions are deterministic (stable double base-run + re-confirm) to avoid flaky false-
+Accept iff regression_ok AND (repro_pass when a repro is admissible, else debate_accept): the regression
+guard is the hard fail-closed gate; an admissible fails-on-buggy reproduction test is the PRIMARY required
+correctness signal (far stronger than diff-debate, which alone commits P2P-breakers); debate is the
+FALLBACK only when no repro is admissible. The guard confirms regressions are deterministic (stable double base-run + re-confirm) to avoid flaky false-
 positives. Graded by the FULL held-out criterion (FAIL_TO_PASS passes AND PASS_TO_PASS kept = SWE-bench
 solved): FALSE-COMMIT = accepted but not fully solved (incl. a committed diff that breaks PASS_TO_PASS);
 MISSED = not accepted but actually solved. Reuses swebench_adapter / swebench_solve / swebench_verify_stop / debate.
@@ -210,22 +210,24 @@ def _apply(repo: Path, diff: str) -> bool:
 
 def decide(regression_ok: bool, repro_admissible: bool, repro_pass: bool,
            debate_accept: bool) -> tuple[bool, str]:
-    """Pure decision core (unit-tested). Accept iff regression_ok AND (debate_accept OR repro_pass).
+    """Pure decision core (unit-tested). Accept iff regression_ok AND (repro_pass when a repro is
+    admissible, else debate_accept).
 
-    The regression guard is the hard fail-closed gate (never commit a confirmed regression). Repro is a
-    POSITIVE-only signal, not a veto: the W4 pilot showed synthesized repros fail even on correct fixes,
-    so an admitted-but-failing repro must not hard-reject — the decision leans on regression+debate, and a
-    PASSING repro can ratify a fix over a debate rejection. Returns (accept, reason)."""
+    The regression guard is the hard fail-closed gate. When a FAIR reproduction test is admissible
+    (fails on the buggy base), it is the PRIMARY correctness signal and is REQUIRED: a fails-on-buggy /
+    passes-on-candidate repro is far stronger evidence than diff-debate, which the W4 pilot showed will
+    commit P2P-breakers on its own (v5/v6: debate accepted pytest-11143, which breaks PASS_TO_PASS, while
+    the repro correctly withheld it). Debate is the FALLBACK only when no repro is admissible. (Repro is
+    trustworthy here only after fixing the extraction corruption that previously made it 0/6.)"""
     if not regression_ok:
         return False, "regression guard: candidate breaks an existing passing test (or unverifiable)"
-    repro_confirms = repro_admissible and repro_pass
+    if repro_admissible:
+        if repro_pass:
+            return True, "accept (regression-clean, repro fails-on-buggy/passes-on-candidate)"
+        return False, "reproduction test admitted but the candidate does not make it pass"
     if debate_accept:
-        clause = ("repro-pass" if repro_confirms
-                  else "repro-fail-nonblocking" if repro_admissible else "no-admissible-repro")
-        return True, f"accept (regression-clean, debate-accept, {clause})"
-    if repro_confirms:
-        return True, "accept (regression-clean, repro-confirmed over debate-reject)"
-    return False, "diff-debate: critic found a concrete defect (and no passing repro to ratify)"
+        return True, "accept (regression-clean, no admissible repro, debate-accept)"
+    return False, "no admissible repro and diff-debate rejects"
 
 
 def referee(inst: SweInstance, candidate_diff: str, *, client, model: str = "claude-haiku-4-5",
