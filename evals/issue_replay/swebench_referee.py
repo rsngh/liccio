@@ -129,9 +129,13 @@ def _per_test_outcomes(repo: Path, py: str, test_files: list[str], *, timeout: i
     try:
         import subprocess
         # -v prints one "nodeid PASSED|FAILED|ERROR" line per test (quiet mode only prints dots,
-        # which carry no per-test outcome to diff base-vs-candidate against)
+        # which carry no per-test outcome to diff base-vs-candidate against).
+        # --continue-on-collection-errors: a single unimportable test file (missing dev-only dep, e.g.
+        # GitPython/attrs not in the prepared venv) otherwise ABORTS the whole session -> no outcomes ->
+        # the guard fail-closes on the entire repo. With the flag, collectable tests still run; the
+        # uncollectable file reports ERROR (never in base_pass, so never counted as a regression).
         p = subprocess.run([py, "-m", "pytest", "-p", "no:cacheprovider", "--tb=no", "-v",
-                            "--no-header", *test_files],
+                            "--no-header", "--continue-on-collection-errors", *test_files],
                            cwd=repo, capture_output=True, text=True, timeout=timeout, env=env)
     except Exception:  # noqa: BLE001
         return None
