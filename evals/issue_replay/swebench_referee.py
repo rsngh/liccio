@@ -143,13 +143,22 @@ def _per_test_outcomes(repo: Path, py: str, test_files: list[str], *, timeout: i
     text = p.stdout + "\n" + p.stderr
     if "INTERNALERROR" in text or "no tests ran" in text and "passed" not in text:
         return None
+    return _parse_outcomes(text)
+
+
+def _parse_outcomes(text: str) -> dict[str, str] | None:
+    """Parse pytest -v output into {nodeid: PASSED|FAILED|ERROR}. Pure/testable.
+
+    Node ids can contain SPACES/brackets in the [param] section (e.g. test_x[assert a == b]); the old
+    \\S+::\\S+ pattern truncated at the first space, so PARAMETRIZED tests were invisible -> the guard
+    silently missed regressions in them. Capture the full id up to the right-aligned verdict."""
     outcomes: dict[str, str] = {}
-    for m in re.finditer(r"^(\S+::\S+)\s+(PASSED|FAILED|ERROR)", text, re.MULTILINE):
+    for m in re.finditer(r"^(\S.*?::.+?)\s+(PASSED|FAILED|ERROR)\b", text, re.MULTILINE):
         outcomes[m.group(1)] = m.group(2)
     if not outcomes:
         # fall back to the summary verb form "PASSED path::test" (older pytest -v formats)
-        for m in re.finditer(r"^(PASSED|FAILED|ERROR)\s+(\S+::\S+)", text, re.MULTILINE):
-            outcomes[m.group(2)] = m.group(1)
+        for m in re.finditer(r"^(PASSED|FAILED|ERROR)\s+(\S.*::.+?)\s*$", text, re.MULTILINE):
+            outcomes[m.group(2).strip()] = m.group(1)
     return outcomes or None
 
 

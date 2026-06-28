@@ -40,7 +40,12 @@ _REPRO_PROMPT = (
     "below, write a single self-contained test file that FAILS on the current (buggy) code and would "
     "PASS once the bug is fixed. Import from the installed package as a normal user would. Assert the "
     "spec-correct behaviour the issue describes; if the issue gives a reproduction snippet, encode it. "
-    "Do NOT reference any hidden or repo-internal test. Return ONLY the test file as one ```python "
+    "Assert ONLY the specific behaviour the issue explicitly states (the presence/absence or the exact "
+    "value it names). Do NOT over-specify: avoid asserting exact log/CLI output strings, message wording, "
+    "formatting, ordering, or counts that the issue does not literally give — a correct fix may word "
+    "things differently, and an over-strict assertion makes a correct fix fail your test. Prefer a "
+    "minimal assertion (e.g. `X in result` or `result == <value-named-in-issue>`) over matching full "
+    "output. Do NOT reference any hidden or repo-internal test. Return ONLY the test file as one ```python "
     "block.\n\nREPO: {repo}\n\nISSUE:\n{problem}\n"
 )
 

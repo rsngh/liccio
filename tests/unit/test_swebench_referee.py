@@ -6,6 +6,7 @@ from __future__ import annotations
 from evals.issue_replay.swebench_referee import (
     _changed_modules,
     _is_test_path,
+    _parse_outcomes,
     changed_files,
     decide,
 )
@@ -40,6 +41,26 @@ def test_is_test_path() -> None:
     assert _is_test_path("tests/test_x.py") and _is_test_path("a/test_y.py")
     assert _is_test_path("pkg/x_test.py")
     assert not _is_test_path("src/pkg/util.py")
+
+
+def test_parse_outcomes_handles_parametrized_ids_with_spaces() -> None:
+    # parametrized node ids contain spaces/brackets; the old \S+::\S+ truncated them -> invisible tests
+    text = (
+        "testing/test_x.py::test_plain PASSED                                  [ 10%]\n"
+        "testing/test_x.py::test_get_exprs[assert a == b] FAILED               [ 20%]\n"
+        "testing/test_x.py::test_get_exprs[assert foo in bar] PASSED           [ 30%]\n"
+    )
+    out = _parse_outcomes(text)
+    assert out == {
+        "testing/test_x.py::test_plain": "PASSED",
+        "testing/test_x.py::test_get_exprs[assert a == b]": "FAILED",
+        "testing/test_x.py::test_get_exprs[assert foo in bar]": "PASSED",
+    }
+
+
+def test_parse_outcomes_verb_first_fallback() -> None:
+    assert _parse_outcomes("PASSED testing/t.py::test_a[x y]\nFAILED testing/t.py::test_b") == {
+        "testing/t.py::test_a[x y]": "PASSED", "testing/t.py::test_b": "FAILED"}
 
 
 def test_decide_truth_table() -> None:
