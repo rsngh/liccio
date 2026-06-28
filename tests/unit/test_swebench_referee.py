@@ -43,17 +43,24 @@ def test_is_test_path() -> None:
 
 
 def test_decide_truth_table() -> None:
-    # regression failure dominates everything
+    # accept iff regression_ok AND (debate_accept OR repro_pass)
+    # regression failure is the hard fail-closed gate -> dominates everything
     ok, _ = decide(regression_ok=False, repro_admissible=True, repro_pass=True, debate_accept=True)
     assert not ok
-    # admissible repro that still fails -> reject
-    ok, _ = decide(regression_ok=True, repro_admissible=True, repro_pass=False, debate_accept=True)
-    assert not ok
-    # all three clauses satisfied -> accept
+    # W4 fix: an admitted repro that still FAILS no longer vetoes — debate-accept carries it
+    ok, why = decide(regression_ok=True, repro_admissible=True, repro_pass=False, debate_accept=True)
+    assert ok and "repro-fail-nonblocking" in why
+    # passing repro + debate-accept -> accept
     ok, why = decide(regression_ok=True, repro_admissible=True, repro_pass=True, debate_accept=True)
     assert ok and "repro-pass" in why
     # no admissible repro -> decision rests on guard + debate
     ok, why = decide(regression_ok=True, repro_admissible=False, repro_pass=False, debate_accept=True)
     assert ok and "no-admissible-repro" in why
+    # W4 fix: a PASSING repro ratifies the fix over a debate rejection
+    ok, why = decide(regression_ok=True, repro_admissible=True, repro_pass=True, debate_accept=False)
+    assert ok and "repro-confirmed" in why
+    # debate veto with no passing repro -> reject
+    ok, _ = decide(regression_ok=True, repro_admissible=True, repro_pass=False, debate_accept=False)
+    assert not ok
     ok, _ = decide(regression_ok=True, repro_admissible=False, repro_pass=False, debate_accept=False)
-    assert not ok                                # debate veto with no repro
+    assert not ok
