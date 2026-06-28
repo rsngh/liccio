@@ -1,0 +1,113 @@
+{
+  "experiment": "swebench_solve",
+  "agent": "gemini_cli",
+  "n": 8,
+  "solved": 2,
+  "solve_rate": 0.25,
+  "per_task": [
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": false,
+      "diff_lines": 0,
+      "candidate_diff": "",
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 433.3
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "family": "pytest",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 21,
+      "candidate_diff": "diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py\nindex 157903faf..551d914b1 100644\n--- a/src/_pytest/assertion/rewrite.py\n+++ b/src/_pytest/assertion/rewrite.py\n@@ -676,6 +676,7 @@ class AssertionRewriter(ast.NodeVisitor):\n                 expect_docstring\n                 and isinstance(item, ast.Expr)\n                 and isinstance(item.value, ast.Constant)\n+                and isinstance(item.value.value, str)\n             ):\n                 doc = item.value.value\n                 if self.is_rewrite_disabled(doc):\n@@ -743,7 +744,7 @@ class AssertionRewriter(ast.NodeVisitor):\n \n     @staticmethod\n     def is_rewrite_disabled(docstring: str) -> bool:\n-        return \"PYTEST_DONT_REWRITE\" in docstring\n+        return isinstance(docstring, str) and \"PYTEST_DONT_REWRITE\" in docstring\n \n     def variable(self) -> str:\n         \"\"\"Get a new variable.\"\"\"\n",
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 155.9
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "family": "sphinx",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 13,
+      "candidate_diff": "diff --git a/sphinx/util/rst.py b/sphinx/util/rst.py\nindex 7a1538325..f40fab186 100644\n--- a/sphinx/util/rst.py\n+++ b/sphinx/util/rst.py\n@@ -25,7 +25,7 @@ except ImportError:\n \n logger = logging.getLogger(__name__)\n \n-docinfo_re = re.compile(':\\\\w+:.*?')\n+docinfo_re = re.compile(':\\\\w+:(?:\\\\s+|$)')\n symbols_re = re.compile(r'([!-\\-/:-@\\[-`{-~])')  # symbols without dot(0x2e)\n SECTIONING_CHARS = ['=', '-', '~']\n \n",
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 159.1
+    },
+    {
+      "instance_id": "pallets__flask-5063",
+      "family": "flask",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 74,
+      "candidate_diff": "diff --git a/src/flask/cli.py b/src/flask/cli.py\nindex 37a15ff2..d8eb3429 100644\n--- a/src/flask/cli.py\n+++ b/src/flask/cli.py\n@@ -1018,20 +1018,58 @@ def routes_command(sort: str, all_methods: bool) -> None:\n         for rule in rules\n     ]\n \n-    headers = (\"Endpoint\", \"Methods\", \"Rule\")\n-    widths = (\n-        max(len(rule.endpoint) for rule in rules),\n-        max(len(methods) for methods in rule_methods),\n-        max(len(rule.rule) for rule in rules),\n+    rule_domains = []\n+    for rule in rules:\n+        if rule.host is not None:\n+            rule_domain = rule.host\n+        elif rule.subdomain:\n+            server_name = current_app.config.get(\"SERVER_NAME\")\n+            if server_name:\n+                rule_domain = f\"{rule.subdomain}.{server_name}\"\n+            else:\n+                rule_domain = rule.subdomain\n+        else:\n+            server_name = current_app.config.get(\"SERVER_NAME\")\n+            rule_domain = server_name or \"\"\n+        rule_domains.append(rule_domain)\n+\n+    show_domain = (\n+        any(rule.subdomain for rule in rules)\n+        or any(rule.host for rule in rules)\n+        or bool(current_app.config.get(\"SERVER_NAME\"))\n     )\n-    widths = [max(len(h), w) for h, w in zip(headers, widths)]\n-    row = \"{{0:<{0}}}  {{1:<{1}}}  {{2:<{2}}}\".format(*widths)\n \n-    click.echo(row.format(*headers).strip())\n-    click.echo(row.format(*(\"-\" * width for width in widths)))\n+    if show_domain:\n+        headers = (\"Domain\", \"Endpoint\", \"Methods\", \"Rule\")\n+        widths = (\n+            max(len(domain) for domain in rule_domains),\n+            max(len(rule.endpoint) for rule in rules),\n+            max(len(methods) for methods in rule_methods),\n+            max(len(rule.rule) for rule in rules),\n+        )\n+        widths = [max(len(h), w) for h, w in zip(headers, widths)]\n+        row = \"{{0:<{0}}}  {{1:<{1}}}  {{2:<{2}}}  {{3:<{3}}}\".format(*widths)\n+\n+        click.echo(row.format(*headers).strip())\n+        click.echo(row.format(*(\"-\" * width for width in widths)))\n+\n+        for rule, methods, domain in zip(rules, rule_methods, rule_domains):\n+            click.echo(row.format(domain, rule.endpoint, methods, rule.rule).rstrip())\n+    else:\n+        headers = (\"Endpoint\", \"Methods\", \"Rule\")\n+        widths = (\n+            max(len(rule.endpoint) for rule in rules),\n+            max(len(methods) for methods in rule_methods),\n+            max(len(rule.rule) for rule in rules),\n+        )\n+        widths = [max(len(h), w) for h, w in zip(headers, widths)]\n+        row = \"{{0:<{0}}}  {{1:<{1}}}  {{2:<{2}}}\".format(*widths)\n+\n+        click.echo(row.format(*headers).strip())\n+        click.echo(row.format(*(\"-\" * width for width in widths)))\n \n-    for rule, methods in zip(rules, rule_methods):\n-        click.echo(row.format(rule.endpoint, methods, rule.rule).rstrip())\n+        for rule, methods in zip(rules, rule_methods):\n+            click.echo(row.format(rule.endpoint, methods, rule.rule).rstrip())\n \n \n cli = FlaskGroup(\n",
+      "fail_to_pass": false,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 151.9
+    },
+    {
+      "instance_id": "pallets__flask-4992",
+      "family": "flask",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": false,
+      "diff_lines": 0,
+      "candidate_diff": "",
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 434.6
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10451",
+      "family": "sphinx",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 72,
+      "candidate_diff": "diff --git a/sphinx/ext/autodoc/typehints.py b/sphinx/ext/autodoc/typehints.py\nindex d912cd7d5..9de91d81f 100644\n--- a/sphinx/ext/autodoc/typehints.py\n+++ b/sphinx/ext/autodoc/typehints.py\n@@ -27,7 +27,13 @@ def record_typehints(app: Sphinx, objtype: str, name: str, obj: Any,\n             sig = inspect.signature(obj, type_aliases=app.config.autodoc_type_aliases)\n             for param in sig.parameters.values():\n                 if param.annotation is not param.empty:\n-                    annotation[param.name] = typing.stringify(param.annotation, mode)\n+                    if param.kind == param.VAR_POSITIONAL:\n+                        actual_name = '*' + param.name\n+                    elif param.kind == param.VAR_KEYWORD:\n+                        actual_name = '**' + param.name\n+                    else:\n+                        actual_name = param.name\n+                    annotation[actual_name] = typing.stringify(param.annotation, mode)\n             if sig.return_annotation is not sig.empty:\n                 annotation['return'] = typing.stringify(sig.return_annotation, mode)\n     except (TypeError, ValueError):\n@@ -115,15 +121,23 @@ def modify_field_list(node: nodes.field_list, annotations: Dict[str, str],\n         if name == 'return':\n             continue\n \n-        arg = arguments.get(name, {})\n+        # Find matching argument in arguments by stripping asterisks\n+        arg = {}\n+        resolved_name = name\n+        for arg_name, arg_data in arguments.items():\n+            if arg_name.lstrip('*') == name.lstrip('*'):\n+                arg = arg_data\n+                resolved_name = arg_name\n+                break\n+\n         if not arg.get('type'):\n             field = nodes.field()\n-            field += nodes.field_name('', 'type ' + name)\n+            field += nodes.field_name('', 'type ' + resolved_name)\n             field += nodes.field_body('', nodes.paragraph('', annotation))\n             node += field\n         if not arg.get('param'):\n             field = nodes.field()\n-            field += nodes.field_name('', 'param ' + name)\n+            field += nodes.field_name('', 'param ' + resolved_name)\n             field += nodes.field_body('', nodes.paragraph('', ''))\n             node += field\n \n@@ -170,9 +184,23 @@ def augment_descriptions_with_types(\n     for name in annotations:\n         if name in ('return', 'returns'):\n             continue\n-        if name in has_description and name not in has_type:\n+\n+        # Find matching name in has_description and has_type by stripping asterisks\n+        found_description = None\n+        for desc_name in has_description:\n+            if desc_name.lstrip('*') == name.lstrip('*'):\n+                found_description = desc_name\n+                break\n+\n+        found_type = None\n+        for type_name in has_type:\n+            if type_name.lstrip('*') == name.lstrip('*'):\n+                found_type = type_name\n+                break\n+\n+        if found_description and not found_type:\n             field = nodes.field()\n-            field += nodes.field_name('', 'type ' + name)\n+            field += nodes.field_name('', 'type ' + found_description)\n             field += nodes.field_body('', nodes.paragraph('', annotations[name]))\n             node += field\n \n",
+      "fail_to_pass": true,
+      "pass_to_pass_kept": false,
+      "solved": false,
+      "wall_s": 199.8
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "family": "pylint",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 45,
+      "candidate_diff": "diff --git a/pylint/lint/run.py b/pylint/lint/run.py\nindex 778e64441..47638ce2d 100644\n--- a/pylint/lint/run.py\n+++ b/pylint/lint/run.py\n@@ -13,7 +13,10 @@ from typing import Any\n \n from pylint import config\n from pylint.config.config_initialization import _config_initialization\n-from pylint.config.exceptions import ArgumentPreprocessingError\n+from pylint.config.exceptions import (\n+    ArgumentPreprocessingError,\n+    _UnrecognizedOptionError,\n+)\n from pylint.config.utils import _preprocess_options\n from pylint.constants import full_version\n from pylint.lint.base_options import _make_run_options\n@@ -132,9 +135,25 @@ group are mutually exclusive.\",\n         linter.disable(\"I\")\n         linter.enable(\"c-extension-no-member\")\n \n-        args = _config_initialization(\n-            linter, args, reporter, config_file=self._rcfile, verbose_mode=self.verbose\n-        )\n+        try:\n+            args = _config_initialization(\n+                linter, args, reporter, config_file=self._rcfile, verbose_mode=self.verbose\n+            )\n+        except _UnrecognizedOptionError as exc:\n+            if exit:\n+                print(linter._arg_parser.format_usage(), file=sys.stderr)\n+                unrecognized_args = []\n+                for opt in exc.options:\n+                    if len(opt) == 1:\n+                        unrecognized_args.append(f\"-{opt}\")\n+                    else:\n+                        unrecognized_args.append(f\"--{opt}\")\n+                print(\n+                    f\"pylint: error: unrecognized arguments: {' '.join(unrecognized_args)}\",\n+                    file=sys.stderr,\n+                )\n+                sys.exit(32)\n+            raise\n \n         if linter.config.jobs < 0:\n             print(\n",
+      "fail_to_pass": false,
+      "pass_to_pass_kept": true,
+      "solved": false,
+      "wall_s": 274.4
+    },
+    {
+      "instance_id": "pylint-dev__pylint-5859",
+      "family": "pylint",
+      "agent": "gemini_cli",
+      "ran": true,
+      "produced_diff": true,
+      "diff_lines": 16,
+      "candidate_diff": "diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py\nindex 69149e61a..a9e9912bd 100644\n--- a/pylint/checkers/misc.py\n+++ b/pylint/checkers/misc.py\n@@ -121,9 +121,9 @@ class EncodingChecker(BaseChecker):\n \n         notes = \"|\".join(re.escape(note) for note in self.config.notes)\n         if self.config.notes_rgx:\n-            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})\\b\"\n+            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})(?!\\w)\"\n         else:\n-            regex_string = rf\"#\\s*({notes})\\b\"\n+            regex_string = rf\"#\\s*({notes})(?!\\w)\"\n \n         self._fixme_pattern = re.compile(regex_string, re.I)\n \n",
+      "fail_to_pass": true,
+      "pass_to_pass_kept": true,
+      "solved": true,
+      "wall_s": 193.6
+    }
+  ]
+}
