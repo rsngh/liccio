@@ -5,12 +5,12 @@
   "fair_stop_referee": true,
   "best_of_k": 1,
   "n_bundles": 52,
-  "completed": 12,
+  "completed": 52,
   "stop_rung": {
-    "inproc_repair2": 1,
-    "unsolved": 11
+    "inproc_repair2": 2,
+    "unsolved": 50
   },
-  "elapsed_s": 2001.9,
+  "elapsed_s": 10595.9,
   "evidence_tier": "live escalation; AUTO-REFEREE (mutation-validated battery + debate) as the FAIR stop; hidden test used ONLY to grade commits (false-commit/missed), never to decide the stop",
   "per_bundle": [
     {
@@ -288,11 +288,932 @@
       "commit_hidden_pass": false,
       "battery_valid": false,
       "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "fix default arguments of mathutitls.clamp",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.058689,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 32.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "DeferredValue: fix get_value and caching",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.024305,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 44.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe `__format__` simplification from `type_conv(value).__format__(fmt)` to `f",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.096344,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 36.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix line-by-line file iteration in ioutils modules",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.045997,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 45.7,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The strongest concrete objection:\n\n**The `readline()` implementation for `MultiFileReader` returns `sel",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 10
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix call to non-existant attribute",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.048734,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 137.1,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe change to `__iter__()` fundamentally alters the contract of this method w",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix warnings in python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.11241,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 30.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.099623,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 15.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 2
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "issue": "address ecoutils import issue, fixes #294",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.075654,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 31.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "pytoolz/toolz",
+      "issue": "FIX: compatibility with python3.7",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.093355,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 26.8,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "r1chardj0n3s/parse",
+      "issue": "Fix microsecond precision loss in timestamp parsing",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.067121,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 40.1,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: Both defence and objection correctly identify that the proposed fix shows no actual code changes to the",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix empty ranges in numeric_range.__reversed__",
+      "solved_at": "inproc_repair2",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.029995,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 86.0,
+          "referee_accept": true,
+          "referee_reason": "accepted",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": "inproc_repair2",
+      "commit_hidden_pass": true,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1057: Raise exception for invalid size in windowed()",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.028604,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 181.9,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed change breaks a previously valid behavior by rejecting `n == 0`,",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 7
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.102946,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 41.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Simplify nth_combination_with_replacement. Fix incorrect exception.",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.049646,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 82.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe change removes the validation `r > n` from the ValueError check, claiming",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 4
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix support for iterators using \"repeat\"",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.106433,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 118.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 2
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1098: Add synchronized decorator",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.072348,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 47.6,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed code references an undefined variable `lock` in `with lock:` on ",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1096: Concurrent tee",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.125404,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 36.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1093: Add serialize()",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.053706,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 54.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 8
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix bug for negative inputs to exactly_n(). Optimize code.",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.05955,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 105.7,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The objection identifies a critical defect: `islice(iterable, negative_stop)` raises `ValueError`, so t",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 4
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix product_index() with iterator input",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.050602,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 45.0,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe change is purely cosmetic and fails to fix the actual iterator-handling b",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 9
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 900: Replace iequals fillvalue logic with strict size test",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.059437,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 107.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "fix last() when __reversed__ is None",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.078481,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 102.5,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **Strongest Objection:**\n\nThe fix silently changes behavior for iterables where `reversed()` raises `St",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 986: argmin and argmax",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.091442,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 35.3,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 0<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix __all__ error due to forgotton comma",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.092503,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 28.5,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix unique pool by not using a set",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.125107,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 45.8,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix is incomplete and shows no actual changes to any `unique_poo",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Add more sample() tests and fix bug in strict option with counts",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.045028,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 64.7,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION: Memory explosion on large counts.**\n\nThe fix expands the entire iterable into me",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 4
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "remove string.format(); fix tests",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.062737,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 45.7,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix fails all 4 discriminating checks with \"[still-buggy]\" statu",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 7
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 916: lt only for is_sorted (#917)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.032088,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 101.6,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: The proposer's defense is exactly right. Here's the concrete objection:\n\n**The change breaks the forwar",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 4
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 870: counts parameter for sample",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.075372,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 26.9,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 869: Add a steps argument to circular_shifts",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.06463,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 106.6,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 862: change relative_seek() behaviour",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.081917,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 28.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue: #898: Sync recipe with main docs. Eliminate quadratic fallback.",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.12036,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 49.7,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 2<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 2
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue #1134: Add running_statistics (#1135)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.055243,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 49.4,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposed fix does not actually implement `running_statistics`. Issue #113",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 8
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix random_product() as well",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.087728,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 105.1,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **STRONGEST OBJECTION:**\n\nThe proposer explicitly concedes this fix doesn't work\u2014all three discriminati",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 3
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1070: Add random derangements",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.097728,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 46.9,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **DEFECT FOUND:**\n\nThe proposed fix does not implement the requested feature at all. Issue 1070 asks to",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 8
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 1003: Multidimensional reshape() (#1062)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.081654,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 37.0,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Fix formatting",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.093777,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 28.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 920: Add is_prime recipe",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": true,
+          "cost_usd": 0.053676,
+          "hinted": false,
+          "n_candidates": 0,
+          "elapsed_s": 35.7,
+          "referee_accept": false,
+          "referee_reason": "debate rejected: **DEFECT FOUND**\n\nThe proposed excerpt is incomplete and does **not contain the `is_prime` function tha",
+          "mutation_validated": true
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": true,
+      "n_discriminating": 5
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "issue": "Issue 821: key argument for all_equal",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": true,
+          "public_pass": true,
+          "cost_usd": 0.061547,
+          "hinted": false,
+          "n_candidates": 2,
+          "elapsed_s": 35.2,
+          "referee_accept": false,
+          "referee_reason": "abstain: weak battery (mutation_score 0.00<0.5 or disc 1<2)",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 1
+    },
+    {
+      "repo": "arrow-py/arrow",
+      "issue": "Fix arrow.get functionality when weekday is parsed alone (#823)",
+      "solved_at": "unsolved",
+      "path": [
+        {
+          "rung": "inproc_repair2",
+          "hidden_pass": false,
+          "public_pass": false,
+          "cost_usd": 0.063242,
+          "hinted": false,
+          "n_candidates": 1,
+          "elapsed_s": 11.4,
+          "referee_accept": false,
+          "referee_reason": "abstain: public-test fails or adversarial-high",
+          "mutation_validated": false
+        }
+      ],
+      "committed_rung": null,
+      "commit_hidden_pass": false,
+      "battery_valid": false,
+      "n_discriminating": 0
     }
   ],
-  "solved": 1,
-  "committed": 1,
+  "solved": 2,
+  "committed": 2,
   "false_commit": 0,
   "false_commit_rate": 0.0,
-  "missed": 3
+  "missed": 17,
+  "rate": 0.038
 }

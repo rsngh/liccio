@@ -702,18 +702,41 @@ uninterrupted 4-rung k=3 run. Per-bundle wall-time isn't a reliable cross-run co
 `elapsed_s` only covers the final resume session), so cost-efficiency is read from the rung distribution —
 which is robust — rather than from timing.
 
-### W3 — grow the agent pool: sonnet in-process rung (coverage ceiling) — code DONE, first signal MEASURED ✓
+### W3 — grow the agent pool: sonnet in-process rung (coverage ceiling) — code DONE, MEASURED ✓ (partial gate)
 
-Added `inproc_sonnet` to `RUNGS` (a second, uncorrelated in-process solver — sonnet localizes/repairs
-differently from gemini-flash, so the solvable *union* rises). `_INPROC_MODEL` maps in-process rungs to their
-repair model. This also tightened referee-mode fairness: every in-process rung now routes through
-`guided_repair` (battery-scored, hidden-test-blind) even at k=1, closing a P11 leak where the inproc rung
-used `repair_v2` (which peeks the hidden test). **First signal:** in the k=3 referee ladder above,
-`inproc_sonnet` committed **1** hidden-test-passing fix (boltons) that `inproc_repair2`/gemini-flash had not
-won at the cheaper rungs — direct evidence the second in-process solver extends the cheap-rung union, exactly
-the W3 coverage thesis. **Gate:** oracle-union / referee solve-rate rises at acceptable cost; report the
-per-agent complementarity either way. SWE-bench pool growth (Aider/OpenHands) is deferred pending vendor
-availability.
+Added `inproc_sonnet` to `RUNGS` (a second in-process solver — sonnet localizes/repairs differently from
+gemini-flash, intended to grow the solvable *union*). `_INPROC_MODEL` maps in-process rungs to their repair
+model. This also tightened referee-mode fairness: every in-process rung now routes through `guided_repair`
+(battery-scored, hidden-test-blind) even at k=1, closing a P11 leak where the inproc rung used `repair_v2`
+(which peeks the hidden test). New non-breaking `--rungs`/`--exclude-rungs` selector (`ladder_live._resolve_rungs`,
+5 unit tests) enables a clean isolation.
+
+**Clean complementarity A/B (k=1, referee, in-process rungs only, no vendor CLIs; 48 distinct bundles):**
+two arms — gemini-flash alone (`--rungs inproc_repair2`) vs sonnet alone (`--rungs inproc_sonnet`) —
+in `reports/issue_replay_w3_{gemini,sonnet}_only.json`.
+
+| level | gemini | sonnet | both | gemini-only | sonnet-only | **union** | false-commit |
+|---|---|---|---|---|---|---|---|
+| **referee-committed** (trust-real) | 2 | 3 | 1 | 1 | 2 | **4** (gemini-alone 2 → **+2**) | **0 / 0** |
+| **raw capability** (any hidden-pass, referee aside = oracle ceiling) | 19 | 15 | 14 | 5 | 1 | **20** (gemini-alone 19 → **+1**) | — |
+
+**Verdict — gate PARTIALLY met, and the result re-prioritises the levers (honest):**
+- **Committed union rises 2→4 (+2) with genuine complementarity** (sonnet-only commits 2 bundles gemini didn't:
+  boltons `DeferredValue`, more-itertools `last()`), and **false-commit holds at 0** on both arms. So adding
+  sonnet *does* lift the trustworthy committed-solve count at zero trust cost — the W3 direction is positive.
+- **But the falsifier fires at the capability level:** raw repair union only +1 (19→20), with heavy overlap
+  (14 of ~20 shared) and sonnet actually *weaker* in raw capability (15 vs 19). The two in-process solvers are
+  **highly correlated**, not the uncorrelated pool the thesis assumed — gemini-flash and sonnet mostly solve the
+  *same* bundles. The committed-union lift comes less from new coverage than from giving the **referee a second
+  independent candidate** per bundle.
+- **The real ceiling is referee abstention, not the solver pool.** Each arm produced ~15–19 hidden-passing fixes
+  but the referee committed only 2–3 (**missed 17 / 12** = ~85–90% abstention). That is the W1 battery-coverage
+  problem, not a pool problem. **Highest-leverage lever for raw solve-rate is W1 (more discriminating batteries),
+  not W3 (more solvers).**
+- **Recommendation:** keep `inproc_sonnet` (cheap, +2 committed solves, 0 false-commit) but treat pool growth as
+  a *minor* lever; invest in W1 discrimination to convert the large abstention backlog into commits. **Caveat:**
+  committed counts are tiny (n=48, 2 vs 4) → wide CIs; the robust signal is the raw-capability overlap (solvers
+  correlated) and the abstention rate. SWE-bench pool growth (Aider/OpenHands) remains deferred pending vendors.
 
 ### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE + validated, measuring
 
