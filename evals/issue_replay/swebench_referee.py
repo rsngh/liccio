@@ -22,8 +22,9 @@ Accept iff regression_ok AND (debate_accept OR repro_pass): the regression guard
 gate, debate is the primary positive signal, and a PASSING repro can ratify a fix over a debate rejection.
 An admitted-but-failing repro does NOT veto (W4 pilot: synthesized repros fail even on correct fixes). The
 guard confirms regressions are deterministic (stable double base-run + re-confirm) to avoid flaky false-
-positives. Measured against the held-out grader: FALSE-COMMIT = accepted but FAIL_TO_PASS fails; MISSED =
-not accepted but actually solved. Reuses swebench_adapter / swebench_solve / swebench_verify_stop / debate.
+positives. Graded by the FULL held-out criterion (FAIL_TO_PASS passes AND PASS_TO_PASS kept = SWE-bench
+solved): FALSE-COMMIT = accepted but not fully solved (incl. a committed diff that breaks PASS_TO_PASS);
+MISSED = not accepted but actually solved. Reuses swebench_adapter / swebench_solve / swebench_verify_stop / debate.
 
     uv run python -m evals.issue_replay.swebench_referee --slice reports/swebench_lite_slice_pinned.json \
         --diffs reports/swebench_solve_gemini_cli.json --out reports/swebench_referee_eval.json
@@ -293,8 +294,8 @@ def main() -> int:
         Path(args.out).write_text(json.dumps({
             "experiment": "swebench_referee_eval",
             "question": "does the repo-level FAIR referee (regression-guard + admitted-repro + diff-debate) "
-                        "commit correct multi-file diffs with a bounded false-commit rate? (FAIL_TO_PASS = grader only)",
-            "evidence_tier": "real SWE-bench Lite, no Docker; fair signals only in the decision; held-out FAIL_TO_PASS used solely to grade commits",
+                        "commit correct multi-file diffs with a bounded false-commit rate? (graded = FAIL_TO_PASS AND PASS_TO_PASS)",
+            "evidence_tier": "real SWE-bench Lite, no Docker; fair signals only in the decision; held-out FAIL_TO_PASS+PASS_TO_PASS used solely to grade commits (full SWE-bench solved)",
             "diffs_source": args.diffs, "n": len(rows),
             "committed": len(committed), "committed_correct": sum(1 for r in committed if r["graded_solved"]),
             "false_commit": false_commit,
@@ -310,10 +311,15 @@ def main() -> int:
         if not p.ok:
             continue
         cand = diffs[inst.instance_id]
-        graded_f2p, _graded_p2p = verify(p, cand)        # GRADER ONLY
+        # GRADER ONLY (never an input to the decision). Full SWE-bench "solved" = FAIL_TO_PASS passes
+        # AND PASS_TO_PASS kept: a diff that fixes the target but breaks an existing test is NOT solved,
+        # so committing it is a FALSE-COMMIT (F2P-only grading hides P2P regressions the guard misses).
+        graded_f2p, graded_p2p = verify(p, cand)
         d = referee(inst, cand, client=client)
         row = {"instance_id": inst.instance_id, "family": inst.family, "accept": d.accept,
-               "graded_solved": bool(graded_f2p), "regression_ok": d.regression_ok,
+               "graded_solved": bool(graded_f2p and graded_p2p),
+               "graded_f2p": bool(graded_f2p), "graded_p2p": bool(graded_p2p),
+               "regression_ok": d.regression_ok,
                "repro_admissible": d.repro_admissible, "repro_pass": d.repro_pass,
                "debate_accept": d.debate_accept, "n_repro_admitted": d.n_repro_admitted,
                "guard_tests_run": d.guard_tests_run, "reason": d.reason}
