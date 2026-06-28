@@ -738,7 +738,7 @@ in `reports/issue_replay_w3_{gemini,sonnet}_only.json`.
   committed counts are tiny (n=48, 2 vs 4) → wide CIs; the robust signal is the raw-capability overlap (solvers
   correlated) and the abstention rate. SWE-bench pool growth (Aider/OpenHands) remains deferred pending vendors.
 
-### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE + validated, measuring
+### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE + validated; pilot MEASURED ✗ (abstains 100%, gate not met)
 
 The single-module battery doesn't apply to SWE-bench, so the de-saturated routing win (P9: pool union 48% vs
 best-single 32%) was only proven under an *oracle* stop. New `swebench_referee.py` decides commit/escalate on
@@ -750,6 +750,37 @@ none admissible; (3) **diff-debate**. Accept iff all hold. **Validated end-to-en
 (`pallets__flask-5063`):** the gold patch is regression-clean (`guard_ok=True` over **127** base-passing
 tests) and a diff injecting `raise RuntimeError` is **caught** (`guard_ok=False`) — the novel mechanism works
 on real multi-file diffs. Unit-tested pure core (`changed_files`, `_changed_modules`, `decide` truth table).
-`swebench_solve` now persists `candidate_diff` text so the referee can consume real agent diffs. **Gate (25-task
-fair slice):** false-commit ≤ ~0.15 and committed-correct ≥ best single agent vs the oracle upper bound; the
-full sweep needs the solve diffs regenerated (now that the text is persisted). Code: `swebench_referee.py`.
+`swebench_solve` now persists `candidate_diff` text so the referee can consume real agent diffs.
+
+**Derisk pilot (8 fair+cached tasks, gemini_cli diffs regenerated, no Docker) — `reports/swebench_referee_eval_gemini_pilot.json`.**
+6 of 8 produced a diff (2 empty, excluded); of those 6, 4 fix the held-out FAIL_TO_PASS. **Result: the referee
+ABSTAINED on all 6 — committed 0, committed-correct 0, false-commit 0, missed 4. Gate NOT met.** The mechanism
+that validated on flask-5063 *in isolation* does not generalise across repos at the per-task level. Two binding
+fragilities, both surfaced only because we piloted before the full grind:
+
+| task | F2P-correct | reg-guard ok | repro adm/pass | debate | accept | note |
+|---|---|---|---|---|---|---|
+| pytest-11143 | ✓ | ✗ | ✓/✗ | ✓ | ✗ | guard CORRECT — diff really breaks P2P |
+| sphinx-10451 | ✓ | ✗ | ✓/✗ | ✗ | ✗ | guard CORRECT — diff really breaks P2P |
+| sphinx-11445 | ✓ | ✗ | ✓/✗ | ✗ | ✗ | **guard FALSE-POSITIVE** (solve graded P2P-clean) |
+| pylint-5859 | ✓ | ✗ | ✗/✗ | ✗ | ✗ | **guard FALSE-POSITIVE** (solve graded P2P-clean) |
+| flask-5063 | ✗ | ✓ | ✓/✗ | ✗ | ✗ | correctly not committed (wrong diff) |
+| pylint-6506 | ✗ | ✗ | ✓/✗ | ✗ | ✗ | wrong diff |
+
+1. **Regression-guard false-positives.** `regression_ok=True` on only 1/6 (flask-5063 — the very repo it was
+   validated on). It rejected two genuinely-correct diffs ("candidate breaks an existing test") that the official
+   PASS_TO_PASS grading found clean: its discovered ≤6-test subset flags spurious/flaky breaks. (It was *right*
+   on the two diffs that really do break P2P — the signal isn't worthless, just noisy.)
+2. **Synthesized repro never passes (`repro_pass` 0/6),** even on F2P-correct diffs — the LLM repro from the
+   problem statement is too strict / mis-specified, and since `accept` requires `repro_pass` when a repro is
+   admitted, it is the binding hard-reject.
+
+**Honest verdict:** the referee trades *all* throughput for zero false-commit — trust is preserved but it commits
+nothing, so it's not yet useful at the repo level. This is the plan's named falsifier ("repro un-synthesizable /
+regression-guard too weak ⇒ heavy abstention"). **Not scaling to the full 25** — it would reproduce 0 commits at
+~10h cost. **Required before scaling:** (a) make the guard robust — align discovered tests with PASS_TO_PASS /
+drop flaky tests / require the flagged test to pass reliably at base; (b) fix or relax repro — treat
+admitted-but-failing as *abstain/escalate*, not hard-reject, and lean on regression+debate. This mirrors the W3
+finding: across both the single-module and repo-level stacks, **referee abstention — not solver capability — is
+the dominant bottleneck**, so the positive FAIR signals (not the agent pool) are the highest-leverage work.
+Code: `swebench_referee.py`; pilot slice `reports/swebench_lite_slice_pilot.json`.
