@@ -53,11 +53,19 @@ def _client():
         return None
 
 
+def _strip_lang(block: str) -> str:
+    """Drop an optional ```language tag on the fenced block's first line WITHOUT eating code chars
+    (the old p[9:]/p[7:] slices were off-by-2/1 vs len('python\\n')=7 / len('python')=6, which chopped
+    the leading characters of the test source and produced SyntaxErrors)."""
+    first, sep, rest = block.partition("\n")
+    if sep and first.strip().lower() in ("python", "py", "python3", "pytest", ""):
+        return rest
+    return block
+
+
 def _first_block(text: str) -> str:
     if "```" in text:
-        parts = text.split("```")
-        body = max((p[9:] if p.startswith("python\n") else p[7:] if p.startswith("python") else p
-                    for p in parts[1::2]), key=len, default="")
+        body = max((_strip_lang(p) for p in text.split("```")[1::2]), key=len, default="")
         return body if "def test" in body else ""
     return text if "def test" in text else ""
 
@@ -94,8 +102,13 @@ def _run_repro_on(repo_dir: Path, py: str, repro_src: str, *, timeout: int = 120
         text = p.stdout + "\n" + p.stderr
         if p.returncode == 0:
             return "pass"
-        if any(m in text for m in ("ModuleNotFoundError", "ImportError", "errors during collection",
-                                   "AttributeError", "NameError")) and "AssertionError" not in text:
+        # a real bug-reproduction is an ASSERTION failure; import/collection/syntax breakage is "error"
+        # (must NOT be admitted as fail-on-base — that was letting corrupted repros masquerade as repros)
+        if "AssertionError" in text:
+            return "fail"
+        if any(m in text for m in ("ModuleNotFoundError", "ImportError", "SyntaxError",
+                                   "error during collection", "errors during collection",
+                                   "AttributeError", "NameError", "TypeError")):
             return "error"
         return "fail"
     except subprocess.TimeoutExpired:
