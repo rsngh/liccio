@@ -6,6 +6,7 @@ import hashlib
 from typing import Any
 
 from acp.core.enums import RiskLevel, TaskType
+from acp.routing.memory_context import MemoryContext
 from acp.schemas.task import Task, TaskClassification
 
 
@@ -23,6 +24,8 @@ class RoutingFeatureExtractor:
         task: Task,
         classification: TaskClassification | None = None,
         repo_stats: dict[str, Any] | None = None,
+        *,
+        memory: MemoryContext | None = None,
     ) -> RoutingFeatures:
         repo_stats = repo_stats or {}
         cls = classification
@@ -49,9 +52,24 @@ class RoutingFeatureExtractor:
             context_retrieval_confidence=repo_stats.get("context_retrieval_confidence", 0.5),
             model_price_bucket=repo_stats.get("model_price_bucket", "low"),
         )
+        # Optional embedding-kNN memory enrichment (ACRouter, 2606.22902). Additive only: when a
+        # MemoryContext is supplied and has non-sparse neighbours, attach per-action neighbour
+        # evidence a memory-aware policy can use (e.g. cold-start prior). Absent/sparse -> no new
+        # keys, so context_key and all existing consumers are unchanged.
+        if memory is not None:
+            nbr = memory.query(self.task_text(task))
+            if not nbr.sparse:
+                f["neighbor_count"] = nbr.n
+                f["neighbor_action_reward"] = nbr.action_reward
+                f["neighbor_best_action"] = nbr.best_action
         return f
 
     @staticmethod
+    def task_text(task: Task) -> str:
+        """The text embedded for memory retrieval — the task's natural-language content."""
+        return f"{task.title}\n{task.body}".strip()
+
+    @staticmethod
     def context_key(features: RoutingFeatures) -> str:
-        """Compact context key for contextual bandit indexing."""
+        """Compact context key for contextual bandit indexing (unchanged by memory enrichment)."""
         return f"{features['task_type']}|{features['risk_level']}"

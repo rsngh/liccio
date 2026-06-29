@@ -8,6 +8,7 @@ same RoutingPolicy protocol when installed.
 
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass, field
 
@@ -16,6 +17,11 @@ from acp.routing.features import RoutingFeatureExtractor
 from acp.routing.policy import PolicyDecision
 from acp.schemas.learning import RewardEvent
 from acp.schemas.routing import RoutingAction
+
+
+def _squash(reward: float) -> float:
+    """Logistic squash of a raw reward into the [0,1] mean-proxy space the arms track."""
+    return 1.0 / (1.0 + math.exp(-reward))
 
 
 @dataclass
@@ -71,8 +77,16 @@ class SimulatedBanditPolicy:
             chosen = max(candidates, key=lambda a: scores[a.key()])
             prob = 1.0 / len(candidates)  # approximate propensity
         else:
+            # ACRouter cold-start prior: an UNtried arm (n==0) inherits the logistic-squashed mean
+            # reward of the same action on embedding-similar past tasks, when extract(memory=...)
+            # supplied `neighbor_action_reward`. Tried arms and the no-memory path are unchanged.
+            nbr = features.get("neighbor_action_reward") or {}
             for a in candidates:
-                scores[a.key()] = ctx_arms[a.key()].mean
+                arm = ctx_arms[a.key()]
+                if arm.n == 0 and a.key() in nbr:
+                    scores[a.key()] = _squash(float(nbr[a.key()]))
+                else:
+                    scores[a.key()] = arm.mean
             if self._rng.random() < self.epsilon:
                 chosen = self._rng.choice(candidates)
                 mode = ExplorationMode.EXPLORE
@@ -118,5 +132,5 @@ class SimulatedBanditPolicy:
         ctx = decision.context_key or reward.metadata.get("ctx", "global")
         success = 1.0 if reward.reward > 0 else 0.0
         # normalize reward to [0,1]-ish via squashing for the running mean proxy
-        norm = 1.0 / (1.0 + pow(2.718281828, -reward.reward))
+        norm = _squash(reward.reward)
         self._stats(ctx, decision.action.key()).update(norm, success)
