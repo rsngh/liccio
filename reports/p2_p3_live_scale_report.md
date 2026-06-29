@@ -738,7 +738,7 @@ in `reports/issue_replay_w3_{gemini,sonnet}_only.json`.
   committed counts are tiny (n=48, 2 vs 4) → wide CIs; the robust signal is the raw-capability overlap (solvers
   correlated) and the abstention rate. SWE-bench pool growth (Aider/OpenHands) remains deferred pending vendors.
 
-### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✓ (trust SOLID: false-commit 0 stable; recall is the open problem — bottlenecked by stochastic LLM repro generation)
+### W4 — repo-level fair referee for multi-file SWE-bench (highest payoff) — code DONE; pilot MEASURED ✓ (trust SOLID & by design: false-commit 0 with ALL-must-pass repro; recall ~1/2 bottlenecked by repro-synthesis QUALITY — majority-vote lever tried & rejected; a better positive signal is the real next workstream)
 
 The single-module battery doesn't apply to SWE-bench, so the de-saturated routing win (P9: pool union 48% vs
 best-single 32%) was only proven under an *oracle* stop. New `swebench_referee.py` decides commit/escalate on
@@ -843,10 +843,23 @@ repro of N sinks the candidate). Trust still holds (false-commit 0) because the 
 *still* not caught — beyond parsing, the guard's whole-file run and the grader's per-nodeid invocation disagree on
 that test's outcome (ordering/fixtures), a fundamental limit of replicating a grader with a generic pytest run.
 
-**Net honest verdict:** **trust is solid (false-commit 0, stable across v7–v8); recall is the open problem and it is
-bottlenecked by LLM repro-generation variance** — a deeper synthesis problem, not a quick fix. Candidate next
-levers (unproven): majority-vote instead of ALL-must-pass in `verify_stop` (tolerate one over-strict repro) + higher
-`n`; or a non-LLM/metamorphic positive signal. A 25-task sweep would faithfully report this profile (high precision,
-low+noisy recall). Snapshots: `reports/swebench_referee_eval_gemini_pilot_v{1..7}.json` (+ current v8). Code:
-`swebench_referee.{decide,_parse_outcomes,regression_guard}`, `swebench_solve._solve_checkout`,
-`swebench_verify_stop.{_first_block,_run_repro_on,_REPRO_PROMPT}`; pilot slice `reports/swebench_lite_slice_pilot.json`.
+**v9 (recall lever #1: majority-vote + n=5) — TRIED and REJECTED.** Relaxed `verify_stop` from ALL-admitted-pass
+to strict-majority and raised `n_repro` 3→5, to tolerate one over-strict/unlucky repro. Result: committed 2 /
+correct 1 / **false-commit 1 (0.50)** / missed 1 — strictly *worse* than v7. It recovered sphinx-11445 but
+**committed pylint-6506, a non-fixing diff (`f2p=False`) whose loose repros mostly passed** (a new false-commit),
+and *still missed* pylint-5859 (over-strict repros, 0 of 5). So the synthesized-repro signal is noisy in **both**
+directions — over-strict on some tasks, too-loose on others — and no aggregation rule (ALL vs majority) fixes that;
+majority just trades a miss for a false-commit. **Reverted** to ALL-must-pass + n=3 (the v7 config, false-commit 0).
+
+**Net honest verdict (final for this pilot):** **trust is solid and the right design (ALL-must-pass repro, guard
+fail-closed) — false-commit 0 in the conservative config; recall (~1/2) is bottlenecked by LLM repro-generation
+QUALITY, and it is not fixable by the aggregation rule or prompt nudges (both tried).** The genuine next lever is a
+*better positive signal* — higher-quality repro synthesis (stronger model / few-shot from the issue's own snippet /
+self-check that the repro passes on a known-good reference), or a non-LLM metamorphic check — which is a real
+research workstream, not a config tweak. A 25-task sweep would faithfully report this profile (high precision,
+low recall); it does not change the design conclusion. Bugs fixed along the way (all real, committed, tested):
+github-403 fail-close, pytest collection-abort, repro extraction corruption, parametrized-test parsing, F2P-only
+grading. Snapshots: `reports/swebench_referee_eval_gemini_pilot_v{1..8}.json` (+ current = reverted-config rerun
+pending if scaled). Code: `swebench_referee.{decide,_parse_outcomes,regression_guard,referee}`,
+`swebench_solve._solve_checkout`, `swebench_verify_stop.{_first_block,_run_repro_on,verify_stop,_REPRO_PROMPT}`;
+pilot slice `reports/swebench_lite_slice_pilot.json`.

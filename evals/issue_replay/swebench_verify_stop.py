@@ -142,12 +142,12 @@ def admit_repro(inst: SweInstance, repros: list[str]) -> list[str]:
 
 
 def verify_stop(inst: SweInstance, candidate_diff: str, admitted: list[str]) -> bool:
-    """A candidate is verified iff a strict MAJORITY of admitted repros PASS on it (applied on base).
+    """A candidate is verified iff it makes ALL admitted repros pass (applied on the base checkout).
 
-    Majority — not ALL — is the W4 recall fix: LLM repro generation is stochastic and some admitted repros
-    over-specify (assert exact output a correct fix words differently), so requiring ALL meant one bad repro
-    of N sank a correct fix and recall was low+unstable run-to-run. A wrong diff still fails the
-    bug-reproducing repros (the bug isn't fixed), so it won't reach majority — trust is preserved."""
+    NOTE (W4 #1, rejected): a strict-MAJORITY relaxation was tried to lift recall but made trust WORSE —
+    it committed a non-fixing diff (pylint-6506) whose loose repros mostly passed, while still missing the
+    over-strict case (pylint-5859). The signal is noisy in BOTH directions, so ALL-must-pass is the better
+    precision/recall point; recall is bottlenecked by LLM repro QUALITY, not by this aggregation rule."""
     if not admitted:
         return False
     co = _base_checkout(inst)
@@ -162,8 +162,7 @@ def verify_stop(inst: SweInstance, candidate_diff: str, admitted: list[str]) -> 
         if rc:
             return False
     try:
-        passed = sum(1 for r in admitted if _run_repro_on(repo, py, r) == "pass")
-        return passed * 2 > len(admitted)        # strict majority of admitted repros
+        return all(_run_repro_on(repo, py, r) == "pass" for r in admitted)
     finally:
         _sh(["git", "reset", "--hard", "-q", "HEAD"], cwd=repo)
         _sh(["git", "clean", "-qfd"], cwd=repo)

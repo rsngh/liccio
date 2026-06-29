@@ -242,7 +242,7 @@ def decide(regression_ok: bool, repro_admissible: bool, repro_pass: bool,
 
 
 def referee(inst: SweInstance, candidate_diff: str, *, client, model: str = "claude-haiku-4-5",
-            n_repro: int = 5) -> RefereeDecision:
+            n_repro: int = 3) -> RefereeDecision:
     """Repo-level fair referee. NEVER consults FAIL_TO_PASS. Fail-closed on the guard."""
     reg_ok, n_guard = regression_guard(inst, candidate_diff)
     repros, _c = generate_repro(inst, client=client, n=n_repro)
